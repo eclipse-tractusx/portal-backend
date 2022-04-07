@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.name }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .Values.issuer }}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "false"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
+spec:
+  tls:
+  - hosts:
+    - {{ .Values.name }}.{{ .Values.domain }}
+    secretName: {{ .Values.name }}.{{ .Values.domain }}-tls
+  rules:
+  - host: {{ .Values.name }}.{{ .Values.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.name }}
+            port:
+              number: {{ .Values.portService }}

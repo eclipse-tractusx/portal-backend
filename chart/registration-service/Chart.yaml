@@ -1,0 +1,6 @@
+apiVersion: v2
+name: registration-service
+description: Helm chart for Catena-X registration backend service
+type: application
+version: 0.0.1
+appVersion: "0.0.1"

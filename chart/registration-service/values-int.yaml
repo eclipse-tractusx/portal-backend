@@ -1,0 +1,3 @@
+name: "registration-service"
+host: "registration-service"
+image: "ghcr.io/catenax-ng/product-portal-backend_registration-service:main"

@@ -1,0 +1,19 @@
+bin/
+obj/
+out/
+TestResults/
+
+.chart
+.git
+.github
+.gitignore
+LICENSE
+
+# directories
+**/bin/
+**/obj/
+**/out/
+
+# files
+Dockerfile*
+**/*.md
