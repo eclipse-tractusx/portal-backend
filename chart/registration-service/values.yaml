@@ -1,0 +1,8 @@
+name: "registration-service"
+host: "registration-service"
+domain: "demo.catena-x.net"
+issuer: "letsencrypt-prod"
+image: "ghcr.io/catenax-ng/product-portal-backend_registration-service:main"
+portContainer: 80
+portService: 8080
+replicaCount: 1
