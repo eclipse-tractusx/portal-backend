@@ -17,7 +17,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Invitation CreateInvitation(CompanyApplication application, CompanyUser user);
         IdentityProvider CreateSharedIdentityProvider(Company company);
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
-        IamUser CreateIamUser(CompanyUser companyUser, Guid iamUserId);
+        IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
         public Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         public Task SetCompanyWithAdressAsync(Guid companyApplicationId, CompanyWithAddress companyWithAddress);
         Task<int> SaveAsync();

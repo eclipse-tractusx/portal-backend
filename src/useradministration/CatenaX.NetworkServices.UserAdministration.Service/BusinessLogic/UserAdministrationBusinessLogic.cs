@@ -69,7 +69,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             _portalDBAccess.CreateInvitation(application, companyUser);
             var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);
             _portalDBAccess.CreateIamIdentityProvider(identityprovider,idpName);
-            _portalDBAccess.CreateIamUser(companyUser,Guid.Parse(centralUserId));
+            _portalDBAccess.CreateIamUser(companyUser,centralUserId);
           
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
 
