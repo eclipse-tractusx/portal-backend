@@ -1,49 +1,30 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
-
-using CatenaX.NetworkServices.Provisioning.DBAccess.Model;
-using CatenaX.NetworkServices.Framework.DBAccess;
+using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 
 namespace CatenaX.NetworkServices.Provisioning.DBAccess
 
 {
     public class ProvisioningDBAccess : IProvisioningDBAccess
     {
-        private readonly IDBConnectionFactory _DBConnection;
-        private readonly string _dbSchema;
+        private readonly ProvisioningDBContext _dbContext;
 
-        public ProvisioningDBAccess(IDBConnectionFactories dbConnectionFactories)
-           : this(dbConnectionFactories.Get("Provisioning"))
+        public ProvisioningDBAccess(ProvisioningDBContext provisioningDBContext)
         {
+            _dbContext = provisioningDBContext;
         }
 
-        public ProvisioningDBAccess(IDBConnectionFactory dbConnectionFactory)
+        public async Task<int> GetNextClientSequenceAsync()
         {
-            _DBConnection = dbConnectionFactory;
-            _dbSchema = dbConnectionFactory.Schema();
+            var nextSequence = _dbContext.ClientSequences.Add(new ClientSequence()).Entity;
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+            return nextSequence.SequenceId;
         }
 
-        public async Task<Sequence> GetNextClientSequenceAsync()
+        public async Task<int> GetNextIdentityProviderSequenceAsync()
         {
-            string sql =
-                $"INSERT INTO {_dbSchema}.client_sequence VALUES(DEFAULT) RETURNING sequence_id";
-            using (var connection = _DBConnection.Connection())
-            {
-                return await connection.QueryFirstAsync<Sequence>(sql).ConfigureAwait(false);
-            }
-        }
-
-        public async Task<Sequence> GetNextIdentityProviderSequenceAsync()
-        {
-            string sql =
-                $"INSERT INTO {_dbSchema}.identity_provider_sequence VALUES(DEFAULT) RETURNING sequence_id";
-            using (var connection = _DBConnection.Connection())
-            {
-                return await connection.QueryFirstAsync<Sequence>(sql).ConfigureAwait(false);
-            }
+            var nextSequence = _dbContext.IdentityProviderSequences.Add(new IdentityProviderSequence()).Entity;
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+            return nextSequence.SequenceId;
         }
     }
 }
