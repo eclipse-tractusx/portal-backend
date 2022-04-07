@@ -142,11 +142,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             }).Entity;
         }
 
-        public IamUser CreateIamUser(CompanyUser user, Guid iamUserId)
+        public IamUser CreateIamUser(CompanyUser user, string iamUserId)
         {
             return _dbContext.IamUsers.Add(new IamUser {
                 CompanyUser = user,
-                Id = iamUserId
+                IamUserId = iamUserId
             }).Entity;
         }
 
