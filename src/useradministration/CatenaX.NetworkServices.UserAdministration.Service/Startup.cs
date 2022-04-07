@@ -21,6 +21,7 @@ using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 using CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
@@ -99,6 +100,9 @@ namespace CatenaX.NetworkServices.UserAdministration.Service
 
             services.AddDbContext<PortalDBContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PortalDB")));
+
+            services.AddDbContext<ProvisioningDBContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("ProvisioningDB")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
