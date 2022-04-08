@@ -15,7 +15,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
 
         public async Task<IEnumerable<AppViewModel>> GetAllActiveAppsAsync(string? languageShortName = null)
         {
-            var activeApps = await this.context.Apps
+            var activeApps = await this.context.Apps.AsNoTracking()
                 .Include(a => a.AppDescriptions)
                 .Include(a => a.VendorCompany)
                 .Include(a => a.UseCases)
@@ -36,6 +36,15 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 Price = a.AppLicenses.FirstOrDefault()?.Licensetext ?? ""
             });
             return mappedApps;
+        }
+
+        public async Task<IEnumerable<Guid>> GetAllFavouriteAppsForUser(Guid userId)
+        {
+            return await this.context.IamUsers.AsNoTracking()
+                .Include(u => u.CompanyUser!.Apps)
+                .Where(u => u.Id == userId) // Id is unique, so single user
+                .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
+                .ToListAsync();
         }
     }
 }
