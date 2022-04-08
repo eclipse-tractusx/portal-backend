@@ -9,6 +9,7 @@ using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -158,7 +159,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
-        
+        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
+        {
+            await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
+            {
+                yield return new CompanyApplication {
+                    ApplicationId = applicationWithStatus.ApplicationId,
+                    ApplicationStatus = applicationWithStatus.ApplicationStatus
+                };
+            }
+        }
+
         public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId) =>
             _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId);
 
@@ -199,6 +210,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
         }
+
+        public Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status) =>
+            _portalDBAccess.UpdateApplicationStatusAsync(applicationId, status);
+            
+        public Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId) =>
+            _portalDBAccess.GetApplicationStatusAsync(applicationId);
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
         {

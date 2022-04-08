@@ -150,6 +150,16 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             }).Entity;
         }
 
+        public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser => iamUser.UserEntityId == iamUserId)
+                .SelectMany(iamUser => iamUser.CompanyUser.Company.CompanyApplications)
+                    .Select(companyApplication => new CompanyApplicationWithStatus {
+                        ApplicationId = companyApplication.Id,
+                        ApplicationStatus = companyApplication.ApplicationStatusId
+                    })
+                .AsAsyncEnumerable();
+
         public Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
             _dbContext.CompanyApplications
                 .Where(companyApplication => companyApplication.Id == companyApplicationId)
@@ -207,6 +217,24 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 )
             .AsNoTracking()
             .SingleAsync();
+
+        public async Task<int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus)
+        {
+            (await _dbContext.CompanyApplications
+                .Where(application => application.Id == applicationId)
+                .SingleAsync().ConfigureAwait(false))
+                .ApplicationStatusId = applicationStatus;
+            return await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        public Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId)
+        {
+            return _dbContext.CompanyApplications
+                .Where(application => application.Id == applicationId)
+                .AsNoTracking()
+                .Select(application => application.ApplicationStatusId)
+                .SingleAsync();
+        }
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
