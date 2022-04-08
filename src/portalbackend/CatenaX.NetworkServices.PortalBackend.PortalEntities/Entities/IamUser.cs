@@ -7,13 +7,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public IamUser() {}
         public IamUser(string iamUserId, Guid companyUserId)
         {
-            IamUserId = iamUserId;
+            UserEntityId = iamUserId;
             CompanyUserId = companyUserId;
         }
 
         [Key]
         [StringLength(36)]
-        public string IamUserId { get; set; }
+        public string UserEntityId { get; set; }
 
         public DateTime? DateCreated { get; set; }
 

@@ -798,7 +798,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.CompanyUserId, "uk_wiodwiowhdfo84f0sd9afsd2")
                     .IsUnique();
 
-                entity.Property(e => e.IamUserId).HasColumnName("iam_user_id");
+                entity.Property(e => e.UserEntityId).HasColumnName("user_entity_id");
 
                 entity.Property(e => e.DateCreated).HasColumnName("date_created");
 
