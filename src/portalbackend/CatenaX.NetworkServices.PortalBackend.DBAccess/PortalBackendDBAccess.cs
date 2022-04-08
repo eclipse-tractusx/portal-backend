@@ -19,7 +19,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        public IAsyncEnumerable<string> GetBpnForUserUntrackedAsync(string userId, string bpn = null)
+        public Task<string> GetBpnForUserUntrackedAsync(string userId)
         {
             if (userId == null)
             {
@@ -27,28 +27,37 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             }
             return _dbContext.IamUsers
                     .Where(iamUser => 
-                        iamUser.UserEntityId == userId 
-                        && bpn == null 
-                            ? iamUser.CompanyUser.Company.Bpn != null 
-                            : iamUser.CompanyUser.Company.Bpn == bpn)
+                        iamUser.UserEntityId == userId
+                        && iamUser.CompanyUser.Company.Bpn != null)
                     .Select(iamUser => iamUser.CompanyUser.Company.Bpn)
+                    .AsNoTracking()
+                    .SingleAsync();
+        }
+
+        public IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds)
+        {
+            return _dbContext.IamUsers
+                    .Where(iamUser => 
+                        userIds.Contains(iamUser.UserEntityId)
+                        && iamUser.CompanyUser.Company.Bpn != null)
+                    .Select(iamUser => new UserBpn {
+                        userId = iamUser.UserEntityId,
+                        bpn = iamUser.CompanyUser.Company.Bpn
+                    })
                     .AsNoTracking()
                     .AsAsyncEnumerable();
         }
 
-        public IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId, string idpAlias = null)
+        public IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId)
         {
             if (companyId == null)
             {
                 throw new ArgumentNullException(nameof(companyId));
             }
-            return _dbContext.IamIdentityProviders
-                .Where(iamIdentityProvider => 
-                    idpAlias == null
-                        ? iamIdentityProvider.IamIdpAlias != null
-                        : iamIdentityProvider.IamIdpAlias == idpAlias
-                    && iamIdentityProvider.IdentityProvider.Companies.Any(company => company.Id == companyId))
-                .Select(iamIdentityProvider => iamIdentityProvider.IamIdpAlias)
+            return _dbContext.CompanyIdentityProviders
+                .Where(cip => cip.CompanyId == companyId
+                    && cip.IdentityProvider.IamIdentityProvider.IamIdpAlias != null)
+                .Select(cip => cip.IdentityProvider.IamIdentityProvider.IamIdpAlias)
                 .AsNoTracking()
                 .AsAsyncEnumerable();
         }
