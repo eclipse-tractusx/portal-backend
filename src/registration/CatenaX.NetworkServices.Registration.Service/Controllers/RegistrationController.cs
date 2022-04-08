@@ -6,7 +6,6 @@ using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -202,6 +201,23 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             {
                 await _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress).ConfigureAwait(false);
                 return Ok();
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "invite_user")]
+        [Route("application/{applicationId}/inviteNewUser")]
+
+        public async Task<IActionResult> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData)
+        {
+            try
+            {
+                return Ok(await _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData).ConfigureAwait(false));
             }
             catch(Exception e)
             {
