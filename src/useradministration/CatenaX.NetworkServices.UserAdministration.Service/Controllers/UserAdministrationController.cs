@@ -32,7 +32,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         [HttpPost]
         [Authorize(Roles="invite_new_partner")]
         [Route("invitation")]
-        public async Task<IActionResult> ExecuteInvitation([FromBody] InvitationData InvitationData)
+        public async Task<IActionResult> ExecuteInvitation([FromBody] CompanyInvitationData InvitationData)
         {
             try
             {

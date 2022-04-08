@@ -208,6 +208,23 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+
+        [HttpPost]
+        [Authorize(Roles = "invite_user")]
+        [Route("application/{applicationId}/inviteNewUser")]
+
+        public async Task<IActionResult> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData)
+        {
+            try
+            {
+                return Ok(await _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData).ConfigureAwait(false));
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
     
         [HttpPost]
         [Authorize(Roles="submit_registration")]
