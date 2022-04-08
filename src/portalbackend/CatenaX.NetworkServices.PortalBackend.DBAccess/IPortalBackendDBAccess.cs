@@ -13,13 +13,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         Company CreateCompany(string companyName);
         CompanyApplication CreateCompanyApplication(Company company);
-        CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Company company);
-        Invitation CreateInvitation(CompanyApplication application, CompanyUser user);
+        CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId);
+        Invitation CreateInvitation(Guid applicationId, CompanyUser user);
         IdentityProvider CreateSharedIdentityProvider(Company company);
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
-        IamUser CreateIamUser(CompanyUser companyUser, Guid iamUserId);
+        IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
         public Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         public Task SetCompanyWithAdressAsync(Guid companyApplicationId, CompanyWithAddress companyWithAddress);
+        public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithIdpAliasUntrackedAsync(Guid companyApplicationId);
         Task<int> SaveAsync();
     }
 }

@@ -798,6 +798,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.CompanyUserId, "uk_wiodwiowhdfo84f0sd9afsd2")
                     .IsUnique();
 
+                entity.Property(e => e.UserEntityId).HasColumnName("user_entity_id");
+
+                entity.Property(e => e.DateCreated).HasColumnName("date_created");
+
+                entity.Property(e => e.DateLastChanged).HasColumnName("date_last_changed");
+
                 entity.Property(e => e.CompanyUserId).HasColumnName("company_user_id");
 
                 entity.HasOne(d => d.CompanyUser)

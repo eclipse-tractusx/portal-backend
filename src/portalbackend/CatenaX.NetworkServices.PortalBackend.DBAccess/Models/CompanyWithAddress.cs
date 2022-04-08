@@ -1,6 +1,6 @@
 using System;
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class CompanyWithAddress
     {

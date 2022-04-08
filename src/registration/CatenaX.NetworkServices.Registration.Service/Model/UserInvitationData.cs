@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
+namespace CatenaX.NetworkServices.Registration.Service.Model
 {
-    public class InvitationData
+    public class UserInvitationData
     {
         [JsonPropertyName("userName")]
         public string userName { get; set; }
@@ -12,7 +12,5 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         public string lastName { get; set; }
         [JsonPropertyName("email")]
         public string email { get; set; }
-        [JsonPropertyName("organisationName")]
-        public string organisationName { get; set; }
     }
 }
