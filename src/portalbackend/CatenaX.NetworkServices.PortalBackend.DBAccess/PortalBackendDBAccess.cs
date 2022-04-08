@@ -104,23 +104,23 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             }).Entity;
         }
 
-        public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Company company)
+        public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId)
         {
             return _dbContext.CompanyUsers.Add(new CompanyUser {
                 Id = Guid.NewGuid(),
                 Firstname = firstName,
                 Lastname = lastName,
                 Email = email,
-                Company = company
+                CompanyId = companyId
             }).Entity;
         }
 
-        public Invitation CreateInvitation(CompanyApplication application, CompanyUser user)
+        public Invitation CreateInvitation(Guid applicationId, CompanyUser user)
         {
             return _dbContext.Invitations.Add(new Invitation {
                 Id = Guid.NewGuid(),
                 InvitationStatusId = InvitationStatusId.CREATED,
-                CompanyApplication = application,
+                CompanyApplicationId = applicationId,
                 CompanyUser = user
             }).Entity;
         }
@@ -191,6 +191,22 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
             await _dbContext.SaveChangesAsync();
         }
+
+        public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithIdpAliasUntrackedAsync(Guid companyApplicationId) =>
+            _dbContext.CompanyApplications
+                .Where(companyApplication => companyApplication.Id == companyApplicationId)
+                .Select(
+                    companyApplication => new CompanyNameIdWithIdpAlias {
+                        CompanyName = companyApplication.Company.Name,
+                        CompanyId = companyApplication.CompanyId,
+                        IdpAlias = companyApplication.Company.IdentityProviders
+                            .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                            .Select(identityProvider => identityProvider.IamIdentityProvider.IamIdpAlias)
+                            .Single()
+                    }
+                )
+            .AsNoTracking()
+            .SingleAsync();
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();

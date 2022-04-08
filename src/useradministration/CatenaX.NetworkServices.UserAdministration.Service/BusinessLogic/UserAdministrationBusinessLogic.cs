@@ -43,7 +43,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async Task<bool> ExecuteInvitation(InvitationData invitationData)
+        public async Task<bool> ExecuteInvitation(CompanyInvitationData invitationData)
         {
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
             if (idpName == null) return false;
@@ -65,8 +65,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
             var company = _portalDBAccess.CreateCompany(invitationData.organisationName);
             var application = _portalDBAccess.CreateCompanyApplication(company);
-            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company);
-            _portalDBAccess.CreateInvitation(application, companyUser);
+            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id);
+            _portalDBAccess.CreateInvitation(application.Id, companyUser);
             var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);
             _portalDBAccess.CreateIamIdentityProvider(identityprovider,idpName);
             _portalDBAccess.CreateIamUser(companyUser,centralUserId);
