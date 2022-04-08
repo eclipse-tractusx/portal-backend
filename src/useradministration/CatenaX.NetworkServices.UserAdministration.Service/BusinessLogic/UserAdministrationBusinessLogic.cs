@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 using PasswordGenerator;
 
@@ -14,7 +13,6 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.UserAdministration.Service.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
 namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 {
@@ -117,9 +115,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                     // TODO: revaluate try...catch as soon as BPN can be found at UserCreation
                     try
                     {
-                        var centralUserIdGuid = Guid.Parse(centralUserId);
-                        var bpn = await _portalDBAccess.GetBpnForUserAsync(centralUserIdGuid).ConfigureAwait(false);
-                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserIdGuid, bpn).ConfigureAwait(false)) continue;
+                        var bpn = _portalDBAccess.GetBpnForUserUntrackedAsync(centralUserId).ToEnumerable();
+                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, bpn).ConfigureAwait(false)) continue;
                     }
                     catch (InvalidOperationException e)
                     {
@@ -204,20 +201,21 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
         public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
         {
-            var tenant = await _portalDBAccess.GetIdpAliasForCompanyIdAsync(companyId).ConfigureAwait(false);
-            var usersToUdpate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
-                .Select(g => g.userId);
-            foreach (var userId in usersToUdpate)
+            await foreach (var tenant in _portalDBAccess.GetIdpAliaseForCompanyIdUntrackedAsync(companyId))
             {
-                try
+                var usersToUdpate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
+                    .Select(g => g.userId);
+                foreach (var userId in usersToUdpate)
                 {
-                    var userIdGuid = Guid.Parse(userId);
-                    var bpns = await _portalDBAccess.GetBpnForUserAsync(userIdGuid).ConfigureAwait(false);
-                    await _provisioningManager.AddBpnAttributetoUserAsync(userIdGuid, bpns);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Error while adding BPN attribute to {userId}");
+                    try
+                    {
+                        var bpns = _portalDBAccess.GetBpnForUserUntrackedAsync(userId).ToEnumerable();
+                        await _provisioningManager.AddBpnAttributetoUserAsync(userId, bpns);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, $"Error while adding BPN attribute to {userId}");
+                    }
                 }
             }
             return true;
