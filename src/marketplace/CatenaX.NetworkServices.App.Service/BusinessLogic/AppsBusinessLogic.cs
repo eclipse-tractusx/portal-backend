@@ -16,6 +16,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public async IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null)
         {
             await foreach(var app in context.Apps.AsQueryable()
+                .AsNoTracking()
                 .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
                 .Select(a => new {
                     Id = a.Id,
