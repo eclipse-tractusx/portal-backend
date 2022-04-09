@@ -1,6 +1,6 @@
 ﻿using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Linq;
 namespace CatenaX.NetworkServices.App.Service.Controllers
 {
     [Route("api/[controller]")]
@@ -20,7 +20,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Route("active")]
         public async Task<IActionResult> GetAllActiveApps([FromQuery] string? lang = null)
         {
-            return Ok(await this.appsBusinessLogic.GetAllActiveAppsAsync(lang));
+            return Ok(await this.appsBusinessLogic.GetAllActiveAppsAsync(lang).ToListAsync().ConfigureAwait(false));
         }
     }
 }
