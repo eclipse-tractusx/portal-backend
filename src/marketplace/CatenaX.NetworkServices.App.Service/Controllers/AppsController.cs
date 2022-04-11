@@ -22,5 +22,12 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         {
             return Ok(await this.appsBusinessLogic.GetAllActiveAppsAsync(lang).ToListAsync().ConfigureAwait(false));
         }
+
+        [HttpGet]
+        [Route("favourites/for/user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Guid>>> GetAllFavouriteAppsForUser([FromRoute] Guid userId)
+        {
+            return Ok(await this.appsBusinessLogic.GetAllFavouriteAppsForUser(userId));
+        }
     }
 }
