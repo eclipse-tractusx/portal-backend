@@ -1,6 +1,6 @@
 ﻿using CatenaX.NetworkServices.App.Service.BusinessLogic;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 namespace CatenaX.NetworkServices.App.Service.Controllers
 {
     [Route("api/[controller]")]
@@ -18,7 +18,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
 
         [HttpGet]
         [Route("active")]
-        public async Task<IActionResult> GetAllActiveApps([FromQuery] string? lang = null)
+        public async Task<ActionResult<IEnumerable<AppViewModel>>> GetAllActiveApps([FromQuery] string? lang = null)
         {
             return Ok(await this.appsBusinessLogic.GetAllActiveAppsAsync(lang).ToListAsync().ConfigureAwait(false));
         }
