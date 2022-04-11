@@ -6,6 +6,10 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
     {
         public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null);
 
-        public Task<IEnumerable<Guid>> GetAllFavouriteAppsForUser(Guid userId);
+        public Task<IEnumerable<Guid>> GetAllFavouriteAppsForUserAsync(Guid userId);
+
+        public Task AddFavouriteAppForUserAsync(Guid appId, Guid userId);
+
+        public Task RemoveFavouriteAppForUserAsync(Guid appId, Guid userId);
     }
 }
