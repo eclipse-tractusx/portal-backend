@@ -180,18 +180,13 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return clientId;
         }
 
-        public async Task<bool> AddBpnAttributetoUserAsync(Guid userId, IEnumerable<string> bpns)
+        public async Task<bool> AddBpnAttributetoUserAsync(string userId, IEnumerable<string> bpns)
         {
-            var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId.ToString()).ConfigureAwait(false);
-            if (user.Attributes == null)
-            {
-                user.Attributes = new Dictionary<string, IEnumerable<string>>();
-            }
-            if (user.Attributes.TryGetValue("bpn", out var existingBpns))
-            {
-                bpns = existingBpns.Concat(bpns).Distinct();
-            }
-            user.Attributes["bpn"] = bpns.ToList();
+            var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+            user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
+            user.Attributes["bpn"] = (user.Attributes.TryGetValue("bpn", out var existingBpns))
+                ? existingBpns.Concat(bpns).Distinct()
+                : bpns;
             return await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
         }
     }

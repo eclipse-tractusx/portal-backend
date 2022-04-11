@@ -35,10 +35,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyApplication> CompanyApplications { get; set; }
         public DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; }
-        // public DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; }
-        // public DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; }
-        // public DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; }
-        // public DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; }
+        public DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; }
+        public DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; }
+        public DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; }
+        public DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; }
         public DbSet<CompanyRole> CompanyRoles { get; set; }
         public DbSet<CompanyStatus> CompanyStatuses { get; set; }
         public DbSet<CompanyUser> CompanyUsers { get; set; }
