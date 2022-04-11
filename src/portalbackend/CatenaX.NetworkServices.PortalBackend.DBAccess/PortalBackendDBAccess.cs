@@ -182,6 +182,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             company.Bpn = companyWithAddress.Bpn;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
+            company.Address ??= _dbContext.Add(new Address()).Entity;
             company.Address.City = companyWithAddress.City;
             company.Address.Region = companyWithAddress.Region;
             company.Address.Streetadditional = companyWithAddress.Streetadditional;
