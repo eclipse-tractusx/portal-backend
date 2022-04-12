@@ -159,5 +159,26 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+    
+        [HttpPost]
+        [Authorize(Roles="approve_new_partner")]
+        [Route("postregistrationemail")]
+        public async Task<IActionResult> PostRegistrationWelcomeEmailAsync([FromBody] RegistrationData registrationData)
+        {
+            try
+            {
+                if (await _logic.PostRegistrationWelcomeEmailAsync(registrationData).ConfigureAwait(false))
+                {
+                    return Ok();
+                }
+                _logger.LogError("unsuccessful");
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
     }
 }

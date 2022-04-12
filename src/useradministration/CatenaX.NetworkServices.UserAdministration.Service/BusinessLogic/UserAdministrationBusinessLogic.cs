@@ -238,5 +238,20 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             }
             return true;
         }
+   
+        public async Task<bool> PostRegistrationWelcomeEmailAsync(RegistrationData registrationData)
+        {
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "userName", registrationData.userName },
+                { "organizationName", registrationData.organisationName },
+                { "Company_Name", registrationData.organisationName },
+                { "url", $"{_settings.RegistrationBasePortalAddress}"},
+            };
+
+             await _mailingService.SendMails("julia.jeroch@bmw.de", mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} );
+
+            return true;
+        }
     }
 }
