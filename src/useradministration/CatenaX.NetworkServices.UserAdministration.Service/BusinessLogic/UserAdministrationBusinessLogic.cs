@@ -238,5 +238,58 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             }
             return true;
         }
+        public  Task<bool> ResetUserPasswordAsync(string realm, string userId)
+        {
+            IEnumerable<string> requiredActions = new List<string>(){"UPDATE_PASSWORD"};
+            return  _provisioningManager.ResetUserPasswordAsync(realm, userId, requiredActions);
+        }
+      
+        public Task<UserPasswordReset> GetUserPasswordResetInfo(Guid userId)
+        {
+            var userPasswordReset = new UserPasswordReset();
+            var response = _provisioningDBAccess.GetUserPasswordResetInfo(userId);
+            if(response!=null && response.Result!=null)
+            {
+            userPasswordReset.PasswordModifiedAt = response.Result.PasswordModifiedAt;
+            userPasswordReset.ResetCount = response.Result.ResetCount;
+            }
+            else{
+                userPasswordReset.ResetCount = 0;
+            }
+            
+            return Task.FromResult(userPasswordReset);
+        }
+
+        public bool CanResetPassword(string userId)
+        {
+          var userInfo = GetUserPasswordResetInfo(Guid.Parse(userId));
+          int resetCount = 0;
+          int val =0;
+          if(string.IsNullOrEmpty(userInfo.Result.ResetCount.ToString())||userInfo.Result.ResetCount==0)
+          {
+           val = resetCount + 1;
+           _provisioningDBAccess.SaveUserPasswordResetInfo(Guid.Parse(userId),DateTime.Now,val);//insert record
+           return true;
+          }
+          else if(userInfo.Result.ResetCount >0)
+          {
+            resetCount = userInfo.Result.ResetCount;
+            DateTime dt = userInfo.Result.PasswordModifiedAt;
+            DateTime now = DateTime.Now;
+            if(now< dt.AddHours(24) && resetCount<10)
+            {
+                val = resetCount + 1;
+                _provisioningDBAccess.SetUserPassword(Guid.Parse(userId),val);
+                return true;
+            }
+            else if(now> dt.AddHours(24))
+            {
+                 _provisioningDBAccess.SetUserPassword(Guid.Parse(userId),DateTime.Now,1);
+                return true;
+            }
+            return false;
+          }
+         return false;
+        }
     }
 }

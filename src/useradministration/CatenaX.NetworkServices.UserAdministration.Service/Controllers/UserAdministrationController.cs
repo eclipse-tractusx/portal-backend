@@ -159,5 +159,34 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+
+         [HttpPut]
+        [Authorize(Policy = "CheckTenant")]
+        [Authorize(Roles="modify_user_account")]
+        [Route("tenant/{tenant}/users/{userId}/resetpassword")]
+        public async Task<IActionResult> ResetUserPassword([FromRoute] string tenant, [FromRoute] string  userId)
+        {
+            try
+            {
+                var adminuserId = User.Claims.SingleOrDefault( x => x.Type=="sub").Value as string;
+                if(_logic.CanResetPassword(adminuserId))
+                {
+                  var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, userId).ConfigureAwait(false);
+                  if(!updatedPassword){
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
+                  }
+                  return Ok(updatedPassword);
+                  
+                }
+                return StatusCode((int)HttpStatusCode.BadRequest);
+                 
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
     }
 }
