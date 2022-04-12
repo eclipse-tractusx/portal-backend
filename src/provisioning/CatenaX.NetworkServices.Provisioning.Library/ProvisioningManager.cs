@@ -194,5 +194,9 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             user.Attributes["bpn"] = bpns.ToList();
             return await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
         }
+        public  Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
+        {
+            return  _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId,requiredActions);
+        }
     }
 }
