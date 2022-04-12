@@ -22,7 +22,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);        
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task SetCompanyWithAdressAsync(Guid companyApplicationId, CompanyWithAddress companyWithAddress);
-        Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithIdpAliasUntrackedAsync(Guid companyApplicationId);
+        Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId);
         Task <int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus);
         Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId);
         Task<int> SaveAsync();
