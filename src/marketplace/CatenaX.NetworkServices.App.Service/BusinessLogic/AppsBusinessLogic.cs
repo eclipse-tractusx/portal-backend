@@ -4,15 +4,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic
 {
+    /// <summary>
+    /// Implementation of <see cref="IAppsBusinessLogic"/>.
+    /// </summary>
     public class AppsBusinessLogic : IAppsBusinessLogic
     {
         private readonly PortalDBContext context;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="context">Database context dependency.</param>
         public AppsBusinessLogic(PortalDBContext context)
         {
             this.context = context;
         }
 
+        /// <inheritdoc/>
         public async IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null)
         {
             await foreach(var app in context.Apps.AsQueryable()
@@ -47,6 +55,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 }
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<Guid>> GetAllFavouriteAppsForUserAsync(Guid userId)
         {
             return await this.context.IamUsers.AsNoTracking()
@@ -56,6 +65,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 .ToListAsync();
         }
 
+        /// <inheritdoc/>
         public async Task RemoveFavouriteAppForUserAsync(Guid appId, Guid userId)
         {
             var companyUser = await this.context.IamUsers
@@ -77,6 +87,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
             }
         }
 
+        /// <inheritdoc/>
         public async Task AddFavouriteAppForUserAsync(Guid appId, Guid userId)
         {
             var companyUser = await this.context.IamUsers
