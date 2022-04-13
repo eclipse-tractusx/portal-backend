@@ -43,5 +43,5 @@ jobs:
           context: .
           file: docker/Dockerfile-provisioning-service
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
