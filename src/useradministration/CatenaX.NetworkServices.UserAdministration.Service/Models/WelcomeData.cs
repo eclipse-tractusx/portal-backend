@@ -8,7 +8,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Models
         public string userName { get; set; }
         [JsonPropertyName("email")]
         public string email { get; set; }
-        [JsonPropertyName("organisationName")]
-        public string organisationName { get; set; }
+        [JsonPropertyName("companyName")]
+        public string companyName { get; set; }
     }
 }
