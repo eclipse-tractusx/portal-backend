@@ -162,12 +162,12 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
     
         [HttpPost]
         [Authorize(Roles="approve_new_partner")]
-        [Route("postregistrationemail")]
-        public async Task<IActionResult> PostRegistrationWelcomeEmailAsync([FromBody] RegistrationData registrationData)
+        [Route("welcomeEmail")]
+        public async Task<IActionResult> PostRegistrationWelcomeEmailAsync([FromBody] WelcomeData welcomeData)
         {
             try
             {
-                if (await _logic.PostRegistrationWelcomeEmailAsync(registrationData).ConfigureAwait(false))
+                if (await _logic.PostRegistrationWelcomeEmailAsync(welcomeData).ConfigureAwait(false))
                 {
                     return Ok();
                 }

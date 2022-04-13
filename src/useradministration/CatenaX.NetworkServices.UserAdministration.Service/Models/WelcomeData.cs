@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.UserAdministration.Service.Models
 {
-    public class RegistrationData
+    public class WelcomeData
     {
         [JsonPropertyName("userName")]
         public string userName { get; set; }

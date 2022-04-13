@@ -24,6 +24,6 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         Task<IEnumerable<string>> DeleteUsersAsync(UserIds userList, string tenant);
         Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId);
         Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn> userToUpdateWithBpn);
-        Task<bool> PostRegistrationWelcomeEmailAsync(RegistrationData registrationData);
+        Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData);
     }
 }
