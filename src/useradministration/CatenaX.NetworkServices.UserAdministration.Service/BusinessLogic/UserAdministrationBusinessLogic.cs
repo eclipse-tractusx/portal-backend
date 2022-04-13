@@ -239,17 +239,17 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             return true;
         }
    
-        public async Task<bool> PostRegistrationWelcomeEmailAsync(RegistrationData registrationData)
+        public async Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData)
         {
             var mailParameters = new Dictionary<string, string>
             {
-                { "userName", registrationData.userName },
-                { "organizationName", registrationData.organisationName },
-                { "Company_Name", registrationData.organisationName },
+                { "userName", welcomeData.userName },
+                { "organizationName", welcomeData.organisationName },
+                { "Company_Name", welcomeData.organisationName },
                 { "url", $"{_settings.RegistrationBasePortalAddress}"},
             };
 
-             await _mailingService.SendMails("julia.jeroch@bmw.de", mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} );
+             await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} );
 
             return true;
         }
