@@ -244,47 +244,47 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             return  _provisioningManager.ResetUserPasswordAsync(realm, userId, requiredActions);
         }
       
-        public Task<UserPasswordReset> GetUserPasswordResetInfo(Guid userId)
+        public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userId)
         {
             var userPasswordReset = new UserPasswordReset();
-            var response = _provisioningDBAccess.GetUserPasswordResetInfo(userId);
-            if(response!=null && response.Result!=null)
+            var response =await _provisioningDBAccess.GetUserPasswordResetInfo(userId);
+            if(response!=null)
             {
-            userPasswordReset.PasswordModifiedAt = response.Result.PasswordModifiedAt;
-            userPasswordReset.ResetCount = response.Result.ResetCount;
+            userPasswordReset.PasswordModifiedAt = response.PasswordModifiedAt;
+            userPasswordReset.ResetCount = response.ResetCount;
             }
             else{
                 userPasswordReset.ResetCount = 0;
             }
             
-            return Task.FromResult(userPasswordReset);
+            return userPasswordReset;
         }
 
-        public bool CanResetPassword(string userId)
+        public async Task<bool> CanResetPassword(string userId)
         {
-          var userInfo = GetUserPasswordResetInfo(Guid.Parse(userId));
+          var userInfo =await GetUserPasswordResetInfo(userId);
           int resetCount = 0;
           int val =0;
-          if(string.IsNullOrEmpty(userInfo.Result.ResetCount.ToString())||userInfo.Result.ResetCount==0)
+          if(string.IsNullOrEmpty(userInfo.ResetCount.ToString())||userInfo.ResetCount==0)
           {
            val = resetCount + 1;
-           _provisioningDBAccess.SaveUserPasswordResetInfo(Guid.Parse(userId),DateTime.Now,val);//insert record
+           await _provisioningDBAccess.SaveUserPasswordResetInfo(userId,DateTime.Now,val);//insert record
            return true;
           }
-          else if(userInfo.Result.ResetCount >0)
+          else if(userInfo.ResetCount >0)
           {
-            resetCount = userInfo.Result.ResetCount;
-            DateTime dt = userInfo.Result.PasswordModifiedAt;
+            resetCount = userInfo.ResetCount;
+            DateTime dt = userInfo.PasswordModifiedAt;
             DateTime now = DateTime.Now;
-            if(now< dt.AddHours(24) && resetCount<10)
+            if(now < dt.AddHours(24) && resetCount<10)
             {
                 val = resetCount + 1;
-                _provisioningDBAccess.SetUserPassword(Guid.Parse(userId),val);
+                await _provisioningDBAccess.SetUserPassword(userId,val);
                 return true;
             }
             else if(now> dt.AddHours(24))
             {
-                 _provisioningDBAccess.SetUserPassword(Guid.Parse(userId),DateTime.Now,1);
+                await _provisioningDBAccess.SetUserPassword(userId,DateTime.Now,1);
                 return true;
             }
             return false;

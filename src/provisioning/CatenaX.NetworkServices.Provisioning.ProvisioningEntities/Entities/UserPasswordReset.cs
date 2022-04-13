@@ -6,7 +6,8 @@ namespace CatenaX.NetworkServices.Provisioning.ProvisioningEntities
     public class UserPasswordReset
     {
         [Key]
-        public Guid UserEntityId { get; set; }
+        [StringLength(36)]
+        public string SharedUserEntityId  { get; set; }
 
         public DateTime PasswordModifiedAt { get; set; }
         
