@@ -169,7 +169,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
             try
             {
                 var adminuserId = User.Claims.SingleOrDefault( x => x.Type=="sub").Value as string;
-                if(_logic.CanResetPassword(adminuserId))
+                if(await _logic.CanResetPassword(adminuserId))
                 {
                   var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, userId).ConfigureAwait(false);
                   if(!updatedPassword){

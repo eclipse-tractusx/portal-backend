@@ -9,9 +9,9 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
     {
         Task<int> GetNextClientSequenceAsync();
         Task<int> GetNextIdentityProviderSequenceAsync();
-        Task<bool> SaveUserPasswordResetInfo(Guid userEntityId, DateTime passwordModifiedAt,int resetCount);
-        Task<UserPasswordReset> GetUserPasswordResetInfo(Guid userId);
-        Task<bool> SetUserPassword(Guid userEntityId,int count);
-        Task<bool> SetUserPassword(Guid userEntityId,DateTime dateReset,int count);
+        Task SaveUserPasswordResetInfo(string userEntityId, DateTime passwordModifiedAt,int resetCount);
+        Task<UserPasswordReset> GetUserPasswordResetInfo(string userEntityId);
+        Task SetUserPassword(string userEntityId,int count);
+        Task SetUserPassword(string userEntityId,DateTime dateReset,int count);
     }
 }

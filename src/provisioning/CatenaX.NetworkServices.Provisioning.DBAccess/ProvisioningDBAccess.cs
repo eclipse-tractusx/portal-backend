@@ -30,48 +30,49 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
             return nextSequence.SequenceId;
         }
 
-        public  Task<bool> SaveUserPasswordResetInfo(Guid userEntityId, DateTime passwordModifiedAt,int resetCount)
+        public async Task SaveUserPasswordResetInfo(string userEntityId, DateTime passwordModifiedAt,int resetCount)
         {
-                _dbContext.UserPasswordResets.Add(new UserPasswordReset {
-                UserEntityId = userEntityId,
-                PasswordModifiedAt = passwordModifiedAt,
-                ResetCount = resetCount,
-            });
-                _dbContext.SaveChangesAsync();
-          return Task.FromResult(true);
-        }
+                await _dbContext.UserPasswordResets.AddAsync
+                (
+                    new UserPasswordReset {
+                              SharedUserEntityId = userEntityId,
+                              PasswordModifiedAt = passwordModifiedAt,
+                              ResetCount = resetCount,
+                                           }
+                );
+                await _dbContext.SaveChangesAsync();
+          
+        }           
 
-        public  Task<UserPasswordReset> GetUserPasswordResetInfo(Guid userId) 
+        public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userEntityId) 
         {
-            var result = _dbContext.UserPasswordResets
-                .Where(x=>x.UserEntityId.ToString().ToLower() == userId.ToString().ToLower())
-                .Select(
+                  return await  _dbContext.UserPasswordResets
+                  .Where(x=>x.SharedUserEntityId == userEntityId)
+                  .Select(
                     userPasswordReset => new UserPasswordReset {
-                       
                         PasswordModifiedAt = userPasswordReset.PasswordModifiedAt,
                         ResetCount = userPasswordReset.ResetCount,
-                    })
-                .FirstOrDefault();
-              return Task.FromResult(result);
+                    }).FirstOrDefaultAsync();
         }
         
           
-        public  Task<bool> SetUserPassword(Guid userEntityId,int count)
+        public async Task SetUserPassword(string userEntityId,int count)
         {
-          var passwordReset =  _dbContext.UserPasswordResets.Find(userEntityId);
-            passwordReset.ResetCount = count;
-             _dbContext.SaveChangesAsync();
-             return Task.FromResult(true);
+          var passwordReset = await _dbContext.UserPasswordResets
+                .Where(x => x.SharedUserEntityId == userEntityId)
+                .SingleAsync();
+          passwordReset.ResetCount = count;
+          await _dbContext.SaveChangesAsync();
         }
         
-         public  Task<bool> SetUserPassword(Guid userEntityId,DateTime dateReset,int count)
+        public async Task SetUserPassword(string userEntityId,DateTime dateReset,int count)
         {
-          var passwordReset =  _dbContext.UserPasswordResets.Find(userEntityId);
-                
-           passwordReset.PasswordModifiedAt = dateReset;
-            passwordReset.ResetCount = count;
-             _dbContext.SaveChangesAsync();
-             return Task.FromResult(true);
+          var passwordReset = await _dbContext.UserPasswordResets
+                .Where(x => x.SharedUserEntityId == userEntityId)
+                .SingleAsync();
+          passwordReset.PasswordModifiedAt = dateReset;
+          passwordReset.ResetCount = count;
+          await  _dbContext.SaveChangesAsync();
         }
     }
 }
