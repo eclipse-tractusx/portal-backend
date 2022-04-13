@@ -248,7 +248,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 { "url", $"{_settings.Portal.BasePortalAddress}"},
             };
 
-             await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} );
+            await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} ).ConfigureAwait(false);
 
             return true;
         }
