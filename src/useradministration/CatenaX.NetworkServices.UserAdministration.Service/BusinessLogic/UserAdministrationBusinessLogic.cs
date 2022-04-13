@@ -244,9 +244,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", welcomeData.userName },
-                { "organizationName", welcomeData.organisationName },
-                { "Company_Name", welcomeData.organisationName },
-                { "url", $"{_settings.RegistrationBasePortalAddress}"},
+                { "companyName", welcomeData.companyName },
+                { "url", $"{_settings.Portal.BasePortalAddress}"},
             };
 
              await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} );
