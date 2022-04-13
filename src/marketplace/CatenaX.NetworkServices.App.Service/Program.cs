@@ -5,6 +5,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
@@ -15,6 +16,12 @@ var TAG = typeof(Program).Namespace;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+{
+    var provider = new PhysicalFileProvider("/app/secrets");
+    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
+}
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c => { 
