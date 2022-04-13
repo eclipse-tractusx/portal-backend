@@ -171,7 +171,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
         {
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
+            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
