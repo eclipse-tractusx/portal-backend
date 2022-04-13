@@ -97,25 +97,5 @@ namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
                 await connection.ExecuteAsync(sql, parameters).ConfigureAwait(false);
             }
         }
-
-        public async Task<int> UpdateApplicationStatusAsync(Guid applicationId, ApplicationStatus applicationStatus)
-        {
-            string sql =
-                    $@"UPDATE {_dbSchema}.company_applications
-                    SET application_status_id = @applicationStatus, date_last_changed = now()
-                    WHERE company_application_id = @applicationId";
-            using (var connection = _dbConnection.Connection())
-            {
-                var statusResult = await connection.ExecuteAsync(sql, new {
-                        applicationId,
-                        applicationStatus
-                    }).ConfigureAwait(false);
-                if (statusResult == 0)
-                {
-                    throw new InvalidOperationException("Application status not updated");
-                }
-                return statusResult;
-            }
-        }
     }
 }
