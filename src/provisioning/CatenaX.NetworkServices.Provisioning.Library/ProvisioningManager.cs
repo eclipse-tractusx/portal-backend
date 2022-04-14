@@ -11,7 +11,7 @@ using System;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
 {
-    public partial class ProvisioningManager: IProvisioningManager
+    public partial class ProvisioningManager : IProvisioningManager
     {
         private readonly KeycloakClient _CentralIdp;
         private readonly KeycloakClient _SharedIdp;
@@ -29,41 +29,42 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         }
 
         public ProvisioningManager(IKeycloakFactory keycloakFactory, IKeycloakDBAccess keycloakDBAccess, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory,keycloakDBAccess,null,options)
+            : this(keycloakFactory, keycloakDBAccess, null, options)
         {
         }
 
         public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDBAccess, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory,null,provisioningDBAccess,options)
+            : this(keycloakFactory, null, provisioningDBAccess, options)
         {
         }
 
         public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory,null,null,options)
+            : this(keycloakFactory, null, null, options)
         {
         }
 
         public async Task<bool> SetupSharedIdpAsync(string idpName, string organisationName)
         {
-            if (! await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false)) return false;
-            
-            if (! await CreateSharedRealmAsync(idpName, organisationName).ConfigureAwait(false)) return false;
-            
-            if (! await UpdateCentralIdentityProviderUrlsAsync(idpName, await GetSharedRealmOpenIDConfigAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false)) return false;
-            
-            if (! await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false)) return false;
-            
-            if (! await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false)) return false;
-            
-            if (! await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false)) return false;
-            
-            if (! await CreateSharedRealmIdentityProviderClientAsync(idpName, new IdentityProviderClientConfig {
+            if (!await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false)) return false;
+
+            if (!await CreateSharedRealmAsync(idpName, organisationName).ConfigureAwait(false)) return false;
+
+            if (!await UpdateCentralIdentityProviderUrlsAsync(idpName, await GetSharedRealmOpenIDConfigAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false)) return false;
+
+            if (!await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false)) return false;
+
+            if (!await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false)) return false;
+
+            if (!await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false)) return false;
+
+            if (!await CreateSharedRealmIdentityProviderClientAsync(idpName, new IdentityProviderClientConfig
+            {
                 RedirectUri = await GetCentralBrokerEndpointAsync(idpName).ConfigureAwait(false),
                 JwksUrl = await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
             }).ConfigureAwait(false)) return false;
 
-            if (! await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false)) return false;
-            
+            if (!await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false)) return false;
+
             return true;
         }
 
@@ -71,7 +72,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         {
             var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
-            if (! await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false)) return null;
+            if (!await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false)) return null;
 
             var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(idpName).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
 
@@ -81,15 +82,15 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             identityProvider.Config.ClientAuthMethod = clientAuthMethod;
             identityProvider.Config.ClientSecret = clientSecret;
 
-            if (! await UpdateCentralIdentityProviderAsync(idpName, identityProvider).ConfigureAwait(false)) return null;
+            if (!await UpdateCentralIdentityProviderAsync(idpName, identityProvider).ConfigureAwait(false)) return null;
 
-            if (! await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false)) return null;
+            if (!await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false)) return null;
 
-            if (! await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false)) return null;
+            if (!await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false)) return null;
 
-            if (! await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false)) return null;
+            if (!await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false)) return null;
 
-            if (! await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false)) return null;
+            if (!await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false)) return null;
 
             return idpName;
         }
@@ -100,7 +101,8 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
             if (userIdShared == null) return null;
 
-            var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile {
+            var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile
+            {
                 UserName = idpName + "." + userIdShared,
                 FirstName = userProfile.FirstName,
                 LastName = userProfile.LastName,
@@ -109,13 +111,13 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
             if (userIdCentral == null) return null;
 
-            if(! await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false)) return null;
-            
+            if (!await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false)) return null;
+
             return userIdCentral;
         }
 
         public Task<bool> AssignInvitedUserInitialRoles(string centralUserId) =>
-            AssignClientRolesToCentralUserAsync(centralUserId,_Settings.InvitedUserInitialRoles);
+            AssignClientRolesToCentralUserAsync(centralUserId, _Settings.InvitedUserInitialRoles);
 
         public async Task<IEnumerable<string>> GetClientRolesAsync(string clientId)
         {
@@ -140,9 +142,9 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         {
             var userIdCentral = await GetCentralUserIdForProviderIdAsync(idpName, userIdShared).ConfigureAwait(false);
 
-            if (! await DeleteSharedRealmUserAsync(idpName, userIdShared).ConfigureAwait(false)) return false;
+            if (!await DeleteSharedRealmUserAsync(idpName, userIdShared).ConfigureAwait(false)) return false;
 
-            if (! await DeleteCentralRealmUserAsync(_Settings.CentralRealm, userIdCentral).ConfigureAwait(false)) return false;
+            if (!await DeleteCentralRealmUserAsync(_Settings.CentralRealm, userIdCentral).ConfigureAwait(false)) return false;
 
             return true;
         }
@@ -162,7 +164,8 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                                                                  firstName,
                                                                  lastName,
                                                                  email))
-                .Select( x => new JoinedUserInfo {
+                .Select(x => new JoinedUserInfo
+                {
                     userId = x.id,
                     providerUserId = x.federated_user_id,
                     userName = x.federated_username,
@@ -175,7 +178,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public async Task<string> SetupClientAsync(string redirectUrl)
         {
             var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
-            var internalId = (await CreateCentralOIDCClientAsync(clientId,redirectUrl).ConfigureAwait(false));
+            var internalId = (await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false));
             await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
             return clientId;
         }
@@ -189,9 +192,10 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 : bpns;
             return await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
         }
-        public  Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
+
+        public Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
         {
-            return  _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId,requiredActions);
+            return _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId, requiredActions);
         }
     }
 }

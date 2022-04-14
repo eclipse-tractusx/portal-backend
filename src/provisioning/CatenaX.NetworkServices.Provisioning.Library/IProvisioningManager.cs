@@ -11,7 +11,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         Task<bool> SetupSharedIdpAsync(string idpName, string organisationName);
         Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, string companyName);
         Task<bool> AssignInvitedUserInitialRoles(string centralUserId);
-        Task<bool> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
+        Task<bool> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
         Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
         Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
         Task<string> GetOrganisationFromCentralIdentityProviderMapperAsync(string alias);

@@ -168,7 +168,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 var result = await _registrationBusinessLogic.GetClientRolesCompositeAsync().ConfigureAwait(false);
                 return Ok(result.ToList());
 
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
@@ -185,7 +186,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             {
                 return Ok(await _registrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
@@ -202,7 +203,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 await _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress).ConfigureAwait(false);
                 return Ok();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
@@ -219,22 +220,22 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             {
                 return Ok(await _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData).ConfigureAwait(false));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
-    
+
         [HttpPost]
-        [Authorize(Roles="submit_registration")]
+        [Authorize(Roles = "submit_registration")]
         [Route("submitregistration")]
         public async Task<IActionResult> SubmitRegistrationAsync()
         {
             try
             {
                 var userEmail = User.Claims.SingleOrDefault(x => x.Type == "email").Value as string;
-                
+
                 if (await _registrationBusinessLogic.SubmitRegistrationAsync(userEmail).ConfigureAwait(false))
                 {
                     return Ok();
