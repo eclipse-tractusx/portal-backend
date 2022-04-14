@@ -235,5 +235,20 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             }
             return true;
         }
+   
+        //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
+        public async Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData)
+        {
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "userName", welcomeData.userName },
+                { "companyName", welcomeData.companyName },
+                { "url", $"{_settings.Portal.BasePortalAddress}"},
+            };
+
+            await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} ).ConfigureAwait(false);
+
+            return true;
+        }
     }
 }
