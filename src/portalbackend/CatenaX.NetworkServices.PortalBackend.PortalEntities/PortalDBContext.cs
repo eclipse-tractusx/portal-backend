@@ -35,10 +35,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyApplication> CompanyApplications { get; set; }
         public DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; }
-        // public DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; }
-        // public DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; }
-        // public DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; }
-        // public DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; }
+        public DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; }
+        public DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; }
+        public DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; }
+        public DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; }
         public DbSet<CompanyRole> CompanyRoles { get; set; }
         public DbSet<CompanyStatus> CompanyStatuses { get; set; }
         public DbSet<CompanyUser> CompanyUsers { get; set; }
@@ -797,6 +797,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.HasIndex(e => e.CompanyUserId, "uk_wiodwiowhdfo84f0sd9afsd2")
                     .IsUnique();
+
+                entity.Property(e => e.UserEntityId).HasColumnName("user_entity_id");
+
+                entity.Property(e => e.DateCreated).HasColumnName("date_created");
+
+                entity.Property(e => e.DateLastChanged).HasColumnName("date_last_changed");
 
                 entity.Property(e => e.CompanyUserId).HasColumnName("company_user_id");
 

@@ -9,9 +9,9 @@ using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
@@ -19,7 +19,6 @@ using PasswordGenerator;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -160,7 +159,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
-        
+        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
+        {
+            await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
+            {
+                yield return new CompanyApplication {
+                    ApplicationId = applicationWithStatus.ApplicationId,
+                    ApplicationStatus = applicationWithStatus.ApplicationStatus
+                };
+            }
+        }
+
         public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId) =>
             _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId);
 
@@ -170,7 +179,44 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             //FIXMX: add update of company status within same transpaction
             return _portalDBAccess.SetCompanyWithAdressAsync(applicationId, companyWithAddress);
         }
-        
+
+        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
+        {
+            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
+            var password = new Password().Next();
+            var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
+                applicationData.IdpAlias,
+                new UserProfile {
+                    UserName = userInvitationData.userName,
+                    FirstName = userInvitationData.firstName,
+                    LastName = userInvitationData.lastName,
+                    Email = userInvitationData.email,
+                    Password = password
+                },
+                applicationData.CompanyName).ConfigureAwait(false);
+            if (!await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false)) throw new Exception("failed to assign initial roles");
+            var user = _portalDBAccess.CreateCompanyUser(userInvitationData.firstName, userInvitationData.lastName, userInvitationData.email, applicationData.CompanyId);
+            var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
+            var iamUser = _portalDBAccess.CreateIamUser(user, iamUserId);
+            var updates = await _portalDBAccess.SaveAsync();
+            var mailParameters = new Dictionary<string, string>
+            { //FIXME: parameters must match the templates for invite and password - adjust accordingly!
+                { "password", password },
+                { "companyname", applicationData.CompanyName },
+                { "url", $"{_settings.BasePortalAddress}"},
+            };
+
+            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
+
+            return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
+        }
+
+        public Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status) =>
+            _portalDBAccess.UpdateApplicationStatusAsync(applicationId, status);
+            
+        public Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId) =>
+            _portalDBAccess.GetApplicationStatusAsync(applicationId);
+
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
         {
             var mailParameters = new Dictionary<string, string>
