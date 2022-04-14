@@ -236,6 +236,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             return true;
         }
    
+        //TODO: full functionality is not yet delivered and currently the service is working with a submitted (json?) file
         public async Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData)
         {
             var mailParameters = new Dictionary<string, string>
