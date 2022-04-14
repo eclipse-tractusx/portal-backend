@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "app-service.fullname" . }}
+  labels:
+    app: {{ template "app-service.name" . }}
+    chart: {{ template "app-service.chart" . }}
+    draft: {{ .Values.draft | default "draft-app" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  revisionHistoryLimit: 0
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "app-service.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "app-service.name" . }}
+        draft: {{ .Values.draft | default "draft-app" }}
+        release: {{ .Release.Name }}
+      annotations:
+        buildID: {{ .Values.buildID | default "" | quote }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: https
+              containerPort: {{ .Values.deployment.containerPort }}
+              protocol: TCP
+          env:
+          - name: "ASPNETCORE_ENVIRONMENT"
+            value: "Kubernetes"
+          volumeMounts:
+          - name: secrets
+            mountPath: /app/secrets
+            readOnly: true
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecret }}
+      volumes:
+      - name: secrets
+        secret:
+          secretName: secret-{{.Release.Name}}-appsettings
+          
+
+            

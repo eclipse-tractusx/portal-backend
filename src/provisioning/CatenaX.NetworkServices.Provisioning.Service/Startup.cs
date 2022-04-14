@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.Factory;
@@ -15,6 +16,7 @@ using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
+using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 
 namespace CatenaX.NetworkServices.Provisioning.Service
 {
@@ -64,9 +66,8 @@ namespace CatenaX.NetworkServices.Provisioning.Service
 
             services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
-            services.AddTransient<IDBConnectionFactories, PostgreConnectionFactories>()
-                    .ConfigureDBConnectionSettingsMap(Configuration.GetSection("DatabaseAccess"));
-
+            services.AddDbContext<ProvisioningDBContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("ProvidioningDB")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 using PasswordGenerator;
 
@@ -14,7 +13,6 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.UserAdministration.Service.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
 namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 {
@@ -43,7 +41,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async Task<bool> ExecuteInvitation(InvitationData invitationData)
+        public async Task<bool> ExecuteInvitation(CompanyInvitationData invitationData)
         {
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
             if (idpName == null) return false;
@@ -65,11 +63,11 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
             var company = _portalDBAccess.CreateCompany(invitationData.organisationName);
             var application = _portalDBAccess.CreateCompanyApplication(company);
-            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company);
-            _portalDBAccess.CreateInvitation(application, companyUser);
+            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id);
+            _portalDBAccess.CreateInvitation(application.Id, companyUser);
             var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);
             _portalDBAccess.CreateIamIdentityProvider(identityprovider,idpName);
-            _portalDBAccess.CreateIamUser(companyUser,Guid.Parse(centralUserId));
+            _portalDBAccess.CreateIamUser(companyUser,centralUserId);
           
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
 
@@ -117,9 +115,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                     // TODO: revaluate try...catch as soon as BPN can be found at UserCreation
                     try
                     {
-                        var centralUserIdGuid = Guid.Parse(centralUserId);
-                        var bpn = await _portalDBAccess.GetBpnForUserAsync(centralUserIdGuid).ConfigureAwait(false);
-                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserIdGuid, bpn).ConfigureAwait(false)) continue;
+                        var bpn = await _portalDBAccess.GetBpnForUserUntrackedAsync(centralUserId).ConfigureAwait(false);
+                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn,1)).ConfigureAwait(false)) continue;
                     }
                     catch (InvalidOperationException e)
                     {
@@ -204,20 +201,20 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
         public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
         {
-            var tenant = await _portalDBAccess.GetIdpAliasForCompanyIdAsync(companyId).ConfigureAwait(false);
-            var usersToUdpate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
-                .Select(g => g.userId);
-            foreach (var userId in usersToUdpate)
+            foreach (var tenant in await _portalDBAccess.GetIdpAliaseForCompanyIdUntrackedAsync(companyId).ToListAsync().ConfigureAwait(false))
             {
+                var usersToUpdate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
+                    .Select(g => g.userId);
                 try
                 {
-                    var userIdGuid = Guid.Parse(userId);
-                    var bpns = await _portalDBAccess.GetBpnForUserAsync(userIdGuid).ConfigureAwait(false);
-                    await _provisioningManager.AddBpnAttributetoUserAsync(userIdGuid, bpns);
+                    foreach (var userBpn in await _portalDBAccess.GetBpnForUsersUntrackedAsync(usersToUpdate).ToListAsync().ConfigureAwait(false))
+                    {
+                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.userId, Enumerable.Repeat(userBpn.bpn,1));
+                    }
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error while adding BPN attribute to {userId}");
+                    _logger.LogError(e, $"Error while adding BPN attribute to {usersToUpdate}");
                 }
             }
             return true;
