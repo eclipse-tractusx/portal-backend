@@ -160,7 +160,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
             }
         }
     
-        //TODO: full functionality is not yet delivered and currently the service is working with a submitted (json?) file
+        //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
         [HttpPost]
         [Authorize(Roles="approve_new_partner")]
         [Route("welcomeEmail")]
