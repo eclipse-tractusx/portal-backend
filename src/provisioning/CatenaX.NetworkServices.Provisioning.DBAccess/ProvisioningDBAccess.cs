@@ -30,49 +30,49 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
             return nextSequence.SequenceId;
         }
 
-        public async Task SaveUserPasswordResetInfo(string userEntityId, DateTime passwordModifiedAt,int resetCount)
+        public async Task SaveUserPasswordResetInfo(string userEntityId, DateTime passwordModifiedAt, int resetCount)
         {
-                await _dbContext.UserPasswordResets.AddAsync
-                (
-                    new UserPasswordReset {
-                              SharedUserEntityId = userEntityId,
-                              PasswordModifiedAt = passwordModifiedAt,
-                              ResetCount = resetCount,
-                                           }
-                );
-                await _dbContext.SaveChangesAsync();
-          
-        }           
+            await _dbContext.UserPasswordResets.AddAsync
+            (
+                new UserPasswordReset
+                {
+                    SharedUserEntityId = userEntityId,
+                    PasswordModifiedAt = passwordModifiedAt,
+                    ResetCount = resetCount,
+                }
+            );
+            await _dbContext.SaveChangesAsync();
+        }
 
-        public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userEntityId) 
+        public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userEntityId)
         {
-                  return await  _dbContext.UserPasswordResets
-                  .Where(x=>x.SharedUserEntityId == userEntityId)
-                  .Select(
-                    userPasswordReset => new UserPasswordReset {
-                        PasswordModifiedAt = userPasswordReset.PasswordModifiedAt,
-                        ResetCount = userPasswordReset.ResetCount,
-                    }).FirstOrDefaultAsync();
+            return await _dbContext.UserPasswordResets
+            .Where(x => x.SharedUserEntityId == userEntityId)
+            .Select(
+              userPasswordReset => new UserPasswordReset
+              {
+                  PasswordModifiedAt = userPasswordReset.PasswordModifiedAt,
+                  ResetCount = userPasswordReset.ResetCount,
+              }).FirstOrDefaultAsync();
         }
-        
-          
-        public async Task SetUserPassword(string userEntityId,int count)
+
+        public async Task SetUserPassword(string userEntityId, int count)
         {
-          var passwordReset = await _dbContext.UserPasswordResets
-                .Where(x => x.SharedUserEntityId == userEntityId)
-                .SingleAsync();
-          passwordReset.ResetCount = count;
-          await _dbContext.SaveChangesAsync();
+            var passwordReset = await _dbContext.UserPasswordResets
+                  .Where(x => x.SharedUserEntityId == userEntityId)
+                  .SingleAsync();
+            passwordReset.ResetCount = count;
+            await _dbContext.SaveChangesAsync();
         }
-        
-        public async Task SetUserPassword(string userEntityId,DateTime dateReset,int count)
+
+        public async Task SetUserPassword(string userEntityId, DateTime dateReset, int count)
         {
-          var passwordReset = await _dbContext.UserPasswordResets
-                .Where(x => x.SharedUserEntityId == userEntityId)
-                .SingleAsync();
-          passwordReset.PasswordModifiedAt = dateReset;
-          passwordReset.ResetCount = count;
-          await  _dbContext.SaveChangesAsync();
+            var passwordReset = await _dbContext.UserPasswordResets
+                  .Where(x => x.SharedUserEntityId == userEntityId)
+                  .SingleAsync();
+            passwordReset.PasswordModifiedAt = dateReset;
+            passwordReset.ResetCount = count;
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

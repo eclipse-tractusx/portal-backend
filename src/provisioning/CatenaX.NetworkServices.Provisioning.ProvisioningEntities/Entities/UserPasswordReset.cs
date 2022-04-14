@@ -7,10 +7,8 @@ namespace CatenaX.NetworkServices.Provisioning.ProvisioningEntities
     {
         [Key]
         [StringLength(36)]
-        public string SharedUserEntityId  { get; set; }
-
+        public string SharedUserEntityId { get; set; }
         public DateTime PasswordModifiedAt { get; set; }
-        
         public int ResetCount { get; set; }
     }
 }

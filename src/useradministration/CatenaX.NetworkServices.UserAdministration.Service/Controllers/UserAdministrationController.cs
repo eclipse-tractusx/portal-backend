@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-using System.Linq;
-using System.Collections.Generic;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic;
@@ -30,7 +30,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles="invite_new_partner")]
+        [Authorize(Roles = "invite_new_partner")]
         [Route("invitation")]
         public async Task<IActionResult> ExecuteInvitation([FromBody] CompanyInvitationData InvitationData)
         {
@@ -52,13 +52,13 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
 
         [HttpPost]
         [Authorize(Policy = "CheckTenant")]
-        [Authorize(Roles="add_user_account")]
+        [Authorize(Roles = "add_user_account")]
         [Route("tenant/{tenant}/users")]
         public async Task<IActionResult> ExecuteUserCreation([FromRoute] string tenant, [FromBody] IEnumerable<UserCreationInfo> usersToCreate)
         {
             try
             {
-                var createdByName = User.Claims.SingleOrDefault( x => x.Type=="name").Value as string;
+                var createdByName = User.Claims.SingleOrDefault(x => x.Type == "name").Value as string;
                 var createdUsers = await _logic.CreateUsersAsync(usersToCreate, tenant, createdByName).ConfigureAwait(false);
                 return Ok(createdUsers);
             }
@@ -71,7 +71,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
 
         [HttpGet]
         [Authorize(Policy = "CheckTenant")]
-        [Authorize(Roles="view_user_management")]
+        [Authorize(Roles = "view_user_management")]
         [Route("tenant/{tenant}/users")]
         public Task<IEnumerable<JoinedUserInfo>> QueryJoinedUsers(
                 [FromRoute] string tenant,
@@ -84,7 +84,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
             ) => _logic.GetUsersAsync(tenant, userId, providerUserId, userName, firstName, lastName, email);
 
         [HttpGet]
-        [Authorize(Roles="view_client_roles")]
+        [Authorize(Roles = "view_client_roles")]
         [Route("client/{clientId}/roles")]
         public Task<IEnumerable<string>> ReturnRoles([FromRoute] string clientId) =>
             _logic.GetAppRolesAsync(clientId);
@@ -96,7 +96,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                var userName = User.Claims.SingleOrDefault( x => x.Type=="sub").Value as string;
+                var userName = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
                 if (await _logic.DeleteUserAsync(tenant, userName).ConfigureAwait(false))
                 {
                     return Ok();
@@ -113,7 +113,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
 
         [HttpDelete]
         [Authorize(Policy = "CheckTenant")]
-        [Authorize(Roles="delete_user_account")]
+        [Authorize(Roles = "delete_user_account")]
         [Route("tenant/{tenant}/users")]
         public async Task<IActionResult> ExecuteUserDeletion([FromRoute] string tenant, [FromBody] UserIds usersToDelete)
         {
@@ -129,7 +129,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles="approve_new_partner")]
+        [Authorize(Roles = "approve_new_partner")]
         [Route("company/{companyId}/bpnAtRegistrationApproval")]
         public async Task<IActionResult> BpnAttributeAddingAtRegistrationApproval([FromRoute] Guid companyId)
         {
@@ -145,9 +145,9 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles="modify_user_account")]
+        [Authorize(Roles = "modify_user_account")]
         [Route("bpn")]
-        public async Task<IActionResult> BpnAttributeAdding( [FromBody] IEnumerable<UserUpdateBpn> usersToAddBpn)
+        public async Task<IActionResult> BpnAttributeAdding([FromBody] IEnumerable<UserUpdateBpn> usersToAddBpn)
         {
             try
             {
@@ -160,26 +160,27 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
             }
         }
 
-         [HttpPut]
+        [HttpPut]
         [Authorize(Policy = "CheckTenant")]
-        [Authorize(Roles="modify_user_account")]
+        [Authorize(Roles = "modify_user_account")]
         [Route("tenant/{tenant}/users/{userId}/resetpassword")]
-        public async Task<IActionResult> ResetUserPassword([FromRoute] string tenant, [FromRoute] string  userId)
+        public async Task<IActionResult> ResetUserPassword([FromRoute] string tenant, [FromRoute] string userId)
         {
             try
             {
-                var adminuserId = User.Claims.SingleOrDefault( x => x.Type=="sub").Value as string;
-                if(await _logic.CanResetPassword(adminuserId))
+                var adminuserId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
+                if (await _logic.CanResetPassword(adminuserId))
                 {
-                  var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, userId).ConfigureAwait(false);
-                  if(!updatedPassword){
-                    return StatusCode((int)HttpStatusCode.InternalServerError);
-                  }
-                  return Ok(updatedPassword);
-                  
+                    var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, userId).ConfigureAwait(false);
+                    if (!updatedPassword)
+                    {
+                        return StatusCode((int)HttpStatusCode.InternalServerError);
+                    }
+                    return Ok(updatedPassword);
+
                 }
                 return StatusCode((int)HttpStatusCode.BadRequest);
-                 
+
             }
             catch (Exception e)
             {

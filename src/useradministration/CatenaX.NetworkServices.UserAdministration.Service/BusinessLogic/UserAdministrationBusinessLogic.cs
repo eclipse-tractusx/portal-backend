@@ -45,17 +45,18 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         {
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
             if (idpName == null) return false;
-            
-            if (! await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false)) return false;
-            
+
+            if (!await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false)) return false;
+
             var password = new Password().Next();
-            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile {
-                    UserName = invitationData.userName ?? invitationData.email,
-                    FirstName = invitationData.firstName,
-                    LastName = invitationData.lastName,
-                    Email = invitationData.email,
-                    Password = password
-                }, invitationData.organisationName).ConfigureAwait(false);
+            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile
+            {
+                UserName = invitationData.userName ?? invitationData.email,
+                FirstName = invitationData.firstName,
+                LastName = invitationData.lastName,
+                Email = invitationData.email,
+                Password = password
+            }, invitationData.organisationName).ConfigureAwait(false);
 
             if (centralUserId == null) return false;
 
@@ -66,9 +67,9 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id);
             _portalDBAccess.CreateInvitation(application.Id, companyUser);
             var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);
-            _portalDBAccess.CreateIamIdentityProvider(identityprovider,idpName);
-            _portalDBAccess.CreateIamUser(companyUser,centralUserId);
-          
+            _portalDBAccess.CreateIamIdentityProvider(identityprovider, idpName);
+            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
 
             var mailParameters = new Dictionary<string, string>
@@ -78,7 +79,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 { "url", $"{_settings.RegistrationBasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate"} );
+            await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" });
 
             return true;
         }
@@ -95,7 +96,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 try
                 {
                     var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile {
+                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile
+                    {
                         UserName = user.userName ?? user.eMail,
                         FirstName = user.firstName,
                         LastName = user.lastName,
@@ -116,7 +118,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                     try
                     {
                         var bpn = await _portalDBAccess.GetBpnForUserUntrackedAsync(centralUserId).ConfigureAwait(false);
-                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn,1)).ConfigureAwait(false)) continue;
+                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn, 1)).ConfigureAwait(false)) continue;
                     }
                     catch (InvalidOperationException e)
                     {
@@ -125,7 +127,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
                     var inviteTemplateName = "PortalTemplate";
                     if (!string.IsNullOrWhiteSpace(user.Message))
-                    { 
+                    {
                         inviteTemplateName = "PortalTemplateWithMessage";
                     }
 
@@ -137,7 +139,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                         { "nameCreatedBy", createdByName},
                         { "url", $"{_settings.Portal.BasePortalAddress}"},
                         { "username", user.eMail},
-                    
+
                     };
 
                     await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
@@ -188,8 +190,10 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         }
 
         public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds usersToDelete, string tenant) =>
-            (await Task.WhenAll(usersToDelete.userIds.Select(async userId => { 
-                try {
+            (await Task.WhenAll(usersToDelete.userIds.Select(async userId =>
+            {
+                try
+                {
                     return await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false) ? userId : null;
                 }
                 catch (Exception e)
@@ -209,7 +213,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 {
                     foreach (var userBpn in await _portalDBAccess.GetBpnForUsersUntrackedAsync(usersToUpdate).ToListAsync().ConfigureAwait(false))
                     {
-                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.userId, Enumerable.Repeat(userBpn.bpn,1));
+                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.userId, Enumerable.Repeat(userBpn.bpn, 1));
                     }
                 }
                 catch (Exception e)
@@ -235,58 +239,60 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             }
             return true;
         }
-        public  Task<bool> ResetUserPasswordAsync(string realm, string userId)
+
+        public Task<bool> ResetUserPasswordAsync(string realm, string userId)
         {
-            IEnumerable<string> requiredActions = new List<string>(){"UPDATE_PASSWORD"};
-            return  _provisioningManager.ResetUserPasswordAsync(realm, userId, requiredActions);
+            IEnumerable<string> requiredActions = new List<string>() { "UPDATE_PASSWORD" };
+            return _provisioningManager.ResetUserPasswordAsync(realm, userId, requiredActions);
         }
-      
+
         public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userId)
         {
             var userPasswordReset = new UserPasswordReset();
-            var response =await _provisioningDBAccess.GetUserPasswordResetInfo(userId);
-            if(response!=null)
+            var response = await _provisioningDBAccess.GetUserPasswordResetInfo(userId);
+            if (response != null)
             {
-            userPasswordReset.PasswordModifiedAt = response.PasswordModifiedAt;
-            userPasswordReset.ResetCount = response.ResetCount;
+                userPasswordReset.PasswordModifiedAt = response.PasswordModifiedAt;
+                userPasswordReset.ResetCount = response.ResetCount;
             }
-            else{
+            else
+            {
                 userPasswordReset.ResetCount = 0;
             }
-            
+
             return userPasswordReset;
         }
 
         public async Task<bool> CanResetPassword(string userId)
         {
-          var userInfo =await GetUserPasswordResetInfo(userId);
-          int resetCount = 0;
-          int val =0;
-          if(string.IsNullOrEmpty(userInfo.ResetCount.ToString())||userInfo.ResetCount==0)
-          {
-           val = resetCount + 1;
-           await _provisioningDBAccess.SaveUserPasswordResetInfo(userId,DateTime.Now,val);//insert record
-           return true;
-          }
-          else if(userInfo.ResetCount >0)
-          {
-            resetCount = userInfo.ResetCount;
-            DateTime dt = userInfo.PasswordModifiedAt;
-            DateTime now = DateTime.Now;
-            if(now < dt.AddHours(24) && resetCount<10)
+            var userInfo = await GetUserPasswordResetInfo(userId);
+            int resetCount = 0;
+            int val = 0;
+            if (string.IsNullOrEmpty(userInfo.ResetCount.ToString()) || userInfo.ResetCount == 0)
             {
                 val = resetCount + 1;
-                await _provisioningDBAccess.SetUserPassword(userId,val);
+                await _provisioningDBAccess.SaveUserPasswordResetInfo(userId, DateTime.Now, val);//insert record
                 return true;
             }
-            else if(now> dt.AddHours(24))
+            else if (userInfo.ResetCount > 0)
             {
-                await _provisioningDBAccess.SetUserPassword(userId,DateTime.Now,1);
-                return true;
+                resetCount = userInfo.ResetCount;
+                DateTime dt = userInfo.PasswordModifiedAt;
+                DateTime now = DateTime.Now;
+                if (now < dt.AddHours(24) && resetCount < 10)
+                {
+                    val = resetCount + 1;
+                    await _provisioningDBAccess.SetUserPassword(userId, val);
+                    return true;
+                }
+                else if (now > dt.AddHours(24))
+                {
+                    await _provisioningDBAccess.SetUserPassword(userId, DateTime.Now, 1);
+                    return true;
+                }
+                return false;
             }
             return false;
-          }
-         return false;
         }
     }
 }
