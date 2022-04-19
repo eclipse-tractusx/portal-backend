@@ -38,9 +38,9 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Route("active")]
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(typeof(IEnumerable<AppViewModel>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<AppViewModel>>> GetAllActiveApps([FromQuery] string? lang = null)
+        public ActionResult<IEnumerable<AppViewModel>> GetAllActiveApps([FromQuery] string? lang = null)
         {
-            return Ok(await this.appsBusinessLogic.GetAllActiveAppsAsync(lang).ToListAsync().ConfigureAwait(false));
+            return Ok(this.appsBusinessLogic.GetAllActiveAppsAsync(lang));
         }
 
         /// <summary>
