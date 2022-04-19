@@ -56,21 +56,21 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Guid>> GetAllFavouriteAppsForUserAsync(Guid userId)
+        public async Task<IEnumerable<Guid>> GetAllFavouriteAppsForUserAsync(string userId)
         {
             return await this.context.IamUsers.AsNoTracking()
                 .Include(u => u.CompanyUser!.Apps)
-                .Where(u => u.UserEntityId == userId.ToString()) // Id is unique, so single user
+                .Where(u => u.UserEntityId == userId) // Id is unique, so single user
                 .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
                 .ToListAsync();
         }
 
         /// <inheritdoc/>
-        public async Task RemoveFavouriteAppForUserAsync(Guid appId, Guid userId)
+        public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
         {
             var companyUser = await this.context.IamUsers
             .Include(u => u.CompanyUser!.Apps)
-            .Where(u => u.UserEntityId == userId.ToString())
+            .Where(u => u.UserEntityId == userId)
             .Select(u => u.CompanyUser)
             .SingleOrDefaultAsync();
 
@@ -88,11 +88,11 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         }
 
         /// <inheritdoc/>
-        public async Task AddFavouriteAppForUserAsync(Guid appId, Guid userId)
+        public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
         {
             var companyUser = await this.context.IamUsers
             .Include(u => u.CompanyUser!.Apps)
-            .Where(u => u.UserEntityId == userId.ToString())
+            .Where(u => u.UserEntityId == userId)
             .Select(u => u.CompanyUser)
             .SingleOrDefaultAsync();
 
