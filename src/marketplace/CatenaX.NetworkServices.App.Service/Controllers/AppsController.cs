@@ -58,7 +58,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         public async Task<ActionResult<IEnumerable<Guid>>> GetAllFavouriteAppsForCurrentUser()
         {
             var userId = GetIamUserIdFromClaims();
-            if (userId == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return BadRequest("User information not provided in claims.");
             }
@@ -81,7 +81,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         public async Task<IActionResult> AddFavouriteAppForCurrentUser([FromRoute] Guid appId)
         {
             var userId = GetIamUserIdFromClaims();
-            if (userId == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return BadRequest("User information not provided in claims.");
             }
@@ -118,7 +118,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         public async Task<IActionResult> RemoveFavouriteAppForCurrentUser([FromRoute] Guid appId)
         {
             var userId = GetIamUserIdFromClaims();
-            if(userId == Guid.Empty)
+            if(string.IsNullOrWhiteSpace(userId))
             {
                 return BadRequest("User information not provided in claims.");
             }
@@ -140,11 +140,6 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             return Ok();
         }
 
-        private Guid GetIamUserIdFromClaims()
-        {
-            var subClaimValue = User.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
-            _ = Guid.TryParse(subClaimValue, out var userId);
-            return userId;
-        }
+        private string? GetIamUserIdFromClaims() => User.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
     }
 }
