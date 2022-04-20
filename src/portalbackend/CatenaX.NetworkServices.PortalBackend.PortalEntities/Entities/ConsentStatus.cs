@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
@@ -11,7 +12,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         }
 
         [Key]
-        public int ConsentStatusId { get; set; }
+        public ConsentStatusId ConsentStatusId { get; set; }
 
         [MaxLength(255)]
         public string? Label { get; set; }

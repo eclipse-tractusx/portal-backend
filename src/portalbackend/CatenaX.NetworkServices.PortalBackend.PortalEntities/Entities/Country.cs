@@ -5,15 +5,19 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class Country
     {
-        public Country() {}
-        public Country(string alpha2Code, string countryNameDe, string countryNameEn)
+        public Country()
         {
             Addresses = new HashSet<Address>();
+        }
+
+        public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
+        {
             Alpha2Code = alpha2Code;
             CountryNameDe = countryNameDe;
             CountryNameEn = countryNameEn;
         }
 
+        [Key]
         [StringLength(2,MinimumLength = 2)]
         public string Alpha2Code { get; set; }
 

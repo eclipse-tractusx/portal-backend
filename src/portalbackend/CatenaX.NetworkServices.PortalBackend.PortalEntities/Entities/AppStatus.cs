@@ -1,21 +1,15 @@
-﻿using System;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class AppLicense
+    public class AppStatus
     {
-        public AppLicense()
-        {
-            Apps = new HashSet<App>();
-        }
-
         [Key]
-        public Guid Id { get; set; }
+        public AppStatusId AppStatusId { get; set; }
 
-        [MaxLength(255)]
-        public string Licensetext { get; set; }
+        public string Label { get; set; }
 
         public virtual ICollection<App> Apps { get; set; }
     }

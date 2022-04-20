@@ -4,18 +4,28 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class Agreement : BaseEntity
+    public class Agreement
     {
-        public Agreement() {}
-        public Agreement(string name)
+        public Agreement()
         {
             Consents = new HashSet<Consent>();
             AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
             AgreementAssignedDocumentTemplates = new HashSet<AgreementAssignedDocumentTemplate>();
+        }
+
+        public Agreement(string name) : this()
+        {
             Name = name;
         }
 
         public int AgreementCategoryId { get; set; }
+
+        [Key]
+        public Guid Id { get; set; }
+
+        public DateTime? DateCreated { get; set; }
+
+        public DateTime? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string? AgreementType { get; set; }

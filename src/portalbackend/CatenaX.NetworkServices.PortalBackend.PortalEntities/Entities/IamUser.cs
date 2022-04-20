@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class IamUser
@@ -14,10 +15,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         [StringLength(36)]
         public string UserEntityId { get; set; }
-
-        public DateTime? DateCreated { get; set; }
-
-        public DateTime? DateLastChanged { get; set; }
 
         public Guid CompanyUserId { get; set; }
 
