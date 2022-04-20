@@ -1,19 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class CompanyUserRole : BaseEntity
+    public class CompanyUserRole
     {
-        public CompanyUserRole() {}
-        public CompanyUserRole(string companyUserRoleText, string namede, string nameen)
+        public CompanyUserRole()
         {
             Apps = new HashSet<App>();
             CompanyUsers = new HashSet<CompanyUser>();
+        }
+
+        public CompanyUserRole(string companyUserRoleText, string namede, string nameen) : this()
+        {
             CompanyUserRoleText = companyUserRoleText;
             Namede = namede;
             Nameen = nameen;
         }
+
+        [Key]
+        public Guid Id { get; set; }
 
         [MaxLength(255)]
         public string CompanyUserRoleText { get; set; }

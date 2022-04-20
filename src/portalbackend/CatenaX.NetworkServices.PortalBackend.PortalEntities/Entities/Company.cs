@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class Company : BaseEntity
+    public class Company
     {
         public Company()
         {
@@ -19,9 +19,22 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             CompanyRoles = new HashSet<CompanyRole>();
             UseCases = new HashSet<UseCase>();
         }
+        
+        public Company(CompanyStatusId companyStatusId) : this()
+        {
+            CompanyStatusId = companyStatusId;
+        }
+
+        [Key]
+        public Guid Id { get; set; }
+
+        public DateTime? DateCreated { get; set; }
 
         [MaxLength(20)]
         public string? Bpn { get; set; }
+
+        [MaxLength(20)]
+        public string? TaxId { get; set; }
 
         [MaxLength(255)]
         public string? Name { get; set; }
@@ -32,7 +45,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string? Shortname { get; set; }
 
-        public CompanyStatusId? CompanyStatusId { get; set; }
+        public CompanyStatusId CompanyStatusId { get; set; }
 
         public Guid? AddressId { get; set; }
 

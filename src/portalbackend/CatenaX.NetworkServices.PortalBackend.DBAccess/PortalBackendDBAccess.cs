@@ -205,7 +205,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             return await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId)
+        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
         {
             return _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)

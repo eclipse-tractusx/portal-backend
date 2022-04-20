@@ -14,7 +14,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public int AgreementCategoryId { get; set; }
 
         [MaxLength(255)]
-        public string? Label { get; set; }
+        public string Label { get; set; }
 
         public virtual ICollection<Agreement> Agreements { get; set; }
     }

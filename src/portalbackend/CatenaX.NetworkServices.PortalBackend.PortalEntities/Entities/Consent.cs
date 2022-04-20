@@ -1,25 +1,34 @@
-﻿using System;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class Consent : BaseEntity
+    public class Consent
     {
         public Consent() {}
-        public Consent(byte[] timestamp)
+
+        public Consent(DateTime dateCreated, ConsentStatusId consentStatusId, Guid agreementId, Guid companyId, Guid companyUserId)
         {
-            Timestamp = timestamp;
+            DateCreated = dateCreated;
+            ConsentStatusId = consentStatusId;
+            AgreementId = agreementId;
+            CompanyId = companyId;
+            CompanyUserId = companyUserId;
         }
+
+        [Key]
+        public Guid Id { get; set; }
+
+        public DateTime DateCreated { get; set; }
 
         [MaxLength(255)]
         public string? Comment { get; set; }
 
-        public int ConsentStatusId { get; set; }
+        public ConsentStatusId ConsentStatusId { get; set; }
 
         [MaxLength(255)]
         public string? Target { get; set; }
-
-        public byte[] Timestamp { get; set; }
 
         public Guid AgreementId { get; set; }
         public Guid CompanyId { get; set; }

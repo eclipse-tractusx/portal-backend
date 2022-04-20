@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class CompanyUser : BaseEntity
+    public class CompanyUser
     {
         public CompanyUser()
         {
@@ -14,6 +14,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             Apps = new HashSet<App>();
             CompanyUserRoles = new HashSet<CompanyUserRole>();
         }
+     
+        public CompanyUser(Guid companyId) : this()
+        {
+            CompanyId = companyId;
+        }
+
+        [Key]
+        public Guid Id { get; set; }
+
+        public DateTime? DateCreated { get; set; }
+
+        public DateTime? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string? Email { get; set; }

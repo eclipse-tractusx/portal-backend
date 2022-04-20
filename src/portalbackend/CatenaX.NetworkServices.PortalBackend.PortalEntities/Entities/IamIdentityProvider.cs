@@ -13,6 +13,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public Guid IdentityProviderId { get; set; }
 
+        [Key]
         [MaxLength(255)]
         public string IamIdpAlias { get; set; }
 
