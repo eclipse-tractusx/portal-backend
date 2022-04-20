@@ -55,7 +55,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(typeof(IEnumerable<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<Guid>>> GetAllFavouriteAppsForCurrentUser()
+        public async Task<ActionResult<IEnumerable<Guid>>> GetAllFavouriteAppsForCurrentUserAsync()
         {
             var userId = GetIamUserIdFromClaims();
             if (string.IsNullOrWhiteSpace(userId))
@@ -78,7 +78,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddFavouriteAppForCurrentUser([FromRoute] Guid appId)
+        public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
         {
             var userId = GetIamUserIdFromClaims();
             if (string.IsNullOrWhiteSpace(userId))
@@ -92,7 +92,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             }
             catch (ArgumentOutOfRangeException)
             {
-                return BadRequest($"User could not be found.");
+                return NotFound($"User could not be found.");
             }
             catch (Exception e)
             {
@@ -115,7 +115,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RemoveFavouriteAppForCurrentUser([FromRoute] Guid appId)
+        public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
         {
             var userId = GetIamUserIdFromClaims();
             if(string.IsNullOrWhiteSpace(userId))
@@ -129,7 +129,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             }
             catch (ArgumentOutOfRangeException)
             {
-                return BadRequest($"User could not be found.");
+                return NotFound($"User could not be found.");
             }
             catch (Exception e)
             {
