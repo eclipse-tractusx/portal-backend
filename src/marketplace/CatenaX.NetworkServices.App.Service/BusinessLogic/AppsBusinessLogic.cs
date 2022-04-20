@@ -1,5 +1,6 @@
 ﻿using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic
@@ -68,50 +69,29 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
         {
-            var companyUser = await this.context.IamUsers
-            .Include(u => u.CompanyUser!.Apps)
-            .Where(u => u.UserEntityId == userId)
-            .Select(u => u.CompanyUser)
-            .SingleOrDefaultAsync();
-
-            if(companyUser is null)
+            var companyUserId = await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleAsync();
+            var rowToRemove = new CompanyUserAssignedAppFavourite
             {
-                throw new ArgumentOutOfRangeException(nameof(userId));
-            }
-
-            var app = companyUser.Apps.FirstOrDefault(a => a.Id == appId);
-            if (app is not null)
-            { // Assignment exists and can be removed.
-                companyUser.Apps.Remove(app);
-                await this.context.SaveChangesAsync();
-            }
+                AppId = appId,
+                CompanyUserId = companyUserId
+            };
+            this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
+            this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
+            await this.context.SaveChangesAsync();
         }
 
         /// <inheritdoc/>
         public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
         {
-            var companyUser = await this.context.IamUsers
-            .Include(u => u.CompanyUser!.Apps)
-            .Where(u => u.UserEntityId == userId)
-            .Select(u => u.CompanyUser)
-            .SingleOrDefaultAsync();
-
-            if (companyUser is null)
-            {
-                throw new ArgumentOutOfRangeException(nameof(userId));
-            }
-
-            if(companyUser.Apps.All(a => a.Id != appId))
-            { // Assignment does not yet exist
-                await this.context.CompanyUserAssignedAppFavourites.AddAsync(
-                    new PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite
-                    {
-                        AppId = appId,
-                        CompanyUserId = companyUser.Id
-                    }
-                );
-                await this.context.SaveChangesAsync();
-            }
+            var companyUserId = await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleAsync();
+            await this.context.CompanyUserAssignedAppFavourites.AddAsync(
+                new CompanyUserAssignedAppFavourite
+                {
+                    AppId = appId,
+                    CompanyUserId = companyUserId
+                }
+            );
+            await this.context.SaveChangesAsync();
         }
     }
 }

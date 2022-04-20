@@ -2,6 +2,7 @@
 using CatenaX.NetworkServices.App.Service.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace CatenaX.NetworkServices.App.Service.Controllers
@@ -90,9 +91,9 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             {
                 await this.appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (DbUpdateException)
             {
-                return NotFound($"User could not be found.");
+                return BadRequest($"Parameters are invalid or app is already favourited.");
             }
             catch (Exception e)
             {
@@ -127,9 +128,9 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             {
                 await this.appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (DbUpdateConcurrencyException)
             {
-                return NotFound($"User could not be found.");
+                return BadRequest($"Parameters are invalid or favourite does not exist.");
             }
             catch (Exception e)
             {
