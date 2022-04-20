@@ -19,7 +19,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// </summary>
         /// <param name="userId">ID of the user to get favourite apps for.</param>
         /// <returns>List of IDs of user's favourite apps.</returns>
-        public Task<IEnumerable<Guid>> GetAllFavouriteAppsForUserAsync(string userId);
+        public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId);
 
         /// <summary>
         /// Adds an app to a user's favourites.

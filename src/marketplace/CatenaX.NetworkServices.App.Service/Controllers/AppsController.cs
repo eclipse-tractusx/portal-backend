@@ -39,9 +39,9 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Route("active")]
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(typeof(IEnumerable<AppViewModel>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<AppViewModel>> GetAllActiveApps([FromQuery] string? lang = null)
+        public IAsyncEnumerable<AppViewModel> GetAllActiveApps([FromQuery] string? lang = null)
         {
-            return Ok(this.appsBusinessLogic.GetAllActiveAppsAsync(lang));
+            return this.appsBusinessLogic.GetAllActiveAppsAsync(lang);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(typeof(IEnumerable<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<Guid>>> GetAllFavouriteAppsForCurrentUserAsync()
+        public ActionResult<IAsyncEnumerable<Guid>> GetAllFavouriteAppsForCurrentUserAsync()
         {
             var userId = GetIamUserIdFromClaims();
             if (string.IsNullOrWhiteSpace(userId))
@@ -64,7 +64,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
                 return BadRequest("User information not provided in claims.");
             }
 
-            return Ok(await this.appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
+            return Ok(this.appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
         }
 
         /// <summary>
