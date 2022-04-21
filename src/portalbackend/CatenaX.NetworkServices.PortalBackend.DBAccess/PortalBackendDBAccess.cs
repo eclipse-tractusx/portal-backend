@@ -19,7 +19,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        public Task<string?> GetBpnForUserUntrackedAsync(string userId)
+        public Task<string> GetBpnForUserUntrackedAsync(string userId)
         {
             if (userId == null)
             {
@@ -29,7 +29,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     .Where(iamUser => 
                         iamUser.UserEntityId == userId
                         && iamUser.CompanyUser!.Company!.Bpn != null)
-                    .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn)
+                    .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn!)
                     .AsNoTracking()
                     .SingleAsync();
         }
