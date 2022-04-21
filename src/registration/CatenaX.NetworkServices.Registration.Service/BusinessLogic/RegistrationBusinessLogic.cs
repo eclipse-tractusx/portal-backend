@@ -48,8 +48,20 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _logger = logger;
         }
 
-        public async Task<IEnumerable<string>> CreateUsersAsync(List<UserCreationInfo> usersToCreate, string tenant, string createdByName)
+        public async Task<IEnumerable<string>> CreateUsersAsync(List<UserCreationInfo>? usersToCreate, string? tenant, string? createdByName)
         {
+            if (usersToCreate == null)
+            {
+                throw new ArgumentNullException("usersToCreate must not be null");
+            }
+            if (String.IsNullOrWhiteSpace(tenant))
+            {
+                throw new ArgumentNullException("tenant must not be empty");
+            }
+            if (String.IsNullOrWhiteSpace(createdByName))
+            {
+                throw new ArgumentNullException("createdByName must not be empty");
+            }
             var idpName = tenant;
             var organisationName = await _provisioningManager.GetOrganisationFromCentralIdentityProviderMapperAsync(idpName).ConfigureAwait(false);
             var clientId = _settings.KeyCloakClientID;
@@ -60,26 +72,23 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 try
                 {
                     var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile
-                    {
-                        UserName = user.userName ?? user.eMail,
-                        FirstName = user.firstName,
-                        LastName = user.lastName,
-                        Email = user.eMail,
-                        Password = password
-                    }, organisationName).ConfigureAwait(false);
-
-                    if (centralUserId == null) continue;
+                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
+                        user.userName ?? user.eMail,
+                        user.firstName,
+                        user.lastName,
+                        user.eMail,
+                        password
+                    ), organisationName).ConfigureAwait(false);
 
                     var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                     {
                         { clientId, new []{user.Role}}
                     };
 
-                    if (!await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)) continue;
+                    await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
 
                     var inviteTemplateName = "invite";
-                    if (!string.IsNullOrWhiteSpace(user.Message))
+                    if (!String.IsNullOrWhiteSpace(user.Message))
                     {
                         inviteTemplateName = "inviteWithMessage";
                     }
@@ -161,9 +170,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string? userId)
         {
-            if (userId == null)
+            if (String.IsNullOrWhiteSpace(userId))
             {
-                throw new ArgumentException("userId must not be null");
+                throw new ArgumentNullException("userId must not be empty");
             }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
@@ -178,7 +187,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (!applicationId.HasValue)
             {
-                throw new ArgumentException("applicationId must not be nulll");
+                throw new ArgumentNullException("applicationId must not be null");
             }
             return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
         }
@@ -187,11 +196,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (!applicationId.HasValue)
             {
-                throw new ArgumentException("applicationId must not be nulll");
+                throw new ArgumentNullException("applicationId must not be null");
             }
             if (companyWithAddress == null)
             {
-                throw new ArgumentException("companyWithAddress must not be nulll");
+                throw new ArgumentNullException("companyWithAddress must not be null");
             }
             //FIXMX: add update of company status within same transpaction
             return _portalDBAccess.SetCompanyWithAdressAsync(applicationId.Value, companyWithAddress);
@@ -201,41 +210,41 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (!applicationId.HasValue)
             {
-                throw new ArgumentException("applicationId must not be nulll");
+                throw new ArgumentNullException("applicationId must not be null");
             }
             if (userInvitationData == null)
             {
-                throw new ArgumentException("userInvitationData must not be null");
+                throw new ArgumentNullException("userInvitationData must not be null");
             }
-            if (userInvitationData.firstName == null)
+            if (String.IsNullOrWhiteSpace(userInvitationData.firstName))
             {
-                throw new ArgumentException("fistName must not be null");
+                throw new ArgumentNullException("fistName must not be empty");
             }
-            if (userInvitationData.lastName == null)
+            if (String.IsNullOrWhiteSpace(userInvitationData.lastName))
             {
-                throw new ArgumentException("lastName must not be null");
+                throw new ArgumentNullException("lastName must not be null");
             }
-            if (userInvitationData.userName == null)
+            if (String.IsNullOrWhiteSpace(userInvitationData.userName))
             {
-                throw new ArgumentException("userName must not be null");
+                throw new ArgumentNullException("userName must not be null");
             }
-            if (userInvitationData.email == null)
+            if (String.IsNullOrWhiteSpace(userInvitationData.email))
             {
-                throw new ArgumentException("email must not be null");
+                throw new ArgumentNullException("email must not be null");
             }
             var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId.Value).ConfigureAwait(false);
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
-                new UserProfile {
-                    UserName = userInvitationData.userName,
-                    FirstName = userInvitationData.firstName,
-                    LastName = userInvitationData.lastName,
-                    Email = userInvitationData.email,
-                    Password = password
-                },
+                new UserProfile (
+                    userInvitationData.userName,
+                    userInvitationData.firstName,
+                    userInvitationData.lastName,
+                    userInvitationData.email,
+                    password
+                ),
                 applicationData.CompanyName).ConfigureAwait(false);
-            if (!await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false)) throw new Exception("failed to assign initial roles");
+            await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false);
             var user = _portalDBAccess.CreateCompanyUser(userInvitationData.firstName, userInvitationData.lastName, userInvitationData.email, applicationData.CompanyId);
             var invitation = _portalDBAccess.CreateInvitation(applicationId.Value, user);
             var iamUser = _portalDBAccess.CreateIamUser(user, iamUserId);
@@ -256,11 +265,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (!applicationId.HasValue)
             {
-                throw new ArgumentException("applicationId must not be null");
+                throw new ArgumentNullException("applicationId must not be null");
             }
             if (!status.HasValue)
             {
-                throw new ArgumentException("status must not be null");
+                throw new ArgumentNullException("status must not be null");
             }
             return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
         }
@@ -269,7 +278,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (!applicationId.HasValue)
             {
-                throw new ArgumentException("applicationId must not be null");
+                throw new ArgumentNullException("applicationId must not be null");
             }
             return _portalDBAccess.GetApplicationStatusAsync(applicationId.Value);
         }

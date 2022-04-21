@@ -36,12 +36,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                if (await _logic.ExecuteInvitation(InvitationData).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                await _logic.ExecuteInvitation(InvitationData).ConfigureAwait(false);
+                return Ok();
             }
             catch (Exception e)
             {
@@ -96,13 +92,9 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                var userName = User.Claims.SingleOrDefault( x => x.Type=="sub").Value as string;
-                if (await _logic.DeleteUserAsync(tenant, userName).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                var userName = User.Claims.SingleOrDefault( x => x.Type=="sub")?.Value as string;
+                await _logic.DeleteUserAsync(tenant, userName).ConfigureAwait(false);
+                return Ok();
             }
             catch (Exception e)
             {
