@@ -53,6 +53,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public Guid? AddressId { get; set; }
 
+        // Navigation properties
         public virtual Address? Address { get; set; }
         public virtual CompanyStatus? CompanyStatus { get; set; }
         public virtual ICollection<App> ProvidedApps { get; private set; }

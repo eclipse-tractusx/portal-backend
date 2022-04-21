@@ -24,6 +24,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Licensetext { get; set; }
 
+        // Navigation properties
         public virtual ICollection<App> Apps { get; private set; }
     }
 }

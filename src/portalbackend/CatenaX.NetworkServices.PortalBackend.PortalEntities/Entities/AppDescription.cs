@@ -31,6 +31,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [StringLength(2, MinimumLength = 2)]
         public string LanguageShortName { get; private set; }
 
+        // Navigation properties
         public virtual App? App { get; private set; }
         public virtual Language? Language { get; private set; }
     }

@@ -30,6 +30,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string LongNameEn { get; set; }
 
+        // Navigation properties
         public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
     }
 }

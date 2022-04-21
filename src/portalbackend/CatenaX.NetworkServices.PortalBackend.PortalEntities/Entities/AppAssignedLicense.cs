@@ -15,6 +15,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public Guid AppId { get; private set; }
         public Guid AppLicenseId { get; private set; }
 
+        // Navigation properties
         public virtual App? App { get; set; }
         public virtual AppLicense? AppLicense { get; set; }
     }

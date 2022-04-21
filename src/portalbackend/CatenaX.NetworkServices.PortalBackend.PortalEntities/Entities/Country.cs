@@ -33,6 +33,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string CountryNameEn { get; set; }
 
+        // Navigation properties
         public virtual ICollection<Address> Addresses { get; private set; }
     }
 }

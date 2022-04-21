@@ -39,9 +39,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public Guid? CompanyUserId { get; set; }
 
+        // Navigation properties
         public virtual CompanyUser? CompanyUser { get; set; }
         public virtual DocumentType? DocumentType { get; set; }
         public virtual ICollection<Consent> Consents { get; private set; }
-
     }
 }

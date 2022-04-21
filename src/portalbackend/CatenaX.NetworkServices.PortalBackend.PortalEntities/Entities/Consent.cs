@@ -36,6 +36,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public Guid? DocumentId { get; set; }
         public Guid CompanyUserId { get; private set; }
 
+        // Navigation properties
         public virtual Agreement? Agreement { get; private set; }
         public virtual Company? Company { get; private set; }
         public virtual CompanyUser? CompanyUser { get; private set; }

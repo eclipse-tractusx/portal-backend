@@ -31,6 +31,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Shortname { get; set; }
 
+        // Navigation properties
         public virtual ICollection<Agreement> Agreements { get; private set; }
         public virtual ICollection<Company> Companies { get; private set; }
         public virtual ICollection<App> Apps { get; private set; }

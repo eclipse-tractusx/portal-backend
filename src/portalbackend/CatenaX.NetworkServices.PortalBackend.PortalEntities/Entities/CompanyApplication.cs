@@ -30,6 +30,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public CompanyApplicationStatusId ApplicationStatusId { get; set; }
         public Guid CompanyId { get; private set; }
 
+        // Navigation properties
         public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
         public virtual Company? Company { get; private set; }
         public virtual ICollection<Invitation> Invitations { get; private set; }

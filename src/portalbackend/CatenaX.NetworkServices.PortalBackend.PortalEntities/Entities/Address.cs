@@ -51,6 +51,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [StringLength(2, MinimumLength = 2)]
         public string CountryAlpha2Code { get; set; }
 
+        // Navigation properties
         public virtual Country? Country { get; set; }
         public virtual ICollection<Company> Companies { get; private set; }
     }

@@ -24,6 +24,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public string Label { get; private set; }
 
+        // Navigation properties
         public virtual ICollection<Document> Documents { get; private set; }
    }
 }
