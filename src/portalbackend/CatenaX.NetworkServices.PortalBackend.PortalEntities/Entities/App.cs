@@ -7,8 +7,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class App
     {
-        public App()
+        private App()
         {
+            Provider = null!;
             Agreements = new HashSet<Agreement>();
             AppDescriptions = new HashSet<AppDescription>();
             AppDetailImages = new HashSet<AppDetailImage>();
@@ -19,18 +20,20 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             CompanyUsers = new HashSet<CompanyUser>();
         }
 
-        public App(string provider) : this()
+        public App(Guid id, string provider, DateTime dateCreated) : this()
         {
+            Id = id;
             Provider = provider;
+            DateCreated = dateCreated;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
         [MaxLength(255)]
         public string? Name { get; set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         public DateTime? DateReleased { get; set; }
 
@@ -58,13 +61,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public virtual Company? ProviderCompany { get; set; }
         public virtual AppStatus? AppStatus{ get; set; }
-        public virtual ICollection<Company> Companies { get; set; }
-        public virtual ICollection<Agreement> Agreements { get; set; }
-        public virtual ICollection<AppDescription> AppDescriptions { get; set; }
-        public virtual ICollection<AppDetailImage> AppDetailImages { get; set; }
-        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; set; }
-        public virtual ICollection<AppLicense> AppLicenses { get; set; }
-        public virtual ICollection<UseCase> UseCases { get; set; }
-        public virtual ICollection<CompanyUser> CompanyUsers { get; set; }
+        public virtual ICollection<Company> Companies { get; private set; }
+        public virtual ICollection<Agreement> Agreements { get; private set; }
+        public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
+        public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
+        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; private set; }
+        public virtual ICollection<AppLicense> AppLicenses { get; private set; }
+        public virtual ICollection<UseCase> UseCases { get; private set; }
+        public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     }
 }

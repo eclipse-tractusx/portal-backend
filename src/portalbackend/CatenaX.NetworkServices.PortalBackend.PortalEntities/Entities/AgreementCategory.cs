@@ -5,17 +5,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AgreementCategory
     {
-        public AgreementCategory()
+        private AgreementCategory()
         {
+            Label = null!;
             Agreements = new HashSet<Agreement>();
         }
 
         [Key]
-        public int AgreementCategoryId { get; set; }
+        public int AgreementCategoryId { get; private set; }
 
         [MaxLength(255)]
-        public string Label { get; set; }
+        public string Label { get; private set; }
 
-        public virtual ICollection<Agreement> Agreements { get; set; }
+        public virtual ICollection<Agreement> Agreements { get; private set; }
     }
 }

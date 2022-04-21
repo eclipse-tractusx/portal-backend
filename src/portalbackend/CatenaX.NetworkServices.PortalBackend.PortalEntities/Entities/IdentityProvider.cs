@@ -7,24 +7,26 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class IdentityProvider
     {
-        public IdentityProvider() {
+        private IdentityProvider() {
             Companies = new HashSet<Company>();
         }
         
-        public IdentityProvider(IdentityProviderCategoryId identityProviderCategoryId) : this()
+        public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTime dateCreated) : this()
         {
+            Id = id;
             IdentityProviderCategoryId = identityProviderCategoryId;
+            DateCreated = dateCreated;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
-        public IdentityProviderCategoryId IdentityProviderCategoryId { get; set; }
+        public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
 
-        public virtual IdentityProviderCategory? IdentityProviderCategory { get; set; }
+        public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
         public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
-        public virtual ICollection<Company> Companies { get; set; }
+        public virtual ICollection<Company> Companies { get; private set; }
     }
 }

@@ -8,19 +8,20 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
     {
         public Consent() {}
 
-        public Consent(DateTime dateCreated, ConsentStatusId consentStatusId, Guid agreementId, Guid companyId, Guid companyUserId)
+        public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTime dateCreated)
         {
-            DateCreated = dateCreated;
-            ConsentStatusId = consentStatusId;
+            Id = id;
             AgreementId = agreementId;
             CompanyId = companyId;
             CompanyUserId = companyUserId;
+            ConsentStatusId = consentStatusId;
+            DateCreated = dateCreated;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         [MaxLength(255)]
         public string? Comment { get; set; }
@@ -30,15 +31,15 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string? Target { get; set; }
 
-        public Guid AgreementId { get; set; }
-        public Guid CompanyId { get; set; }
-        public Guid? DocumentsId { get; set; }
-        public Guid CompanyUserId { get; set; }
+        public Guid AgreementId { get; private set; }
+        public Guid CompanyId { get; private set; }
+        public Guid? DocumentId { get; set; }
+        public Guid CompanyUserId { get; private set; }
 
-        public virtual Agreement? Agreement { get; set; }
-        public virtual Company? Company { get; set; }
-        public virtual CompanyUser? CompanyUser { get; set; }
+        public virtual Agreement? Agreement { get; private set; }
+        public virtual Company? Company { get; private set; }
+        public virtual CompanyUser? CompanyUser { get; private set; }
         public virtual ConsentStatus? ConsentStatus { get; set; }
-        public virtual Document? Documents { get; set; }
+        public virtual Document? Document { get; set; }
     }
 }

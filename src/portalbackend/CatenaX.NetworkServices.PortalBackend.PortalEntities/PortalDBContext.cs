@@ -117,7 +117,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("agreements", "portal");
 
                 entity.Property(e => e.AgreementCategoryId)
-                    .HasColumnName("agreement_category_id");
+                    .HasColumnName("agreement_category_id")
+                    .HasConversion<int>();
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id");
@@ -177,18 +178,20 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.CompanyRoleId, "uk_6df9o1r7dy987w1pt9qnkopc")
                     .IsUnique();
 
-                entity.Property(e => e.AgreementId).HasColumnName("agreement_id");
+                entity.Property(e => e.AgreementId)
+                    .HasColumnName("agreement_id");
 
-                entity.Property(e => e.CompanyRoleId).HasColumnName("company_role_id");
+                entity.Property(e => e.CompanyRoleId)
+                    .HasColumnName("company_role_id");
 
                 entity.HasOne(d => d.Agreement)
-                    .WithMany(p => p.AgreementAssignedCompanyRoles)
+                    .WithMany(p => p!.AgreementAssignedCompanyRoles)
                     .HasForeignKey(d => d.AgreementId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_ljol11mdo76f4kv7fwqn1qc6");
 
                 entity.HasOne(d => d.CompanyRole)
-                    .WithOne(p => p.AgreementAssignedCompanyRole!)
+                    .WithOne(p => p!.AgreementAssignedCompanyRole!)
                     .HasForeignKey<AgreementAssignedCompanyRole>(d => d.CompanyRoleId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_qh1hby9qcrr3gmy1cvi7nd3h");
@@ -204,18 +207,20 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.DocumentTemplateId, "uk_9ib7xuc1vke96s9rvlyhxbtu")
                     .IsUnique();
 
-                entity.Property(e => e.AgreementId).HasColumnName("agreement_id");
+                entity.Property(e => e.AgreementId)
+                    .HasColumnName("agreement_id");
 
-                entity.Property(e => e.DocumentTemplateId).HasColumnName("document_template_id");
+                entity.Property(e => e.DocumentTemplateId)
+                    .HasColumnName("document_template_id");
 
                 entity.HasOne(d => d.Agreement)
-                    .WithMany(p => p.AgreementAssignedDocumentTemplates)
+                    .WithMany(p => p!.AgreementAssignedDocumentTemplates)
                     .HasForeignKey(d => d.AgreementId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_fvcwoptsuer9p23m055osose");
 
                 entity.HasOne(d => d.DocumentTemplate)
-                    .WithOne(p => p.AgreementAssignedDocumentTemplate!)
+                    .WithOne(p => p!.AgreementAssignedDocumentTemplate!)
                     .HasForeignKey<AgreementAssignedDocumentTemplate>(d => d.DocumentTemplateId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_bvrvs5aktrcn4t6565pnj3ur");
@@ -288,13 +293,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.BoughtApps)
                     .UsingEntity<CompanyAssignedApp>(
                         j => j
-                            .HasOne(d => d.Company)
+                            .HasOne(d => d.Company!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_k1dqlv81463yes0k8f2giyaf"),
                         j => j
-                            .HasOne(d => d.App)
+                            .HasOne(d => d.App!)
                             .WithMany()
                             .HasForeignKey(d => d.AppId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -312,12 +317,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.Apps)
                     .UsingEntity<AppAssignedCompanyUserRole>(
                         j => j
-                            .HasOne(d => d.CompanyUserRole)
+                            .HasOne(d => d.CompanyUserRole!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyUserRoleId)
                             .HasConstraintName("fk_4m022ek8gffepnqlnuxwyxp8"),
                         j => j
-                            .HasOne(d => d.App)
+                            .HasOne(d => d.App!)
                             .WithMany()
                             .HasForeignKey(d => d.AppId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -334,13 +339,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.Apps)
                     .UsingEntity<AppAssignedLicense>(
                         j => j
-                            .HasOne(d => d.AppLicense)
+                            .HasOne(d => d.AppLicense!)
                             .WithMany()
                             .HasForeignKey(d => d.AppLicenseId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_mes2xm3i1wotryfc88be4dkf"),
                         j => j
-                            .HasOne(d => d.App)
+                            .HasOne(d => d.App!)
                             .WithMany()
                             .HasForeignKey(d => d.AppId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -357,13 +362,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.Apps)
                     .UsingEntity<AppAssignedUseCase>(
                         j => j
-                            .HasOne(d => d.UseCase)
+                            .HasOne(d => d.UseCase!)
                             .WithMany()
                             .HasForeignKey(d => d.UseCaseId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_sjyfs49ma0kxaqfknjbaye0i"),
                         j => j
-                            .HasOne(d => d.App)
+                            .HasOne(d => d.App!)
                             .WithMany()
                             .HasForeignKey(d => d.AppId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -456,11 +461,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(AppStatusId))
                         .Cast<AppStatusId>()
-                        .Select(e => new AppStatus()
-                        {
-                            AppStatusId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new AppStatus(e)));
             });
 
             modelBuilder.Entity<Company>(entity =>
@@ -509,13 +510,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.Companies)
                     .UsingEntity<CompanyAssignedRole>(
                         j => j
-                            .HasOne(d => d.CompanyRole)
+                            .HasOne(d => d.CompanyRole!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyRoleId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_my2p7jlqrjf0tq1f8rhk0i0a"),
                         j => j
-                            .HasOne(d => d.Company)
+                            .HasOne(d => d.Company!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -533,13 +534,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.Companies)
                     .UsingEntity<CompanyAssignedUseCase>(
                         j => j
-                            .HasOne(d => d.UseCase)
+                            .HasOne(d => d.UseCase!)
                             .WithMany()
                             .HasForeignKey(d => d.UseCaseId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_m5eyaohrl0g9ju52byxsouqk"),
                         j => j
-                            .HasOne(d => d.Company)
+                            .HasOne(d => d.Company!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -557,13 +558,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.Companies)
                     .UsingEntity<CompanyIdentityProvider>(
                         j => j
-                            .HasOne(pt => pt.IdentityProvider)
+                            .HasOne(pt => pt.IdentityProvider!)
                             .WithMany()
                             .HasForeignKey(pt => pt.IdentityProviderId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_iwzehadf8whjd8asjdfuwefhs"),
                         j => j
-                            .HasOne(pt => pt.Company)
+                            .HasOne(pt => pt.Company!)
                             .WithMany()
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasForeignKey(pt => pt.CompanyId)
@@ -629,11 +630,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(CompanyApplicationStatusId))
                         .Cast<CompanyApplicationStatusId>()
-                        .Select(e => new CompanyApplicationStatus()
-                        {
-                            ApplicationStatusId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new CompanyApplicationStatus(e)));
             });
 
             modelBuilder.Entity<CompanyRole>(entity =>
@@ -668,11 +665,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(CompanyStatusId))
                         .Cast<CompanyStatusId>()
-                        .Select(e => new CompanyStatus()
-                        {
-                            CompanyStatusId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new CompanyStatus(e)));
             });
 
             modelBuilder.Entity<CompanyUser>(entity =>
@@ -713,13 +706,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.CompanyUsers)
                     .UsingEntity<CompanyUserAssignedAppFavourite>(
                         j => j
-                            .HasOne(d => d.App)
+                            .HasOne(d => d.App!)
                             .WithMany()
                             .HasForeignKey(d => d.AppId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_eip97mygnbglivrtmkagesjh"),
                         j => j
-                            .HasOne(d => d.CompanyUser)
+                            .HasOne(d => d.CompanyUser!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyUserId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -736,13 +729,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p.CompanyUsers)
                     .UsingEntity<CompanyUserAssignedRole>(
                         j => j
-                            .HasOne(d => d.UserRole)
+                            .HasOne(d => d.UserRole!)
                             .WithMany()
                             .HasForeignKey(d => d.UserRoleId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_bw1yhel67uhrxfk7mevovq5p"),
                         j => j
-                            .HasOne(d => d.CompanyUser)
+                            .HasOne(d => d.CompanyUser!)
                             .WithMany()
                             .HasForeignKey(d => d.CompanyUserId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
@@ -798,8 +791,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.Property(e => e.CompanyId)
                     .HasColumnName("company_id");
 
-                entity.Property(e => e.DocumentsId)
-                    .HasColumnName("documents_id");
+                entity.Property(e => e.DocumentId)
+                    .HasColumnName("document_id");
 
                 entity.Property(e => e.CompanyUserId)
                     .HasColumnName("company_user_id");
@@ -828,9 +821,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_aiodhuwehw8wee20adskdfo2");
 
-                entity.HasOne(d => d.Documents)
+                entity.HasOne(d => d.Document)
                     .WithMany(p => p!.Consents)
-                    .HasForeignKey(d => d.DocumentsId)
+                    .HasForeignKey(d => d.DocumentId)
                     .HasConstraintName("fk_36j22f34lgi2444n4tynxamh");
             });
 
@@ -849,11 +842,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(ConsentStatusId))
                         .Cast<ConsentStatusId>()
-                        .Select(e => new ConsentStatus()
-                        {
-                            ConsentStatusId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new ConsentStatus(e)));
             });
 
             modelBuilder.Entity<Country>(entity =>
@@ -948,11 +937,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(DocumentTypeId))
                         .Cast<DocumentTypeId>()
-                        .Select(e => new DocumentType()
-                        {
-                            DocumentTypeId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new DocumentType(e)));
             });
 
             modelBuilder.Entity<IamIdentityProvider>(entity =>
@@ -1031,11 +1016,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(IdentityProviderCategoryId))
                         .Cast<IdentityProviderCategoryId>()
-                        .Select(e => new IdentityProviderCategory()
-                        {
-                            IdentityProviderCategoryId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new IdentityProviderCategory(e)));
             });
 
             modelBuilder.Entity<Invitation>(entity =>
@@ -1091,11 +1072,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasData(
                     Enum.GetValues(typeof(InvitationStatusId))
                         .Cast<InvitationStatusId>()
-                        .Select(e => new InvitationStatus()
-                        {
-                            InvitationStatusId = e,
-                            Label = e.ToString()
-                        }));
+                        .Select(e => new InvitationStatus(e)));
             });
 
             modelBuilder.Entity<Language>(entity =>

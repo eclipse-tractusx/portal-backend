@@ -7,16 +7,23 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class DocumentType
     {
-        public DocumentType()
+        private DocumentType()
         {
+            Label = null!;
             Documents = new HashSet<Document>();
+        }
+
+        public DocumentType(DocumentTypeId documentTypeId) : this()
+        {
+            DocumentTypeId = documentTypeId;
+            Label = documentTypeId.ToString();
         }
         
         [Key]
-        public DocumentTypeId DocumentTypeId { get; set; }
+        public DocumentTypeId DocumentTypeId { get; private set; }
 
-        public string Label { get; set; }
+        public string Label { get; private set; }
 
-        public virtual ICollection<Document> Documents { get; set; }
+        public virtual ICollection<Document> Documents { get; private set; }
    }
 }

@@ -6,17 +6,24 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class InvitationStatus
     {
-        public InvitationStatus()
+        private InvitationStatus()
         {
+            Label = null!;
             Invitations = new HashSet<Invitation>();
         }
 
+        public InvitationStatus(InvitationStatusId invitationStatusId) : this()
+        {
+            InvitationStatusId = invitationStatusId;
+            Label = invitationStatusId.ToString();
+        }
+
         [Key]
-        public InvitationStatusId InvitationStatusId { get; set; }
+        public InvitationStatusId InvitationStatusId { get; private set; }
 
         [MaxLength(255)]
-        public string? Label { get; set; }
+        public string Label { get; private set; }
 
-        public virtual ICollection<Invitation> Invitations { get; set; }
+        public virtual ICollection<Invitation> Invitations { get; private set; }
     }
 }
