@@ -8,59 +8,51 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 {
     public class PortalDBContext : DbContext
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public PortalDBContext()
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        {
-        }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public PortalDBContext(DbContextOptions<PortalDBContext> options)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
         }
 
-        public DbSet<Address> Addresses { get; set; }
-        public DbSet<Agreement> Agreements { get; set; }
-        public DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; }
-        public DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; }
-        public DbSet<AgreementCategory> AgreementCategories { get; set; }
-        public DbSet<App> Apps { get; set; }
-        public DbSet<AppAssignedCompanyUserRole> AppAssignedCompanyUserRoles { get; set; }
-        public DbSet<AppAssignedLicense> AppAssignedLicenses { get; set; }
-        public DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; }
-        public DbSet<AppDescription> AppDescriptions { get; set; }
-        public DbSet<AppDetailImage> AppDetailImages { get; set; }
-        public DbSet<AppLicense> AppLicenses { get; set; }
-        public DbSet<AppStatus> AppStatuses { get; set; }
-        public DbSet<Company> Companies { get; set; }
-        public DbSet<CompanyApplication> CompanyApplications { get; set; }
-        public DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; }
-        public DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; }
-        public DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; }
-        public DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; }
-        public DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; }
-        public DbSet<CompanyRole> CompanyRoles { get; set; }
-        public DbSet<CompanyStatus> CompanyStatuses { get; set; }
-        public DbSet<CompanyUser> CompanyUsers { get; set; }
-        public DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; }
-        public DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; }
-        public DbSet<CompanyUserRole> CompanyUserRoles { get; set; }
-        public DbSet<Consent> Consents { get; set; }
-        public DbSet<ConsentStatus> ConsentStatuses { get; set; }
-        public DbSet<Country> Countries { get; set; }
-        public DbSet<Document> Documents { get; set; }
-        public DbSet<DocumentTemplate> DocumentTemplates { get; set; }
-        public DbSet<DocumentType> DocumentTypes { get; set; }
-        public DbSet<IamIdentityProvider> IamIdentityProviders { get; set; }
-        public DbSet<IamUser> IamUsers { get; set; }
-        public DbSet<IdentityProvider> IdentityProviders { get; set; }
-        public DbSet<IdentityProviderCategory> IdentityProviderCategories { get; set; }
-        public DbSet<Invitation> Invitations { get; set; }
-        public DbSet<InvitationStatus> InvitationStatuses { get; set; }
-        public DbSet<Language> Languages { get; set; }
-        public DbSet<UseCase> UseCases { get; set; }
+        public DbSet<Address> Addresses { get; set; } = default!;
+        public DbSet<Agreement> Agreements { get; set; } = default!;
+        public DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
+        public DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
+        public DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
+        public DbSet<App> Apps { get; set; } = default!;
+        public DbSet<AppAssignedCompanyUserRole> AppAssignedCompanyUserRoles { get; set; } = default!;
+        public DbSet<AppAssignedLicense> AppAssignedLicenses { get; set; } = default!;
+        public DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
+        public DbSet<AppDescription> AppDescriptions { get; set; } = default!;
+        public DbSet<AppDetailImage> AppDetailImages { get; set; } = default!;
+        public DbSet<AppLicense> AppLicenses { get; set; } = default!;
+        public DbSet<AppStatus> AppStatuses { get; set; } = default!;
+        public DbSet<Company> Companies { get; set; } = default!;
+        public DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
+        public DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
+        public DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; } = default!;
+        public DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
+        public DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
+        public DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
+        public DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
+        public DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
+        public DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
+        public DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
+        public DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; } = default!;
+        public DbSet<CompanyUserRole> CompanyUserRoles { get; set; } = default!;
+        public DbSet<Consent> Consents { get; set; } = default!;
+        public DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
+        public DbSet<Country> Countries { get; set; } = default!;
+        public DbSet<Document> Documents { get; set; } = default!;
+        public DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
+        public DbSet<DocumentType> DocumentTypes { get; set; } = default!;
+        public DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
+        public DbSet<IamUser> IamUsers { get; set; } = default!;
+        public DbSet<IdentityProvider> IdentityProviders { get; set; } = default!;
+        public DbSet<IdentityProviderCategory> IdentityProviderCategories { get; set; } = default!;
+        public DbSet<Invitation> Invitations { get; set; } = default!;
+        public DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
+        public DbSet<Language> Languages { get; set; } = default!;
+        public DbSet<UseCase> UseCases { get; set; } = default!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
