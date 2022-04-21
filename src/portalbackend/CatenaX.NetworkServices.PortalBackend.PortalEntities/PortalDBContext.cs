@@ -56,6 +56,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseSnakeCaseNamingConvention();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -66,37 +67,11 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("addresses", "portal");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DateLastChanged)
-                    .HasColumnName("date_last_changed");
-
-                entity.Property(e => e.City)
-                    .HasColumnName("city");
-
                 entity.Property(e => e.CountryAlpha2Code)
-                    .HasColumnName("country_alpha_2_code")
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Region)
-                    .HasColumnName("region");
-
-                entity.Property(e => e.Streetadditional)
-                    .HasColumnName("streetadditional");
-
-                entity.Property(e => e.Streetname)
-                    .HasColumnName("streetname");
-
-                entity.Property(e => e.Streetnumber)
-                    .HasColumnName("streetnumber");
-
                 entity.Property(e => e.Zipcode)
-                    .HasPrecision(19, 2)
-                    .HasColumnName("zipcode");
+                    .HasPrecision(19, 2);
 
                 entity.HasOne(d => d.Country)
                     .WithMany(p => p!.Addresses)
@@ -109,33 +84,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("agreements", "portal");
 
                 entity.Property(e => e.AgreementCategoryId)
-                    .HasColumnName("agreement_category_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DateLastChanged)
-                    .HasColumnName("date_last_changed");
-
-                entity.Property(e => e.AgreementType)
-                    .HasColumnName("agreement_type");
-
-                entity.Property(e => e.AppId)
-                    .HasColumnName("app_id");
-
-                entity.Property(e => e.IssuerCompanyId)
-                    .HasColumnName("issuer_company_id");
-
-                entity.Property(e => e.Name)
-                    .HasColumnName("name");
-
-                entity.Property(e => e.UseCaseId)
-                    .HasColumnName("use_case_id");
-
                 entity.HasOne(d => d.AgreementCategory)
                     .WithMany(p => p!.Agreements)
                     .HasForeignKey(d => d.AgreementCategoryId)
@@ -170,12 +119,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.CompanyRoleId, "uk_6df9o1r7dy987w1pt9qnkopc")
                     .IsUnique();
 
-                entity.Property(e => e.AgreementId)
-                    .HasColumnName("agreement_id");
-
-                entity.Property(e => e.CompanyRoleId)
-                    .HasColumnName("company_role_id");
-
                 entity.HasOne(d => d.Agreement)
                     .WithMany(p => p!.AgreementAssignedCompanyRoles)
                     .HasForeignKey(d => d.AgreementId)
@@ -199,12 +142,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.DocumentTemplateId, "uk_9ib7xuc1vke96s9rvlyhxbtu")
                     .IsUnique();
 
-                entity.Property(e => e.AgreementId)
-                    .HasColumnName("agreement_id");
-
-                entity.Property(e => e.DocumentTemplateId)
-                    .HasColumnName("document_template_id");
-
                 entity.HasOne(d => d.Agreement)
                     .WithMany(p => p!.AgreementAssignedDocumentTemplates)
                     .HasForeignKey(d => d.AgreementId)
@@ -223,49 +160,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("agreement_categories", "portal");
 
                 entity.Property(e => e.AgreementCategoryId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("agreement_category_id");
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
+                    .ValueGeneratedNever();
             });
 
             modelBuilder.Entity<App>(entity =>
             {
                 entity.ToTable("apps", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.Name)
-                    .HasColumnName("name");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DateReleased)
-                    .HasColumnName("date_released");
-
-                entity.Property(e => e.ThumbnailUrl)
-                    .HasColumnName("thumbnail_url");
-
-                entity.Property(e => e.AppUrl)
-                    .HasColumnName("app_url");
-
-                entity.Property(e => e.MarketingUrl)
-                    .HasColumnName("marketing_url");
-
-                entity.Property(e => e.ContactEmail)
-                    .HasColumnName("contact_email");
-
-                entity.Property(e => e.ContactNumber)
-                    .HasColumnName("contact_number");
-
-                entity.Property(e => e.Provider)
-                    .HasColumnName("provider");
-
-                entity.Property(e => e.ProviderCompanyId)
-                    .HasColumnName("provider_company_id");
 
                 entity.HasOne(d => d.ProviderCompany)
                     .WithMany(p => p!.ProvidedApps)
@@ -273,7 +173,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .HasConstraintName("fk_68a9joedhyf43smfx2xc4rgm");
 
                 entity.Property(e => e.AppStatusId)
-                    .HasColumnName("app_status_id")
                     .HasConversion<int>();
 
                 entity.HasOne(d => d.AppStatus)
@@ -300,8 +199,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new { e.CompanyId, e.AppId }).HasName("pk_company_assigned_apps");
                             j.ToTable("company_assigned_apps", "portal");
-                            j.Property(e => e.AppId).HasColumnName("app_id");
-                            j.Property(e => e.CompanyId).HasColumnName("company_id");
                         }
                     );
 
@@ -323,8 +220,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new{ e.AppId, e.CompanyUserRoleId }).HasName("pk_app_assg_comp_user_roles");
                             j.ToTable("app_assigned_company_user_roles", "portal");
-                            j.Property(e => e.AppId).HasColumnName("app_id");
-                            j.Property(e => e.CompanyUserRoleId).HasColumnName("company_user_role_id");
                         });
                 
                 entity.HasMany(p => p.AppLicenses)
@@ -346,8 +241,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new{ e.AppId, e.AppLicenseId }).HasName("pk_app_assigned_licenses");
                             j.ToTable("app_assigned_licenses", "portal");
-                            j.Property(e => e.AppId).HasColumnName("app_id");
-                            j.Property(e => e.AppLicenseId).HasColumnName("app_license_id");
                         });
                 
                 entity.HasMany(p => p.UseCases)
@@ -369,8 +262,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new { e.AppId, e.UseCaseId }).HasName("pk_app_assigned_use_cases");
                             j.ToTable("app_assigned_use_cases", "portal");
-                            j.Property(e => e.AppId).HasColumnName("app_id");
-                            j.Property(e => e.UseCaseId).HasColumnName("use_case_id");
                         });
             });
 
@@ -381,19 +272,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasKey(e => new { e.AppId, e.LanguageShortName })
                     .HasName("app_descriptions_pkey");
 
-                entity.Property(e => e.AppId)
-                    .HasColumnName("app_id");
-
                 entity.Property(e => e.LanguageShortName)
-                    .HasColumnName("language_short_name")
                     .IsFixedLength(true);
-
-                entity.Property(e => e.DescriptionLong)
-                    .HasColumnName("description_long");
-
-                entity.Property(e => e.DescriptionShort)
-                    .HasColumnName("description_short");
-
                 entity.HasOne(d => d.App)
                     .WithMany(p => p!.AppDescriptions)
                     .HasForeignKey(d => d.AppId)
@@ -411,15 +291,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("app_detail_images", "portal");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.AppId)
-                    .HasColumnName("app_id");
-
-                entity.Property(e => e.ImageUrl)
-                    .HasColumnName("image_url");
-
                 entity.HasOne(d => d.App)
                     .WithMany(p => p!.AppDetailImages)
                     .HasForeignKey(d => d.AppId)
@@ -430,12 +301,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<AppLicense>(entity =>
             {
                 entity.ToTable("app_licenses", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.Licensetext)
-                    .HasColumnName("licensetext");
             });
 
             modelBuilder.Entity<AppStatus>(entity =>
@@ -444,11 +309,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.AppStatusId)
                     .ValueGeneratedNever()
-                    .HasColumnName("app_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(AppStatusId))
@@ -460,34 +321,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("companies", "portal");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.Bpn)
-                    .HasColumnName("bpn");
-
-                entity.Property(e => e.TaxId)
-                    .HasColumnName("tax_id");
-
-                entity.Property(e => e.Name)
-                    .HasColumnName("name");
-
-                entity.Property(e => e.Parent)
-                    .HasColumnName("parent");
-
-                entity.Property(e => e.Shortname)
-                    .HasColumnName("shortname");
-
                 entity.Property(e => e.CompanyStatusId)
-                    .HasColumnName("company_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.AddressId)
-                    .HasColumnName("address_id");
-
                 entity.HasOne(d => d.Address)
                     .WithMany(p => p!.Companies)
                     .HasForeignKey(d => d.AddressId)
@@ -517,8 +352,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new { e.CompanyId, e.CompanyRoleId }).HasName("pk_company_assigned_roles");
                             j.ToTable("company_assigned_roles", "portal");
-                            j.Property(e => e.CompanyId).HasColumnName("company_id");
-                            j.Property(e => e.CompanyRoleId).HasColumnName("company_role_id");
                         }
                     );
 
@@ -541,8 +374,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new { e.CompanyId, e.UseCaseId }).HasName("pk_company_assigned_use_cas");
                             j.ToTable("company_assigned_use_cases", "portal");
-                            j.Property(e => e.CompanyId).HasColumnName("company_id");
-                            j.Property(e => e.UseCaseId).HasColumnName("use_case_id");
                         }
                     );
 
@@ -566,8 +397,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             j.HasKey(e => new { e.CompanyId, e.IdentityProviderId })
                              .HasName("pk_company_identity_provider");
                             j.ToTable("company_identity_provider", "portal");
-                            j.Property(e => e.CompanyId).HasColumnName("company_id");
-                            j.Property(e => e.IdentityProviderId).HasColumnName("identity_provider_id");
                         }
                     );
             });
@@ -576,21 +405,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("company_applications", "portal");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DateLastChanged)
-                    .HasColumnName("date_last_changed");
-
                 entity.Property(e => e.ApplicationStatusId)
-                    .HasColumnName("application_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.CompanyId)
-                    .HasColumnName("company_id");
 
                 entity.HasOne(d => d.ApplicationStatus)
                     .WithMany(p => p!.CompanyApplications)
@@ -613,11 +429,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.ApplicationStatusId)
                     .ValueGeneratedNever()
-                    .HasColumnName("application_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(CompanyApplicationStatusId))
@@ -628,18 +440,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<CompanyRole>(entity =>
             {
                 entity.ToTable("company_roles", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.CompanyRoleText)
-                    .HasColumnName("company_role");
-
-                entity.Property(e => e.NameDe)
-                    .HasColumnName("name_de");
-
-                entity.Property(e => e.NameEn)
-                    .HasColumnName("name_en");
             });
 
             modelBuilder.Entity<CompanyStatus>(entity =>
@@ -648,11 +448,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.CompanyStatusId)
                     .ValueGeneratedNever()
-                    .HasColumnName("company_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(CompanyStatusId))
@@ -663,30 +459,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<CompanyUser>(entity =>
             {
                 entity.ToTable("company_users", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DateLastChanged)
-                    .HasColumnName("date_last_changed");
-
-                entity.Property(e => e.Email)
-                    .HasColumnName("email");
-
-                entity.Property(e => e.Firstname)
-                    .HasColumnName("firstname");
-
-                entity.Property(e => e.Lastlogin)
-                    .HasColumnName("lastlogin");
-
-                entity.Property(e => e.Lastname)
-                    .HasColumnName("lastname");
-
-                entity.Property(e => e.CompanyId)
-                    .HasColumnName("company_id");
 
                 entity.HasOne(d => d.Company)
                     .WithMany(p => p!.CompanyUsers)
@@ -713,8 +485,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.AppId }).HasName("pk_comp_user_ass_app_favour");
                             j.ToTable("company_user_assigned_app_favourites", "portal");
-                            j.Property(e => e.AppId).HasColumnName("app_id");
-                            j.Property(e => e.CompanyUserId).HasColumnName("company_user_id");
                         });
                 
                 entity.HasMany(p => p.CompanyUserRoles)
@@ -736,58 +506,17 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId }).HasName("pk_comp_user_assigned_roles");
                             j.ToTable("company_user_assigned_roles", "portal");
-                            j.Property(e => e.CompanyUserId).HasColumnName("company_user_id");
-                            j.Property(e => e.UserRoleId).HasColumnName("user_role_id");
                         });
             });
 
             modelBuilder.Entity<CompanyUserRole>(entity =>
             {
                 entity.ToTable("company_user_roles", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.CompanyUserRoleText)
-                    .HasColumnName("company_user_role");
-
-                entity.Property(e => e.Namede)
-                    .HasColumnName("namede");
-
-                entity.Property(e => e.Nameen)
-                    .HasColumnName("nameen");
             });
 
             modelBuilder.Entity<Consent>(entity =>
             {
                 entity.ToTable("consents", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.Comment)
-                    .HasColumnName("comment");
-
-                entity.Property(e => e.ConsentStatusId)
-                    .HasColumnName("consent_status_id");
-
-                entity.Property(e => e.Target)
-                    .HasColumnName("target");
-
-                entity.Property(e => e.AgreementId)
-                    .HasColumnName("agreement_id");
-
-                entity.Property(e => e.CompanyId)
-                    .HasColumnName("company_id");
-
-                entity.Property(e => e.DocumentId)
-                    .HasColumnName("document_id");
-
-                entity.Property(e => e.CompanyUserId)
-                    .HasColumnName("company_user_id");
 
                 entity.HasOne(d => d.Agreement)
                     .WithMany(p => p!.Consents)
@@ -825,11 +554,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.ConsentStatusId)
                     .ValueGeneratedNever()
-                    .HasColumnName("consent_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(ConsentStatusId))
@@ -842,46 +567,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("countries", "portal");
 
                 entity.Property(e => e.Alpha2Code)
-                    .HasColumnName("alpha_2_code")
                     .IsFixedLength(true);
 
                 entity.Property(e => e.Alpha3Code)
-                    .HasColumnName("alpha_3_code")
                     .IsFixedLength(true);
-
-                entity.Property(e => e.CountryNameDe)
-                    .HasColumnName("country_name_de");
-
-                entity.Property(e => e.CountryNameEn)
-                    .HasColumnName("country_name_en");
             });
 
             modelBuilder.Entity<Document>(entity =>
             {
                 entity.ToTable("documents", "portal");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DocumentOid)
-                    .HasColumnType("oid")
-                    .HasColumnName("document");
-
-                entity.Property(e => e.Documenthash)
-                    .HasColumnName("documenthash");
-
-                entity.Property(e => e.Documentname)
-                    .HasColumnName("documentname");
-
                 entity.Property(e => e.DocumentTypeId)
-                    .HasColumnName("document_type_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.CompanyUserId)
-                    .HasColumnName("company_user_id");
 
                 entity.HasOne(d => d.DocumentType)
                     .WithMany(p => p!.Documents)
@@ -897,21 +594,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<DocumentTemplate>(entity =>
             {
                 entity.ToTable("document_templates", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.DateLastChanged)
-                    .HasColumnName("date_last_changed");
-
-                entity.Property(e => e.Documenttemplatename)
-                    .HasColumnName("documenttemplatename");
-
-                entity.Property(e => e.Documenttemplateversion)
-                    .HasColumnName("documenttemplateversion");
             });
 
             modelBuilder.Entity<DocumentType>(entity =>
@@ -920,11 +602,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.DocumentTypeId)
                     .ValueGeneratedNever()
-                    .HasColumnName("document_type_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(DocumentTypeId))
@@ -938,12 +616,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.HasIndex(e => e.IdentityProviderId, "uk_aiehoat94wlhasdfiwlkefisi")
                     .IsUnique();
-
-                entity.Property(e => e.IamIdpAlias)
-                    .HasColumnName("iam_idp_alias");
-
-                entity.Property(e => e.IdentityProviderId)
-                    .HasColumnName("identity_provider_id");
 
                 entity.HasOne(d => d.IdentityProvider)
                     .WithOne(p => p!.IamIdentityProvider!)
@@ -959,12 +631,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasIndex(e => e.CompanyUserId, "uk_wiodwiowhdfo84f0sd9afsd2")
                     .IsUnique();
 
-                entity.Property(e => e.UserEntityId)
-                    .HasColumnName("user_entity_id");
-
-                entity.Property(e => e.CompanyUserId)
-                    .HasColumnName("company_user_id");
-
                 entity.HasOne(d => d.CompanyUser)
                     .WithOne(p => p!.IamUser!)
                     .HasForeignKey<IamUser>(d => d.CompanyUserId)
@@ -976,14 +642,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("identity_providers", "portal");
 
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
                 entity.Property(e => e.IdentityProviderCategoryId)
-                    .HasColumnName("identity_provider_category_id")
                     .HasConversion<int>();
 
                 entity.HasOne(d => d.IdentityProviderCategory)
@@ -999,11 +658,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.IdentityProviderCategoryId)
                     .ValueGeneratedNever()
-                    .HasColumnName("identity_provider_category_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(IdentityProviderCategoryId))
@@ -1014,22 +669,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<Invitation>(entity =>
             {
                 entity.ToTable("invitations", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.DateCreated)
-                    .HasColumnName("date_created");
-
-                entity.Property(e => e.InvitationStatusId)
-                    .HasColumnName("invitation_status_id")
-                    .HasConversion<int>();
-
-                entity.Property(e => e.CompanyApplicationId)
-                    .HasColumnName("company_application_id");
-
-                entity.Property(e => e.CompanyUserId)
-                    .HasColumnName("company_user_id");
 
                 entity.HasOne(d => d.CompanyApplication)
                     .WithMany(p => p!.Invitations)
@@ -1055,11 +694,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
                 entity.Property(e => e.InvitationStatusId)
                     .ValueGeneratedNever()
-                    .HasColumnName("invitation_status_id")
                     .HasConversion<int>();
-
-                entity.Property(e => e.Label)
-                    .HasColumnName("label");
 
                 entity.HasData(
                     Enum.GetValues(typeof(InvitationStatusId))
@@ -1072,28 +707,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("languages", "portal");
 
                 entity.Property(e => e.LanguageShortName)
-                    .HasColumnName("language_short_name")
                     .IsFixedLength(true);
-
-                entity.Property(e => e.LongNameDe)
-                    .HasColumnName("long_name_de");
-
-                entity.Property(e => e.LongNameEn)
-                    .HasColumnName("long_name_en");
             });
 
             modelBuilder.Entity<UseCase>(entity =>
             {
                 entity.ToTable("use_cases", "portal");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id");
-
-                entity.Property(e => e.Name)
-                    .HasColumnName("name");
-
-                entity.Property(e => e.Shortname)
-                    .HasColumnName("shortname");
             });
         }
     }

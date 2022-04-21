@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
@@ -25,6 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public int Id { get; private set; }
 
         [MaxLength(255)]
+        [Column("company_role")]
         public string CompanyRoleText { get; set; }
 
         [MaxLength(255)]

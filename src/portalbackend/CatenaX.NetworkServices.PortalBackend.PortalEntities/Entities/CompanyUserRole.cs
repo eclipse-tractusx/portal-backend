@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
@@ -27,6 +28,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public Guid Id { get; private set; }
 
         [MaxLength(255)]
+        [Column("company_user_role")]
         public string CompanyUserRoleText { get; set; }
 
         [MaxLength(255)]

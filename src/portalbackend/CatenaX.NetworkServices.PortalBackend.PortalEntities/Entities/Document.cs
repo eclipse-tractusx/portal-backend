@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
@@ -27,6 +28,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public DateTime DateCreated { get; private set; }
 
+        [Column("document", TypeName = "oid")]
         public uint DocumentOid { get; set; } // FIXME: What is this good for?
 
         [MaxLength(255)]
