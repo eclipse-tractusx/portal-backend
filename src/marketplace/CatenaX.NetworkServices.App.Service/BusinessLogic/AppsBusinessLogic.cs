@@ -10,13 +10,13 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
     /// </summary>
     public class AppsBusinessLogic : IAppsBusinessLogic
     {
-        private readonly PortalDBContext context;
+        private readonly PortalDbContext context;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="context">Database context dependency.</param>
-        public AppsBusinessLogic(PortalDBContext context)
+        public AppsBusinessLogic(PortalDbContext context)
         {
             this.context = context;
         }

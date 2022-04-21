@@ -51,7 +51,7 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                     .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions", options));
 
-builder.Services.AddDbContext<PortalDBContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
+builder.Services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
 
 var app = builder.Build();

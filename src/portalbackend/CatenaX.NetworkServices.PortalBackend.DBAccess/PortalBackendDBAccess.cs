@@ -12,9 +12,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 {
     public class PortalBackendDBAccess : IPortalBackendDBAccess
     {
-        private readonly PortalDBContext _dbContext;
+        private readonly PortalDbContext _dbContext;
 
-        public PortalBackendDBAccess(PortalDBContext dbContext)
+        public PortalBackendDBAccess(PortalDbContext dbContext)
         {
             _dbContext = dbContext;
         }

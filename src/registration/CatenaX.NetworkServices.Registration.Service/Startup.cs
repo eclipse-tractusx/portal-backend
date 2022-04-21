@@ -115,7 +115,7 @@ namespace CatenaX.NetworkServices.Registration.Service
 
             services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
 
-            services.AddDbContext<PortalDBContext>(options =>
+            services.AddDbContext<PortalDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PortalDB")));
         }
 
