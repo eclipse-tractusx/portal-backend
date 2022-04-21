@@ -7,21 +7,25 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class Document
     {
-        public Document()
+        private Document()
         {
+            Documenthash = null!;
+            Documentname = null!;
             Consents = new HashSet<Consent>();
         }
 
-        public Document(string documentHash, string documentname) : this()
+        public Document(Guid id, string documentHash, string documentname, DateTime dateCreated) : this()
         {
+            Id = id;
             Documenthash = documentHash;
             Documentname = documentname;
+            DateCreated = dateCreated;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         public uint DocumentOid { get; set; } // FIXME: What is this good for?
 
@@ -37,7 +41,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public virtual CompanyUser? CompanyUser { get; set; }
         public virtual DocumentType? DocumentType { get; set; }
-        public virtual ICollection<Consent> Consents { get; set; }
+        public virtual ICollection<Consent> Consents { get; private set; }
 
     }
 }

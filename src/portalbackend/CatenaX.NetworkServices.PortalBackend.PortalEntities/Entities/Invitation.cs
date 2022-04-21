@@ -6,26 +6,28 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class Invitation
     {
-        public Invitation() {}
+        private Invitation() {}
 
-        public Invitation(InvitationStatusId invitationStatusId, Guid companyApplicationId, Guid companyUserId)
+        public Invitation(Guid id, Guid companyApplicationId, Guid companyUserId, InvitationStatusId invitationStatusId, DateTime dateCreated)
         {
-            InvitationStatusId = invitationStatusId;
+            Id = id;
+            DateCreated = dateCreated;
             CompanyApplicationId = companyApplicationId;
             CompanyUserId = companyUserId;
+            InvitationStatusId = invitationStatusId;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         public InvitationStatusId InvitationStatusId { get; set; }
-        public Guid CompanyApplicationId { get; set; }
-        public Guid CompanyUserId { get; set; }
+        public Guid CompanyApplicationId { get; private set; }
+        public Guid CompanyUserId { get; private set; }
 
-        public virtual CompanyApplication? CompanyApplication { get; set; }
-        public virtual CompanyUser? CompanyUser { get; set; }
+        public virtual CompanyApplication? CompanyApplication { get; private set; }
+        public virtual CompanyUser? CompanyUser { get; private set; }
         public virtual InvitationStatus? InvitationStatus { get; set; }
     }
 }

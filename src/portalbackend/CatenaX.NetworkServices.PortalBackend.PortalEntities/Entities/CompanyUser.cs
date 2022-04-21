@@ -6,7 +6,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyUser
     {
-        public CompanyUser()
+        private CompanyUser()
         {
             Consents = new HashSet<Consent>();
             Documents = new HashSet<Document>();
@@ -15,15 +15,17 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             CompanyUserRoles = new HashSet<CompanyUserRole>();
         }
      
-        public CompanyUser(Guid companyId) : this()
+        public CompanyUser(Guid id, Guid companyId, DateTime dateCreated) : this()
         {
+            Id = id;
+            DateCreated = dateCreated;
             CompanyId = companyId;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         public DateTime? DateLastChanged { get; set; }
 
@@ -38,14 +40,14 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string? Lastname { get; set; }
 
-        public Guid CompanyId { get; set; }
+        public Guid CompanyId { get; private set; }
 
-        public virtual Company? Company { get; set; }
+        public virtual Company? Company { get; private set; }
         public virtual IamUser? IamUser { get; set; }
-        public virtual ICollection<Consent> Consents { get; set; }
-        public virtual ICollection<Document> Documents { get; set; }
-        public virtual ICollection<Invitation> Invitations { get; set; }
-        public virtual ICollection<App> Apps { get; set; }
-        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; set; }
+        public virtual ICollection<Consent> Consents { get; private set; }
+        public virtual ICollection<Document> Documents { get; private set; }
+        public virtual ICollection<Invitation> Invitations { get; private set; }
+        public virtual ICollection<App> Apps { get; private set; }
+        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; private set; }
     }
 }

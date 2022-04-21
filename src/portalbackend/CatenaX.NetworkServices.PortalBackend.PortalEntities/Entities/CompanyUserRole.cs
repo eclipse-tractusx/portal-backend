@@ -6,21 +6,25 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyUserRole
     {
-        public CompanyUserRole()
+        private CompanyUserRole()
         {
+            CompanyUserRoleText = null!;
+            Namede = null!;
+            Nameen = null!;
             Apps = new HashSet<App>();
             CompanyUsers = new HashSet<CompanyUser>();
         }
 
-        public CompanyUserRole(string companyUserRoleText, string namede, string nameen) : this()
+        public CompanyUserRole(Guid id, string companyUserRoleText, string namede, string nameen) : this()
         {
+            Id = id;
             CompanyUserRoleText = companyUserRoleText;
             Namede = namede;
             Nameen = nameen;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
         [MaxLength(255)]
         public string CompanyUserRoleText { get; set; }
@@ -31,7 +35,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Nameen { get; set; }
 
-        public virtual ICollection<App> Apps { get; set; }
-        public virtual ICollection<CompanyUser> CompanyUsers { get; set; }
+        public virtual ICollection<App> Apps { get; private set; }
+        public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     }
 }

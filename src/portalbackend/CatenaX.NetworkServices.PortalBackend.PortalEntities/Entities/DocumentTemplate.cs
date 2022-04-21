@@ -5,17 +5,24 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class DocumentTemplate
     {
-        public DocumentTemplate() {}
-        public DocumentTemplate(string documenttemplatename, string documenttemplateversion)
+        private DocumentTemplate()
         {
+            Documenttemplatename = null!;
+            Documenttemplateversion = null!;
+        }
+
+        public DocumentTemplate(Guid id, string documenttemplatename, string documenttemplateversion, DateTime dateCreated)
+        {
+            Id = id;
             Documenttemplatename = documenttemplatename;
             Documenttemplateversion = documenttemplateversion;
+            DateCreated = dateCreated;
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         public DateTime? DateLastChanged { get; set; }
 

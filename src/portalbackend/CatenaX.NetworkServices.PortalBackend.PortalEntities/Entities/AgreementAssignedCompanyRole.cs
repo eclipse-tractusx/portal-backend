@@ -4,17 +4,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AgreementAssignedCompanyRole
     {
-        public AgreementAssignedCompanyRole() {}
-        public AgreementAssignedCompanyRole(Agreement agreement, CompanyRole companyRole)
+        private AgreementAssignedCompanyRole() {}
+
+        public AgreementAssignedCompanyRole(Guid agreementId, int companyRoleId)
         {
-            Agreement = agreement;
-            CompanyRole = companyRole;
+            AgreementId = agreementId;
+            CompanyRoleId = companyRoleId;
         }
 
-        public Guid AgreementId { get; set; }
-        public int CompanyRoleId { get; set; }
+        public Guid AgreementId { get; private set; }
+        public int CompanyRoleId { get; private set; }
 
-        public virtual Agreement Agreement { get; set; }
-        public virtual CompanyRole CompanyRole { get; set; }
+        public virtual Agreement? Agreement { get; private set; }
+        public virtual CompanyRole? CompanyRole { get; private set; }
     }
 }

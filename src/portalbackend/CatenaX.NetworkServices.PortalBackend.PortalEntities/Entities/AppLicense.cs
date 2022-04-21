@@ -6,17 +6,24 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AppLicense
     {
-        public AppLicense()
+        private AppLicense()
         {
+            Licensetext = null!;
             Apps = new HashSet<App>();
         }
 
+        public AppLicense(Guid id, string licensetext) : this()
+        {
+            Id = id;
+            Licensetext = licensetext;
+        }
+
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
         [MaxLength(255)]
         public string Licensetext { get; set; }
 
-        public virtual ICollection<App> Apps { get; set; }
+        public virtual ICollection<App> Apps { get; private set; }
     }
 }

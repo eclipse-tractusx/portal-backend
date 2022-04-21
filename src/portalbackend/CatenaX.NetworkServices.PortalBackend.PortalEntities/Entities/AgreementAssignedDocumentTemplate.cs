@@ -4,17 +4,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AgreementAssignedDocumentTemplate
     {
-        public AgreementAssignedDocumentTemplate() {}
-        public AgreementAssignedDocumentTemplate(Agreement agreement, DocumentTemplate documentTemplate)
+        private AgreementAssignedDocumentTemplate() {}
+
+        public AgreementAssignedDocumentTemplate(Guid agreementId, Guid documentTemplateId)
         {
-            Agreement = agreement;
-            DocumentTemplate = documentTemplate;
+            AgreementId = agreementId;
+            DocumentTemplateId = documentTemplateId;
         }
 
-        public Guid AgreementId { get; set; }
-        public Guid DocumentTemplateId { get; set; }
+        public Guid AgreementId { get; private set; }
+        public Guid DocumentTemplateId { get; private set; }
 
-        public virtual Agreement Agreement { get; set; }
-        public virtual DocumentTemplate DocumentTemplate { get; set; }
+        public virtual Agreement? Agreement { get; private set; }
+        public virtual DocumentTemplate? DocumentTemplate { get; private set; }
     }
 }

@@ -5,14 +5,19 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AppDescription
     {
-        public AppDescription() {}
-
-        public AppDescription(string descriptionLong, string descriptionShort, Guid appId, string languageShortName)
+        private AppDescription()
         {
-            DescriptionLong = descriptionLong;
-            DescriptionShort = descriptionShort;
+            LanguageShortName = null!;
+            DescriptionLong = null!;
+            DescriptionShort = null!;
+        }
+
+        public AppDescription(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)
+        {
             AppId = appId;
             LanguageShortName = languageShortName;
+            DescriptionLong = descriptionLong;
+            DescriptionShort = descriptionShort;
         }
         
         [MaxLength(4096)]
@@ -21,12 +26,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string DescriptionShort { get; set; }
 
-        public Guid AppId { get; set; }
+        public Guid AppId { get; private set; }
 
         [StringLength(2, MinimumLength = 2)]
-        public string LanguageShortName { get; set; }
+        public string LanguageShortName { get; private set; }
 
-        public virtual App? App { get; set; }
-        public virtual Language? Language { get; set; }
+        public virtual App? App { get; private set; }
+        public virtual Language? Language { get; private set; }
     }
 }

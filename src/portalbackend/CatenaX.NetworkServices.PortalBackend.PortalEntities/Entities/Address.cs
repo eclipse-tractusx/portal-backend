@@ -6,13 +6,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class Address
     {
-        public Address()
+        private Address()
         {
+            City = null!;
+            Streetname = null!;
+            CountryAlpha2Code = null!;
             Companies = new HashSet<Company>();
         }
 
-        public Address(string city, string streetname, decimal zipcode, string countryAlpha2Code) : this()
+        public Address(Guid id, string city, string streetname, decimal zipcode, string countryAlpha2Code, DateTime dateCreated) : this()
         {
+            Id = id;
+            DateCreated = dateCreated;
             City = city;
             Streetname = streetname;
             Zipcode = zipcode;
@@ -20,9 +25,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
-        public DateTime? DateCreated { get; set; }
+        public DateTime DateCreated { get; private set; }
 
         public DateTime? DateLastChanged { get; set; }
 
@@ -47,6 +52,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public string CountryAlpha2Code { get; set; }
 
         public virtual Country? Country { get; set; }
-        public virtual ICollection<Company> Companies { get; set; }
+        public virtual ICollection<Company> Companies { get; private set; }
     }
 }

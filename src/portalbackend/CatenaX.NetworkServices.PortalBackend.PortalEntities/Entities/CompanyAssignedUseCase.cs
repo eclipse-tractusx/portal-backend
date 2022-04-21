@@ -4,17 +4,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyAssignedUseCase
     {
-        public CompanyAssignedUseCase() {}
-        public CompanyAssignedUseCase(Company company, UseCase useCase)
+        private CompanyAssignedUseCase() {}
+
+        public CompanyAssignedUseCase(Guid companyId, Guid useCaseId)
         {
-            Company = company;
-            UseCase = useCase;
+            CompanyId = companyId;
+            UseCaseId = useCaseId;
         }
 
-        public Guid CompanyId { get; set; }
-        public Guid UseCaseId { get; set; }
+        public Guid CompanyId { get; private set; }
+        public Guid UseCaseId { get; private set; }
 
-        public virtual Company Company { get; set; }
-        public virtual UseCase UseCase { get; set; }
+        public virtual Company? Company { get; private set; }
+        public virtual UseCase? UseCase { get; private set; }
     }
 }
