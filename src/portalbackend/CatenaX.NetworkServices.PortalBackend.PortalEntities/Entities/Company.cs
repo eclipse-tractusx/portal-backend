@@ -21,10 +21,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             UseCases = new HashSet<UseCase>();
         }
         
-        public Company(Guid id, string shortName, CompanyStatusId companyStatusId, DateTime dateCreated) : this()
+        public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTime dateCreated) : this()
         {
             Id = id;
-            Shortname = shortName;
+            Name = name;
             CompanyStatusId = companyStatusId;
             DateCreated = dateCreated;
         }
@@ -41,13 +41,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public string? TaxId { get; set; }
 
         [MaxLength(255)]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         [MaxLength(255)]
         public string? Parent { get; set; }
 
         [MaxLength(255)]
-        public string Shortname { get; set; }
+        public string? Shortname { get; set; }
 
         public CompanyStatusId CompanyStatusId { get; set; }
 

@@ -68,10 +68,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Guid.NewGuid(),
                     companyName,
                     CompanyStatusId.PENDING,
-                    DateTime.Now)
-                    {
-                        Name = companyName,
-                    }).Entity;
+                    DateTime.Now)).Entity;
 
         public CompanyApplication CreateCompanyApplication(Company company) =>
             _dbContext.CompanyApplications.Add(
@@ -178,9 +175,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             {
                 throw new ArgumentException($"applicationId {companyApplicationId} for companyId {companyWithAddress.CompanyId} not found");
             }
-            if (companyWithAddress.Shortname == null)
+            if (companyWithAddress.Name == null)
             {
-                throw new ArgumentException("Shortname must not be null");
+                throw new ArgumentException("Name must not be null");
             }
             if (companyWithAddress.City == null)
             {
