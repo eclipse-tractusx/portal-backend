@@ -41,8 +41,32 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async Task<bool> ExecuteInvitation(CompanyInvitationData invitationData)
+        public async Task<bool> ExecuteInvitation(CompanyInvitationData? invitationData)
         {
+            if (invitationData == null)
+            {
+                throw new ArgumentException("invitationData must not be null");
+            }
+            if (invitationData.firstName == null)
+            {
+                throw new ArgumentException("firstName must not be null");
+            }
+            if (invitationData.lastName == null)
+            {
+                throw new ArgumentException("lastName must not be null");
+            }
+            if (invitationData.userName == null)
+            {
+                throw new ArgumentException("userName must not be null");
+            }
+            if (invitationData.email == null)
+            {
+                throw new ArgumentException("email must not be null");
+            }
+            if (invitationData.organisationName == null)
+            {
+                throw new ArgumentException("organisation must not be null");
+            }
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
             if (idpName == null) return false;
             
@@ -154,12 +178,12 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
         public Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
             string tenant,
-            string userId = null,
-            string providerUserId = null,
-            string userName = null,
-            string firstName = null,
-            string lastName = null,
-            string email = null
+            string? userId = null,
+            string? providerUserId = null,
+            string? userName = null,
+            string? firstName = null,
+            string? lastName = null,
+            string? email = null
         ) => _provisioningManager.GetJoinedUsersAsync(
                 tenant,
                 userId,
@@ -187,17 +211,27 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             }
         }
 
-        public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds usersToDelete, string tenant) =>
-            (await Task.WhenAll(usersToDelete.userIds.Select(async userId => { 
+        public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds? usersToDelete, string? tenant)
+        {
+            if (usersToDelete == null)
+            {
+                throw new ArgumentException("usersToDelete must not be null");
+            }
+            if (tenant == null)
+            {
+                throw new ArgumentException("tenant must not be null");
+            }
+            return (await Task.WhenAll(usersToDelete.userIds.Select(async userId => { 
                 try {
-                    return await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false) ? userId : null;
+                    return await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false) ? userId : null!;
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, $"Error while deleting user {userId}");
-                    return null;
+                    return null!;
                 }
             }))).Where(userName => userName != null);
+        }
 
         public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
         {

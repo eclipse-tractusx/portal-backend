@@ -4,6 +4,6 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Models
 {
     public class UserIds
     {
-        public IEnumerable<string> userIds { get; set; }
+        public IEnumerable<string>? userIds { get; set; }
     }
 }
