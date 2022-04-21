@@ -22,7 +22,7 @@ namespace CatenaX.NetworkServices.Registration.Service
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostContext, builder) =>
                 {
-                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").Equals("Kubernetes"))
+                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.Equals("Kubernetes") ?? false)
                     {
                         var provider = new PhysicalFileProvider("/app/secrets");
                         builder.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);

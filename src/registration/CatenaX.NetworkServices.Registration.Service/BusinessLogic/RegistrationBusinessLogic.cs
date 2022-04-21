@@ -159,8 +159,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
-        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
+        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string? userId)
         {
+            if (userId == null)
+            {
+                throw new ArgumentException("userId must not be null");
+            }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
                 yield return new CompanyApplication {
@@ -170,19 +174,56 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
 
-        public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId) =>
-            _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId);
-
-        
-        public Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
+        public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
         {
+            if (!applicationId.HasValue)
+            {
+                throw new ArgumentException("applicationId must not be nulll");
+            }
+            return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
+        }
+        
+        public Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
+        {
+            if (!applicationId.HasValue)
+            {
+                throw new ArgumentException("applicationId must not be nulll");
+            }
+            if (companyWithAddress == null)
+            {
+                throw new ArgumentException("companyWithAddress must not be nulll");
+            }
             //FIXMX: add update of company status within same transpaction
-            return _portalDBAccess.SetCompanyWithAdressAsync(applicationId, companyWithAddress);
+            return _portalDBAccess.SetCompanyWithAdressAsync(applicationId.Value, companyWithAddress);
         }
 
-        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
+        public async Task<int> InviteNewUserAsync(Guid? applicationId, UserInvitationData? userInvitationData)
         {
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (!applicationId.HasValue)
+            {
+                throw new ArgumentException("applicationId must not be nulll");
+            }
+            if (userInvitationData == null)
+            {
+                throw new ArgumentException("userInvitationData must not be null");
+            }
+            if (userInvitationData.firstName == null)
+            {
+                throw new ArgumentException("fistName must not be null");
+            }
+            if (userInvitationData.lastName == null)
+            {
+                throw new ArgumentException("lastName must not be null");
+            }
+            if (userInvitationData.userName == null)
+            {
+                throw new ArgumentException("userName must not be null");
+            }
+            if (userInvitationData.email == null)
+            {
+                throw new ArgumentException("email must not be null");
+            }
+            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId.Value).ConfigureAwait(false);
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
@@ -196,7 +237,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 applicationData.CompanyName).ConfigureAwait(false);
             if (!await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false)) throw new Exception("failed to assign initial roles");
             var user = _portalDBAccess.CreateCompanyUser(userInvitationData.firstName, userInvitationData.lastName, userInvitationData.email, applicationData.CompanyId);
-            var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
+            var invitation = _portalDBAccess.CreateInvitation(applicationId.Value, user);
             var iamUser = _portalDBAccess.CreateIamUser(user, iamUserId);
             var updates = await _portalDBAccess.SaveAsync();
             var mailParameters = new Dictionary<string, string>
@@ -211,11 +252,27 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
         }
 
-        public Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status) =>
-            _portalDBAccess.UpdateApplicationStatusAsync(applicationId, status);
+        public Task<int> SetApplicationStatusAsync(Guid? applicationId, CompanyApplicationStatusId? status)
+        {
+            if (!applicationId.HasValue)
+            {
+                throw new ArgumentException("applicationId must not be null");
+            }
+            if (!status.HasValue)
+            {
+                throw new ArgumentException("status must not be null");
+            }
+            return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
+        }
             
-        public Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId) =>
-            _portalDBAccess.GetApplicationStatusAsync(applicationId);
+        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
+        {
+            if (!applicationId.HasValue)
+            {
+                throw new ArgumentException("applicationId must not be null");
+            }
+            return _portalDBAccess.GetApplicationStatusAsync(applicationId.Value);
+        }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
         {
