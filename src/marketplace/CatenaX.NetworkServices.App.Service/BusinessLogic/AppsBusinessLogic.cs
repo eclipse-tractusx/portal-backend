@@ -29,10 +29,10 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
                 .Select(a => new {
                     Id = a.Id,
-                    Name = a.Name,
-                    VendorCompanyName = a.VendorCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
+                    Name = (string?)a.Name,
+                    VendorCompanyName = a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
                     UseCaseNames = a.UseCases.Select(uc => uc.Name),
-                    ThumbnailUrl = a.ThumbnailUrl,
+                    ThumbnailUrl = (string?)a.ThumbnailUrl,
                     ShortDescription = languageShortName == null
                         ? null
                         : a.AppDescriptions
@@ -70,11 +70,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
         {
             var companyUserId = await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleAsync();
-            var rowToRemove = new CompanyUserAssignedAppFavourite
-            {
-                AppId = appId,
-                CompanyUserId = companyUserId
-            };
+            var rowToRemove = new CompanyUserAssignedAppFavourite(appId, companyUserId);
             this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
             this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
             await this.context.SaveChangesAsync();
@@ -85,12 +81,8 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         {
             var companyUserId = await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleAsync();
             await this.context.CompanyUserAssignedAppFavourites.AddAsync(
-                new CompanyUserAssignedAppFavourite
-                {
-                    AppId = appId,
-                    CompanyUserId = companyUserId
-                }
-            );
+                new CompanyUserAssignedAppFavourite(appId, companyUserId)
+            ); 
             await this.context.SaveChangesAsync();
         }
     }
