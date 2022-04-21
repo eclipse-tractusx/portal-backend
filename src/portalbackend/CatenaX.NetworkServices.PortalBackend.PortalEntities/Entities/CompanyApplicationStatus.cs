@@ -23,6 +23,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Label { get; private set; }
 
+        // Navigation properties
         public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
     }
 }

@@ -15,6 +15,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public Guid CompanyUserId { get; private set; }
         public Guid UserRoleId { get; private set; }
 
+        // Navigation properties
         public virtual CompanyUser? CompanyUser { get; private set; }
         public virtual CompanyUserRole? UserRole { get; private set; }
     }

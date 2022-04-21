@@ -33,7 +33,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string NameEn { get; set; }
 
-
+        // Navigation properties
         public virtual AgreementAssignedCompanyRole? AgreementAssignedCompanyRole { get; private set; }
         public virtual ICollection<Company> Companies { get; private set; }
     }

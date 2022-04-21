@@ -24,6 +24,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public string ImageUrl { get; set; }
 
+        // Navigation properties
         public virtual App? App { get; set; }
     }
 }

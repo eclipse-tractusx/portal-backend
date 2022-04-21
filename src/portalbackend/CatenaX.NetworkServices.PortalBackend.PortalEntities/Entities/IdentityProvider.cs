@@ -25,6 +25,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
 
+        // Navigation properties
         public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
         public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
         public virtual ICollection<Company> Companies { get; private set; }

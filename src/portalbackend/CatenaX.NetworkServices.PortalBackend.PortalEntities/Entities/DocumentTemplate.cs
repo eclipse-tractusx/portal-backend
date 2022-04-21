@@ -32,6 +32,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Documenttemplateversion { get; set; }
 
+        // Navigation properties
         public virtual AgreementAssignedDocumentTemplate? AgreementAssignedDocumentTemplate { get; set; }
     }
 }

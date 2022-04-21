@@ -44,6 +44,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public Guid? UseCaseId { get; set; }
 
+        // Navigation properties
         public virtual AgreementCategory? AgreementCategory { get; set; }
         public virtual App? App { get; set; }
         public virtual Company? IssuerCompany { get; set; }

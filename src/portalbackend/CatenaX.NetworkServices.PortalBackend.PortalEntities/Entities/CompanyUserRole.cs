@@ -35,6 +35,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Nameen { get; set; }
 
+        // Navigation properties
         public virtual ICollection<App> Apps { get; private set; }
         public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     }

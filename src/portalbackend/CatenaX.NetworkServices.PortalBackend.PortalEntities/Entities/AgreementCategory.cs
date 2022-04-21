@@ -18,6 +18,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Label { get; private set; }
 
+        // Navigation properties
         public virtual ICollection<Agreement> Agreements { get; private set; }
     }
 }

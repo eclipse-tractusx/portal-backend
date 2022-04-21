@@ -22,6 +22,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string IamIdpAlias { get; private set; }
 
+        // Navigation properties
         public virtual IdentityProvider? IdentityProvider { get; private set; }
     }
 }

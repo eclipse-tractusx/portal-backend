@@ -26,6 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public Guid CompanyApplicationId { get; private set; }
         public Guid CompanyUserId { get; private set; }
 
+        // Navigation properties
         public virtual CompanyApplication? CompanyApplication { get; private set; }
         public virtual CompanyUser? CompanyUser { get; private set; }
         public virtual InvitationStatus? InvitationStatus { get; set; }
