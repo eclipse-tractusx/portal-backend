@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 {
-    public class PortalDBContext : DbContext
+    public class PortalDbContext : DbContext
     {
-        public PortalDBContext(DbContextOptions<PortalDBContext> options)
+        public PortalDbContext(DbContextOptions<PortalDbContext> options)
             : base(options)
         {
         }
