@@ -75,12 +75,12 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         [Route("tenant/{tenant}/users")]
         public Task<IEnumerable<JoinedUserInfo>> QueryJoinedUsers(
                 [FromRoute] string tenant,
-                [FromQuery] string userId = null,
-                [FromQuery] string providerUserId = null,
-                [FromQuery] string userName = null,
-                [FromQuery] string firstName = null,
-                [FromQuery] string lastName = null,
-                [FromQuery] string email = null
+                [FromQuery] string? userId = null,
+                [FromQuery] string? providerUserId = null,
+                [FromQuery] string? userName = null,
+                [FromQuery] string? firstName = null,
+                [FromQuery] string? lastName = null,
+                [FromQuery] string? email = null
             ) => _logic.GetUsersAsync(tenant, userId, providerUserId, userName, firstName, lastName, email);
 
         [HttpGet]
