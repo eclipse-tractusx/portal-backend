@@ -83,8 +83,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("agreements", "portal");
 
-                entity.Property(e => e.AgreementCategoryId)
-                    .HasConversion<int>();
                 entity.HasOne(d => d.AgreementCategory)
                     .WithMany(p => p!.Agreements)
                     .HasForeignKey(d => d.AgreementCategoryId)
@@ -171,9 +169,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .WithMany(p => p!.ProvidedApps)
                     .HasForeignKey(d => d.ProviderCompanyId)
                     .HasConstraintName("fk_68a9joedhyf43smfx2xc4rgm");
-
-                entity.Property(e => e.AppStatusId)
-                    .HasConversion<int>();
 
                 entity.HasOne(d => d.AppStatus)
                     .WithMany(p => p!.Apps)
@@ -308,8 +303,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("app_status", "portal");
 
                 entity.Property(e => e.AppStatusId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(AppStatusId))
@@ -321,8 +315,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("companies", "portal");
 
-                entity.Property(e => e.CompanyStatusId)
-                    .HasConversion<int>();
                 entity.HasOne(d => d.Address)
                     .WithMany(p => p!.Companies)
                     .HasForeignKey(d => d.AddressId)
@@ -403,10 +395,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
 
             modelBuilder.Entity<CompanyApplication>(entity =>
             {
-                entity.ToTable("company_applications", "portal");
-
-                entity.Property(e => e.ApplicationStatusId)
-                    .HasConversion<int>();
+                entity.ToTable("company_applications", "portal");;
 
                 entity.HasOne(d => d.ApplicationStatus)
                     .WithMany(p => p!.CompanyApplications)
@@ -428,8 +417,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("company_application_status", "portal");
 
                 entity.Property(e => e.ApplicationStatusId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(CompanyApplicationStatusId))
@@ -447,8 +435,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("company_status", "portal");
 
                 entity.Property(e => e.CompanyStatusId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(CompanyStatusId))
@@ -553,8 +540,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("consent_status", "portal");
 
                 entity.Property(e => e.ConsentStatusId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(ConsentStatusId))
@@ -577,9 +563,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("documents", "portal");
 
-                entity.Property(e => e.DocumentTypeId)
-                    .HasConversion<int>();
-
                 entity.HasOne(d => d.DocumentType)
                     .WithMany(p => p!.Documents)
                     .HasForeignKey(d => d.DocumentTypeId)
@@ -601,8 +584,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("document_types", "portal");
 
                 entity.Property(e => e.DocumentTypeId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(DocumentTypeId))
@@ -642,9 +624,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("identity_providers", "portal");
 
-                entity.Property(e => e.IdentityProviderCategoryId)
-                    .HasConversion<int>();
-
                 entity.HasOne(d => d.IdentityProviderCategory)
                     .WithMany(p => p!.IdentityProviders)
                     .HasForeignKey(d => d.IdentityProviderCategoryId)
@@ -657,8 +636,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("identity_provider_categories", "portal");
 
                 entity.Property(e => e.IdentityProviderCategoryId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(IdentityProviderCategoryId))
@@ -693,8 +671,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.ToTable("invitation_status", "portal");
 
                 entity.Property(e => e.InvitationStatusId)
-                    .ValueGeneratedNever()
-                    .HasConversion<int>();
+                    .ValueGeneratedNever();
 
                 entity.HasData(
                     Enum.GetValues(typeof(InvitationStatusId))
