@@ -1,7 +1,4 @@
-﻿using CatenaX.NetworkServices.Cosent.Library;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CatenaX.NetworkServices.Consent.Library;
 using Xunit;
 
 namespace CatenaX.NetworkServices.Consent.Service.Tests
