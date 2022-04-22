@@ -3,13 +3,14 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums
 {
     public enum CompanyApplicationStatusId : int
     {
-        ADD_COMPANY_DATA = 1,
-        INVITE_USER = 2,
-        SELECT_COMPANY_ROLE = 3,
-        UPLOAD_DOCUMENTS = 4,
-        VERIFY = 5,
-        SUBMITTED = 6,
-        CONFIRMED = 7,
-        DECLINED = 8
+        CREATED = 1,
+        ADD_COMPANY_DATA = 2,
+        INVITE_USER = 3,
+        SELECT_COMPANY_ROLE = 4,
+        UPLOAD_DOCUMENTS = 5,
+        VERIFY = 6,
+        SUBMITTED = 7,
+        CONFIRMED = 8,
+        DECLINED = 9
     }
 }

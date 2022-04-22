@@ -1,4 +1,5 @@
 using Keycloak.Net.Models.Roles;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +12,10 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         {
             var count = roleNames.Count();
             var client = await GetCentralClientViewableAsync(clientName).ConfigureAwait(false);
-            if (client == null) return (null,null);
+            if (client == null)
+            {
+                throw new Exception($"failed to retrieve central client {clientName}");
+            }
             switch (count)
             {
                 case 0:
@@ -26,15 +30,18 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             }
         }
 
-        public async Task<bool> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames)
+        public async Task AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames)
         {
-            return (await Task.WhenAll(clientRoleNames.Select( async x => 
+            if(!(await Task.WhenAll(clientRoleNames.Select( async x => 
                 {
                     var (client, roleNames) = x;
                     var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
                     return await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
                 }
-            )).ConfigureAwait(false)).All( x => x );
+            )).ConfigureAwait(false)).All( x => x ))
+            {
+                throw new Exception($"failed to assing client-roles {clientRoleNames} to central user {centralUserId}");
+            }
         }
     }
 }

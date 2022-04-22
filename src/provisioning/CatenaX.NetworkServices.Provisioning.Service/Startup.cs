@@ -22,7 +22,7 @@ namespace CatenaX.NetworkServices.Provisioning.Service
 {
     public class Startup
     {
-        private static string TAG = typeof(Startup).Namespace;
+        private static string TAG = typeof(Startup).Namespace!;
         private static string VERSION = "v2";
 
         public Startup(IConfiguration configuration)

@@ -29,7 +29,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service
 {
     public class Startup
     {
-        private static string TAG = typeof(Startup).Namespace;
+        private static string TAG = typeof(Startup).Namespace!;
         private static string VERSION = "v2";
 
         public Startup(IConfiguration configuration)
@@ -98,7 +98,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service
             services.AddTransient<IDBConnectionFactories, PostgreConnectionFactories>()
                     .ConfigureDBConnectionSettingsMap(Configuration.GetSection("DatabaseAccess"));
 
-            services.AddDbContext<PortalDBContext>(options =>
+            services.AddDbContext<PortalDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PortalDB")));
 
             services.AddDbContext<ProvisioningDBContext>(options =>

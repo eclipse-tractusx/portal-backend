@@ -12,9 +12,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 {
     public class PortalBackendDBAccess : IPortalBackendDBAccess
     {
-        private readonly PortalDBContext _dbContext;
+        private readonly PortalDbContext _dbContext;
 
-        public PortalBackendDBAccess(PortalDBContext dbContext)
+        public PortalBackendDBAccess(PortalDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -28,8 +28,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             return _dbContext.IamUsers
                     .Where(iamUser => 
                         iamUser.UserEntityId == userId
-                        && iamUser.CompanyUser.Company.Bpn != null)
-                    .Select(iamUser => iamUser.CompanyUser.Company.Bpn)
+                        && iamUser.CompanyUser!.Company!.Bpn != null)
+                    .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn!)
                     .AsNoTracking()
                     .SingleAsync();
         }
@@ -39,10 +39,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             return _dbContext.IamUsers
                     .Where(iamUser => 
                         userIds.Contains(iamUser.UserEntityId)
-                        && iamUser.CompanyUser.Company.Bpn != null)
+                        && iamUser.CompanyUser!.Company!.Bpn != null)
                     .Select(iamUser => new UserBpn {
                         userId = iamUser.UserEntityId,
-                        bpn = iamUser.CompanyUser.Company.Bpn
+                        bpn = iamUser.CompanyUser!.Company!.Bpn!
                     })
                     .AsNoTracking()
                     .AsAsyncEnumerable();
@@ -56,81 +56,86 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             }
             return _dbContext.CompanyIdentityProviders
                 .Where(cip => cip.CompanyId == companyId
-                    && cip.IdentityProvider.IamIdentityProvider.IamIdpAlias != null)
-                .Select(cip => cip.IdentityProvider.IamIdentityProvider.IamIdpAlias)
+                    && cip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias != null)
+                .Select(cip => cip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias)
                 .AsNoTracking()
                 .AsAsyncEnumerable();
         }
 
-        public Company CreateCompany(string companyName)
-        {
-            return _dbContext.Companies.Add(new Company {
-                Id = Guid.NewGuid(),
-                Name = companyName,
-                Shortname = companyName,
-                CompanyStatusId = CompanyStatusId.PENDING
-            }).Entity;
-        }
+        public Company CreateCompany(string companyName) =>
+            _dbContext.Companies.Add(
+                new Company(
+                    Guid.NewGuid(),
+                    companyName,
+                    CompanyStatusId.PENDING,
+                    DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyApplication CreateCompanyApplication(Company company)
-        {
-            return _dbContext.CompanyApplications.Add(new CompanyApplication {
-                Id = Guid.NewGuid(),
-                ApplicationStatusId = CompanyApplicationStatusId.ADD_COMPANY_DATA,
-                Company = company
-            }).Entity;
-        }
+        public CompanyApplication CreateCompanyApplication(Company company) =>
+            _dbContext.CompanyApplications.Add(
+                new CompanyApplication(
+                    Guid.NewGuid(),
+                    company.Id,
+                    CompanyApplicationStatusId.ADD_COMPANY_DATA,
+                    DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId)
-        {
-            return _dbContext.CompanyUsers.Add(new CompanyUser {
-                Id = Guid.NewGuid(),
-                Firstname = firstName,
-                Lastname = lastName,
-                Email = email,
-                CompanyId = companyId
-            }).Entity;
-        }
+        public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId) =>
+            _dbContext.CompanyUsers.Add(
+                new CompanyUser(
+                    Guid.NewGuid(),
+                    companyId,
+                    DateTimeOffset.UtcNow)
+                    {
+                        Firstname = firstName,
+                        Lastname = lastName,
+                        Email = email,
+                    }).Entity;
 
-        public Invitation CreateInvitation(Guid applicationId, CompanyUser user)
-        {
-            return _dbContext.Invitations.Add(new Invitation {
-                Id = Guid.NewGuid(),
-                InvitationStatusId = InvitationStatusId.CREATED,
-                CompanyApplicationId = applicationId,
-                CompanyUser = user
-            }).Entity;
-        }
+        public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+            _dbContext.Invitations.Add(
+                new Invitation(
+                    Guid.NewGuid(),
+                    applicationId,
+                    user.Id,
+                    InvitationStatusId.CREATED,
+                    DateTimeOffset.UtcNow)).Entity;
 
         public IdentityProvider CreateSharedIdentityProvider(Company company)
         {
-            var idp = new IdentityProvider() {
-                Id = Guid.NewGuid(),
-                IdentityProviderCategoryId = IdentityProviderCategoryId.KEYCLOAK_SHARED,
-            };
+            var idp = new IdentityProvider(
+                Guid.NewGuid(),
+                IdentityProviderCategoryId.KEYCLOAK_SHARED,
+                DateTimeOffset.UtcNow);
             idp.Companies.Add(company);
             return _dbContext.IdentityProviders.Add(idp).Entity;
         }
 
-        public IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias)
-        {
-            return _dbContext.IamIdentityProviders.Add(new IamIdentityProvider(idpAlias) {
-                IdentityProvider = identityProvider
-            }).Entity;
-        }
+        public IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias) =>
+            _dbContext.IamIdentityProviders.Add(
+                new IamIdentityProvider(
+                    idpAlias,
+                    identityProvider.Id)).Entity;
 
-        public IamUser CreateIamUser(CompanyUser user, string iamUserEntityId)
-        {
-            return _dbContext.IamUsers.Add(new IamUser {
-                CompanyUser = user,
-                UserEntityId = iamUserEntityId
-            }).Entity;
-        }
+        public IamUser CreateIamUser(CompanyUser user, string iamUserEntityId) =>
+            _dbContext.IamUsers.Add(
+                new IamUser(
+                    iamUserEntityId,
+                    user.Id)).Entity;
+
+        public Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code) =>
+            _dbContext.Addresses.Add(
+                new Address(
+                    Guid.NewGuid(),
+                    city,
+                    streetname,
+                    zipcode,
+                    countryAlpha2Code,
+                    DateTimeOffset.UtcNow
+                )).Entity;
 
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .Where(iamUser => iamUser.UserEntityId == iamUserId)
-                .SelectMany(iamUser => iamUser.CompanyUser.Company.CompanyApplications)
+                .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyApplications)
                     .Select(companyApplication => new CompanyApplicationWithStatus {
                         ApplicationId = companyApplication.Id,
                         ApplicationStatus = companyApplication.ApplicationStatusId
@@ -143,17 +148,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(
                     companyApplication => new CompanyWithAddress {
                         CompanyId = companyApplication.CompanyId,
-                        Bpn = companyApplication.Company.Bpn,
+                        Bpn = companyApplication.Company!.Bpn,
                         Name = companyApplication.Company.Name,
                         Shortname = companyApplication.Company.Shortname,
-                        City = companyApplication.Company.Address.City,
+                        City = companyApplication.Company.Address!.City,
                         Region = companyApplication.Company.Address.Region,
                         Streetadditional = companyApplication.Company.Address.Streetadditional,
                         Streetname = companyApplication.Company.Address.Streetname,
                         Streetnumber = companyApplication.Company.Address.Streetnumber,
                         Zipcode = companyApplication.Company.Address.Zipcode,
                         CountryAlpha2Code = companyApplication.Company.Address.CountryAlpha2Code,
-                        CountryDe = companyApplication.Company.Address.Country.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
                     })
                 .AsNoTracking()
                 .SingleAsync();
@@ -162,21 +167,60 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         {
             var company = (await _dbContext.CompanyApplications
                 .Include(companyApplication => companyApplication.Company)
-                .ThenInclude(company => company.Address)
-                .Where(companyApplication => companyApplication.Id == companyApplicationId && companyApplication.Company.Id == companyWithAddress.CompanyId)
+                .ThenInclude(company => company!.Address)
+                .Where(companyApplication => companyApplication.Id == companyApplicationId && companyApplication.Company!.Id == companyWithAddress.CompanyId)
                 .SingleAsync()
                 .ConfigureAwait(false)).Company;
+            if (company == null)
+            {
+                throw new ArgumentException($"applicationId {companyApplicationId} for companyId {companyWithAddress.CompanyId} not found");
+            }
+            if (companyWithAddress.Name == null)
+            {
+                throw new ArgumentException("Name must not be null");
+            }
+            if (companyWithAddress.City == null)
+            {
+                throw new ArgumentException("City must not be null");
+            }
+            if (companyWithAddress.Streetname == null)
+            {
+                throw new ArgumentException("Streetname must not be null");
+            }
+            if (companyWithAddress.Zipcode == null)
+            {
+                throw new ArgumentException("Zipcode must not be null");
+            }
+            if (companyWithAddress.CountryAlpha2Code == null)
+            {
+                throw new ArgumentException("CountryAlpha2Code must not be null");
+            }
+
             company.Bpn = companyWithAddress.Bpn;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
-            company.Address ??= _dbContext.Add(new Address()).Entity;
-            company.Address.City = companyWithAddress.City;
+            if (company.Address == null)
+            {
+                company.Address =_dbContext.Add(
+                    new Address(
+                        Guid.NewGuid(),
+                        companyWithAddress.City,
+                        companyWithAddress.Streetname,
+                        (decimal)companyWithAddress.Zipcode,
+                        companyWithAddress.CountryAlpha2Code,
+                        DateTimeOffset.UtcNow
+                    )).Entity;
+            }
+            else
+            {
+                company.Address.City = companyWithAddress.City;
+                company.Address.Streetname = companyWithAddress.Streetname;
+                company.Address.Zipcode = (decimal)companyWithAddress.Zipcode;
+                company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+            }
             company.Address.Region = companyWithAddress.Region;
             company.Address.Streetadditional = companyWithAddress.Streetadditional;
-            company.Address.Streetname = companyWithAddress.Streetname;
             company.Address.Streetnumber = companyWithAddress.Streetnumber;
-            company.Address.Zipcode = companyWithAddress.Zipcode;
-            company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
             await _dbContext.SaveChangesAsync();
         }
 
@@ -185,11 +229,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(companyApplication => companyApplication.Id == companyApplicationId)
                 .Select(
                     companyApplication => new CompanyNameIdWithIdpAlias {
-                        CompanyName = companyApplication.Company.Name,
+                        CompanyName = companyApplication.Company!.Name!,
                         CompanyId = companyApplication.CompanyId,
                         IdpAlias = companyApplication.Company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                            .Select(identityProvider => identityProvider.IamIdentityProvider.IamIdpAlias)
+                            .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                             .Single()
                     }
                 )
@@ -205,7 +249,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             return await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public Task<CompanyApplicationStatusId?> GetApplicationStatusAsync(Guid applicationId)
+        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
         {
             return _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)

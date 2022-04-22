@@ -1,15 +1,18 @@
-﻿using System;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class App : BaseEntity
+    public class App
     {
-        public App()
+        private App()
         {
+            Provider = null!;
             Agreements = new HashSet<Agreement>();
             AppDescriptions = new HashSet<AppDescription>();
+            AppDetailImages = new HashSet<AppDetailImage>();
             Companies = new HashSet<Company>();
             CompanyUserRoles = new HashSet<CompanyUserRole>();
             AppLicenses = new HashSet<AppLicense>();
@@ -17,10 +20,22 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             CompanyUsers = new HashSet<CompanyUser>();
         }
 
+        public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
+        {
+            Id = id;
+            Provider = provider;
+            DateCreated = dateCreated;
+        }
+
+        [Key]
+        public Guid Id { get; private set; }
+
         [MaxLength(255)]
         public string? Name { get; set; }
 
-        public DateTime? DateReleased { get; set; }
+        public DateTimeOffset DateCreated { get; private set; }
+
+        public DateTimeOffset? DateReleased { get; set; }
 
         [MaxLength(255)]
         public string? ThumbnailUrl { get; set; }
@@ -31,15 +46,29 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string? MarketingUrl { get; set; }
 
-        public Guid? VendorCompanyId { get; set; }
+        [MaxLength(255)]
+        public string? ContactEmail { get; set; }
 
-        public virtual Company? VendorCompany { get; set; }
-        public virtual ICollection<Company> Companies { get; set; }
-        public virtual ICollection<Agreement> Agreements { get; set; }
-        public virtual ICollection<AppDescription> AppDescriptions { get; set; }
-        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; set; }
-        public virtual ICollection<AppLicense> AppLicenses { get; set; }
-        public virtual ICollection<UseCase> UseCases { get; set; }
-        public virtual ICollection<CompanyUser> CompanyUsers { get; set; }
+        [MaxLength(255)]
+        public string? ContactNumber { get; set; }
+
+        [MaxLength(255)]
+        public string Provider { get; set; }
+
+        public Guid? ProviderCompanyId { get; set; }
+
+        public AppStatusId AppStatusId { get; set; }
+
+        // Navigation properties
+        public virtual Company? ProviderCompany { get; set; }
+        public virtual AppStatus? AppStatus{ get; set; }
+        public virtual ICollection<Company> Companies { get; private set; }
+        public virtual ICollection<Agreement> Agreements { get; private set; }
+        public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
+        public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
+        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; private set; }
+        public virtual ICollection<AppLicense> AppLicenses { get; private set; }
+        public virtual ICollection<UseCase> UseCases { get; private set; }
+        public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     }
 }

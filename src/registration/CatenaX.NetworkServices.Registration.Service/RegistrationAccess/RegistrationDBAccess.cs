@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CatenaX.NetworkServices.Cosent.Library.Data;
+using CatenaX.NetworkServices.Consent.Library.Data;
 using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Registration.Service.Model;
 

@@ -4,17 +4,19 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AppAssignedUseCase
     {
-        public AppAssignedUseCase() {}
-        public AppAssignedUseCase(App app, UseCase useCase)
+        private AppAssignedUseCase() {}
+
+        public AppAssignedUseCase(Guid appId, Guid useCaseId)
         {
-            App = app;
-            UseCase = useCase;
+            AppId = appId;
+            UseCaseId = useCaseId;
         }
 
-        public Guid AppId { get; set; }
-        public Guid UseCaseId { get; set; }
+        public Guid AppId { get; private set; }
+        public Guid UseCaseId { get; private set; }
 
-        public virtual App App { get; set; }
-        public virtual UseCase UseCase { get; set; }
+        // Navigation properties
+        public virtual App? App { get; private set; }
+        public virtual UseCase? UseCase { get; private set; }
     }
 }

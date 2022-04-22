@@ -4,17 +4,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AppAssignedCompanyUserRole
     {
-        public AppAssignedCompanyUserRole() {}
-        public AppAssignedCompanyUserRole(App app, CompanyUserRole companyUserRole)
+        private AppAssignedCompanyUserRole() {}
+        public AppAssignedCompanyUserRole(Guid appId, Guid companyUserRoleId)
         {
-            App = app;
-            CompanyUserRole = companyUserRole;
+            AppId = appId;
+            CompanyUserRoleId = companyUserRoleId;
         }
 
-        public Guid AppId { get; set; }
-        public Guid CompanyUserRoleId { get; set; }
+        public Guid AppId { get; private set; }
+        public Guid CompanyUserRoleId { get; private set; }
 
-        public virtual App App { get; set; }
-        public virtual CompanyUserRole CompanyUserRole { get; set; }
+        // Navigation properties
+        public virtual App? App { get; private set; }
+        public virtual CompanyUserRole? CompanyUserRole { get; private set; }
     }
 }
