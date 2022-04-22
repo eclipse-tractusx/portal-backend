@@ -15,7 +15,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             Consents = new HashSet<Consent>();
         }
 
-        public Document(Guid id, string documentHash, string documentname, DateTime dateCreated) : this()
+        public Document(Guid id, string documentHash, string documentname, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             Documenthash = documentHash;
@@ -26,7 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
         [Column("document", TypeName = "oid")]
         public uint DocumentOid { get; set; } // FIXME: What is this good for?

@@ -14,7 +14,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             Companies = new HashSet<Company>();
         }
 
-        public Address(Guid id, string city, string streetname, decimal zipcode, string countryAlpha2Code, DateTime dateCreated) : this()
+        public Address(Guid id, string city, string streetname, decimal zipcode, string countryAlpha2Code, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             DateCreated = dateCreated;
@@ -27,9 +27,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
-        public DateTime? DateLastChanged { get; set; }
+        public DateTimeOffset? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string City { get; set; }

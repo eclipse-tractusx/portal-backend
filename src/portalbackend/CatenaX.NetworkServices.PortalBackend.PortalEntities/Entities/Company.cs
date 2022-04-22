@@ -21,7 +21,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             UseCases = new HashSet<UseCase>();
         }
         
-        public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTime dateCreated) : this()
+        public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             Name = name;
@@ -32,7 +32,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
         [MaxLength(20)]
         public string? Bpn { get; set; }

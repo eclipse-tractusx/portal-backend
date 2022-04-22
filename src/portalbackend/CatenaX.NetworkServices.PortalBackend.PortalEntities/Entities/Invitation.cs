@@ -8,7 +8,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
     {
         private Invitation() {}
 
-        public Invitation(Guid id, Guid companyApplicationId, Guid companyUserId, InvitationStatusId invitationStatusId, DateTime dateCreated)
+        public Invitation(Guid id, Guid companyApplicationId, Guid companyUserId, InvitationStatusId invitationStatusId, DateTimeOffset dateCreated)
         {
             Id = id;
             DateCreated = dateCreated;
@@ -20,7 +20,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
         public InvitationStatusId InvitationStatusId { get; set; }
         public Guid CompanyApplicationId { get; private set; }

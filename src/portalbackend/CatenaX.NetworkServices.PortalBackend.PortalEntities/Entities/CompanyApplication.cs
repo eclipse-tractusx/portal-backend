@@ -12,7 +12,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             Invitations = new HashSet<Invitation>();
         }
 
-        public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTime dateCreated) : this()
+        public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             CompanyId = companyId;
@@ -23,9 +23,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
-        public DateTime? DateLastChanged { get; set; }
+        public DateTimeOffset? DateLastChanged { get; set; }
 
         public CompanyApplicationStatusId ApplicationStatusId { get; set; }
         public Guid CompanyId { get; private set; }

@@ -20,7 +20,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             CompanyUsers = new HashSet<CompanyUser>();
         }
 
-        public App(Guid id, string provider, DateTime dateCreated) : this()
+        public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             Provider = provider;
@@ -33,9 +33,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string? Name { get; set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
-        public DateTime? DateReleased { get; set; }
+        public DateTimeOffset? DateReleased { get; set; }
 
         [MaxLength(255)]
         public string? ThumbnailUrl { get; set; }
