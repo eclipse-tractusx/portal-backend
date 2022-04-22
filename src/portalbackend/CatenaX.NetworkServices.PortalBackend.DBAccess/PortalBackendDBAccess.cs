@@ -68,7 +68,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Guid.NewGuid(),
                     companyName,
                     CompanyStatusId.PENDING,
-                    DateTime.Now)).Entity;
+                    DateTimeOffset.UtcNow)).Entity;
 
         public CompanyApplication CreateCompanyApplication(Company company) =>
             _dbContext.CompanyApplications.Add(
@@ -76,14 +76,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Guid.NewGuid(),
                     company.Id,
                     CompanyApplicationStatusId.ADD_COMPANY_DATA,
-                    DateTime.Now)).Entity;
+                    DateTimeOffset.UtcNow)).Entity;
 
         public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId) =>
             _dbContext.CompanyUsers.Add(
                 new CompanyUser(
                     Guid.NewGuid(),
                     companyId,
-                    DateTime.Now)
+                    DateTimeOffset.UtcNow)
                     {
                         Firstname = firstName,
                         Lastname = lastName,
@@ -97,14 +97,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     applicationId,
                     user.Id,
                     InvitationStatusId.CREATED,
-                    DateTime.Now)).Entity;
+                    DateTimeOffset.UtcNow)).Entity;
 
         public IdentityProvider CreateSharedIdentityProvider(Company company)
         {
             var idp = new IdentityProvider(
                 Guid.NewGuid(),
                 IdentityProviderCategoryId.KEYCLOAK_SHARED,
-                DateTime.Now);
+                DateTimeOffset.UtcNow);
             idp.Companies.Add(company);
             return _dbContext.IdentityProviders.Add(idp).Entity;
         }
@@ -129,7 +129,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     streetname,
                     zipcode,
                     countryAlpha2Code,
-                    DateTime.Now
+                    DateTimeOffset.UtcNow
                 )).Entity;
 
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
@@ -208,7 +208,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         companyWithAddress.Streetname,
                         (decimal)companyWithAddress.Zipcode,
                         companyWithAddress.CountryAlpha2Code,
-                        DateTime.Now
+                        DateTimeOffset.UtcNow
                     )).Entity;
             }
             else
