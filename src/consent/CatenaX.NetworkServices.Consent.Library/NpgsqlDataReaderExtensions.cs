@@ -2,10 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Cosent.Library
+namespace CatenaX.NetworkServices.Consent.Library
 {
     public static class NpgsqlDataReaderExtensions
     {

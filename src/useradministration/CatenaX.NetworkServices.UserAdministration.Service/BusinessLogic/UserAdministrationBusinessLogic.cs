@@ -41,25 +41,46 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async Task<bool> ExecuteInvitation(CompanyInvitationData invitationData)
+        public async Task ExecuteInvitation(CompanyInvitationData? invitationData)
         {
+            if (invitationData == null)
+            {
+                throw new ArgumentException("invitationData must not be null");
+            }
+            if (invitationData.firstName == null)
+            {
+                throw new ArgumentException("firstName must not be null");
+            }
+            if (invitationData.lastName == null)
+            {
+                throw new ArgumentException("lastName must not be null");
+            }
+            if (invitationData.userName == null)
+            {
+                throw new ArgumentException("userName must not be null");
+            }
+            if (invitationData.email == null)
+            {
+                throw new ArgumentException("email must not be null");
+            }
+            if (invitationData.organisationName == null)
+            {
+                throw new ArgumentException("organisation must not be null");
+            }
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-            if (idpName == null) return false;
             
-            if (! await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false)) return false;
+            await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
             
             var password = new Password().Next();
-            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile {
-                    UserName = invitationData.userName ?? invitationData.email,
-                    FirstName = invitationData.firstName,
-                    LastName = invitationData.lastName,
-                    Email = invitationData.email,
-                    Password = password
-                }, invitationData.organisationName).ConfigureAwait(false);
+            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
+                    invitationData.userName ?? invitationData.email,
+                    invitationData.firstName,
+                    invitationData.lastName,
+                    invitationData.email,
+                    password
+            ), invitationData.organisationName).ConfigureAwait(false);
 
-            if (centralUserId == null) return false;
-
-            if (!await _provisioningManager.AssignInvitedUserInitialRoles(centralUserId).ConfigureAwait(false)) return false;
+            await _provisioningManager.AssignInvitedUserInitialRoles(centralUserId).ConfigureAwait(false);
 
             var company = _portalDBAccess.CreateCompany(invitationData.organisationName);
             var application = _portalDBAccess.CreateCompanyApplication(company);
@@ -79,12 +100,22 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             };
 
             await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate"} );
-
-            return true;
         }
 
-        public async Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string tenant, string createdByName)
+        public async Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? usersToCreate, string? tenant, string? createdByName)
         {
+            if (usersToCreate == null)
+            {
+                throw new ArgumentNullException("usersToCreate must not be null");
+            }
+            if (String.IsNullOrWhiteSpace(tenant))
+            {
+                throw new ArgumentNullException("tenant must not be empty");
+            }
+            if (String.IsNullOrWhiteSpace(createdByName))
+            {
+                throw new ArgumentNullException("createdByName must not be empty");
+            }
             var idpName = tenant;
             var organisationName = await _provisioningManager.GetOrganisationFromCentralIdentityProviderMapperAsync(idpName).ConfigureAwait(false);
             var clientId = _settings.Portal.KeyCloakClientID;
@@ -95,28 +126,26 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 try
                 {
                     var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile {
-                        UserName = user.userName ?? user.eMail,
-                        FirstName = user.firstName,
-                        LastName = user.lastName,
-                        Email = user.eMail,
-                        Password = password
-                    }, organisationName).ConfigureAwait(false);
-
-                    if (centralUserId == null) continue;
+                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
+                        user.userName ?? user.eMail,
+                        user.firstName,
+                        user.lastName,
+                        user.eMail,
+                        password
+                    ), organisationName).ConfigureAwait(false);
 
                     var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                     {
                         { clientId, new []{user.Role}}
                     };
 
-                    if (!await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)) continue;
+                    await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
 
                     // TODO: revaluate try...catch as soon as BPN can be found at UserCreation
                     try
                     {
                         var bpn = await _portalDBAccess.GetBpnForUserUntrackedAsync(centralUserId).ConfigureAwait(false);
-                        if (!await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn,1)).ConfigureAwait(false)) continue;
+                        await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn,1)).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException e)
                     {
@@ -137,7 +166,6 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                         { "nameCreatedBy", createdByName},
                         { "url", $"{_settings.Portal.BasePortalAddress}"},
                         { "username", user.eMail},
-                    
                     };
 
                     await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
@@ -153,14 +181,19 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         }
 
         public Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
-            string tenant,
-            string userId = null,
-            string providerUserId = null,
-            string userName = null,
-            string firstName = null,
-            string lastName = null,
-            string email = null
-        ) => _provisioningManager.GetJoinedUsersAsync(
+            string? tenant,
+            string? userId = null,
+            string? providerUserId = null,
+            string? userName = null,
+            string? firstName = null,
+            string? lastName = null,
+            string? email = null)
+        {
+            if (String.IsNullOrWhiteSpace(tenant))
+            {
+                throw new ArgumentNullException("tenant must not be empty");
+            }
+            return _provisioningManager.GetJoinedUsersAsync(
                 tenant,
                 userId,
                 providerUserId,
@@ -169,39 +202,61 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 lastName,
                 email
             );
-
-        public Task<IEnumerable<string>> GetAppRolesAsync(string clientId) =>
-            _provisioningManager.GetClientRolesAsync(clientId);
-
-        public async Task<bool> DeleteUserAsync(string tenant, string userId)
-        {
-            try
-            {
-                var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(userId);
-                return await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userIdShared).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error while deleting user");
-                return false;
-            }
         }
 
-        public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds usersToDelete, string tenant) =>
-            (await Task.WhenAll(usersToDelete.userIds.Select(async userId => { 
+        public Task<IEnumerable<string>> GetAppRolesAsync(string? clientId)
+        {
+            if (String.IsNullOrWhiteSpace(clientId))
+            {
+                throw new ArgumentNullException("clientId must not be empty");
+            }
+            return _provisioningManager.GetClientRolesAsync(clientId);
+        }
+
+        public async Task DeleteUserAsync(string? tenant, string? userId)
+        {
+            if (String.IsNullOrWhiteSpace(tenant))
+            {
+                throw new ArgumentNullException("tenant must not be empty");
+            }
+            if (String.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("userId must not be empty");
+            }
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(userId);
+            await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userIdShared).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds? usersToDelete, string? tenant)
+        {
+            if (usersToDelete == null)
+            {
+                throw new ArgumentException("usersToDelete must not be null");
+            }
+            if (String.IsNullOrWhiteSpace(tenant))
+            {
+                throw new ArgumentException("tenant must not be empty");
+            }
+            return (await Task.WhenAll(usersToDelete.userIds.Select(async userId => { 
                 try {
-                    return await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false) ? userId : null;
+                    await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false);
+                    return userId;
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error while deleting user {userId}");
-                    return null;
+                    _logger.LogError(e, $"Error while deleting user {userId}, {e.Message}");
+                    return null!;
                 }
             }))).Where(userName => userName != null);
+        }
 
-        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
+        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid? companyId)
         {
-            foreach (var tenant in await _portalDBAccess.GetIdpAliaseForCompanyIdUntrackedAsync(companyId).ToListAsync().ConfigureAwait(false))
+            if (!companyId.HasValue)
+            {
+                throw new ArgumentNullException("companyId must not be empty");
+            }
+            foreach (var tenant in await _portalDBAccess.GetIdpAliaseForCompanyIdUntrackedAsync(companyId.Value).ToListAsync().ConfigureAwait(false))
             {
                 var usersToUpdate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
                     .Select(g => g.userId);
@@ -220,8 +275,12 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             return true;
         }
 
-        public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn> usersToUdpatewithBpn)
+        public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpatewithBpn)
         {
+            if (usersToUdpatewithBpn == null)
+            {
+                throw new ArgumentNullException("usersToUpdatewithBpn must not be null");
+            }
             foreach (UserUpdateBpn user in usersToUdpatewithBpn)
             {
                 try

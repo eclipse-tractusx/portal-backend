@@ -1,4 +1,4 @@
-﻿using CatenaX.NetworkServices.Cosent.Library.Data;
+﻿using CatenaX.NetworkServices.Consent.Library.Data;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;

@@ -4,17 +4,19 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyAssignedApp
     {
-        public CompanyAssignedApp() {}
-        public CompanyAssignedApp(App app, Company company)
+        private CompanyAssignedApp() {}
+
+        public CompanyAssignedApp(Guid appId, Guid companyId)
         {
-            App = app;
-            Company = company;
+            AppId = appId;
+            CompanyId = companyId;
         }
 
-        public Guid CompanyId { get; set; }
-        public Guid AppId { get; set; }
+        public Guid CompanyId { get; private set; }
+        public Guid AppId { get; private set; }
 
-        public virtual App App { get; set; }
-        public virtual Company Company { get; set; }
+        // Navigation properties
+        public virtual App? App { get; private set; }
+        public virtual Company? Company { get; private set; }
     }
 }

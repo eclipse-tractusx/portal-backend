@@ -5,22 +5,32 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class Language
     {
-        public Language() {}
-        public Language(string languageShortName)
+        private Language()
         {
-            LanguageShortName = languageShortName;
+            LanguageShortName = null!;
+            LongNameDe = null!;
+            LongNameEn = null!;
             AppDescriptions = new HashSet<AppDescription>();
         }
 
+        public Language(string languageShortName, string longNameDe, string longNameEn) : this()
+        {
+            LanguageShortName = languageShortName;
+            LongNameDe = longNameDe;
+            LongNameEn = longNameEn;
+        }
+
+        [Key]
         [StringLength(2, MinimumLength = 2)]
-        public string LanguageShortName { get; set; }
+        public string LanguageShortName { get; private set; }
 
         [MaxLength(255)]
-        public string? LongNameDe { get; set; }
+        public string LongNameDe { get; set; }
 
         [MaxLength(255)]
-        public string? LongNameEn { get; set; }
+        public string LongNameEn { get; set; }
 
-        public virtual ICollection<AppDescription> AppDescriptions { get; set; }
+        // Navigation properties
+        public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
     }
 }
