@@ -11,7 +11,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             Documenttemplateversion = null!;
         }
 
-        public DocumentTemplate(Guid id, string documenttemplatename, string documenttemplateversion, DateTime dateCreated)
+        public DocumentTemplate(Guid id, string documenttemplatename, string documenttemplateversion, DateTimeOffset dateCreated)
         {
             Id = id;
             Documenttemplatename = documenttemplatename;
@@ -22,9 +22,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
-        public DateTime? DateLastChanged { get; set; }
+        public DateTimeOffset? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string Documenttemplatename { get; set; }

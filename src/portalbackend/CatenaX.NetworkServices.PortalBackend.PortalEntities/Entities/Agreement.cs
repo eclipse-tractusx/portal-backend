@@ -15,7 +15,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             AgreementAssignedDocumentTemplates = new HashSet<AgreementAssignedDocumentTemplate>();
         }
 
-        public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTime dateCreated) : this()
+        public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             AgreementCategoryId = agreementCategoryId;
@@ -28,9 +28,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
-        public DateTime? DateLastChanged { get; set; }
+        public DateTimeOffset? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string? AgreementType { get; set; }

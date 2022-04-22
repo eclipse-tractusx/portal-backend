@@ -8,7 +8,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
     {
         public Consent() {}
 
-        public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTime dateCreated)
+        public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
         {
             Id = id;
             AgreementId = agreementId;
@@ -21,7 +21,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
         [MaxLength(255)]
         public string? Comment { get; set; }

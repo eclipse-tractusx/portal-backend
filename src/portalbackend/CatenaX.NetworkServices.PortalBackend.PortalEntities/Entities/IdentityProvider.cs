@@ -11,7 +11,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             Companies = new HashSet<Company>();
         }
         
-        public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTime dateCreated) : this()
+        public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTimeOffset dateCreated) : this()
         {
             Id = id;
             IdentityProviderCategoryId = identityProviderCategoryId;
@@ -21,7 +21,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [Key]
         public Guid Id { get; private set; }
 
-        public DateTime DateCreated { get; private set; }
+        public DateTimeOffset DateCreated { get; private set; }
 
         public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
 
