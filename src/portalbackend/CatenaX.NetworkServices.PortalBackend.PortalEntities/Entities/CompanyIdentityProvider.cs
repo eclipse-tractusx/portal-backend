@@ -4,7 +4,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyIdentityProvider
     {
-        public CompanyIdentityProvider() {}
+        private CompanyIdentityProvider() {}
 
         public CompanyIdentityProvider(Guid companyId, Guid identityProviderId)
         {
