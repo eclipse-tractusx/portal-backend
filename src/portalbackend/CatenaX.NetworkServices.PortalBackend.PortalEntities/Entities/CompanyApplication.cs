@@ -7,7 +7,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyApplication
     {
-        public CompanyApplication()
+        private CompanyApplication()
         {
             Invitations = new HashSet<Invitation>();
         }
