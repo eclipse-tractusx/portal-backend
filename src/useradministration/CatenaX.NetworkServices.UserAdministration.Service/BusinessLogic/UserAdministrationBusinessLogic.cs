@@ -319,7 +319,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userId)
         {
             var userPasswordReset = new UserPasswordReset();
-            var response = await _provisioningDBAccess.GetUserPasswordResetInfo(userId);
+            var response = await _provisioningDBAccess.GetUserPasswordResetInfoNoTracking(userId).ConfigureAwait(false);
             if (response != null)
             {
                 userPasswordReset.PasswordModifiedAt = response.PasswordModifiedAt;
@@ -335,29 +335,29 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
         public async Task<bool> CanResetPassword(string userId)
         {
-            var userInfo = await GetUserPasswordResetInfo(userId);
+            var userInfo = await GetUserPasswordResetInfo(userId).ConfigureAwait(false);
             int resetCount = 0;
             int val = 0;
             if (string.IsNullOrEmpty(userInfo.ResetCount.ToString()) || userInfo.ResetCount == 0)
             {
                 val = resetCount + 1;
-                await _provisioningDBAccess.SaveUserPasswordResetInfo(userId, DateTime.Now, val);//insert record
+                await _provisioningDBAccess.SaveUserPasswordResetInfo(userId, DateTimeOffset.UtcNow, val).ConfigureAwait(false);//insert record
                 return true;
             }
             else if (userInfo.ResetCount > 0)
             {
-                resetCount = userInfo.ResetCount;
-                DateTime dt = userInfo.PasswordModifiedAt;
-                DateTime now = DateTime.Now;
+                resetCount = userInfo.ResetCount ?? 0;
+                DateTimeOffset dt = userInfo.PasswordModifiedAt ?? DateTimeOffset.UtcNow;
+                DateTimeOffset now = DateTimeOffset.UtcNow;
                 if (now < dt.AddHours(24) && resetCount < 10)
                 {
                     val = resetCount + 1;
-                    await _provisioningDBAccess.SetUserPassword(userId, val);
+                    await _provisioningDBAccess.SetUserPassword(userId, val).ConfigureAwait(false);
                     return true;
                 }
                 else if (now > dt.AddHours(24))
                 {
-                    await _provisioningDBAccess.SetUserPassword(userId, DateTime.Now, 1);
+                    await _provisioningDBAccess.SetUserPassword(userId, DateTimeOffset.UtcNow, 1).ConfigureAwait(false);
                     return true;
                 }
                 return false;
