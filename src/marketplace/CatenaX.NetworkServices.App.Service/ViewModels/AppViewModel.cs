@@ -1,7 +1,7 @@
 ﻿namespace CatenaX.NetworkServices.App.Service.ViewModels
 {
     /// <summary>
-    /// View model of an application.
+    /// View model of an application's base data.
     /// </summary>
     public class AppViewModel
     {
