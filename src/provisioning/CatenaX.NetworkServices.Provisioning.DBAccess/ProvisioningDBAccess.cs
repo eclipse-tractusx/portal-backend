@@ -47,7 +47,7 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
         public Task<UserPasswordReset> GetUserPasswordResetInfoNoTracking(string userEntityId)
         {
             return _dbContext.UserPasswordResets
-                .Where(x => x.SharedUserEntityId == userEntityId)
+                .Where(x => x.UserEntityId == userEntityId)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
@@ -55,7 +55,7 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
         public async Task SetUserPassword(string userEntityId, int count)
         {
             var passwordReset = await _dbContext.UserPasswordResets
-                  .Where(x => x.SharedUserEntityId == userEntityId)
+                  .Where(x => x.UserEntityId == userEntityId)
                   .SingleAsync();
             passwordReset.ResetCount = count;
             await _dbContext.SaveChangesAsync();
@@ -64,7 +64,7 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
         public async Task SetUserPassword(string userEntityId, DateTimeOffset dateReset, int count)
         {
             var passwordReset = await _dbContext.UserPasswordResets
-                  .Where(x => x.SharedUserEntityId == userEntityId)
+                  .Where(x => x.UserEntityId == userEntityId)
                   .SingleAsync();
             passwordReset.PasswordModifiedAt = dateReset;
             passwordReset.ResetCount = count;

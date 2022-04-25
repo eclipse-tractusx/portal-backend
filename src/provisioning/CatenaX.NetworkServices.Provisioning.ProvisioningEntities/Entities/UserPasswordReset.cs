@@ -7,19 +7,19 @@ namespace CatenaX.NetworkServices.Provisioning.ProvisioningEntities
     {
         private UserPasswordReset()
         {
-            SharedUserEntityId = default!;
+            UserEntityId = default!;
             ResetCount = default!;
         }
 
-        public UserPasswordReset(string SharedUserEntityId, int ResetCount)
+        public UserPasswordReset(string UserEntityId, int ResetCount)
         {
-            this.SharedUserEntityId = SharedUserEntityId;
+            this.UserEntityId = UserEntityId;
             this.ResetCount = ResetCount;
         }
 
         [Key]
         [StringLength(36)]
-        public string SharedUserEntityId { get; private set; }
+        public string UserEntityId { get; private set; }
         public DateTimeOffset? PasswordModifiedAt { get; set; }
         public int ResetCount { get; set; }
     }

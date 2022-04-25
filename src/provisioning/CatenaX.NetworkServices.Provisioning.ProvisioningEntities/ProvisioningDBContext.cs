@@ -55,8 +55,8 @@ namespace CatenaX.NetworkServices.Provisioning.ProvisioningEntities
             {
                 entity.ToTable("user_password_resets", "provisioning");
 
-                entity.Property(e => e.SharedUserEntityId)
-                    .HasColumnName("shared_user_entity_id");
+                entity.Property(e => e.UserEntityId)
+                    .HasColumnName("user_entity_id");
 
                 entity.Property(e => e.PasswordModifiedAt)
                     .HasColumnName("password_modified_at")
