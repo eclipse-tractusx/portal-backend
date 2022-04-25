@@ -158,7 +158,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         Streetnumber = companyApplication.Company.Address.Streetnumber,
                         Zipcode = companyApplication.Company.Address.Zipcode,
                         CountryAlpha2Code = companyApplication.Company.Address.CountryAlpha2Code,
-                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        TaxId = companyApplication.Company.TaxId
                     })
                 .AsNoTracking()
                 .SingleAsync();
@@ -199,6 +200,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             company.Bpn = companyWithAddress.Bpn;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
+            company.TaxId = companyWithAddress.TaxId;
             if (company.Address == null)
             {
                 company.Address =_dbContext.Add(

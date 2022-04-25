@@ -16,5 +16,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public decimal? Zipcode { get; set; }
         public string? CountryAlpha2Code { get; set; }
         public string? CountryDe { get; set; }
+        public string? TaxId { get; set; }
     }
 }
