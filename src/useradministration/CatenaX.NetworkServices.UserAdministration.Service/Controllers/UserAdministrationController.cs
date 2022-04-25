@@ -12,6 +12,7 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic;
 using CatenaX.NetworkServices.UserAdministration.Service.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
 {
@@ -22,11 +23,13 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
 
         private readonly ILogger<UserAdministrationController> _logger;
         private readonly IUserAdministrationBusinessLogic _logic;
+        private readonly ICompanyAdministrationBusinessLogic _companyAdministrationBusinessLogic;
 
-        public UserAdministrationController(ILogger<UserAdministrationController> logger, IUserAdministrationBusinessLogic logic)
+        public UserAdministrationController(ILogger<UserAdministrationController> logger, IUserAdministrationBusinessLogic logic, ICompanyAdministrationBusinessLogic companyAdministrationBusinessLogic)
         {
             _logger = logger;
             _logic = logic;
+            _companyAdministrationBusinessLogic = companyAdministrationBusinessLogic;
         }
 
         [HttpPost]
@@ -168,6 +171,23 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
             catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "view_submitted_applications")]
+        [Route("application/{applicationId}/companyDetailsWithAddress")]
+        [ProducesResponseType(typeof(CompanyWithAddress), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetCompanyWithAddressAsync([FromRoute] Guid applicationId)
+        {
+            try
+            {
+                return Ok(await _companyAdministrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
+            }
+            catch(Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
