@@ -55,8 +55,8 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
         public async Task SetUserPassword(string userEntityId, int count)
         {
             var passwordReset = await _dbContext.UserPasswordResets
-                  .Where(x => x.UserEntityId == userEntityId)
-                  .SingleAsync();
+                .Where(x => x.UserEntityId == userEntityId)
+                .SingleAsync();
             passwordReset.ResetCount = count;
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
@@ -64,8 +64,8 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
         public async Task SetUserPassword(string userEntityId, DateTimeOffset dateReset, int count)
         {
             var passwordReset = await _dbContext.UserPasswordResets
-                  .Where(x => x.UserEntityId == userEntityId)
-                  .SingleAsync();
+                .Where(x => x.UserEntityId == userEntityId)
+                .SingleAsync();
             passwordReset.PasswordModifiedAt = dateReset;
             passwordReset.ResetCount = count;
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
