@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CatenaX.NetworkServices.Registration.Service\CatenaX.NetworkServices.Registration.Service.csproj" />
+    <ProjectReference Include="..\..\..\src\registration\CatenaX.NetworkServices.Registration.Service\CatenaX.NetworkServices.Registration.Service.csproj" />
   </ItemGroup>
 
 </Project>

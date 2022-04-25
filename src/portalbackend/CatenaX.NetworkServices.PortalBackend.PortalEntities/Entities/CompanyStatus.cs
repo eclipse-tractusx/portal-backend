@@ -6,17 +6,25 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyStatus
     {
-        public CompanyStatus()
+        private CompanyStatus()
         {
+            Label = null!;
             Companies = new HashSet<Company>();
         }
 
+        public CompanyStatus(CompanyStatusId companyStatusId) : this()
+        {
+            CompanyStatusId = companyStatusId;
+            Label = companyStatusId.ToString();
+        }
+
         [Key]
-        public CompanyStatusId CompanyStatusId { get; set; }
+        public CompanyStatusId CompanyStatusId { get; private set; }
 
         [MaxLength(255)]
-        public string? Label { get; set; }
+        public string Label { get; private set; }
 
-        public virtual ICollection<Company> Companies { get; set; }
+        // Navigation properties
+        public virtual ICollection<Company> Companies { get; private set; }
     }
 }

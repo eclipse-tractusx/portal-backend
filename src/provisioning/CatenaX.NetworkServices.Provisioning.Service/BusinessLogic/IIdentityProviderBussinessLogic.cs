@@ -6,6 +6,6 @@ namespace CatenaX.NetworkServices.Provisioning.Service.BusinessLogic
 {
     public interface IIdentityProviderBusinessLogic
     {
-        public Task<string > CreateIdentityProvider(IdentityProviderSetupData identityProviderData);
+        public Task<string> CreateIdentityProvider(IdentityProviderSetupData? identityProviderData);
     }
 }

@@ -1,6 +1,5 @@
-﻿using CatenaX.NetworkServices.Cosent.Library.Data;
+﻿using CatenaX.NetworkServices.Consent.Library.Data;
 using CatenaX.NetworkServices.Registration.Service.Model;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,6 +14,5 @@ namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
         Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyId(string companyId);
         Task SetIdp(SetIdp idpToSet);
         Task UploadDocument(string name,string document, string hash, string username);
-        Task <int> UpdateApplicationStatusAsync(Guid applicationId, ApplicationStatus applicationStatus);
     }
 }

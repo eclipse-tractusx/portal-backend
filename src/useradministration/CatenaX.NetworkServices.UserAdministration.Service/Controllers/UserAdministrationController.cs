@@ -36,12 +36,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                if (await _logic.ExecuteInvitation(InvitationData).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                await _logic.ExecuteInvitation(InvitationData).ConfigureAwait(false);
+                return Ok();
             }
             catch (Exception e)
             {
@@ -75,12 +71,12 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         [Route("tenant/{tenant}/users")]
         public Task<IEnumerable<JoinedUserInfo>> QueryJoinedUsers(
                 [FromRoute] string tenant,
-                [FromQuery] string userId = null,
-                [FromQuery] string providerUserId = null,
-                [FromQuery] string userName = null,
-                [FromQuery] string firstName = null,
-                [FromQuery] string lastName = null,
-                [FromQuery] string email = null
+                [FromQuery] string? userId = null,
+                [FromQuery] string? providerUserId = null,
+                [FromQuery] string? userName = null,
+                [FromQuery] string? firstName = null,
+                [FromQuery] string? lastName = null,
+                [FromQuery] string? email = null
             ) => _logic.GetUsersAsync(tenant, userId, providerUserId, userName, firstName, lastName, email);
 
         [HttpGet]
@@ -96,13 +92,9 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                var userName = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
-                if (await _logic.DeleteUserAsync(tenant, userName).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                var userName = User.Claims.SingleOrDefault( x => x.Type=="sub")?.Value as string;
+                await _logic.DeleteUserAsync(tenant, userName).ConfigureAwait(false);
+                return Ok();
             }
             catch (Exception e)
             {
@@ -159,6 +151,28 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+    
+        //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
+        [HttpPost]
+        [Authorize(Roles="approve_new_partner")]
+        [Route("welcomeEmail")]
+        public async Task<IActionResult> PostRegistrationWelcomeEmailAsync([FromBody] WelcomeData welcomeData)
+        {
+            try
+            {
+                if (await _logic.PostRegistrationWelcomeEmailAsync(welcomeData).ConfigureAwait(false))
+                {
+                    return Ok();
+                }
+                _logger.LogError("unsuccessful");
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
 
         [HttpPut]
         [Authorize(Policy = "CheckTenant")]
@@ -180,7 +194,6 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
 
                 }
                 return StatusCode((int)HttpStatusCode.BadRequest);
-
             }
             catch (Exception e)
             {
@@ -188,6 +201,5 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
-
     }
 }

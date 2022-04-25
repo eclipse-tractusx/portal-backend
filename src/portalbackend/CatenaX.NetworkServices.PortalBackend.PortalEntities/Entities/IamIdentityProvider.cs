@@ -5,17 +5,24 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class IamIdentityProvider
     {
-        public IamIdentityProvider() {}
-        public IamIdentityProvider(string iamIdpAlias)
+        private IamIdentityProvider()
         {
-            IamIdpAlias = iamIdpAlias;
+            IamIdpAlias = null!;
         }
 
-        public Guid IdentityProviderId { get; set; }
+        public IamIdentityProvider(string iamIdpAlias, Guid identityProviderId)
+        {
+            IamIdpAlias = iamIdpAlias;
+            IdentityProviderId = identityProviderId;
+        }
 
+        public Guid IdentityProviderId { get; private set; }
+
+        [Key]
         [MaxLength(255)]
-        public string IamIdpAlias { get; set; }
+        public string IamIdpAlias { get; private set; }
 
-        public virtual IdentityProvider? IdentityProvider { get; set; }
+        // Navigation properties
+        public virtual IdentityProvider? IdentityProvider { get; private set; }
     }
 }

@@ -1,9 +1,10 @@
-﻿using CatenaX.NetworkServices.Cosent.Library.Data;
+﻿using CatenaX.NetworkServices.Consent.Library.Data;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.CustomException;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -170,6 +171,57 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
 
             }
             catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("applications")]
+        [ProducesResponseType(typeof(List<CompanyApplication>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetApplicationsWithStatusAsync()
+        {
+            try
+            {
+                var userId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;                
+                return Ok(await _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(userId).ToListAsync().ConfigureAwait(false));
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut]
+        [Authorize(Roles = "submit_registration")]
+        [Route("application/{applicationId}/status")]
+        public async Task<IActionResult> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status)
+        {
+            try
+            {
+                return Ok(await _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status).ConfigureAwait(false));
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/status")]
+        [ProducesResponseType(typeof(CompanyApplicationStatusId), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetApplicationStatusAsync([FromRoute] Guid applicationId)
+        {
+            try
+            {
+                return Ok(await _registrationBusinessLogic.GetApplicationStatusAsync(applicationId).ConfigureAwait(false));
+            }
+            catch(Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);

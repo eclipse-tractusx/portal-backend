@@ -5,6 +5,6 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Models
     public class ClientSetupData
     {
         [JsonPropertyName("redirectUrl")]
-        public string redirectUrl { get; set; }
+        public string? redirectUrl { get; set; }
     }
 }

@@ -1,10 +1,8 @@
-﻿using CatenaX.NetworkServices.Cosent.Library.Data;
+﻿using CatenaX.NetworkServices.Consent.Library.Data;
 using Npgsql;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace CatenaX.NetworkServices.Cosent.Library
+namespace CatenaX.NetworkServices.Consent.Library
 {
     public class ConsentAccess
     {
@@ -15,7 +13,7 @@ namespace CatenaX.NetworkServices.Cosent.Library
             this.connectionString = connectionString;
         }
 
-        public IEnumerable<Consent> GetConsents(IEnumerable<int> ids)
+        public IEnumerable<Data.Consent> GetConsents(IEnumerable<int> ids)
         {
             var query = $"select * from get_consents(ARRAY [{string.Join(",", ids)}]);";
             using (var con = new NpgsqlConnection(connectionString))
@@ -23,7 +21,7 @@ namespace CatenaX.NetworkServices.Cosent.Library
                 con.Open();
 
                 var cmd = new NpgsqlCommand(query, con);
-                return cmd.ExecuteReader().Query<Consent>();
+                return cmd.ExecuteReader().Query<Data.Consent>();
             }
         }
 
