@@ -1,15 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class DocumentTemplate : BaseEntity
+    public class DocumentTemplate
     {
-        public DocumentTemplate() {}
-        public DocumentTemplate(string documenttemplatename, string documenttemplateversion)
+        private DocumentTemplate()
         {
+            Documenttemplatename = null!;
+            Documenttemplateversion = null!;
+        }
+
+        public DocumentTemplate(Guid id, string documenttemplatename, string documenttemplateversion, DateTimeOffset dateCreated)
+        {
+            Id = id;
             Documenttemplatename = documenttemplatename;
             Documenttemplateversion = documenttemplateversion;
+            DateCreated = dateCreated;
         }
+
+        [Key]
+        public Guid Id { get; private set; }
+
+        public DateTimeOffset DateCreated { get; private set; }
+
+        public DateTimeOffset? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string Documenttemplatename { get; set; }
@@ -17,6 +32,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string Documenttemplateversion { get; set; }
 
+        // Navigation properties
         public virtual AgreementAssignedDocumentTemplate? AgreementAssignedDocumentTemplate { get; set; }
     }
 }

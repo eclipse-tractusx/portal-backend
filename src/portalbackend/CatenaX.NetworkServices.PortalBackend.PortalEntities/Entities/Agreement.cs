@@ -1,21 +1,36 @@
-﻿using System;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
-    public class Agreement : BaseEntity
+    public class Agreement
     {
-        public Agreement() {}
-        public Agreement(string name)
+        private Agreement()
         {
+            Name = null!;
             Consents = new HashSet<Consent>();
             AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
             AgreementAssignedDocumentTemplates = new HashSet<AgreementAssignedDocumentTemplate>();
-            Name = name;
         }
 
-        public int AgreementCategoryId { get; set; }
+        public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated) : this()
+        {
+            Id = id;
+            AgreementCategoryId = agreementCategoryId;
+            Name = name;
+            DateCreated = dateCreated;
+        }
+
+        public AgreementCategoryId AgreementCategoryId { get; private set; }
+
+        [Key]
+        public Guid Id { get; private set; }
+
+        public DateTimeOffset DateCreated { get; private set; }
+
+        public DateTimeOffset? DateLastChanged { get; set; }
 
         [MaxLength(255)]
         public string? AgreementType { get; set; }
@@ -29,12 +44,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         public Guid? UseCaseId { get; set; }
 
+        // Navigation properties
         public virtual AgreementCategory? AgreementCategory { get; set; }
         public virtual App? App { get; set; }
         public virtual Company? IssuerCompany { get; set; }
         public virtual UseCase? UseCase { get; set; }
-        public virtual ICollection<Consent> Consents { get; set; }
-        public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; }
-        public virtual ICollection<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; }
+        public virtual ICollection<Consent> Consents { get; private set; }
+        public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
+        public virtual ICollection<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; private set; }
     }
 }

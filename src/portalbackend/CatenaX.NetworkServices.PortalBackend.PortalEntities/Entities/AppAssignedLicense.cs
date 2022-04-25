@@ -4,17 +4,19 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class AppAssignedLicense
     {
-        public AppAssignedLicense() {}
-        public AppAssignedLicense(App app, AppLicense appLicense)
+        private AppAssignedLicense() {}
+
+        public AppAssignedLicense(Guid appId, Guid appLicenseId)
         {
-            App = app;
-            AppLicense = appLicense;
+            AppId = appId;
+            AppLicenseId = appLicenseId;
         }
 
-        public Guid AppId { get; set; }
-        public Guid AppLicenseId { get; set; }
+        public Guid AppId { get; private set; }
+        public Guid AppLicenseId { get; private set; }
 
-        public virtual App App { get; set; }
-        public virtual AppLicense AppLicense { get; set; }
+        // Navigation properties
+        public virtual App? App { get; set; }
+        public virtual AppLicense? AppLicense { get; set; }
     }
 }

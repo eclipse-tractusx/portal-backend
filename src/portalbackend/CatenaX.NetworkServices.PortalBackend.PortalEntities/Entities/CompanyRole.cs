@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,34 +6,27 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
     public class CompanyRole
     {
-        public CompanyRole() {}
-        public CompanyRole(string companyRoleText, string nameDe, string nameEn)
+        private CompanyRole()
         {
+            CompanyRoleText = null!;
+            NameDe = null!;
+            NameEn = null!;
             Companies = new HashSet<Company>();
+        }
+
+        public CompanyRole(int id, string companyRoleText, string nameDe, string nameEn) : this()
+        {
+            Id = id;
             CompanyRoleText = companyRoleText;
             NameDe = nameDe;
             NameEn = nameEn;
         }
-        /// <summary>
-        /// Primary key of the entity.
-        /// </summary>
+
         [Key]
-        [Column("id")]
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Date of entity creation.
-        /// </summary>
-        [Column("date_created")]
-        public DateTime? DateCreated { get; set; }
-
-        /// <summary>
-        /// Date of most recent entity modification.
-        /// </summary>
-        [Column("date_last_changed")]
-        public DateTime? DateLastChanged { get; set; }
+        public int Id { get; private set; }
 
         [MaxLength(255)]
+        [Column("company_role")]
         public string CompanyRoleText { get; set; }
 
         [MaxLength(255)]
@@ -43,8 +35,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string NameEn { get; set; }
 
-
-        public virtual AgreementAssignedCompanyRole? AgreementAssignedCompanyRole { get; set; }
-        public virtual ICollection<Company> Companies { get; set; }
+        // Navigation properties
+        public virtual AgreementAssignedCompanyRole? AgreementAssignedCompanyRole { get; private set; }
+        public virtual ICollection<Company> Companies { get; private set; }
     }
 }

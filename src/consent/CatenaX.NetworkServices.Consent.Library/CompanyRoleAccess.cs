@@ -1,10 +1,8 @@
-﻿using CatenaX.NetworkServices.Cosent.Library.Data;
+﻿using CatenaX.NetworkServices.Consent.Library.Data;
 using Npgsql;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace CatenaX.NetworkServices.Cosent.Library
+namespace CatenaX.NetworkServices.Consent.Library
 {
     public class CompanyRoleAccess
     {

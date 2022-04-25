@@ -9,6 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
+   <None Update="EmailTemplates\portal_welcome_email.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="EmailTemplates\nextsteps.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
