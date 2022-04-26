@@ -166,6 +166,43 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Adds an app to current user's company's subscriptions.
+        /// </summary>
+        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
+        /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
+        /// <response code="200">Favourite app was successfully subscribed to.</response>
+        /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+        [HttpPost]
+        [Route("{appId}/subscribe")]
+        [Authorize(Roles = "view_apps")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
+        {
+            var userId = GetIamUserIdFromClaims();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return BadRequest("User information not provided in claims.");
+            }
+
+            try
+            {
+                await this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId);
+            }
+            catch (DbUpdateException)
+            {
+                return BadRequest($"Parameters are invalid or app is already favourited.");
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+
+            return Ok();
+        }
+
         private string? GetIamUserIdFromClaims() => User.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
     }
 }

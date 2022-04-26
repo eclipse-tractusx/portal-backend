@@ -61,13 +61,13 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
         {
-            var companyId = userId == null ? 
-                (Guid?)null : 
-                await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.CompanyId).SingleAsync();
+            var companyId = userId == null ?
+                (Guid?)null :
+                await GetCompanyIdByIamUserIdAsync(userId);
 
             var app = await this.context.Apps.AsNoTracking()
                 .Where(a => a.Id == appId)
-                .Select(a => new 
+                .Select(a => new
                 {
                     a.Id,
                     Title = a.Name,
@@ -126,7 +126,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
         {
-            var companyUserId = await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleAsync();
+            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId);
             var rowToRemove = new CompanyUserAssignedAppFavourite(appId, companyUserId);
             this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
             this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
@@ -136,11 +136,37 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
         {
-            var companyUserId = await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleAsync();
+            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId);
             await this.context.CompanyUserAssignedAppFavourites.AddAsync(
                 new CompanyUserAssignedAppFavourite(appId, companyUserId)
-            ); 
+            );
             await this.context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc/>
+        public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
+        {
+            var companyId = await GetCompanyIdByIamUserIdAsync(userId);
+            await this.context.CompanyAssignedApps.AddAsync(
+                new CompanyAssignedApp(appId, companyId)
+            );
+            await this.context.SaveChangesAsync();
+        }
+
+        private async Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId)
+        {
+            return await this.context.CompanyUsers.AsNoTracking()
+                .Where(cu => cu.IamUser!.UserEntityId == userId)
+                .Select(cu => cu.Id)
+                .SingleAsync();
+        }
+
+        private async Task<Guid> GetCompanyIdByIamUserIdAsync(string userId)
+        {
+            return await this.context.CompanyUsers.AsNoTracking()
+                .Where(cu => cu.IamUser!.UserEntityId == userId)
+                .Select(cu => cu.CompanyId)
+                .SingleAsync();
         }
     }
 }

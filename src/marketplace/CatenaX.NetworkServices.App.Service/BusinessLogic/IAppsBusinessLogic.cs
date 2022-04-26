@@ -43,5 +43,12 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <param name="appId">ID of the app to remove from user's favourites.</param>
         /// <param name="userId">ID of the user to remove app favourite from.</param>
         public Task RemoveFavouriteAppForUserAsync(Guid appId, string userId);
+
+        /// <summary>
+        /// Adds a subscription relation between an application and a user's company.
+        /// </summary>
+        /// <param name="appId">ID of the app to subscribe to.</param>
+        /// <param name="userId">ID of the user that initiated app subscription for their company.</param>
+        public Task AddCompanyAppSubscriptionAsync(Guid appId, string userId);
     }
 }
