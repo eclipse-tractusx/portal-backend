@@ -7,6 +7,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Model
     {
         [JsonPropertyName("consentStatus")]
         public ConsentStatusId ConsentStatusId { get; set; }
+
+        [JsonPropertyName("agreementCategory")]
+        public AgreementCategoryId AgreementCategoryId { get; set; }
+
         [JsonPropertyName("agreementType")]
         public string? AgreementType { get; set; }
     }

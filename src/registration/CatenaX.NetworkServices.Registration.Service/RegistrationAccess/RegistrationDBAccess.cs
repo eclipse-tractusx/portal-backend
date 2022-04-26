@@ -105,8 +105,9 @@ namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
                 .Where(application => application.Id == applicationId)
                 .SelectMany(application => application.Company!.Consents.Select(consent =>
                     new AgreementConsentStatus {
+                        ConsentStatusId = consent.ConsentStatusId,
+                        AgreementCategoryId = consent.Agreement!.AgreementCategoryId,
                         AgreementType = consent.Agreement!.AgreementType!,
-                        ConsentStatusId = consent.ConsentStatusId
                     }))
                 .AsAsyncEnumerable();
     }
