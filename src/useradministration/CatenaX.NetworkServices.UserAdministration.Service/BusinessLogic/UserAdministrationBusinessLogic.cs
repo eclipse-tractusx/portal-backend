@@ -68,9 +68,9 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 throw new ArgumentException("organisation must not be null");
             }
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-            
+
             await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
-            
+
             var password = new Password().Next();
             var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
                     invitationData.userName ?? invitationData.email,
@@ -99,7 +99,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 { "url", $"{_settings.RegistrationBasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate"} );
+            await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" });
         }
 
         public async Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? usersToCreate, string? tenant, string? createdByName)
@@ -145,7 +145,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                     try
                     {
                         var bpn = await _portalDBAccess.GetBpnForUserUntrackedAsync(centralUserId).ConfigureAwait(false);
-                        await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn,1)).ConfigureAwait(false);
+                        await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn, 1)).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException e)
                     {
@@ -237,8 +237,10 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             {
                 throw new ArgumentException("tenant must not be empty");
             }
-            return (await Task.WhenAll(usersToDelete.userIds.Select(async userId => { 
-                try {
+            return (await Task.WhenAll(usersToDelete.userIds.Select(async userId =>
+            {
+                try
+                {
                     await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false);
                     return userId;
                 }
@@ -294,7 +296,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             }
             return true;
         }
-   
+
         //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
         public async Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData)
         {
@@ -305,62 +307,49 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
                 { "url", $"{_settings.Portal.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate"} ).ConfigureAwait(false);
+            await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
 
             return true;
         }
-        
+
         public Task<bool> ResetUserPasswordAsync(string realm, string userId)
         {
             IEnumerable<string> requiredActions = new List<string>() { "UPDATE_PASSWORD" };
             return _provisioningManager.ResetUserPasswordAsync(realm, userId, requiredActions);
         }
 
-        public async Task<UserPasswordReset> GetUserPasswordResetInfo(string userId)
+        public async Task<bool> CanResetPassword(string userId)
         {
-            var userPasswordReset = new UserPasswordReset();
-            var response = await _provisioningDBAccess.GetUserPasswordResetInfoNoTracking(userId).ConfigureAwait(false);
-            if (response != null)
+            var userInfo = await _provisioningDBAccess.GetUserPasswordResetInfoNoTracking(userId).ConfigureAwait(false);
+            int resetCount = 0;
+            int val = 0;
+            if (userInfo != null)
             {
-                userPasswordReset.PasswordModifiedAt = response.PasswordModifiedAt;
-                userPasswordReset.ResetCount = response.ResetCount;
+                if (userInfo.ResetCount > 0 && userInfo.ResetCount < 10)
+                {
+                    resetCount = (userInfo.ResetCount != null) ? userInfo.ResetCount : 0;
+                    DateTimeOffset dt = userInfo.PasswordModifiedAt ?? DateTimeOffset.UtcNow;
+                    DateTimeOffset now = DateTimeOffset.UtcNow;
+                    if (now < dt.AddHours(24))
+                    {
+                        val = resetCount + 1;
+                        await _provisioningDBAccess.SetUserPassword(userId, val).ConfigureAwait(false);
+                        return true;
+                    }
+                    else if (now > dt.AddHours(24))
+                    {
+                        await _provisioningDBAccess.SetUserPassword(userId, DateTimeOffset.UtcNow, 1).ConfigureAwait(false);
+                        return true;
+                    }
+
+                }
+
             }
             else
             {
-                userPasswordReset.ResetCount = 0;
-            }
-
-            return userPasswordReset;
-        }
-
-        public async Task<bool> CanResetPassword(string userId)
-        {
-            var userInfo = await GetUserPasswordResetInfo(userId).ConfigureAwait(false);
-            int resetCount = 0;
-            int val = 0;
-            if (string.IsNullOrEmpty(userInfo.ResetCount.ToString()) || userInfo.ResetCount == 0)
-            {
                 val = resetCount + 1;
-                await _provisioningDBAccess.SaveUserPasswordResetInfo(userId, DateTimeOffset.UtcNow, val).ConfigureAwait(false);//insert record
+                await _provisioningDBAccess.SaveUserPasswordResetInfo(userId, DateTimeOffset.UtcNow, val).ConfigureAwait(false);
                 return true;
-            }
-            else if (userInfo.ResetCount > 0)
-            {
-                resetCount = userInfo.ResetCount ?? 0;
-                DateTimeOffset dt = userInfo.PasswordModifiedAt ?? DateTimeOffset.UtcNow;
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                if (now < dt.AddHours(24) && resetCount < 10)
-                {
-                    val = resetCount + 1;
-                    await _provisioningDBAccess.SetUserPassword(userId, val).ConfigureAwait(false);
-                    return true;
-                }
-                else if (now > dt.AddHours(24))
-                {
-                    await _provisioningDBAccess.SetUserPassword(userId, DateTimeOffset.UtcNow, 1).ConfigureAwait(false);
-                    return true;
-                }
-                return false;
             }
             return false;
         }

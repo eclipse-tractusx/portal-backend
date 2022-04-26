@@ -92,7 +92,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                var userName = User.Claims.SingleOrDefault( x => x.Type=="sub")?.Value as string;
+                var userName = User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value as string;
                 await _logic.DeleteUserAsync(tenant, userName).ConfigureAwait(false);
                 return Ok();
             }
@@ -151,10 +151,10 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
-    
+
         //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
         [HttpPost]
-        [Authorize(Roles="approve_new_partner")]
+        [Authorize(Roles = "approve_new_partner")]
         [Route("welcomeEmail")]
         public async Task<IActionResult> PostRegistrationWelcomeEmailAsync([FromBody] WelcomeData welcomeData)
         {

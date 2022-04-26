@@ -26,7 +26,6 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
         Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData);
         Task<bool> ResetUserPasswordAsync(string realm, string userId);
-        Task<UserPasswordReset> GetUserPasswordResetInfo(string userId);
         Task<bool> CanResetPassword(string userId);
     }
 }
