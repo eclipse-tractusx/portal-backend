@@ -10,6 +10,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
     /// </summary>
     public class AppsBusinessLogic : IAppsBusinessLogic
     {
+        private const string ERROR_STRING = "ERROR";
         private readonly PortalDbContext context;
 
         /// <summary>
@@ -28,32 +29,88 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 .AsNoTracking()
                 .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
                 .Select(a => new {
-                    Id = a.Id,
+                    a.Id,
                     Name = (string?)a.Name,
-                    VendorCompanyName = a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
+                    VendorCompanyName = a.ProviderCompany.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
                     UseCaseNames = a.UseCases.Select(uc => uc.Name),
                     ThumbnailUrl = (string?)a.ThumbnailUrl,
                     ShortDescription = languageShortName == null
                         ? null
-                        : a.AppDescriptions
+                        : (a.AppDescriptions
                             .Where(description => description.LanguageShortName == languageShortName)
                             .Select(description => description.DescriptionShort)
-                            .SingleOrDefault(),
+                            .SingleOrDefault() ?? ERROR_STRING),
                     LicenseText = a.AppLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault()
                 }).AsAsyncEnumerable())
                 {
-                    yield return new AppViewModel {
+                    yield return new AppViewModel(
+                        app.Name ?? ERROR_STRING,
+                        app.ShortDescription ?? string.Empty,
+                        app.VendorCompanyName ?? ERROR_STRING,
+                        app.LicenseText ?? ERROR_STRING,
+                        app.ThumbnailUrl ?? ERROR_STRING) 
+                    {
                         Id = app.Id,
-                        Title = app.Name ?? string.Empty,
-                        Provider = app.VendorCompanyName ?? string.Empty,
-                        UseCases = app.UseCaseNames.Select(name => name ?? string.Empty).ToList(),
-                        LeadPictureUri = app.ThumbnailUrl ?? string.Empty,
-                        ShortDescription = app.ShortDescription ?? string.Empty,
-                        Price = app.LicenseText ?? string.Empty
+                        UseCases = app.UseCaseNames.Select(name => name).ToList()
                     };
                 }
+        }
+
+        /// <inheritdoc/>
+        public async Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
+        {
+            var companyId = userId == null ? 
+                (Guid?)null : 
+                await this.context.CompanyUsers.AsNoTracking().Where(cu => cu.IamUser!.UserEntityId == userId).Select(cu => cu.CompanyId).SingleAsync();
+
+            var app = await this.context.Apps.AsNoTracking()
+                .Where(a => a.Id == appId)
+                .Select(a => new 
+                {
+                    a.Id,
+                    Title = a.Name,
+                    LeadPictureUri = a.ThumbnailUrl,
+                    DetailPictureUris = a.AppDetailImages.Select(adi => adi.ImageUrl),
+                    ProviderUri = a.MarketingUrl,
+                    a.Provider,
+                    a.ContactEmail,
+                    a.ContactNumber,
+                    UseCases = a.UseCases.Select(u => u.Name),
+                    LongDescription = languageShortName == null
+                        ? null
+                        : (a.AppDescriptions
+                            .Where(description => description.LanguageShortName == languageShortName)
+                            .Select(description => description.DescriptionLong)
+                            .SingleOrDefault() ?? ERROR_STRING),
+                    Price = a.AppLicenses
+                        .Select(license => license.Licensetext)
+                        .FirstOrDefault(),
+                    Tags = a.Tags.Select(t => t.Name),
+                    IsPurchased = companyId == null ?
+                        (bool?)null :
+                        a.Companies.Any(c => c.Id == companyId)
+                })
+                .SingleAsync();
+
+            return new AppDetailsViewModel(
+                app.Title ?? ERROR_STRING,
+                app.LeadPictureUri ?? ERROR_STRING,
+                app.ProviderUri ?? ERROR_STRING,
+                app.Provider,
+                app.ContactEmail ?? ERROR_STRING,
+                app.ContactNumber ?? ERROR_STRING,
+                app.LongDescription ?? string.Empty,
+                app.Price ?? ERROR_STRING
+                )
+            {
+                Id = app.Id,
+                IsPurchased = app.IsPurchased,
+                Tags = app.Tags,
+                UseCases = app.UseCases,
+                DetailPictureUris = app.DetailPictureUris
+            };
         }
 
         /// <inheritdoc/>

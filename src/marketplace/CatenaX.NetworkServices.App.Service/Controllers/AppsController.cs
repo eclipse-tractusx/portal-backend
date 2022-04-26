@@ -38,10 +38,35 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [HttpGet]
         [Route("active")]
         [Authorize(Roles = "view_apps")]
-        [ProducesResponseType(typeof(IEnumerable<AppViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<AppViewModel>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<AppViewModel> GetAllActiveApps([FromQuery] string? lang = null)
         {
             return this.appsBusinessLogic.GetAllActiveAppsAsync(lang);
+        }
+
+        /// <summary>
+        /// Retrieves app details for an app referenced by id.
+        /// </summary>
+        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to retrieve.</param>
+        /// <param name="lang" example="en">Optional two character language specifier for the app description. Will be empty if not provided.</param>
+        /// <returns>AppDetailsViewModel for requested application.</returns>
+        /// <remarks>Example: GET: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+        /// <response code="200">Returns the requested app details.</response>
+        /// <response code="400">If sub claim is empty/invalid.</response>
+        [HttpGet]
+        [Route("{appId}")]
+        [Authorize(Roles = "view_apps")]
+        [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AppDetailsViewModel>> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null)
+        {
+            var userId = GetIamUserIdFromClaims();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return BadRequest("User information not provided in claims.");
+            }
+
+            return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
         }
 
         /// <summary>
@@ -54,7 +79,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [HttpGet]
         [Route("favourites")]
         [Authorize(Roles = "view_apps")]
-        [ProducesResponseType(typeof(IEnumerable<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public ActionResult<IAsyncEnumerable<Guid>> GetAllFavouriteAppsForCurrentUserAsync()
         {

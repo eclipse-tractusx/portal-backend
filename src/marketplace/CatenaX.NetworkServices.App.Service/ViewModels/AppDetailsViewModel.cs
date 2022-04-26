@@ -6,6 +6,32 @@
     public class AppDetailsViewModel
     {
         /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="title">Title.</param>
+        /// <param name="leadPictureUri">Lead picture URI.</param>
+        /// <param name="providerUri">Provider URI.</param>
+        /// <param name="provider">Provider.</param>
+        /// <param name="contactEmail">Contact email.</param>
+        /// <param name="contactNumber">Contact number.</param>
+        /// <param name="longDescription">Long description.</param>
+        /// <param name="price">Price.</param>
+        public AppDetailsViewModel(string title, string leadPictureUri, string providerUri, string provider, string contactEmail, string contactNumber, string longDescription, string price)
+        {
+            Title = title;
+            LeadPictureUri = leadPictureUri;
+            DetailPictureUris = new List<string>();
+            ProviderUri = providerUri;
+            Provider = provider;
+            ContactEmail = contactEmail;
+            ContactNumber = contactNumber;
+            UseCases = new List<string>();
+            LongDescription = longDescription;
+            Price = price;
+            Tags = new List<string>();
+        }
+
+        /// <summary>
         /// ID of the app.
         /// </summary>
         public Guid Id { get; set; }
@@ -13,61 +39,61 @@
         /// <summary>
         /// Title or name of the app.
         /// </summary>
-        public string Title { get; set; } = default!;
+        public string Title { get; set; }
 
         /// <summary>
         /// Uri to app's lead picture.
         /// </summary>
-        public string LeadPictureUri { get; set; } = default!;
+        public string LeadPictureUri { get; set; }
 
         /// <summary>
         /// List of URIs to app's secondary pictures.
         /// </summary>
-        public IEnumerable<string> DetailPictureUris { get; set; } = default!;
+        public IEnumerable<string> DetailPictureUris { get; set; }
 
         /// <summary>
         /// Uri to provider's marketing presence.
         /// </summary>
-        public string ProviderUri { get; set; } = default!;
+        public string ProviderUri { get; set; }
 
         /// <summary>
         /// Provider of the app.
         /// </summary>
-        public string Provider { get; set; } = default!;
+        public string Provider { get; set; }
 
         /// <summary>
         /// Email address of the app's primary contact.
         /// </summary>
-        public string ContactEmail { get; set; } = default!;
+        public string ContactEmail { get; set; }
 
         /// <summary>
         /// Phone number of the app's primary contact.
         /// </summary>
-        public string ContactNumber { get; set; } = default!;
+        public string ContactNumber { get; set; }
 
         /// <summary>
         /// Names of the app's use cases.
         /// </summary>
-        public IEnumerable<string> UseCases { get; set; } = default!;
+        public IEnumerable<string> UseCases { get; set; }
 
         /// <summary>
         /// Long description of the app.
         /// </summary>
-        public string LongDescription { get; set; } = default!;
+        public string LongDescription { get; set; }
 
         /// <summary>
         /// Pricing information of the app.
         /// </summary>
-        public string Price { get; set; } = default!;
+        public string Price { get; set; }
 
         /// <summary>
         /// Tags assigned to application.
         /// </summary>
-        public IEnumerable<string> Tags { get; set; } = default!;
+        public IEnumerable<string> Tags { get; set; }
 
         /// <summary>
         /// Whether app has been purchased by the user's company.
         /// </summary>
-        public bool IsPurchased { get; set; }
+        public bool? IsPurchased { get; set; }
     }
 }
