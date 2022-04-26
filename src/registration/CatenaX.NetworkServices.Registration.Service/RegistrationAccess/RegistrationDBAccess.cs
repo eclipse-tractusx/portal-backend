@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CatenaX.NetworkServices.Consent.Library.Data;
 using CatenaX.NetworkServices.Framework.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Registration.Service.Model;
+using Microsoft.EntityFrameworkCore;
 
 using Dapper;
 
@@ -13,15 +16,12 @@ namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
     {
         private readonly IDBConnectionFactory _dbConnection;
         private readonly string _dbSchema;
+        private readonly PortalDbContext _dbContext;
 
-        public RegistrationDBAccess(IDBConnectionFactories dBConnectionFactories)
-        : this(dBConnectionFactories.Get("Registration"))
+        public RegistrationDBAccess(IDBConnectionFactories dBConnectionFactories, PortalDbContext dbContext)
         {
-        }
-
-        public RegistrationDBAccess(IDBConnectionFactory dbConnection)
-        {
-            _dbConnection = dbConnection;
+            _dbContext = dbContext;
+            _dbConnection = dBConnectionFactories.Get("Registration");
             _dbSchema = _dbConnection.Schema();
         }
 
@@ -97,5 +97,17 @@ namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
                 await connection.ExecuteAsync(sql, parameters).ConfigureAwait(false);
             }
         }
+
+        public IAsyncEnumerable<AgreementConsentStatus> GetAgreementConsentStatusNoTrackingAsync(Guid applicationId) =>
+            _dbContext.CompanyApplications
+                .AsQueryable()
+                .AsNoTracking()
+                .Where(application => application.Id == applicationId)
+                .SelectMany(application => application.Company!.Consents.Select(consent =>
+                    new AgreementConsentStatus {
+                        AgreementType = consent.Agreement!.AgreementType!,
+                        ConsentStatusId = consent.ConsentStatusId
+                    }))
+                .AsAsyncEnumerable();
     }
 }

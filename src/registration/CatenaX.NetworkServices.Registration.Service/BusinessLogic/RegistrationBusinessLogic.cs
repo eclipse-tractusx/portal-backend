@@ -283,6 +283,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return _portalDBAccess.GetApplicationStatusAsync(applicationId.Value);
         }
 
+        public IAsyncEnumerable<AgreementConsentStatus> GetAgreementConsentStatusesAsync(Guid? applicationId)
+        {
+            if (!applicationId.HasValue)
+            {
+                throw new ArgumentNullException("applicationId must not be null");
+            }
+            return _dbAccess.GetAgreementConsentStatusNoTrackingAsync(applicationId.Value);
+        }
+
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
         {
             var mailParameters = new Dictionary<string, string>
