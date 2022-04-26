@@ -277,6 +277,13 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/consentStatus")]
+
+        public IAsyncEnumerable<AgreementConsentStatus> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetAgreementConsentStatusesAsync(applicationId);
     
         [HttpPost]
         [Authorize(Roles="submit_registration")]
