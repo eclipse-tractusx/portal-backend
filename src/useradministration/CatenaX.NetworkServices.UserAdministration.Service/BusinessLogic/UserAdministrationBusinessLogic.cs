@@ -320,35 +320,25 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
 
         public async Task<bool> CanResetPassword(string userId)
         {
-            var userInfo = await _provisioningDBAccess.GetUserPasswordResetInfoNoTracking(userId).ConfigureAwait(false);
-            int resetCount = 0;
-            int val = 0;
-            if (userInfo != null)
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+
+            var userInfo = (await _provisioningDBAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false))
+                ?? _provisioningDBAccess.CreateUserPasswordResetInfo(userId, now, 0);
+
+            if (now < userInfo.PasswordModifiedAt.AddHours(_settings.PasswordReset.NoOfHours))
             {
-                if (userInfo.ResetCount > 0 && userInfo.ResetCount < 10)
+                if (userInfo.ResetCount < _settings.PasswordReset.MaxNoOfReset)
                 {
-                    resetCount = (userInfo.ResetCount != null) ? userInfo.ResetCount : 0;
-                    DateTimeOffset dt = userInfo.PasswordModifiedAt ?? DateTimeOffset.UtcNow;
-                    DateTimeOffset now = DateTimeOffset.UtcNow;
-                    if (now < dt.AddHours(24))
-                    {
-                        val = resetCount + 1;
-                        await _provisioningDBAccess.SetUserPassword(userId, val).ConfigureAwait(false);
-                        return true;
-                    }
-                    else if (now > dt.AddHours(24))
-                    {
-                        await _provisioningDBAccess.SetUserPassword(userId, DateTimeOffset.UtcNow, 1).ConfigureAwait(false);
-                        return true;
-                    }
-
+                    userInfo.ResetCount++;
+                    await _provisioningDBAccess.SaveAsync().ConfigureAwait(false);
+                    return true;
                 }
-
             }
             else
             {
-                val = resetCount + 1;
-                await _provisioningDBAccess.SaveUserPasswordResetInfo(userId, DateTimeOffset.UtcNow, val).ConfigureAwait(false);
+                userInfo.ResetCount = 1;
+                userInfo.PasswordModifiedAt = now;
+                await _provisioningDBAccess.SaveAsync().ConfigureAwait(false);
                 return true;
             }
             return false;
