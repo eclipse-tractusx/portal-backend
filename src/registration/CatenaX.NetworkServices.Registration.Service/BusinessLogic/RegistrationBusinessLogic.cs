@@ -234,6 +234,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             company.Bpn = companyWithAddress.Bpn;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
+            company.TaxId = companyWithAddress.TaxId;
             if (company.Address == null)
             {
                 company.Address = _portalDBAccess.CreateAddress(

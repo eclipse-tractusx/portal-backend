@@ -62,6 +62,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         // Navigation properties
         public virtual Company? ProviderCompany { get; set; }
         public virtual AppStatus? AppStatus{ get; set; }
+        public virtual ICollection<AppTag> Tags { get; private set; }
         public virtual ICollection<Company> Companies { get; private set; }
         public virtual ICollection<Agreement> Agreements { get; private set; }
         public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
