@@ -7,7 +7,5 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
     public interface ICompanyAdministrationBusinessLogic
     {
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId);
-        
-        Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress);
     }
 }
