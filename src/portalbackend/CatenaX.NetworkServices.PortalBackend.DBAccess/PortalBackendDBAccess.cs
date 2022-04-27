@@ -158,7 +158,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         Streetnumber = companyApplication.Company.Address.Streetnumber,
                         Zipcode = companyApplication.Company.Address.Zipcode,
                         CountryAlpha2Code = companyApplication.Company.Address.CountryAlpha2Code,
-                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        TaxId = companyApplication.Company.TaxId
                     })
                 .AsNoTracking()
                 .SingleAsync();
@@ -168,7 +169,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(company => company!.Address)
                 .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
                 .SingleOrDefaultAsync();
-
 
         public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId) =>
             _dbContext.CompanyApplications
