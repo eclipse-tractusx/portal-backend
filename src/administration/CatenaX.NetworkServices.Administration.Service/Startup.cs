@@ -22,10 +22,10 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
-using CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service
+namespace CatenaX.NetworkServices.Administration.Service
 {
     public class Startup
     {
@@ -89,7 +89,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service
             services.AddTransient<IUserAdministrationBusinessLogic, UserAdministrationBusinessLogic>()
                     .ConfigureUserAdministrationSettings(Configuration.GetSection("Invitation"));
 
-            services.AddTransient<ICompanyAdministrationBusinessLogic, CompanyAdministrationBusinessLogic>();
+            services.AddTransient<IRegistrationAdministrationBusinessLogic, RegistrationAdministrationBusinessLogic>();
 
             services.AddTransient<IKeycloakDBAccess, KeycloakDBAccess>();
 
@@ -119,10 +119,10 @@ namespace CatenaX.NetworkServices.UserAdministration.Service
 
             if (Configuration.GetValue<bool?>("SwaggerEnabled") != null && Configuration.GetValue<bool>("SwaggerEnabled"))
             {
-                app.UseSwagger( c => c.RouteTemplate = "/api/useradministration/swagger/{documentName}/swagger.{json|yaml}");
+                app.UseSwagger( c => c.RouteTemplate = "/api/administration/swagger/{documentName}/swagger.{json|yaml}");
                 app.UseSwaggerUI(c => {
-                    c.SwaggerEndpoint(string.Format("/api/useradministration/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
-                    c.RoutePrefix = "api/useradministration/swagger";
+                    c.SwaggerEndpoint(string.Format("/api/administration/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
+                    c.RoutePrefix = "api/administration/swagger";
                 });
             }
 
