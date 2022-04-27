@@ -39,7 +39,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [Route("active")]
         [Authorize(Roles = "view_apps")]
         [ProducesResponseType(typeof(IAsyncEnumerable<AppViewModel>), StatusCodes.Status200OK)]
-        public IAsyncEnumerable<AppViewModel> GetAllActiveApps([FromQuery] string? lang = null)
+        public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync([FromQuery] string? lang = null)
         {
             return this.appsBusinessLogic.GetAllActiveAppsAsync(lang);
         }
@@ -66,7 +66,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
                 return BadRequest("User information not provided in claims.");
             }
 
-            return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
+            return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
 
             try
             {
-                await this.appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId);
+                await this.appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId).ConfigureAwait(false);
             }
             catch (DbUpdateException)
             {
@@ -151,7 +151,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
 
             try
             {
-                await this.appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId);
+                await this.appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId).ConfigureAwait(false);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -188,7 +188,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
 
             try
             {
-                await this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId);
+                await this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId).ConfigureAwait(false);
             }
             catch (DbUpdateException)
             {
