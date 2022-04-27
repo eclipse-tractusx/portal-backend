@@ -322,12 +322,12 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
 
-            var userInfo = await _provisioningDBAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false)
+            var userInfo = (await _provisioningDBAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false))
                 ?? _provisioningDBAccess.CreateUserPasswordResetInfo(userId, now, 0);
-            
-            if (now < userInfo.PasswordModifiedAt.AddHours(24))
+
+            if (now < userInfo.PasswordModifiedAt.AddHours(_settings.PasswordReset.NoOfHours))
             {
-                if (userInfo.ResetCount < 10)
+                if (userInfo.ResetCount < _settings.PasswordReset.MaxNoOfReset)
                 {
                     userInfo.ResetCount++;
                     await _provisioningDBAccess.SaveAsync().ConfigureAwait(false);
