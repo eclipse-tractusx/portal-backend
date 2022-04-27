@@ -8,6 +8,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
     {
         public string RegistrationBasePortalAddress { get; set; }
         public UserAdministrationSetting Portal { get; set; }
+        public PasswordReset PasswordReset { get; set; }
     }
 
     public class UserAdministrationSetting
@@ -15,7 +16,11 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
         public string KeyCloakClientID { get; set; }
         public string BasePortalAddress { get; set; }
     }
-
+    public class PasswordReset
+    {
+        public int NoOfHours { get; set; }
+        public int MaxNoOfReset { get; set; }
+    }
     public static class UserAdministrationSettingsExtension
     {
         public static IServiceCollection ConfigureUserAdministrationSettings(

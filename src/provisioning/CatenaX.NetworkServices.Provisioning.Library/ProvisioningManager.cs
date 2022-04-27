@@ -11,7 +11,7 @@ using System;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
 {
-    public partial class ProvisioningManager: IProvisioningManager
+    public partial class ProvisioningManager : IProvisioningManager
     {
         private readonly KeycloakClient _CentralIdp;
         private readonly KeycloakClient _SharedIdp;
@@ -29,17 +29,17 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         }
 
         public ProvisioningManager(IKeycloakFactory keycloakFactory, IKeycloakDBAccess keycloakDBAccess, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory,keycloakDBAccess,null,options)
+            : this(keycloakFactory, keycloakDBAccess, null, options)
         {
         }
 
         public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess provisioningDBAccess, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory,null,provisioningDBAccess,options)
+            : this(keycloakFactory, null, provisioningDBAccess, options)
         {
         }
 
         public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory,null,null,options)
+            : this(keycloakFactory, null, null, options)
         {
         }
 
@@ -169,7 +169,8 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                                                                  firstName,
                                                                  lastName,
                                                                  email))
-                .Select( x => new JoinedUserInfo {
+                .Select(x => new JoinedUserInfo
+                {
                     userId = x.id,
                     providerUserId = x.federated_user_id,
                     userName = x.federated_username,
@@ -183,7 +184,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public async Task<string> SetupClientAsync(string redirectUrl)
         {
             var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
-            var internalId = (await CreateCentralOIDCClientAsync(clientId,redirectUrl).ConfigureAwait(false));
+            var internalId = (await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false));
             await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
             return clientId;
         }
@@ -203,6 +204,11 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             {
                 throw new Exception($"failed to set bpns {bpns} for central user {userId}");
             }
+        }
+
+        public Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
+        {
+            return _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId, requiredActions);
         }
     }
 }
