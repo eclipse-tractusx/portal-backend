@@ -1,5 +1,8 @@
 using System.Threading.Tasks;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
+using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.Provisioning.DBAccess
 
@@ -26,5 +29,24 @@ namespace CatenaX.NetworkServices.Provisioning.DBAccess
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
             return nextSequence.SequenceId;
         }
+
+        public UserPasswordReset CreateUserPasswordResetInfo(string userEntityId, DateTimeOffset passwordModifiedAt, int resetCount) =>
+            _dbContext.UserPasswordResets.Add(
+                new UserPasswordReset(
+                    userEntityId,
+                    passwordModifiedAt,
+                    resetCount
+                )
+            ).Entity;
+
+        public Task<UserPasswordReset> GetUserPasswordResetInfo(string userEntityId)
+        {
+            return _dbContext.UserPasswordResets
+                .Where(x => x.UserEntityId == userEntityId)
+                .FirstOrDefaultAsync();
+        }
+
+        public Task<int> SaveAsync() =>
+            _dbContext.SaveChangesAsync();
     }
 }
