@@ -7,7 +7,7 @@ using CatenaX.NetworkServices.Administration.Service.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public interface IUserAdministrationBusinessLogic
+    public interface IUserBusinessLogic
     {
         Task ExecuteInvitation(CompanyInvitationData? invitationData);
         Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? userList, string? tenant, string? createdByName);

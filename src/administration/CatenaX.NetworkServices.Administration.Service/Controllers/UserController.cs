@@ -18,18 +18,15 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
     [ApiController]
     [Route("api/administration/user")]
-    public class UserAdministrationController : ControllerBase
+    public class UserController : ControllerBase
     {
 
-        private readonly ILogger<UserAdministrationController> _logger;
-        private readonly IUserAdministrationBusinessLogic _logic;
-        private readonly IRegistrationAdministrationBusinessLogic _registrationAdministrationBusinessLogic;
-
-        public UserAdministrationController(ILogger<UserAdministrationController> logger, IUserAdministrationBusinessLogic logic, IRegistrationAdministrationBusinessLogic registrationAdministrationBusinessLogic)
+        private readonly ILogger<UserController> _logger;
+        private readonly IUserBusinessLogic _logic;
+        public UserController(ILogger<UserController> logger, IUserBusinessLogic logic)
         {
             _logger = logger;
             _logic = logic;
-            _registrationAdministrationBusinessLogic = registrationAdministrationBusinessLogic;
         }
 
         [HttpPost]
@@ -177,23 +174,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             }
         }
 
-        [HttpGet]
-        [Authorize(Roles = "view_submitted_applications")]
-        [Route("application/{applicationId}/companyDetailsWithAddress")]
-        [ProducesResponseType(typeof(CompanyWithAddress), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetCompanyWithAddressAsync([FromRoute] Guid applicationId)
-        {
-            try
-            {
-                return Ok(await _registrationAdministrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
-            }
-            catch(Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
-        
         [HttpPut]
         [Authorize(Policy = "CheckTenant")]
         [Authorize(Roles = "modify_user_account")]

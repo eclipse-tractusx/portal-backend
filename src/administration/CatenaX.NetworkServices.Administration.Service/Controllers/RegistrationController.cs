@@ -8,27 +8,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
     [ApiController]
     [Route("api/administration/registration")]
-    public class RegistrationAdministrationController : ControllerBase
+    public class RegistrationController : ControllerBase
     {
 
-        private readonly ILogger<RegistrationAdministrationController> _logger;
-        private readonly IRegistrationAdministrationBusinessLogic _logic;
-        private readonly IRegistrationAdministrationBusinessLogic _registrationAdministrationBusinessLogic;
-        public RegistrationAdministrationController(ILogger<RegistrationAdministrationController> logger, IRegistrationAdministrationBusinessLogic logic, IRegistrationAdministrationBusinessLogic registrationAdministrationBusinessLogic)
+        private readonly ILogger<RegistrationController> _logger;
+        private readonly IRegistrationBusinessLogic _logic;
+        public RegistrationController(ILogger<RegistrationController> logger, IRegistrationBusinessLogic logic)
         {
             _logger = logger;
             _logic = logic;
-            _registrationAdministrationBusinessLogic = registrationAdministrationBusinessLogic;
         }
         [HttpGet]
         [Authorize(Roles = "view_submitted_applications")]
@@ -38,7 +33,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         {
             try
             {
-                return Ok(await _registrationAdministrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
+                return Ok(await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
             }
             catch(Exception e)
             {

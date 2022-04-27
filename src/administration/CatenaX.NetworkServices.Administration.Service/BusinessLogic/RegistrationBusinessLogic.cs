@@ -7,12 +7,12 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public class RegistrationAdministrationBusinessLogic : IRegistrationAdministrationBusinessLogic
+    public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         private readonly IPortalBackendDBAccess _portalDBAccess;
-        private readonly ILogger<RegistrationAdministrationBusinessLogic> _logger;
+        private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationAdministrationBusinessLogic(IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationAdministrationBusinessLogic> logger)
+        public RegistrationBusinessLogic(IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger)
         {
             _portalDBAccess = portalDBAccess;
             _logger = logger;
