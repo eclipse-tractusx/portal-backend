@@ -1,17 +1,16 @@
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public class UserAdministrationSettings
+    public class UserSettings
     {
         public string RegistrationBasePortalAddress { get; set; }
-        public UserAdministrationSetting Portal { get; set; }
+        public UserSetting Portal { get; set; }
         public PasswordReset PasswordReset { get; set; }
     }
 
-    public class UserAdministrationSetting
+    public class UserSetting
     {
         public string KeyCloakClientID { get; set; }
         public string BasePortalAddress { get; set; }
@@ -21,14 +20,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public int NoOfHours { get; set; }
         public int MaxNoOfReset { get; set; }
     }
-    public static class UserAdministrationSettingsExtension
+    public static class UserSettingsExtension
     {
-        public static IServiceCollection ConfigureUserAdministrationSettings(
+        public static IServiceCollection ConfigureUserSettings(
             this IServiceCollection services,
             IConfigurationSection section
             )
         {
-            return services.Configure<UserAdministrationSettings>(x => section.Bind(x));
+            return services.Configure<UserSettings>(x => section.Bind(x));
         }
     }
 

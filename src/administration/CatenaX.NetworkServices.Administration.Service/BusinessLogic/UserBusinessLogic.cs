@@ -16,22 +16,22 @@ using CatenaX.NetworkServices.Administration.Service.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public class UserAdministrationBusinessLogic : IUserAdministrationBusinessLogic
+    public class UserBusinessLogic : IUserBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
         private readonly IProvisioningDBAccess _provisioningDBAccess;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly IMailingService _mailingService;
-        private readonly ILogger<UserAdministrationBusinessLogic> _logger;
-        private readonly UserAdministrationSettings _settings;
+        private readonly ILogger<UserBusinessLogic> _logger;
+        private readonly UserSettings _settings;
 
-        public UserAdministrationBusinessLogic(
+        public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
-            ILogger<UserAdministrationBusinessLogic> logger,
-            IOptions<UserAdministrationSettings> settings)
+            ILogger<UserBusinessLogic> logger,
+            IOptions<UserSettings> settings)
         {
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;

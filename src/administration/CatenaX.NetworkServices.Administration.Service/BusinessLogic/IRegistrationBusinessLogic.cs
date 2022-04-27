@@ -4,7 +4,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public interface IRegistrationAdministrationBusinessLogic
+    public interface IRegistrationBusinessLogic
     {
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId);
     }
