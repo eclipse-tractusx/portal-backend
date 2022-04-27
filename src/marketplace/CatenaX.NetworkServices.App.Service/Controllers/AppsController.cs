@@ -192,7 +192,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             }
             catch (DbUpdateException)
             {
-                return BadRequest($"Parameters are invalid or app is already favourited.");
+                return BadRequest($"Parameters are invalid or app is already subscribed to.");
             }
             catch (Exception e)
             {
