@@ -86,10 +86,12 @@ namespace CatenaX.NetworkServices.Administration.Service
             services.AddTransient<IProvisioningManager, ProvisioningManager>()
                     .ConfigureProvisioningSettings(Configuration.GetSection("Provisioning"));
                     
-            services.AddTransient<IUserAdministrationBusinessLogic, UserAdministrationBusinessLogic>()
-                    .ConfigureUserAdministrationSettings(Configuration.GetSection("Invitation"));
+            services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>();
 
-            services.AddTransient<IRegistrationAdministrationBusinessLogic, RegistrationAdministrationBusinessLogic>();
+            services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
+                    .ConfigureUserSettings(Configuration.GetSection("UserManagement"));
+
+            services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>();
 
             services.AddTransient<IKeycloakDBAccess, KeycloakDBAccess>();
 
