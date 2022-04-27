@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.Library\CatenaX.NetworkServices.Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
   </ItemGroup>
 
 

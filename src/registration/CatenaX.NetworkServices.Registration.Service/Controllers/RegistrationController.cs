@@ -214,19 +214,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/status")]
-        [ProducesResponseType(typeof(CompanyApplicationStatusId), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetApplicationStatusAsync([FromRoute] Guid applicationId)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.GetApplicationStatusAsync(applicationId).ConfigureAwait(false));
-            }
-            catch(Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+//        [ProducesResponseType(typeof(CompanyApplicationStatusId), (int)HttpStatusCode.OK)]
+        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetApplicationStatusAsync(applicationId);
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
