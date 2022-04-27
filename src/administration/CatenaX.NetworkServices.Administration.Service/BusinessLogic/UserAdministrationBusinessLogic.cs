@@ -12,9 +12,9 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.UserAdministration.Service.Models;
+using CatenaX.NetworkServices.Administration.Service.Models;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
     public class UserAdministrationBusinessLogic : IUserAdministrationBusinessLogic
     {

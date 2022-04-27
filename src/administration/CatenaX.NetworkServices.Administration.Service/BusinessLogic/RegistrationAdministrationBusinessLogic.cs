@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public class CompanyAdministrationBusinessLogic : ICompanyAdministrationBusinessLogic
+    public class RegistrationAdministrationBusinessLogic : IRegistrationAdministrationBusinessLogic
     {
         private readonly IPortalBackendDBAccess _portalDBAccess;
-        private readonly ILogger<CompanyAdministrationBusinessLogic> _logger;
+        private readonly ILogger<RegistrationAdministrationBusinessLogic> _logger;
 
-        public CompanyAdministrationBusinessLogic(IPortalBackendDBAccess portalDBAccess, ILogger<CompanyAdministrationBusinessLogic> logger)
+        public RegistrationAdministrationBusinessLogic(IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationAdministrationBusinessLogic> logger)
         {
             _portalDBAccess = portalDBAccess;
             _logger = logger;

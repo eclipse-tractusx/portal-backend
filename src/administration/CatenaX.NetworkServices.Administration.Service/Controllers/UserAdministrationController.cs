@@ -10,26 +10,26 @@ using Microsoft.Extensions.Logging;
 
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic;
-using CatenaX.NetworkServices.UserAdministration.Service.Models;
+using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
+namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
     [ApiController]
-    [Route("api/useradministration")]
+    [Route("api/administration/user")]
     public class UserAdministrationController : ControllerBase
     {
 
         private readonly ILogger<UserAdministrationController> _logger;
         private readonly IUserAdministrationBusinessLogic _logic;
-        private readonly ICompanyAdministrationBusinessLogic _companyAdministrationBusinessLogic;
+        private readonly IRegistrationAdministrationBusinessLogic _registrationAdministrationBusinessLogic;
 
-        public UserAdministrationController(ILogger<UserAdministrationController> logger, IUserAdministrationBusinessLogic logic, ICompanyAdministrationBusinessLogic companyAdministrationBusinessLogic)
+        public UserAdministrationController(ILogger<UserAdministrationController> logger, IUserAdministrationBusinessLogic logic, IRegistrationAdministrationBusinessLogic registrationAdministrationBusinessLogic)
         {
             _logger = logger;
             _logic = logic;
-            _companyAdministrationBusinessLogic = companyAdministrationBusinessLogic;
+            _registrationAdministrationBusinessLogic = registrationAdministrationBusinessLogic;
         }
 
         [HttpPost]
@@ -185,7 +185,7 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.Controllers
         {
             try
             {
-                return Ok(await _companyAdministrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
+                return Ok(await _registrationAdministrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
             }
             catch(Exception e)
             {
