@@ -11,6 +11,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
     public class AppsBusinessLogic : IAppsBusinessLogic
     {
         private const string ERROR_STRING = "ERROR";
+        private const string DEFAULT_LANGUAGE = "en";
         private readonly PortalDbContext context;
 
         /// <summary>
@@ -34,12 +35,11 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                     VendorCompanyName = a.ProviderCompany.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
                     UseCaseNames = a.UseCases.Select(uc => uc.Name),
                     ThumbnailUrl = (string?)a.ThumbnailUrl,
-                    ShortDescription = languageShortName == null
-                        ? null
-                        : (a.AppDescriptions
-                            .Where(description => description.LanguageShortName == languageShortName)
-                            .Select(description => description.DescriptionShort)
-                            .SingleOrDefault() ?? ERROR_STRING),
+                    ShortDescription =
+                        this.context.Languages.SingleOrDefault(l => l.LanguageShortName == languageShortName) == null 
+                        ? null 
+                        : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
+                          ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
                     LicenseText = a.AppLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault()
@@ -47,7 +47,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 {
                     yield return new AppViewModel(
                         app.Name ?? ERROR_STRING,
-                        app.ShortDescription ?? string.Empty,
+                        app.ShortDescription ?? ERROR_STRING,
                         app.VendorCompanyName ?? ERROR_STRING,
                         app.LicenseText ?? ERROR_STRING,
                         app.ThumbnailUrl ?? ERROR_STRING) 
@@ -78,12 +78,11 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                     a.ContactEmail,
                     a.ContactNumber,
                     UseCases = a.UseCases.Select(u => u.Name),
-                    LongDescription = languageShortName == null
-                        ? null
-                        : (a.AppDescriptions
-                            .Where(description => description.LanguageShortName == languageShortName)
-                            .Select(description => description.DescriptionLong)
-                            .SingleOrDefault() ?? ERROR_STRING),
+                    LongDescription = 
+                        this.context.Languages.SingleOrDefault(l => l.LanguageShortName == languageShortName) == null 
+                        ? null 
+                        : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
+                          ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
                     Price = a.AppLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault(),
@@ -101,7 +100,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 app.Provider,
                 app.ContactEmail ?? ERROR_STRING,
                 app.ContactNumber ?? ERROR_STRING,
-                app.LongDescription ?? string.Empty,
+                app.LongDescription ?? ERROR_STRING,
                 app.Price ?? ERROR_STRING
                 )
             {
