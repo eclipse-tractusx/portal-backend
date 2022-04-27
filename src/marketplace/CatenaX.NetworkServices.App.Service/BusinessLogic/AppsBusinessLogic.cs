@@ -153,17 +153,17 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
             await this.context.SaveChangesAsync();
         }
 
-        private async Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId)
+        private Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId)
         {
-            return await this.context.CompanyUsers.AsNoTracking()
+            return this.context.CompanyUsers.AsNoTracking()
                 .Where(cu => cu.IamUser!.UserEntityId == userId)
                 .Select(cu => cu.Id)
                 .SingleAsync();
         }
 
-        private async Task<Guid> GetCompanyIdByIamUserIdAsync(string userId)
+        private Task<Guid> GetCompanyIdByIamUserIdAsync(string userId)
         {
-            return await this.context.CompanyUsers.AsNoTracking()
+            return this.context.CompanyUsers.AsNoTracking()
                 .Where(cu => cu.IamUser!.UserEntityId == userId)
                 .Select(cu => cu.CompanyId)
                 .SingleAsync();
