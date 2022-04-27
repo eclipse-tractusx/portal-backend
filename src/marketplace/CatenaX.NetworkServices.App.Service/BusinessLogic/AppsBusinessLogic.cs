@@ -63,7 +63,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         {
             var companyId = userId == null ?
                 (Guid?)null :
-                await GetCompanyIdByIamUserIdAsync(userId);
+                await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
 
             var app = await this.context.Apps.AsNoTracking()
                 .Where(a => a.Id == appId)
@@ -92,7 +92,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                         (bool?)null :
                         a.Companies.Any(c => c.Id == companyId)
                 })
-                .SingleAsync();
+                .SingleAsync().ConfigureAwait(false);
 
             return new AppDetailsViewModel(
                 app.Title ?? ERROR_STRING,
@@ -126,31 +126,31 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
         {
-            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId);
+            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
             var rowToRemove = new CompanyUserAssignedAppFavourite(appId, companyUserId);
             this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
             this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
         {
-            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId);
+            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
             await this.context.CompanyUserAssignedAppFavourites.AddAsync(
                 new CompanyUserAssignedAppFavourite(appId, companyUserId)
-            );
-            await this.context.SaveChangesAsync();
+            ).ConfigureAwait(false);
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
         {
-            var companyId = await GetCompanyIdByIamUserIdAsync(userId);
+            var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
             await this.context.CompanyAssignedApps.AddAsync(
                 new CompanyAssignedApp(appId, companyId)
-            );
-            await this.context.SaveChangesAsync();
+            ).ConfigureAwait(false);
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId)
