@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
@@ -28,7 +29,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using Newtonsoft.Json.Converters;
-using CatenaX.NetworkServices.Registration.Service.Helper;
 
 namespace CatenaX.NetworkServices.Registration.Service
 {
@@ -141,7 +141,7 @@ namespace CatenaX.NetworkServices.Registration.Service
 
             app.UseRouting();
 
-            app.UseMiddleware<GeneralErrorHandler>();
+            app.UseMiddleware<GeneralHttpErrorHandler>();
             app.UseAuthentication();
             app.UseAuthorization();
 
