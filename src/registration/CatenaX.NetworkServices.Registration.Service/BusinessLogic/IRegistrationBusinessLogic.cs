@@ -27,11 +27,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task SetIdpAsync(SetIdp idpToSet);
         Task CreateCustodianWalletAsync(WalletInformation information);
         IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string? userId);
-        Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId);
-        Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress);
-        Task<int> InviteNewUserAsync(Guid? applicationId, UserInvitationData? userInvitationData);
-        Task<int> SetApplicationStatusAsync(Guid? applicationId, CompanyApplicationStatusId? status);
-        Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId);
+        Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
+        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress? companyWithAddress);
+        Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData? userInvitationData);
+        Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
+        Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
         Task<bool> SubmitRegistrationAsync(string userEmail);
     }
 }
