@@ -149,16 +149,16 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyApplication => new CompanyWithAddress(
                         companyApplication.CompanyId,
                         companyApplication.Company!.Name,
-                        companyApplication.Company.Address!.City,
-                        companyApplication.Company.Address.Streetname,
-                        companyApplication.Company.Address.Zipcode,
-                        companyApplication.Company.Address.CountryAlpha2Code
+                        companyApplication.Company.Address!.City ?? "",
+                        companyApplication.Company.Address.Streetname ?? "",
+                        companyApplication.Company.Address.CountryAlpha2Code ?? ""
                     ){
                         Bpn = companyApplication.Company!.Bpn,
                         Shortname = companyApplication.Company.Shortname,
                         Region = companyApplication.Company.Address.Region,
                         Streetadditional = companyApplication.Company.Address.Streetadditional,
                         Streetnumber = companyApplication.Company.Address.Streetnumber,
+                        Zipcode = companyApplication.Company.Address.Zipcode,
                         CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
                         TaxId = companyApplication.Company.TaxId
                     })
