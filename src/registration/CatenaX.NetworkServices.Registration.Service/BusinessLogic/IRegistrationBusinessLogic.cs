@@ -32,6 +32,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData);
         Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
         Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
+        Task<int> SubmitRoleConsentAsync(Guid applicationId, Guid agreementId, int companyRoleId, string user);
         Task<bool> SubmitRegistrationAsync(string userEmail);
     }
 }
