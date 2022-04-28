@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.Consent.Library.Data;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -183,13 +184,18 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
 
-        public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
+        public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
         {
             if (!applicationId.HasValue)
             {
                 throw new ArgumentNullException("applicationId must not be null");
             }
-            return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
+            var result = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+            if (result == null)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId.Value} not found");
+            }
+            return result;
         }
         
         public async Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
@@ -229,7 +235,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId.Value,companyWithAddress.CompanyId.Value).ConfigureAwait(false);
             if (company == null)
             {
-                throw new ArgumentException($"applicationId {applicationId} for companyId {companyWithAddress.CompanyId} not found");
+                throw new NotFoundException($"CompanyApplication {applicationId.Value} for CompanyId {companyWithAddress.CompanyId} not found");
             }
             company.Bpn = companyWithAddress.Bpn;
             company.Name = companyWithAddress.Name;
@@ -285,6 +291,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ArgumentNullException("email must not be null");
             }
             var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+            if (applicationData == null || applicationData.IdpAlias == null)
+            {
+                throw new NotFoundException($"shared idp for CompanyApplication {applicationId.Value} not found");
+            }
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
@@ -310,10 +320,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
 
-            return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
+            return updates;
         }
 
-        public Task<int> SetApplicationStatusAsync(Guid? applicationId, CompanyApplicationStatusId? status)
+        public async Task<int> SetApplicationStatusAsync(Guid? applicationId, CompanyApplicationStatusId? status)
         {
             if (!applicationId.HasValue)
             {
@@ -323,16 +333,27 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
+            var application = await _portalDBAccess.GetCompanyApplication(applicationId.Value).ConfigureAwait(false);
+            if (application == null)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId.Value} not found");
+            }
+            application.ApplicationStatusId = status.Value;
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
             
-        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
+        public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
         {
             if (!applicationId.HasValue)
             {
                 throw new ArgumentNullException("applicationId must not be null");
             }
-            return _portalDBAccess.GetApplicationStatusAsync(applicationId.Value);
+            var result = (CompanyApplicationStatusId?) await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+            if (result == null)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId.Value} not found");
+            }
+            return result.Value;
         }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
