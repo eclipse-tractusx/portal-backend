@@ -104,10 +104,12 @@ namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
                 .AsNoTracking()
                 .Where(application => application.Id == applicationId)
                 .SelectMany(application => application.Company!.Consents.Select(consent =>
-                    new AgreementConsentStatus {
-                        ConsentStatusId = consent.ConsentStatusId,
-                        AgreementCategoryId = consent.Agreement!.AgreementCategoryId,
-                        AgreementType = consent.Agreement!.AgreementType!,
+                    new AgreementConsentStatus(
+                        consent.ConsentStatusId,
+                        consent.Agreement!.AgreementCategoryId,
+                        consent.Agreement!.Name
+                    ){
+                        AgreementType = consent.Agreement!.AgreementType!
                     }))
                 .AsAsyncEnumerable();
     }
