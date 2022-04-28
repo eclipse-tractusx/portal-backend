@@ -162,7 +162,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         TaxId = companyApplication.Company.TaxId
                     })
                 .AsNoTracking()
-                .SingleAsync();
+                .SingleOrDefaultAsync();
 
         public Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
@@ -174,34 +174,40 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.CompanyApplications
                 .Where(companyApplication => companyApplication.Id == companyApplicationId)
                 .Select(
-                    companyApplication => new CompanyNameIdWithIdpAlias {
-                        CompanyName = companyApplication.Company!.Name!,
-                        CompanyId = companyApplication.CompanyId,
+                    companyApplication => new CompanyNameIdWithIdpAlias(
+                        companyApplication.Company!.Name!,
+                        companyApplication.CompanyId
+                    ) {
                         IdpAlias = companyApplication.Company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                            .Single()
+                            .SingleOrDefault()
                     }
                 )
             .AsNoTracking()
-            .SingleAsync();
+            .SingleOrDefaultAsync();
+
+        public Task<CompanyApplication> GetCompanyApplication(Guid applicationId) =>
+            _dbContext.CompanyApplications
+                .Where(application => application.Id == applicationId)
+                .SingleOrDefaultAsync();
 
         public async Task<int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus)
         {
             (await _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
-                .SingleAsync().ConfigureAwait(false))
+                .SingleOrDefaultAsync().ConfigureAwait(false))
                 .ApplicationStatusId = applicationStatus;
             return await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
+        public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
         {
             return _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
                 .AsNoTracking()
                 .Select(application => application.ApplicationStatusId)
-                .SingleAsync();
+                .SingleOrDefaultAsync();
         }
 
         public Task<int> SaveAsync() =>
