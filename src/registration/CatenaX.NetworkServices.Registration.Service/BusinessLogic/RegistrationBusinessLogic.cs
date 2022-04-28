@@ -192,7 +192,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
         }
         
-        public Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
+        public async Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
         {
             if (!applicationId.HasValue)
             {
@@ -202,8 +202,60 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentNullException("companyWithAddress must not be null");
             }
-            //FIXMX: add update of company status within same transpaction
-            return _portalDBAccess.SetCompanyWithAdressAsync(applicationId.Value, companyWithAddress);
+            if (!companyWithAddress.CompanyId.HasValue)
+            {
+                throw new ArgumentNullException("companyId must not be null");
+            }
+            if (companyWithAddress.Name == null)
+            {
+                throw new ArgumentNullException("Name must not be null");
+            }
+            if (companyWithAddress.City == null)
+            {
+                throw new ArgumentNullException("City must not be null");
+            }
+            if (companyWithAddress.Streetname == null)
+            {
+                throw new ArgumentNullException("Streetname must not be null");
+            }
+            if (companyWithAddress.Zipcode == null)
+            {
+                throw new ArgumentNullException("Zipcode must not be null");
+            }
+            if (companyWithAddress.CountryAlpha2Code == null)
+            {
+                throw new ArgumentNullException("CountryAlpha2Code must not be null");
+            }
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId.Value,companyWithAddress.CompanyId.Value).ConfigureAwait(false);
+            if (company == null)
+            {
+                throw new ArgumentException($"applicationId {applicationId} for companyId {companyWithAddress.CompanyId} not found");
+            }
+            company.Bpn = companyWithAddress.Bpn;
+            company.Name = companyWithAddress.Name;
+            company.Shortname = companyWithAddress.Shortname;
+            company.TaxId = companyWithAddress.TaxId;
+            if (company.Address == null)
+            {
+                company.Address = _portalDBAccess.CreateAddress(
+                        companyWithAddress.City,
+                        companyWithAddress.Streetname,
+                        (decimal)companyWithAddress.Zipcode,
+                        companyWithAddress.CountryAlpha2Code
+                    );
+            }
+            else
+            {
+                company.Address.City = companyWithAddress.City;
+                company.Address.Streetname = companyWithAddress.Streetname;
+                company.Address.Zipcode = (decimal)companyWithAddress.Zipcode;
+                company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+            }
+            company.Address.Region = companyWithAddress.Region;
+            company.Address.Streetadditional = companyWithAddress.Streetadditional;
+            company.Address.Streetnumber = companyWithAddress.Streetnumber;
+            company.CompanyStatusId = CompanyStatusId.PENDING;
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<int> InviteNewUserAsync(Guid? applicationId, UserInvitationData? userInvitationData)
