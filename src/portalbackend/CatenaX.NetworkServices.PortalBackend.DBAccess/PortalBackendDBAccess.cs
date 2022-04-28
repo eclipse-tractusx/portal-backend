@@ -132,6 +132,28 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     DateTimeOffset.UtcNow
                 )).Entity;
 
+        public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null) =>
+            _dbContext.Consents.Add(
+                new Consent(
+                    Guid.NewGuid(),
+                    agreementId,
+                    companyId,
+                    companyUserId,
+                    consentStatusId,
+                    DateTimeOffset.UtcNow
+                ) {
+                    Comment = Comment,
+                    Target = Target,
+                    DocumentId = DocumentId
+                }).Entity;
+
+        public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, int companyRoleId) =>
+            _dbContext.CompanyAssignedRoles.Add(
+                new CompanyAssignedRole(
+                    companyId,
+                    companyRoleId
+                )).Entity;
+
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .Where(iamUser => iamUser.UserEntityId == iamUserId)
@@ -191,6 +213,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public Task<CompanyApplication> GetCompanyApplication(Guid applicationId) =>
             _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyIdWithUserId> GetCompanyWithUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser => new CompanyIdWithUserId(
+                    iamUser.CompanyUser!.CompanyId,
+                    iamUser.CompanyUserId
+                ))
                 .SingleOrDefaultAsync();
 
         public async Task<int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus)

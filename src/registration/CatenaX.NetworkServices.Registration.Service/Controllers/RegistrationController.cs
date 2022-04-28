@@ -181,7 +181,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
         public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
-            _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
+            WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
@@ -210,9 +210,15 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "invite_user")]
         [Route("application/{applicationId}/inviteNewUser")]
-
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData) =>
             _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData);
+
+        [HttpPut]
+        [Authorize(Roles = "submit_registration")]
+        [Route("application/{applicationId}/agreement/{agreementId}/confirmConsent")]
+        public Task<int> ConfirmConsentToAgreementAsync([FromRoute] Guid applicationId, [FromRoute] Guid agreementId, [FromQuery] int companyRoleId) =>
+            WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, agreementId, companyRoleId, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
@@ -236,5 +242,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+
+        private T WithIamUserId<T>(Func<string,T> _next) =>
+            _next(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
     }
 }

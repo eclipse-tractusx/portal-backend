@@ -317,11 +317,29 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
         {
             var result = (CompanyApplicationStatusId?) await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
-            if (result == null)
+            if (!result.HasValue)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
             return result.Value;
+        }
+
+        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, Guid agreementId, int companyRoleId, string iamUserId)
+        {
+            var result = await _portalDBAccess.GetCompanyWithUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
+            if (result == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
+            }
+            _portalDBAccess.CreateConsent(
+                agreementId,
+                result.CompanyId,
+                result.CompanyUserId,
+                ConsentStatusId.ACTIVE);
+            _portalDBAccess.CreateCompanyAssignedRole(
+                result.CompanyId,
+                companyRoleId);
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
