@@ -164,67 +164,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .SingleAsync();
 
-        public async Task SetCompanyWithAdressAsync(Guid companyApplicationId, CompanyWithAddress companyWithAddress)
-        {
-            var company = (await _dbContext.CompanyApplications
-                .Include(companyApplication => companyApplication.Company)
-                .ThenInclude(company => company!.Address)
-                .Where(companyApplication => companyApplication.Id == companyApplicationId && companyApplication.Company!.Id == companyWithAddress.CompanyId)
-                .SingleAsync()
-                .ConfigureAwait(false)).Company;
-            if (company == null)
-            {
-                throw new ArgumentException($"applicationId {companyApplicationId} for companyId {companyWithAddress.CompanyId} not found");
-            }
-            if (companyWithAddress.Name == null)
-            {
-                throw new ArgumentException("Name must not be null");
-            }
-            if (companyWithAddress.City == null)
-            {
-                throw new ArgumentException("City must not be null");
-            }
-            if (companyWithAddress.Streetname == null)
-            {
-                throw new ArgumentException("Streetname must not be null");
-            }
-            if (companyWithAddress.Zipcode == null)
-            {
-                throw new ArgumentException("Zipcode must not be null");
-            }
-            if (companyWithAddress.CountryAlpha2Code == null)
-            {
-                throw new ArgumentException("CountryAlpha2Code must not be null");
-            }
-
-            company.Bpn = companyWithAddress.Bpn;
-            company.Name = companyWithAddress.Name;
-            company.Shortname = companyWithAddress.Shortname;
-            company.TaxId = companyWithAddress.TaxId;
-            if (company.Address == null)
-            {
-                company.Address =_dbContext.Add(
-                    new Address(
-                        Guid.NewGuid(),
-                        companyWithAddress.City,
-                        companyWithAddress.Streetname,
-                        (decimal)companyWithAddress.Zipcode,
-                        companyWithAddress.CountryAlpha2Code,
-                        DateTimeOffset.UtcNow
-                    )).Entity;
-            }
-            else
-            {
-                company.Address.City = companyWithAddress.City;
-                company.Address.Streetname = companyWithAddress.Streetname;
-                company.Address.Zipcode = (decimal)companyWithAddress.Zipcode;
-                company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
-            }
-            company.Address.Region = companyWithAddress.Region;
-            company.Address.Streetadditional = companyWithAddress.Streetadditional;
-            company.Address.Streetnumber = companyWithAddress.Streetnumber;
-            await _dbContext.SaveChangesAsync();
-        }
+        public Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
+            _dbContext.Companies
+                .Include(company => company!.Address)
+                .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
+                .SingleOrDefaultAsync();
 
         public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId) =>
             _dbContext.CompanyApplications
