@@ -208,6 +208,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("Streetname must not be empty");
             }
+            if (!companyWithAddress.Zipcode.HasValue)
+            {
+                throw new ArgumentNullException("Zipcode must not be null");
+            }
             if (companyWithAddress.CountryAlpha2Code.Length != 2)
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
@@ -226,7 +230,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 company.Address = _portalDBAccess.CreateAddress(
                         companyWithAddress.City,
                         companyWithAddress.Streetname,
-                        (decimal)companyWithAddress.Zipcode,
+                        companyWithAddress.Zipcode.Value,
                         companyWithAddress.CountryAlpha2Code
                     );
             }
@@ -234,7 +238,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 company.Address.City = companyWithAddress.City;
                 company.Address.Streetname = companyWithAddress.Streetname;
-                company.Address.Zipcode = (decimal)companyWithAddress.Zipcode;
+                company.Address.Zipcode = companyWithAddress.Zipcode.Value;
                 company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
             }
             company.Address.Region = companyWithAddress.Region;
