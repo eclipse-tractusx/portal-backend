@@ -98,17 +98,17 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 app.LeadPictureUri ?? ERROR_STRING,
                 app.ProviderUri ?? ERROR_STRING,
                 app.Provider,
-                app.ContactEmail ?? ERROR_STRING,
-                app.ContactNumber ?? ERROR_STRING,
                 app.LongDescription ?? ERROR_STRING,
                 app.Price ?? ERROR_STRING
                 )
             {
                 Id = app.Id,
-                IsPurchased = app.IsPurchased,
+                IsSubscribed = app.IsPurchased,
                 Tags = app.Tags,
                 UseCases = app.UseCases,
-                DetailPictureUris = app.DetailPictureUris
+                DetailPictureUris = app.DetailPictureUris,
+                ContactEmail = app.ContactEmail,
+                ContactNumber = app.ContactNumber
             };
         }
 

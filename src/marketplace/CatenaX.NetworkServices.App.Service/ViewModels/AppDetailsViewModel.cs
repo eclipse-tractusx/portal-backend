@@ -12,19 +12,15 @@
         /// <param name="leadPictureUri">Lead picture URI.</param>
         /// <param name="providerUri">Provider URI.</param>
         /// <param name="provider">Provider.</param>
-        /// <param name="contactEmail">Contact email.</param>
-        /// <param name="contactNumber">Contact number.</param>
         /// <param name="longDescription">Long description.</param>
         /// <param name="price">Price.</param>
-        public AppDetailsViewModel(string title, string leadPictureUri, string providerUri, string provider, string contactEmail, string contactNumber, string longDescription, string price)
+        public AppDetailsViewModel(string title, string leadPictureUri, string providerUri, string provider, string longDescription, string price)
         {
             Title = title;
             LeadPictureUri = leadPictureUri;
             DetailPictureUris = new List<string>();
             ProviderUri = providerUri;
             Provider = provider;
-            ContactEmail = contactEmail;
-            ContactNumber = contactNumber;
             UseCases = new List<string>();
             LongDescription = longDescription;
             Price = price;
@@ -64,12 +60,12 @@
         /// <summary>
         /// Email address of the app's primary contact.
         /// </summary>
-        public string ContactEmail { get; set; }
+        public string? ContactEmail { get; set; }
 
         /// <summary>
         /// Phone number of the app's primary contact.
         /// </summary>
-        public string ContactNumber { get; set; }
+        public string? ContactNumber { get; set; }
 
         /// <summary>
         /// Names of the app's use cases.
@@ -94,6 +90,6 @@
         /// <summary>
         /// Whether app has been purchased by the user's company.
         /// </summary>
-        public bool? IsPurchased { get; set; }
+        public bool? IsSubscribed { get; set; }
     }
 }
