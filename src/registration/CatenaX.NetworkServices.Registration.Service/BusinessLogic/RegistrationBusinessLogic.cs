@@ -194,37 +194,25 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return result;
         }
         
-        public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress? companyWithAddress)
+        public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
         {
-            if (companyWithAddress == null)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
             {
-                throw new ArgumentNullException("companyWithAddress must not be null");
+                throw new ArgumentException("Name must not be empty");
             }
-            if (!companyWithAddress.CompanyId.HasValue)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.City))
             {
-                throw new ArgumentNullException("companyId must not be null");
+                throw new ArgumentException("City must not be empty");
             }
-            if (companyWithAddress.Name == null)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.Streetname))
             {
-                throw new ArgumentNullException("Name must not be null");
+                throw new ArgumentException("Streetname must not be empty");
             }
-            if (companyWithAddress.City == null)
+            if (companyWithAddress.CountryAlpha2Code.Length != 2)
             {
-                throw new ArgumentNullException("City must not be null");
+                throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            if (companyWithAddress.Streetname == null)
-            {
-                throw new ArgumentNullException("Streetname must not be null");
-            }
-            if (companyWithAddress.Zipcode == null)
-            {
-                throw new ArgumentNullException("Zipcode must not be null");
-            }
-            if (companyWithAddress.CountryAlpha2Code == null)
-            {
-                throw new ArgumentNullException("CountryAlpha2Code must not be null");
-            }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId,companyWithAddress.CompanyId.Value).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId,companyWithAddress.CompanyId).ConfigureAwait(false);
             if (company == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
@@ -256,27 +244,23 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData? userInvitationData)
+        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
         {
-            if (userInvitationData == null)
-            {
-                throw new ArgumentNullException("userInvitationData must not be null");
-            }
             if (String.IsNullOrWhiteSpace(userInvitationData.firstName))
             {
                 throw new ArgumentNullException("fistName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.lastName))
             {
-                throw new ArgumentNullException("lastName must not be null");
+                throw new ArgumentNullException("lastName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.userName))
             {
-                throw new ArgumentNullException("userName must not be null");
+                throw new ArgumentNullException("userName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.email))
             {
-                throw new ArgumentNullException("email must not be null");
+                throw new ArgumentNullException("email must not be empty");
             }
             var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
             if (applicationData == null || applicationData.IdpAlias == null)
