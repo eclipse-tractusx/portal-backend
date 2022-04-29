@@ -226,14 +226,15 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 ))
                 .SingleOrDefaultAsync();
 
-        public async Task<int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus)
-        {
-            (await _dbContext.CompanyApplications
-                .Where(application => application.Id == applicationId)
-                .SingleOrDefaultAsync().ConfigureAwait(false))
-                .ApplicationStatusId = applicationStatus;
-            return await _dbContext.SaveChangesAsync().ConfigureAwait(false);
-        }
+        public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser =>
+                    iamUser.CompanyUserId
+                )
+                .SingleOrDefaultAsync();
 
         public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
         {
