@@ -147,7 +147,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     DocumentId = DocumentId
                 }).Entity;
 
-        public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, int companyRoleId) =>
+        public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId) =>
             _dbContext.CompanyAssignedRoles.Add(
                 new CompanyAssignedRole(
                     companyId,

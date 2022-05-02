@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 {
@@ -6,14 +7,14 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
     {
         private AgreementAssignedCompanyRole() {}
 
-        public AgreementAssignedCompanyRole(Guid agreementId, int companyRoleId)
+        public AgreementAssignedCompanyRole(Guid agreementId, CompanyRoleId companyRoleId)
         {
             AgreementId = agreementId;
             CompanyRoleId = companyRoleId;
         }
 
         public Guid AgreementId { get; private set; }
-        public int CompanyRoleId { get; private set; }
+        public CompanyRoleId CompanyRoleId { get; private set; }
 
         // Navigation properties
         public virtual Agreement? Agreement { get; private set; }
