@@ -250,13 +250,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.Documents.Add(
                 new Document(
                     Guid.NewGuid(),
-                    DateTimeOffset.UtcNow,
-                    documentOId,
                     hash,
                     documentName,
-                    documentTypeId,
-                    companyUserId
-                )).Entity;
+                    DateTimeOffset.UtcNow)
+                    {
+                    DocumentOid = documentOId,
+                    DocumentTypeId = documentTypeId,
+                    CompanyUserId = companyUserId
+                    }).Entity;
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
