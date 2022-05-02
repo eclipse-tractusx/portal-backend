@@ -141,7 +141,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId) =>
             _dbAccess.SignedConsentsByCompanyId(companyId);
 
-        public async Task UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId)
+        public async Task<int> UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId)
         {
 
              var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
@@ -150,26 +150,25 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
             var documentName = document.FileName;
-            var documentContent = "";
-            var hash = "";
+            
             using (var ms = new MemoryStream())
             {
                 document.CopyTo(ms);
                 var fileBytes = ms.ToArray();
-                documentContent = Convert.ToBase64String(fileBytes);
+                var documentContent = Convert.ToBase64String(fileBytes);
                 using (SHA256 hashSHA256 = SHA256.Create())
                 {
                     byte[] hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
-                    hash = Encoding.UTF8.GetString(hashValue);
+                    // hash = Encoding.UTF8.GetString(hashValue);
                     StringBuilder builder = new StringBuilder();
                     for (int i = 0; i < hashValue.Length; i++)
                     {
                         builder.Append(hashValue[i].ToString("x2"));
                     }
-                    hash = builder.ToString();
+                   var hash = builder.ToString();
+                    _portalDBAccess.CreateDocument(applicationId,companyUserId,documentName,documentContent,hash,0,documentTypeId);
                 }
             }
-             _portalDBAccess.CreateDocument(applicationId,companyUserId,documentName,documentContent,hash,0,documentTypeId);
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
         
