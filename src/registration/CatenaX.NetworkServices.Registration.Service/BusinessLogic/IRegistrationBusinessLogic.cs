@@ -20,7 +20,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<IEnumerable<CompanyRole>> GetCompanyRolesAsync();
         Task<IEnumerable<string>> CreateUsersAsync(List<UserCreationInfo> userList, string tenant, string createdByName);
         Task SetCompanyRolesAsync(CompanyToRoles rolesToSet);
-        Task UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId);
+        Task<int> UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId);
         Task<IEnumerable<ConsentForCompanyRole>> GetConsentForCompanyRoleAsync(int roleId);
         Task SignConsentAsync(SignConsentRequest signedConsent);
         Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId);
