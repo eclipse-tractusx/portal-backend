@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.Consent.Library.Data;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -140,9 +141,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId) =>
             _dbAccess.SignedConsentsByCompanyId(companyId);
 
-        public async Task CreateDocument(IFormFile document, string userName)
+        public async Task UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId)
         {
-            var name = document.FileName;
+
+             var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
+            if (companyUserId == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
+            }
+            var documentName = document.FileName;
             var documentContent = "";
             var hash = "";
             using (var ms = new MemoryStream())
@@ -162,7 +169,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     hash = builder.ToString();
                 }
             }
-            await _dbAccess.UploadDocument(name,documentContent,hash,userName);
+             _portalDBAccess.CreateDocument(applicationId,companyUserId,documentName,documentContent,hash,0,documentTypeId);
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
         
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
@@ -183,56 +191,93 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
 
-        public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
+        public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
         {
-            if (!applicationId.HasValue)
+            var result = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (result == null)
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
+            return result;
         }
         
-        public Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
+        public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
         {
-            if (!applicationId.HasValue)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new ArgumentException("Name must not be empty");
             }
-            if (companyWithAddress == null)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.City))
             {
-                throw new ArgumentNullException("companyWithAddress must not be null");
+                throw new ArgumentException("City must not be empty");
             }
-            //FIXMX: add update of company status within same transpaction
-            return _portalDBAccess.SetCompanyWithAdressAsync(applicationId.Value, companyWithAddress);
+            if (String.IsNullOrWhiteSpace(companyWithAddress.Streetname))
+            {
+                throw new ArgumentException("Streetname must not be empty");
+            }
+            if (!companyWithAddress.Zipcode.HasValue)
+            {
+                throw new ArgumentNullException("Zipcode must not be null");
+            }
+            if (companyWithAddress.CountryAlpha2Code.Length != 2)
+            {
+                throw new ArgumentException("CountryAlpha2Code must be 2 chars");
+            }
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId,companyWithAddress.CompanyId).ConfigureAwait(false);
+            if (company == null)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
+            }
+            company.Bpn = companyWithAddress.Bpn;
+            company.Name = companyWithAddress.Name;
+            company.Shortname = companyWithAddress.Shortname;
+            company.TaxId = companyWithAddress.TaxId;
+            if (company.Address == null)
+            {
+                company.Address = _portalDBAccess.CreateAddress(
+                        companyWithAddress.City,
+                        companyWithAddress.Streetname,
+                        companyWithAddress.Zipcode.Value,
+                        companyWithAddress.CountryAlpha2Code
+                    );
+            }
+            else
+            {
+                company.Address.City = companyWithAddress.City;
+                company.Address.Streetname = companyWithAddress.Streetname;
+                company.Address.Zipcode = companyWithAddress.Zipcode.Value;
+                company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+            }
+            company.Address.Region = companyWithAddress.Region;
+            company.Address.Streetadditional = companyWithAddress.Streetadditional;
+            company.Address.Streetnumber = companyWithAddress.Streetnumber;
+            company.CompanyStatusId = CompanyStatusId.PENDING;
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<int> InviteNewUserAsync(Guid? applicationId, UserInvitationData? userInvitationData)
+        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
         {
-            if (!applicationId.HasValue)
-            {
-                throw new ArgumentNullException("applicationId must not be null");
-            }
-            if (userInvitationData == null)
-            {
-                throw new ArgumentNullException("userInvitationData must not be null");
-            }
             if (String.IsNullOrWhiteSpace(userInvitationData.firstName))
             {
                 throw new ArgumentNullException("fistName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.lastName))
             {
-                throw new ArgumentNullException("lastName must not be null");
+                throw new ArgumentNullException("lastName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.userName))
             {
-                throw new ArgumentNullException("userName must not be null");
+                throw new ArgumentNullException("userName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.email))
             {
-                throw new ArgumentNullException("email must not be null");
+                throw new ArgumentNullException("email must not be empty");
             }
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (applicationData == null || applicationData.IdpAlias == null)
+            {
+                throw new NotFoundException($"shared idp for CompanyApplication {applicationId} not found");
+            }
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
@@ -246,7 +291,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 applicationData.CompanyName).ConfigureAwait(false);
             await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false);
             var user = _portalDBAccess.CreateCompanyUser(userInvitationData.firstName, userInvitationData.lastName, userInvitationData.email, applicationData.CompanyId);
-            var invitation = _portalDBAccess.CreateInvitation(applicationId.Value, user);
+            var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
             var iamUser = _portalDBAccess.CreateIamUser(user, iamUserId);
             var updates = await _portalDBAccess.SaveAsync();
             var mailParameters = new Dictionary<string, string>
@@ -258,29 +303,50 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
 
-            return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
+            return updates;
         }
 
-        public Task<int> SetApplicationStatusAsync(Guid? applicationId, CompanyApplicationStatusId? status)
+        public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
         {
-            if (!applicationId.HasValue)
-            {
-                throw new ArgumentNullException("applicationId must not be null");
-            }
-            if (!status.HasValue)
+            if (status == 0)
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
+            var application = await _portalDBAccess.GetCompanyApplication(applicationId).ConfigureAwait(false);
+            if (application == null)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId} not found");
+            }
+            application.ApplicationStatusId = status;
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
             
-        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
+        public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
         {
-            if (!applicationId.HasValue)
+            var result = (CompanyApplicationStatusId?) await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (!result.HasValue)
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            return _portalDBAccess.GetApplicationStatusAsync(applicationId.Value);
+            return result.Value;
+        }
+
+        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, Guid agreementId, int companyRoleId, string iamUserId)
+        {
+            var result = await _portalDBAccess.GetCompanyWithUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
+            if (result == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
+            }
+            _portalDBAccess.CreateConsent(
+                agreementId,
+                result.CompanyId,
+                result.CompanyUserId,
+                ConsentStatusId.ACTIVE);
+            _portalDBAccess.CreateCompanyAssignedRole(
+                result.CompanyId,
+                companyRoleId);
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)

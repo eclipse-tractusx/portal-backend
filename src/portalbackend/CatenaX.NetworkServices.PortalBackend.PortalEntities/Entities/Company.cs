@@ -9,7 +9,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
     {
         private Company()
         {
-            Shortname = null!;
+            Name = null!;
             Agreements = new HashSet<Agreement>();
             BoughtApps = new HashSet<App>();
             ProvidedApps = new HashSet<App>();

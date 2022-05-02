@@ -132,6 +132,28 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     DateTimeOffset.UtcNow
                 )).Entity;
 
+        public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null) =>
+            _dbContext.Consents.Add(
+                new Consent(
+                    Guid.NewGuid(),
+                    agreementId,
+                    companyId,
+                    companyUserId,
+                    consentStatusId,
+                    DateTimeOffset.UtcNow
+                ) {
+                    Comment = Comment,
+                    Target = Target,
+                    DocumentId = DocumentId
+                }).Entity;
+
+        public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, int companyRoleId) =>
+            _dbContext.CompanyAssignedRoles.Add(
+                new CompanyAssignedRole(
+                    companyId,
+                    companyRoleId
+                )).Entity;
+
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .Where(iamUser => iamUser.UserEntityId == iamUserId)
@@ -146,117 +168,95 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.CompanyApplications
                 .Where(companyApplication => companyApplication.Id == companyApplicationId)
                 .Select(
-                    companyApplication => new CompanyWithAddress {
-                        CompanyId = companyApplication.CompanyId,
+                    companyApplication => new CompanyWithAddress(
+                        companyApplication.CompanyId,
+                        companyApplication.Company!.Name,
+                        companyApplication.Company.Address!.City ?? "",
+                        companyApplication.Company.Address.Streetname ?? "",
+                        companyApplication.Company.Address.CountryAlpha2Code ?? ""
+                    ){
                         Bpn = companyApplication.Company!.Bpn,
-                        Name = companyApplication.Company.Name,
                         Shortname = companyApplication.Company.Shortname,
-                        City = companyApplication.Company.Address!.City,
                         Region = companyApplication.Company.Address.Region,
                         Streetadditional = companyApplication.Company.Address.Streetadditional,
-                        Streetname = companyApplication.Company.Address.Streetname,
                         Streetnumber = companyApplication.Company.Address.Streetnumber,
                         Zipcode = companyApplication.Company.Address.Zipcode,
-                        CountryAlpha2Code = companyApplication.Company.Address.CountryAlpha2Code,
-                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                        TaxId = companyApplication.Company.TaxId
                     })
                 .AsNoTracking()
-                .SingleAsync();
+                .SingleOrDefaultAsync();
 
-        public async Task SetCompanyWithAdressAsync(Guid companyApplicationId, CompanyWithAddress companyWithAddress)
-        {
-            var company = (await _dbContext.CompanyApplications
-                .Include(companyApplication => companyApplication.Company)
-                .ThenInclude(company => company!.Address)
-                .Where(companyApplication => companyApplication.Id == companyApplicationId && companyApplication.Company!.Id == companyWithAddress.CompanyId)
-                .SingleAsync()
-                .ConfigureAwait(false)).Company;
-            if (company == null)
-            {
-                throw new ArgumentException($"applicationId {companyApplicationId} for companyId {companyWithAddress.CompanyId} not found");
-            }
-            if (companyWithAddress.Name == null)
-            {
-                throw new ArgumentException("Name must not be null");
-            }
-            if (companyWithAddress.City == null)
-            {
-                throw new ArgumentException("City must not be null");
-            }
-            if (companyWithAddress.Streetname == null)
-            {
-                throw new ArgumentException("Streetname must not be null");
-            }
-            if (companyWithAddress.Zipcode == null)
-            {
-                throw new ArgumentException("Zipcode must not be null");
-            }
-            if (companyWithAddress.CountryAlpha2Code == null)
-            {
-                throw new ArgumentException("CountryAlpha2Code must not be null");
-            }
-
-            company.Bpn = companyWithAddress.Bpn;
-            company.Name = companyWithAddress.Name;
-            company.Shortname = companyWithAddress.Shortname;
-            if (company.Address == null)
-            {
-                company.Address =_dbContext.Add(
-                    new Address(
-                        Guid.NewGuid(),
-                        companyWithAddress.City,
-                        companyWithAddress.Streetname,
-                        (decimal)companyWithAddress.Zipcode,
-                        companyWithAddress.CountryAlpha2Code,
-                        DateTimeOffset.UtcNow
-                    )).Entity;
-            }
-            else
-            {
-                company.Address.City = companyWithAddress.City;
-                company.Address.Streetname = companyWithAddress.Streetname;
-                company.Address.Zipcode = (decimal)companyWithAddress.Zipcode;
-                company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
-            }
-            company.Address.Region = companyWithAddress.Region;
-            company.Address.Streetadditional = companyWithAddress.Streetadditional;
-            company.Address.Streetnumber = companyWithAddress.Streetnumber;
-            await _dbContext.SaveChangesAsync();
-        }
+        public Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
+            _dbContext.Companies
+                .Include(company => company!.Address)
+                .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
+                .SingleOrDefaultAsync();
 
         public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId) =>
             _dbContext.CompanyApplications
                 .Where(companyApplication => companyApplication.Id == companyApplicationId)
                 .Select(
-                    companyApplication => new CompanyNameIdWithIdpAlias {
-                        CompanyName = companyApplication.Company!.Name!,
-                        CompanyId = companyApplication.CompanyId,
+                    companyApplication => new CompanyNameIdWithIdpAlias(
+                        companyApplication.Company!.Name!,
+                        companyApplication.CompanyId
+                    ) {
                         IdpAlias = companyApplication.Company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                            .Single()
+                            .SingleOrDefault()
                     }
                 )
             .AsNoTracking()
-            .SingleAsync();
+            .SingleOrDefaultAsync();
 
-        public async Task<int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus)
-        {
-            (await _dbContext.CompanyApplications
+        public Task<CompanyApplication> GetCompanyApplication(Guid applicationId) =>
+            _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
-                .SingleAsync().ConfigureAwait(false))
-                .ApplicationStatusId = applicationStatus;
-            return await _dbContext.SaveChangesAsync().ConfigureAwait(false);
-        }
+                .SingleOrDefaultAsync();
 
-        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
+        public Task<CompanyIdWithUserId> GetCompanyWithUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser => new CompanyIdWithUserId(
+                    iamUser.CompanyUser!.CompanyId,
+                    iamUser.CompanyUserId
+                ))
+                .SingleOrDefaultAsync();
+
+        public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser =>
+                    iamUser.CompanyUserId
+                )
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
         {
             return _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
                 .AsNoTracking()
                 .Select(application => application.ApplicationStatusId)
-                .SingleAsync();
+                .SingleOrDefaultAsync();
         }
+
+        
+        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName ,string documentContent, string hash,uint documentOId,DocumentTypeId documentTypeId) =>
+            _dbContext.Documents.Add(
+                new Document(
+                    Guid.NewGuid(),
+                    DateTimeOffset.UtcNow,
+                    documentOId,
+                    hash,
+                    documentName,
+                    documentTypeId,
+                    companyUserId
+                )).Entity;
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
