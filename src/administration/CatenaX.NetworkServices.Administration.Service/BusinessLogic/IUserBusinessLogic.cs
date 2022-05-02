@@ -9,7 +9,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
     public interface IUserBusinessLogic
     {
-        Task ExecuteInvitation(CompanyInvitationData? invitationData);
         Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? userList, string? tenant, string? createdByName);
         Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
                 string? tenant,
