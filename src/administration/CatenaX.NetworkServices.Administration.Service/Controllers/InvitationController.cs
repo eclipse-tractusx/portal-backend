@@ -17,7 +17,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
     [ApiController]
-    [Route("api/administration")]
+    [Route("api/administration/invitation")]
     public class InvitationController : ControllerBase
     {
 
@@ -32,7 +32,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 
         [HttpPost]
         [Authorize(Roles = "invite_new_partner")]
-        [Route("invitation")]
         public async Task<IActionResult> ExecuteInvitation([FromBody] CompanyInvitationData InvitationData)
         {
             try
