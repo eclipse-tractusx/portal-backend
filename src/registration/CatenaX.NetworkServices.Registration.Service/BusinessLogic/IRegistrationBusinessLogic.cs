@@ -33,6 +33,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
         Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
         Task<int> SubmitRoleConsentAsync(Guid applicationId, IEnumerable<RoleAgreementConsentStatus> roleAgreementConsentStatuses, string user);
+        IAsyncEnumerable<AgreementConsentStatus> GetAgreementConsentStatusesAsync(Guid? applicationId);
         Task<bool> SubmitRegistrationAsync(string userEmail);
     }
 }

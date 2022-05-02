@@ -220,6 +220,13 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, roleAgreementConsentStatuses, iamUserId));
 
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/consentStatus")]
+
+        public IAsyncEnumerable<AgreementConsentStatus> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetAgreementConsentStatusesAsync(applicationId);
+    
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
         [Route("submitregistration")]
