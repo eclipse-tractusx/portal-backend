@@ -33,24 +33,27 @@ namespace CatenaX.NetworkServices.Framework.ErrorHandling
                 {
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     _message = "Bad Request";
+                    _logger.LogInformation(error.Message);
                 }
                 else if (error is NotFoundException)
                 {
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     _message = "Resource Not Found";
+                    _logger.LogInformation(error.Message);
                 }
                 else if (error is ForbiddenException)
                 {
                     response.StatusCode = (int)HttpStatusCode.Forbidden;
                     _message = "Forbidden";
+                    _logger.LogInformation(error.Message);
                 }
                 else
                 {
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     _message = "Internal Server Error";
+                    _logger.LogError(error.ToString());
                 }
                 response.ContentType = "application/json";
-                _logger.LogError(error.ToString());
                 var result = JsonSerializer.Serialize(new { message = _message });
                 await response.WriteAsync(result);
             }

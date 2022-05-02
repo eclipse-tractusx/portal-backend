@@ -15,6 +15,15 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null);
 
         /// <summary>
+        /// Get detailed application data for a single app by id.
+        /// </summary>
+        /// <param name="appId">Persistence ID of the application to be retrieved.</param>
+        /// <param name="userId">Optional ID of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
+        /// <param name="languageShortName">Optional two character language specifier for the localization of the app description. No description if not provided.</param>
+        /// <returns>AppDetailsViewModel of the requested application.</returns>
+        public Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null);
+
+        /// <summary>
         /// Get IDs of all favourite apps of the user by ID.
         /// </summary>
         /// <param name="userId">ID of the user to get favourite apps for.</param>
@@ -34,5 +43,12 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <param name="appId">ID of the app to remove from user's favourites.</param>
         /// <param name="userId">ID of the user to remove app favourite from.</param>
         public Task RemoveFavouriteAppForUserAsync(Guid appId, string userId);
+
+        /// <summary>
+        /// Adds a subscription relation between an application and a user's company.
+        /// </summary>
+        /// <param name="appId">ID of the app to subscribe to.</param>
+        /// <param name="userId">ID of the user that initiated app subscription for their company.</param>
+        public Task AddCompanyAppSubscriptionAsync(Guid appId, string userId);
     }
 }

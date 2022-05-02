@@ -26,6 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public DbSet<AppDetailImage> AppDetailImages { get; set; } = default!;
         public DbSet<AppLicense> AppLicenses { get; set; } = default!;
         public DbSet<AppStatus> AppStatuses { get; set; } = default!;
+        public DbSet<AppTag> AppTags { get; set; } = default!;
         public DbSet<Company> Companies { get; set; } = default!;
         public DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
         public DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -309,6 +310,20 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     Enum.GetValues(typeof(AppStatusId))
                         .Cast<AppStatusId>()
                         .Select(e => new AppStatus(e)));
+            });
+
+            modelBuilder.Entity<AppTag>(entity =>
+            {
+                entity.ToTable("app_tags", "portal");
+
+                entity.HasKey(e => new { e.AppId, e.Name })
+                    .HasName("pk_app_tags");
+
+                entity.HasOne(d => d.App)
+                    .WithMany(p => p!.Tags)
+                    .HasForeignKey(d => d.AppId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_qi320sp8lxy7drw6kt4vheka");
             });
 
             modelBuilder.Entity<Company>(entity =>

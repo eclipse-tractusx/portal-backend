@@ -89,6 +89,8 @@ namespace CatenaX.NetworkServices.UserAdministration.Service
             services.AddTransient<IUserAdministrationBusinessLogic, UserAdministrationBusinessLogic>()
                     .ConfigureUserAdministrationSettings(Configuration.GetSection("Invitation"));
 
+            services.AddTransient<ICompanyAdministrationBusinessLogic, CompanyAdministrationBusinessLogic>();
+
             services.AddTransient<IKeycloakDBAccess, KeycloakDBAccess>();
 
             services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
