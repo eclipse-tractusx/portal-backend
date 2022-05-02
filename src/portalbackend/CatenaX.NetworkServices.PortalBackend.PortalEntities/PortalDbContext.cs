@@ -443,6 +443,30 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<CompanyRole>(entity =>
             {
                 entity.ToTable("company_roles", "portal");
+
+                entity.Property(e => e.CompanyRoleId)
+                    .ValueGeneratedNever();
+
+                entity.HasData(
+                    Enum.GetValues(typeof(CompanyRoleId))
+                        .Cast<CompanyRoleId>()
+                        .Select(e => new CompanyRole(e)));
+            });
+
+            modelBuilder.Entity<CompanyRoleDescription>(entity =>
+            {
+                entity.ToTable("company_role_descriptions", "portal");
+
+                entity.HasKey(e => new { e.CompanyRoleId, e.LanguageShortName })
+                    .HasName("pk_company_role_descriptions");
+
+                entity.HasOne(d => d.CompanyRole)
+                    .WithMany(p => p!.CompanyRoleDescriptions)
+                    .HasForeignKey(d => d.CompanyRoleId);
+                
+                entity.HasOne(d => d.Language)
+                    .WithMany(p => p!.CompanyRoleDescriptions)
+                    .HasForeignKey(d => d.LanguageShortName);
             });
 
             modelBuilder.Entity<CompanyStatus>(entity =>

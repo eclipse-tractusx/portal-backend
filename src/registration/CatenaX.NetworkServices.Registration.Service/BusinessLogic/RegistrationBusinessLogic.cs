@@ -324,21 +324,28 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return result.Value;
         }
 
-        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, Guid agreementId, int companyRoleId, string iamUserId)
+        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, IEnumerable<RoleAgreementConsentStatus> roleAgreementConsentStatuses, string iamUserId)
         {
             var result = await _portalDBAccess.GetCompanyWithUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
             if (result == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
-            _portalDBAccess.CreateConsent(
-                agreementId,
-                result.CompanyId,
-                result.CompanyUserId,
-                ConsentStatusId.ACTIVE);
-            _portalDBAccess.CreateCompanyAssignedRole(
-                result.CompanyId,
-                companyRoleId);
+            foreach(var roleAgreementConsentStatus in roleAgreementConsentStatuses)
+            {
+                _portalDBAccess.CreateCompanyAssignedRole(
+                    result.CompanyId,
+                    roleAgreementConsentStatus.companyRoleId);
+
+                foreach(var agreementConsentStatus in roleAgreementConsentStatus.agreementConsentStatuses)
+                {
+                    _portalDBAccess.CreateConsent(
+                        agreementConsentStatus.agreementId,
+                        result.CompanyId,
+                        result.CompanyUserId,
+                        agreementConsentStatus.consentStatusId);
+                }
+            }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 

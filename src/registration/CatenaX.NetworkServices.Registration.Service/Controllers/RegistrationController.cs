@@ -213,12 +213,12 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData) =>
             _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData);
 
-        [HttpPut]
+        [HttpPost]
         [Authorize(Roles = "submit_registration")]
-        [Route("application/{applicationId}/agreement/{agreementId}/confirmConsent")]
-        public Task<int> ConfirmConsentToAgreementAsync([FromRoute] Guid applicationId, [FromRoute] Guid agreementId, [FromQuery] int companyRoleId) =>
+        [Route("application/{applicationId}/companyRoleAgreements")]
+        public Task<int> ConfirmConsentToAgreementAsync([FromRoute] Guid applicationId, [FromBody] IEnumerable<RoleAgreementConsentStatus> roleAgreementConsentStatuses) =>
             WithIamUserId(iamUserId =>
-                _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, agreementId, companyRoleId, iamUserId));
+                _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, roleAgreementConsentStatuses, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]

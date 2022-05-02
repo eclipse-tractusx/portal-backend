@@ -21,7 +21,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
         Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code);
         Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null);
-        CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, int companyRoleId);
+        CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
         IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);        
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
