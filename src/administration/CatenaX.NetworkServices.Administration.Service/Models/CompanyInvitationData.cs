@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.Models
+namespace CatenaX.NetworkServices.Administration.Service.Models
 {
     public class CompanyInvitationData
     {

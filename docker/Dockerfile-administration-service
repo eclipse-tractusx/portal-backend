@@ -7,13 +7,13 @@ FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
 WORKDIR /
 COPY src/ src/
 COPY keycloak/ keycloak/
-WORKDIR "/src/useradministration/CatenaX.NetworkServices.UserAdministration.Service"
-RUN dotnet build "CatenaX.NetworkServices.UserAdministration.Service.csproj" -c Release -o /app/build
+WORKDIR "/src/administration/CatenaX.NetworkServices.Administration.Service"
+RUN dotnet build "CatenaX.NetworkServices.Administration.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "CatenaX.NetworkServices.UserAdministration.Service.csproj" -c Release -o /app/publish
+RUN dotnet publish "CatenaX.NetworkServices.Administration.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.UserAdministration.Service.dll"]
+ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Administration.Service.dll"]
