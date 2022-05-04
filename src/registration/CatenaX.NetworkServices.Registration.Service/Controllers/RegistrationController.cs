@@ -1,5 +1,4 @@
-﻿using CatenaX.NetworkServices.Consent.Library.Data;
-using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.CustomException;
 using CatenaX.NetworkServices.Registration.Service.Model;

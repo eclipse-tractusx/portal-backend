@@ -290,7 +290,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            var application = await _portalDBAccess.GetCompanyApplication(applicationId).ConfigureAwait(false);
+            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
             if (application == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -357,7 +357,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 consentToRemove.ConsentStatusId = ConsentStatusId.INACTIVE;
             }
 
-            foreach (var agreementConsentToAdd in agreementConsentsToSet.Where(agreementConsent => agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE && !activeConsents.Any(activeConsent => activeConsent.AgreementId == agreementConsent.AgreementId)))
+            foreach (var agreementConsentToAdd in agreementConsentsToSet
+                .Where(agreementConsent =>
+                    agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE
+                    && !activeConsents.Any(activeConsent =>
+                        activeConsent.AgreementId == agreementConsent.AgreementId)))
             {
                 _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId.Value, companyUserId.Value, ConsentStatusId.ACTIVE);
             }

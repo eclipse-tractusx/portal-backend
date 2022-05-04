@@ -26,7 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
         Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId);
-        Task<CompanyApplication> GetCompanyApplication(Guid applicationId);
+        Task<CompanyApplication> GetCompanyApplicationAsync(Guid applicationId);
         Task<CompanyIdWithUserId> GetCompanyWithUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId);
