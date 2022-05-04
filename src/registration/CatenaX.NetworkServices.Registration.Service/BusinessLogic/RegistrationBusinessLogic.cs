@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -162,9 +163,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     hash = builder.ToString();
                 }
             }
-            await _dbAccess.UploadDocument(name,documentContent,hash,userName);
+            await _dbAccess.UploadDocument(name, documentContent, hash, userName);
         }
-        
+
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
@@ -176,7 +177,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
-                yield return new CompanyApplication {
+                yield return new CompanyApplication
+                {
                     ApplicationId = applicationWithStatus.ApplicationId,
                     ApplicationStatus = applicationWithStatus.ApplicationStatus
                 };
@@ -191,7 +193,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
         }
-        
+
         public Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
         {
             if (!applicationId.HasValue)
@@ -236,7 +238,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
-                new UserProfile (
+                new UserProfile(
                     userInvitationData.userName,
                     userInvitationData.firstName,
                     userInvitationData.lastName,
@@ -256,7 +258,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
+            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" });
 
             return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
         }
@@ -273,7 +275,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
         }
-            
+
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
         {
             if (!applicationId.HasValue)
@@ -290,8 +292,40 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userEmail,mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
             return true;
+        }
+
+        public async Task<InvitedUserRoleMapper> GetInvitedUsersDetail(Guid applicationId)
+        {
+
+            var result = await _portalDBAccess.GetInvitedUsersDetail(applicationId).ToListAsync().ConfigureAwait(false);
+            var invitedUser = new List<InvitedUsers>();
+
+            foreach (var item in result)
+            {
+                var response = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID);
+                var invitedUserRoles = new List<Roles>();
+                foreach (var index in response)
+                {
+                    invitedUserRoles.Add(new Roles
+                    {
+                        Id = index.Id,
+                        Name = index.Name,
+                        ClientRole = index.ClientRole
+                    });
+                }
+                invitedUser.Add(new InvitedUsers
+                {
+                    UserId = item.UserId,
+                    EmailId = item.EmailId,
+                    InvitationStatus = item.InvitationStatus,
+                    InvitedUserRoles = invitedUserRoles.AsEnumerable()
+                });
+            }
+            var invitedUserRoleMapper = new InvitedUserRoleMapper();
+            invitedUserRoleMapper.Users = invitedUser.AsEnumerable();
+            return invitedUserRoleMapper;
         }
     }
 }
