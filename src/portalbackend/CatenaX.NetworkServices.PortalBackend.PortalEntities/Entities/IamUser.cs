@@ -10,10 +10,14 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             UserEntityId = null!;
         }
 
-        public IamUser(string iamUserId, Guid companyUserId)
+        public IamUser(string iamUserId, Guid companyUserId, CompanyUser? companyUser = null)
         {
             UserEntityId = iamUserId;
             CompanyUserId = companyUserId;
+            if(companyUser != null)
+            {
+                CompanyUser = companyUser;
+            }
         }
 
         [Key]
