@@ -1,5 +1,4 @@
-﻿using CatenaX.NetworkServices.Consent.Library.Data;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -20,6 +19,7 @@ using PasswordGenerator;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -123,23 +123,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token) =>
             _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
 
-        public Task<IEnumerable<CompanyRole>> GetCompanyRolesAsync() =>
-            _dbAccess.GetAllCompanyRoles();
-
-        public Task<IEnumerable<ConsentForCompanyRole>> GetConsentForCompanyRoleAsync(int roleId) =>
-            _dbAccess.GetConsentForCompanyRole(roleId);
-
-        public Task SetCompanyRolesAsync(CompanyToRoles rolesToSet) =>
-            _dbAccess.SetCompanyRoles(rolesToSet);
-
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
-
-        public Task SignConsentAsync(SignConsentRequest signedConsent) =>
-            _dbAccess.SignConsent(signedConsent);
-
-        public Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId) =>
-            _dbAccess.SignedConsentsByCompanyId(companyId);
 
         public async Task CreateDocument(IFormFile document, string userName)
         {
@@ -324,38 +309,83 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return result.Value;
         }
 
-        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, IEnumerable<RoleAgreementConsentStatus> roleAgreementConsentStatuses, string iamUserId)
+        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId)
         {
-            var result = await _portalDBAccess.GetCompanyWithUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
-            if (result == null)
-            {
-                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
-            }
-            foreach(var roleAgreementConsentStatus in roleAgreementConsentStatuses)
-            {
-                _portalDBAccess.CreateCompanyAssignedRole(
-                    result.CompanyId,
-                    roleAgreementConsentStatus.companyRoleId);
+            var companyRoleIdsToSet = roleAgreementConsentStatuses.CompanyRoleIds;
+            var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
 
-                foreach(var agreementConsentStatus in roleAgreementConsentStatus.agreementConsentStatuses)
-                {
-                    _portalDBAccess.CreateConsent(
-                        agreementConsentStatus.agreementId,
-                        result.CompanyId,
-                        result.CompanyUserId,
-                        agreementConsentStatus.consentStatusId);
-                }
+            var (companyUserId, companyId, companyAssignedRoles, activeConsents) = await _portalDBAccess.GetCompanyRoleAgreementConsentsAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (!companyUserId.HasValue || !companyId.HasValue)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
+
+            var companyRoleAssignedAgreements = await _portalDBAccess.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false);
+
+            if (!companyRoleIdsToSet
+                .All(companyRoleIdToSet => 
+                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId => 
+                        agreementConsentsToSet
+                            .Any(agreementConsent =>
+                                agreementConsent.AgreementId == assignedAgreementId
+                                && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE))))
+            {
+                throw new ArgumentException("consent must be given to all CompanyRole assigned agreements");
+            }
+
+            foreach (var companyAssignedRoleToRemove in companyAssignedRoles
+                .Where(companyAssignedRole =>
+                    !companyRoleIdsToSet.Contains(companyAssignedRole.CompanyRoleId)))
+            {
+                _portalDBAccess.RemoveCompanyAssignedRole(companyAssignedRoleToRemove);
+            }
+
+            foreach (var companyRoleIdToAdd in companyRoleIdsToSet
+                .Where(companyRoleId =>
+                    !companyAssignedRoles.Any(companyAssignedRole =>
+                        companyAssignedRole.CompanyRoleId == companyRoleId)))
+            {
+                _portalDBAccess.CreateCompanyAssignedRole(companyId.Value, companyRoleIdToAdd);
+            }
+
+            foreach (var consentToRemove in activeConsents
+                .Where(activeConsent =>
+                    !agreementConsentsToSet.Any(agreementConsent =>
+                        agreementConsent.AgreementId == activeConsent.AgreementId
+                        && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+            {
+                consentToRemove.ConsentStatusId = ConsentStatusId.INACTIVE;
+            }
+
+            foreach (var agreementConsentToAdd in agreementConsentsToSet.Where(agreementConsent => agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE && !activeConsents.Any(activeConsent => activeConsent.AgreementId == agreementConsent.AgreementId)))
+            {
+                _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId.Value, companyUserId.Value, ConsentStatusId.ACTIVE);
+            }
+
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public IAsyncEnumerable<AgreementConsentStatus> GetAgreementConsentStatusesAsync(Guid? applicationId)
+        public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId)
         {
-            if (!applicationId.HasValue)
+            var (permitted, companyRoleIds, agreementConsentStatuses) = await _portalDBAccess.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (!permitted)
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
-            return _dbAccess.GetAgreementConsentStatusNoTrackingAsync(applicationId.Value);
+            return new CompanyRoleAgreementConsents(
+                companyRoleIds!,
+                agreementConsentStatuses.Select(agreementConsentStatus => {
+                    var (agreementId,consentStatusId) = agreementConsentStatus;
+                    return new AgreementConsentStatus(agreementId,consentStatusId);
+                }));
+        }
+
+        public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync()
+        {
+            return new CompanyRoleAgreementData(
+                (await _portalDBAccess.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
+                (await _portalDBAccess.GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
+            );
         }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
