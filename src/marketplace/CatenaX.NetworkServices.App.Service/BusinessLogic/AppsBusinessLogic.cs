@@ -115,7 +115,6 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId)
         {
             return this.context.IamUsers.AsNoTracking()
-                .Include(u => u.CompanyUser!.Apps)
                 .Where(u => u.UserEntityId == userId) // Id is unique, so single user
                 .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
                 .ToAsyncEnumerable();
