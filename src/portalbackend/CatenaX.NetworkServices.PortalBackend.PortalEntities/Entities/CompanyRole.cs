@@ -11,6 +11,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         {
             Label = null!;
             Companies = new HashSet<Company>();
+            AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
             CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
         }
 
@@ -27,7 +28,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public string Label { get; set; }
 
         // Navigation properties
-        public virtual AgreementAssignedCompanyRole? AgreementAssignedCompanyRole { get; private set; }
+        public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
         public virtual ICollection<Company> Companies { get; private set; }
         public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
     }
