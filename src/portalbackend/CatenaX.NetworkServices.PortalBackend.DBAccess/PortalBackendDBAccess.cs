@@ -210,7 +210,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-        public Task<CompanyApplication> GetCompanyApplication(Guid applicationId) =>
+        public Task<CompanyApplication> GetCompanyApplicationAsync(Guid applicationId) =>
             _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
                 .SingleOrDefaultAsync();
@@ -308,7 +308,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public async IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync()
         {
-            await foreach(var blah in _dbContext.CompanyRoles
+            await foreach(var role in _dbContext.CompanyRoles
                 .AsNoTracking()
                 .Select(companyRole => new {
                     Id = companyRole.CompanyRoleId,
@@ -317,9 +317,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsAsyncEnumerable())
                 {
                     yield return new CompanyRoleData(
-                        blah.Id,
-                        blah.Descriptions.ToDictionary(d => d.ShortName, d => d.Description),
-                        blah.Agreements);
+                        role.Id,
+                        role.Descriptions.ToDictionary(d => d.ShortName, d => d.Description),
+                        role.Agreements);
                 }
         }
 

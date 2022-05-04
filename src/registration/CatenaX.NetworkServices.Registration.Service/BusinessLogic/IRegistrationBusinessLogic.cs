@@ -1,5 +1,4 @@
 ﻿using System;
-using CatenaX.NetworkServices.Consent.Library.Data;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 using CatenaX.NetworkServices.Registration.Service.Model;
