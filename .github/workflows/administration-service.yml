@@ -1,9 +1,9 @@
-name: UserAdministration-Service
+name: Administration-Service
 
 on: 
   push:
     paths:
-      - 'src/useradministration/CatenaX.NetworkServices.UserAdministration.Service/**'
+      - 'src/administration/CatenaX.NetworkServices.Administration.Service/**'
 
     branches:
       - 'main'
@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}_useradministration-service
+  IMAGE_NAME: ${{ github.repository }}_administration-service
 
 jobs:
   build-and-push-image:
@@ -41,7 +41,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker/Dockerfile-useradministration-service
+          file: docker/Dockerfile-administration-service
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}

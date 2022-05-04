@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.UserAdministration.Service.Models;
+using CatenaX.NetworkServices.Administration.Service.Models;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public interface IUserAdministrationBusinessLogic
+    public interface IUserBusinessLogic
     {
-        Task ExecuteInvitation(CompanyInvitationData? invitationData);
         Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? userList, string? tenant, string? createdByName);
         Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
                 string? tenant,

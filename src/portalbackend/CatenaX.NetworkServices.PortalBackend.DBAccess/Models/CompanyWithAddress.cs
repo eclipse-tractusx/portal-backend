@@ -4,7 +4,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class CompanyWithAddress
     {
-        public Guid CompanyId { get; set; }
+        public Guid? CompanyId { get; set; }
         public string? Bpn { get; set; }
         public string? Name { get; set; }
         public string? Shortname { get; set; }
