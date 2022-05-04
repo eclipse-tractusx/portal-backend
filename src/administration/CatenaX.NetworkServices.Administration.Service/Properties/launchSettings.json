@@ -17,10 +17,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "CatenaX.NetworkServices.UserAdministration.Service": {
+    "CatenaX.NetworkServices.Administration.Service": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/useradministration/swagger",
+      "launchUrl": "api/administration/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
