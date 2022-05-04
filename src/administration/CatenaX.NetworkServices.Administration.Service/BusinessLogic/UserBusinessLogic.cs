@@ -12,26 +12,26 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.UserAdministration.Service.Models;
+using CatenaX.NetworkServices.Administration.Service.Models;
 
-namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
-    public class UserAdministrationBusinessLogic : IUserAdministrationBusinessLogic
+    public class UserBusinessLogic : IUserBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
         private readonly IProvisioningDBAccess _provisioningDBAccess;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly IMailingService _mailingService;
-        private readonly ILogger<UserAdministrationBusinessLogic> _logger;
-        private readonly UserAdministrationSettings _settings;
+        private readonly ILogger<UserBusinessLogic> _logger;
+        private readonly UserSettings _settings;
 
-        public UserAdministrationBusinessLogic(
+        public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
-            ILogger<UserAdministrationBusinessLogic> logger,
-            IOptions<UserAdministrationSettings> settings)
+            ILogger<UserBusinessLogic> logger,
+            IOptions<UserSettings> settings)
         {
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;
@@ -39,67 +39,6 @@ namespace CatenaX.NetworkServices.UserAdministration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
-        }
-
-        public async Task ExecuteInvitation(CompanyInvitationData? invitationData)
-        {
-            if (invitationData == null)
-            {
-                throw new ArgumentException("invitationData must not be null");
-            }
-            if (invitationData.firstName == null)
-            {
-                throw new ArgumentException("firstName must not be null");
-            }
-            if (invitationData.lastName == null)
-            {
-                throw new ArgumentException("lastName must not be null");
-            }
-            if (invitationData.userName == null)
-            {
-                throw new ArgumentException("userName must not be null");
-            }
-            if (invitationData.email == null)
-            {
-                throw new ArgumentException("email must not be null");
-            }
-            if (invitationData.organisationName == null)
-            {
-                throw new ArgumentException("organisation must not be null");
-            }
-            var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-
-            await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
-
-            var password = new Password().Next();
-            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
-                    invitationData.userName ?? invitationData.email,
-                    invitationData.firstName,
-                    invitationData.lastName,
-                    invitationData.email,
-                    password
-            ), invitationData.organisationName).ConfigureAwait(false);
-
-            await _provisioningManager.AssignInvitedUserInitialRoles(centralUserId).ConfigureAwait(false);
-
-            var company = _portalDBAccess.CreateCompany(invitationData.organisationName);
-            var application = _portalDBAccess.CreateCompanyApplication(company);
-            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id);
-            _portalDBAccess.CreateInvitation(application.Id, companyUser);
-            var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);
-            _portalDBAccess.CreateIamIdentityProvider(identityprovider, idpName);
-            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
-
-            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-
-            var mailParameters = new Dictionary<string, string>
-            {
-                { "password", password },
-                { "companyname", invitationData.organisationName },
-                { "url", $"{_settings.RegistrationBasePortalAddress}"},
-            };
-
-            await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" });
         }
 
         public async Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? usersToCreate, string? tenant, string? createdByName)

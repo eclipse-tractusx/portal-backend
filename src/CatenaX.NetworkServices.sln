@@ -52,10 +52,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "registration", "registratio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Registration.Service", "registration\CatenaX.NetworkServices.Registration.Service\CatenaX.NetworkServices.Registration.Service.csproj", "{83589242-0BF9-4327-AEB3-328DCAF2BB88}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "useradministration", "useradministration", "{DA21F2D5-CF4E-4EBC-83A7-68C84FFC1802}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.UserAdministration.Service", "useradministration\CatenaX.NetworkServices.UserAdministration.Service\CatenaX.NetworkServices.UserAdministration.Service.csproj", "{83EF6233-DD79-4968-8D01-A2F2A1387E29}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "marketplace", "marketplace", "{3DD94567-71F8-4A68-A7DB-C95237F2F638}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.App.Service", "marketplace\CatenaX.NetworkServices.App.Service\CatenaX.NetworkServices.App.Service.csproj", "{635D6465-46C5-4F36-9332-8220E907E023}"
@@ -67,6 +63,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Consent.Service.Tests", "..\tests\consent\CatenaX.NetworkServices.Consent.Service.Tests\CatenaX.NetworkServices.Consent.Service.Tests.csproj", "{FDEDFB9F-2515-46C0-95AF-FF2AFA3F0245}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Registration.Service.Tests", "..\tests\registration\CatenaX.NetworkServices.Registration.Service.Tests\CatenaX.NetworkServices.Registration.Service.Tests.csproj", "{87F30DE6-A100-46F4-9C12-4EF8CFA57E6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "administration", "administration", "{2DE6516D-6278-4778-8E1B-7F451E4195D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Administration.Service", "administration\CatenaX.NetworkServices.Administration.Service\CatenaX.NetworkServices.Administration.Service.csproj", "{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.App.Service.Tests", "..\tests\marketplace\CatenaX.NetworkServices.App.Service.Tests\CatenaX.NetworkServices.App.Service.Tests.csproj", "{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706}"
 EndProject
@@ -298,18 +298,6 @@ Global
 		{83589242-0BF9-4327-AEB3-328DCAF2BB88}.Release|x64.Build.0 = Release|Any CPU
 		{83589242-0BF9-4327-AEB3-328DCAF2BB88}.Release|x86.ActiveCfg = Release|Any CPU
 		{83589242-0BF9-4327-AEB3-328DCAF2BB88}.Release|x86.Build.0 = Release|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Debug|x64.Build.0 = Debug|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Debug|x86.Build.0 = Debug|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Release|Any CPU.Build.0 = Release|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Release|x64.ActiveCfg = Release|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Release|x64.Build.0 = Release|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Release|x86.ActiveCfg = Release|Any CPU
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29}.Release|x86.Build.0 = Release|Any CPU
 		{635D6465-46C5-4F36-9332-8220E907E023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{635D6465-46C5-4F36-9332-8220E907E023}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{635D6465-46C5-4F36-9332-8220E907E023}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -358,6 +346,18 @@ Global
 		{87F30DE6-A100-46F4-9C12-4EF8CFA57E6A}.Release|x64.Build.0 = Release|Any CPU
 		{87F30DE6-A100-46F4-9C12-4EF8CFA57E6A}.Release|x86.ActiveCfg = Release|Any CPU
 		{87F30DE6-A100-46F4-9C12-4EF8CFA57E6A}.Release|x86.Build.0 = Release|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Debug|x64.Build.0 = Debug|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Debug|x86.Build.0 = Debug|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Release|x64.ActiveCfg = Release|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Release|x64.Build.0 = Release|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Release|x86.ActiveCfg = Release|Any CPU
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}.Release|x86.Build.0 = Release|Any CPU
 		{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -404,11 +404,11 @@ Global
 		{C950C62E-F03A-4E84-AE78-A57F3E436D8A} = {4484DD65-AEE2-4FEB-AA1E-12AFDE1976AB}
 		{7AFB149B-391C-4C60-AEC6-3452A1EEF7ED} = {4484DD65-AEE2-4FEB-AA1E-12AFDE1976AB}
 		{83589242-0BF9-4327-AEB3-328DCAF2BB88} = {B44C7C89-07EB-4D48-B771-1F6B8F7826A0}
-		{83EF6233-DD79-4968-8D01-A2F2A1387E29} = {DA21F2D5-CF4E-4EBC-83A7-68C84FFC1802}
 		{635D6465-46C5-4F36-9332-8220E907E023} = {3DD94567-71F8-4A68-A7DB-C95237F2F638}
 		{2EA692DA-5052-4E74-9760-FFC6EF537B83} = {4484DD65-AEE2-4FEB-AA1E-12AFDE1976AB}
 		{FDEDFB9F-2515-46C0-95AF-FF2AFA3F0245} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 		{87F30DE6-A100-46F4-9C12-4EF8CFA57E6A} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
+		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256} = {2DE6516D-6278-4778-8E1B-7F451E4195D3}
 		{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 		{5A161CA2-061C-4E72-A8B2-5BB0EE329F9C} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 	EndGlobalSection
