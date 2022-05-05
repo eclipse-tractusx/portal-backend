@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.Framework.DBAccess;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.Registration.Service.BPN;
@@ -27,8 +28,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using Newtonsoft.Json.Converters;
-using CatenaX.NetworkServices.Registration.Service.Helper;
+using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.Registration.Service
 {
@@ -48,8 +48,10 @@ namespace CatenaX.NetworkServices.Registration.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                    .AddNewtonsoftJson(options => 
-                        options.SerializerSettings.Converters.Add(new StringEnumConverter()));
+                    .AddJsonOptions(options => {
+                        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    });
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -82,8 +84,6 @@ namespace CatenaX.NetworkServices.Registration.Service
             {
                 c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
             });
-
-            services.AddSwaggerGenNewtonsoftSupport();
 
             services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                     .ConfigureRegistrationSettings(Configuration.GetSection("Registration"));
@@ -141,7 +141,7 @@ namespace CatenaX.NetworkServices.Registration.Service
 
             app.UseRouting();
 
-            app.UseMiddleware<GeneralErrorHandler>();
+            app.UseMiddleware<GeneralHttpErrorHandler>();
             app.UseAuthentication();
             app.UseAuthorization();
 

@@ -1,4 +1,4 @@
-﻿using CatenaX.NetworkServices.Consent.Library.Data;
+﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -20,6 +20,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -123,23 +124,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token) =>
             _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
 
-        public Task<IEnumerable<CompanyRole>> GetCompanyRolesAsync() =>
-            _dbAccess.GetAllCompanyRoles();
-
-        public Task<IEnumerable<ConsentForCompanyRole>> GetConsentForCompanyRoleAsync(int roleId) =>
-            _dbAccess.GetConsentForCompanyRole(roleId);
-
-        public Task SetCompanyRolesAsync(CompanyToRoles rolesToSet) =>
-            _dbAccess.SetCompanyRoles(rolesToSet);
-
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
-
-        public Task SignConsentAsync(SignConsentRequest signedConsent) =>
-            _dbAccess.SignConsent(signedConsent);
-
-        public Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId) =>
-            _dbAccess.SignedConsentsByCompanyId(companyId);
 
         public async Task CreateDocument(IFormFile document, string userName)
         {
@@ -185,53 +171,42 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
 
-        public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
+        public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
         {
-            if (!applicationId.HasValue)
+            var result = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (result == null)
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
+            return result;
         }
-
-        public async Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
+        
+        public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
         {
-            if (!applicationId.HasValue)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new ArgumentException("Name must not be empty");
             }
-            if (companyWithAddress == null)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.City))
             {
-                throw new ArgumentNullException("companyWithAddress must not be null");
+                throw new ArgumentException("City must not be empty");
             }
-            if (!companyWithAddress.CompanyId.HasValue)
+            if (String.IsNullOrWhiteSpace(companyWithAddress.Streetname))
             {
-                throw new ArgumentNullException("companyId must not be null");
+                throw new ArgumentException("Streetname must not be empty");
             }
-            if (companyWithAddress.Name == null)
-            {
-                throw new ArgumentNullException("Name must not be null");
-            }
-            if (companyWithAddress.City == null)
-            {
-                throw new ArgumentNullException("City must not be null");
-            }
-            if (companyWithAddress.Streetname == null)
-            {
-                throw new ArgumentNullException("Streetname must not be null");
-            }
-            if (companyWithAddress.Zipcode == null)
+            if (!companyWithAddress.Zipcode.HasValue)
             {
                 throw new ArgumentNullException("Zipcode must not be null");
             }
-            if (companyWithAddress.CountryAlpha2Code == null)
+            if (companyWithAddress.CountryAlpha2Code.Length != 2)
             {
-                throw new ArgumentNullException("CountryAlpha2Code must not be null");
+                throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId.Value, companyWithAddress.CompanyId.Value).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
             if (company == null)
             {
-                throw new ArgumentException($"applicationId {applicationId} for companyId {companyWithAddress.CompanyId} not found");
+                throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
             }
             company.Bpn = companyWithAddress.Bpn;
             company.Name = companyWithAddress.Name;
@@ -242,7 +217,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 company.Address = _portalDBAccess.CreateAddress(
                         companyWithAddress.City,
                         companyWithAddress.Streetname,
-                        (decimal)companyWithAddress.Zipcode,
+                        companyWithAddress.Zipcode.Value,
                         companyWithAddress.CountryAlpha2Code
                     );
             }
@@ -250,7 +225,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 company.Address.City = companyWithAddress.City;
                 company.Address.Streetname = companyWithAddress.Streetname;
-                company.Address.Zipcode = (decimal)companyWithAddress.Zipcode;
+                company.Address.Zipcode = companyWithAddress.Zipcode.Value;
                 company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
             }
             company.Address.Region = companyWithAddress.Region;
@@ -260,33 +235,29 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<int> InviteNewUserAsync(Guid? applicationId, UserInvitationData? userInvitationData)
+        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
         {
-            if (!applicationId.HasValue)
-            {
-                throw new ArgumentNullException("applicationId must not be null");
-            }
-            if (userInvitationData == null)
-            {
-                throw new ArgumentNullException("userInvitationData must not be null");
-            }
             if (String.IsNullOrWhiteSpace(userInvitationData.firstName))
             {
                 throw new ArgumentNullException("fistName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.lastName))
             {
-                throw new ArgumentNullException("lastName must not be null");
+                throw new ArgumentNullException("lastName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.userName))
             {
-                throw new ArgumentNullException("userName must not be null");
+                throw new ArgumentNullException("userName must not be empty");
             }
             if (String.IsNullOrWhiteSpace(userInvitationData.email))
             {
-                throw new ArgumentNullException("email must not be null");
+                throw new ArgumentNullException("email must not be empty");
             }
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (applicationData == null || applicationData.IdpAlias == null)
+            {
+                throw new NotFoundException($"shared idp for CompanyApplication {applicationId} not found");
+            }
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
@@ -300,7 +271,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 applicationData.CompanyName).ConfigureAwait(false);
             await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false);
             var user = _portalDBAccess.CreateCompanyUser(userInvitationData.firstName, userInvitationData.lastName, userInvitationData.email, applicationData.CompanyId);
-            var invitation = _portalDBAccess.CreateInvitation(applicationId.Value, user);
+            var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
             var iamUser = _portalDBAccess.CreateIamUser(user, iamUserId);
             var updates = await _portalDBAccess.SaveAsync();
             var mailParameters = new Dictionary<string, string>
@@ -312,29 +283,120 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" });
 
-            return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
+            return updates;
         }
 
-        public Task<int> SetApplicationStatusAsync(Guid? applicationId, CompanyApplicationStatusId? status)
+        public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
         {
-            if (!applicationId.HasValue)
-            {
-                throw new ArgumentNullException("applicationId must not be null");
-            }
-            if (!status.HasValue)
+            if (status == 0)
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
+            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
+            if (application == null)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId} not found");
+            }
+            application.ApplicationStatusId = status;
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+            
+        public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
+        {
+            var result = (CompanyApplicationStatusId?) await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (!result.HasValue)
+            {
+                throw new NotFoundException($"CompanyApplication {applicationId} not found");
+            }
+            return result.Value;
         }
 
-        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
+        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId)
         {
-            if (!applicationId.HasValue)
+            var companyRoleIdsToSet = roleAgreementConsentStatuses.CompanyRoleIds;
+            var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
+
+            var companyRoleAgreementConsentData = await _portalDBAccess.GetCompanyRoleAgreementConsentDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+
+            if (companyRoleAgreementConsentData == null)
             {
-                throw new ArgumentNullException("applicationId must not be null");
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
-            return _portalDBAccess.GetApplicationStatusAsync(applicationId.Value);
+
+            var companyUserId = companyRoleAgreementConsentData.CompanyUserId;
+            var companyId = companyRoleAgreementConsentData.CompanyId;
+            var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
+            var activeConsents = companyRoleAgreementConsentData.Consents;
+
+            var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId,IEnumerable<Guid>>();
+            await foreach (var companyRoleAgreement in _portalDBAccess.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
+            {
+                companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId]=companyRoleAgreement.AgreementIds;
+            }
+
+            if (!companyRoleIdsToSet
+                .All(companyRoleIdToSet => 
+                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId => 
+                        agreementConsentsToSet
+                            .Any(agreementConsent =>
+                                agreementConsent.AgreementId == assignedAgreementId
+                                && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE))))
+            {
+                throw new ArgumentException("consent must be given to all CompanyRole assigned agreements");
+            }
+
+            foreach (var companyAssignedRoleToRemove in companyAssignedRoles
+                .Where(companyAssignedRole =>
+                    !companyRoleIdsToSet.Contains(companyAssignedRole.CompanyRoleId)))
+            {
+                _portalDBAccess.RemoveCompanyAssignedRole(companyAssignedRoleToRemove);
+            }
+
+            foreach (var companyRoleIdToAdd in companyRoleIdsToSet
+                .Where(companyRoleId =>
+                    !companyAssignedRoles.Any(companyAssignedRole =>
+                        companyAssignedRole.CompanyRoleId == companyRoleId)))
+            {
+                _portalDBAccess.CreateCompanyAssignedRole(companyId, companyRoleIdToAdd);
+            }
+
+            foreach (var consentToRemove in activeConsents
+                .Where(activeConsent =>
+                    !agreementConsentsToSet.Any(agreementConsent =>
+                        agreementConsent.AgreementId == activeConsent.AgreementId
+                        && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+            {
+                consentToRemove.ConsentStatusId = ConsentStatusId.INACTIVE;
+            }
+
+            foreach (var agreementConsentToAdd in agreementConsentsToSet
+                .Where(agreementConsent =>
+                    agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE
+                    && !activeConsents.Any(activeConsent =>
+                        activeConsent.AgreementId == agreementConsent.AgreementId)))
+            {
+                _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+            }
+
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+
+        public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId)
+        {
+            var result = await _portalDBAccess.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (result == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+            }
+            return result;
+        }
+
+        public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync()
+        {
+            return new CompanyRoleAgreementData(
+                (await _portalDBAccess.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
+                (await _portalDBAccess.GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
+            );
         }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)

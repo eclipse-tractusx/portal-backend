@@ -11,6 +11,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             LongNameDe = null!;
             LongNameEn = null!;
             AppDescriptions = new HashSet<AppDescription>();
+            CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
         }
 
         public Language(string languageShortName, string longNameDe, string longNameEn) : this()
@@ -32,5 +33,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
 
         // Navigation properties
         public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
+        public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
     }
 }

@@ -64,6 +64,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
         public virtual ICollection<Consent> Consents { get; private set; }
         public virtual ICollection<CompanyRole> CompanyRoles { get; private set; }
+        public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
         public virtual ICollection<UseCase> UseCases { get; private set; }
     }
 }

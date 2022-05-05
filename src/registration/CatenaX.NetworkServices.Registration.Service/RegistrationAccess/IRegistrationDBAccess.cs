@@ -1,17 +1,10 @@
-﻿using CatenaX.NetworkServices.Consent.Library.Data;
-using CatenaX.NetworkServices.Registration.Service.Model;
-using System.Collections.Generic;
+﻿using CatenaX.NetworkServices.Registration.Service.Model;
 using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
 {
     public interface IRegistrationDBAccess
     {
-        Task<IEnumerable<CompanyRole>> GetAllCompanyRoles();
-        Task<IEnumerable<ConsentForCompanyRole>> GetConsentForCompanyRole(int roleId);
-        Task SetCompanyRoles(CompanyToRoles rolesToSet);
-        Task SignConsent(SignConsentRequest signedConsent);
-        Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyId(string companyId);
         Task SetIdp(SetIdp idpToSet);
         Task UploadDocument(string name,string document, string hash, string username);
     }
