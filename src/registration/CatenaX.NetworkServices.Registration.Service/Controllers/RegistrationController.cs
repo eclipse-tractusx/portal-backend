@@ -216,8 +216,13 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             }
         }
 
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/invitedusers")]
+        public  IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
+
         private T WithIamUserId<T>(Func<string,T> _next) =>
             _next(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
-
     }
 }

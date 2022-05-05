@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -148,9 +149,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     hash = builder.ToString();
                 }
             }
-            await _dbAccess.UploadDocument(name,documentContent,hash,userName);
+            await _dbAccess.UploadDocument(name, documentContent, hash, userName);
         }
-        
+
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
@@ -162,7 +163,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
-                yield return new CompanyApplication {
+                yield return new CompanyApplication
+                {
                     ApplicationId = applicationWithStatus.ApplicationId,
                     ApplicationStatus = applicationWithStatus.ApplicationStatus
                 };
@@ -201,7 +203,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId,companyWithAddress.CompanyId).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
             if (company == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
@@ -259,7 +261,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
-                new UserProfile (
+                new UserProfile(
                     userInvitationData.userName,
                     userInvitationData.firstName,
                     userInvitationData.lastName,
@@ -279,7 +281,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
+            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" });
 
             return updates;
         }
@@ -399,8 +401,22 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userEmail,mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
             return true;
+        }
+
+        public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
+        {
+
+            await foreach (var item in _portalDBAccess.GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
+            {
+                var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+                yield return new InvitedUser(
+                    item.InvitationStatus,
+                    item.EmailId,
+                    userRoles
+                );
+            }
         }
     }
 }
