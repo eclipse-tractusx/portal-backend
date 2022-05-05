@@ -20,12 +20,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
         IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
         Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code);
-        IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);        
+        IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
         Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId);
-        Task <int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus);
+        Task<int> UpdateApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId applicationStatus);
         Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
+        IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<int> SaveAsync();
     }
 }

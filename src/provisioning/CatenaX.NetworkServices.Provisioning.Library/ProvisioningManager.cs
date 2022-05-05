@@ -46,17 +46,17 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public async Task SetupSharedIdpAsync(string idpName, string organisationName)
         {
             await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false);
-            
+
             await CreateSharedRealmAsync(idpName, organisationName).ConfigureAwait(false);
-            
+
             await UpdateCentralIdentityProviderUrlsAsync(idpName, await GetSharedRealmOpenIDConfigAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
-            
+
             await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false);
-            
+
             await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
-            
+
             await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
-            
+
             await CreateSharedRealmIdentityProviderClientAsync(idpName, new IdentityProviderClientConfig(
                 await GetCentralBrokerEndpointAsync(idpName).ConfigureAwait(false),
                 await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
@@ -111,12 +111,12 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             }
 
             await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);
-            
+
             return userIdCentral;
         }
 
         public Task AssignInvitedUserInitialRoles(string centralUserId) =>
-            AssignClientRolesToCentralUserAsync(centralUserId,_Settings.InvitedUserInitialRoles);
+            AssignClientRolesToCentralUserAsync(centralUserId, _Settings.InvitedUserInitialRoles);
 
         public async Task<IEnumerable<string>> GetClientRolesAsync(string clientId)
         {
@@ -200,7 +200,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             user.Attributes["bpn"] = (user.Attributes.TryGetValue("bpn", out var existingBpns))
                 ? existingBpns.Concat(bpns).Distinct()
                 : bpns;
-            if (! await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))
+            if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))
             {
                 throw new Exception($"failed to set bpns {bpns} for central user {userId}");
             }
@@ -209,6 +209,13 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
         {
             return _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId, requiredActions);
+        }
+
+        public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
+        {
+            var idOfClient = await GetIdOfClientFromClientIDAsync(clientId).ConfigureAwait(false);
+            return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
+                .Where(r => r.Composite == true).Select(x => x.Name);
         }
     }
 }
