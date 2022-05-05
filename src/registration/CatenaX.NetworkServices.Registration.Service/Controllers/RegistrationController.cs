@@ -1,5 +1,4 @@
-﻿using CatenaX.NetworkServices.Consent.Library.Data;
-using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.CustomException;
 using CatenaX.NetworkServices.Registration.Service.Model;
@@ -112,45 +111,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
 
         [HttpPut]
         [Authorize(Roles = "invite_user")]
-        [Route("companyRoles")]
-        public async Task<IActionResult> SetCompanyRolesAsync([FromBody] CompanyToRoles rolesToSet)
-        {
-            await _registrationBusinessLogic.SetCompanyRolesAsync(rolesToSet).ConfigureAwait(false);
-            return Ok();
-        }
-
-        [HttpGet]
-        [Authorize(Roles = "view_registration")]
-        [Route("companyRoles")]
-        [ProducesResponseType(typeof(List<CompanyRole>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetCompanyRolesAsync() =>
-            Ok((await _registrationBusinessLogic.GetCompanyRolesAsync().ConfigureAwait(false)).ToList());
-
-        [HttpGet]
-        [Authorize(Roles = "sign_consent")]
-        [Route("consentsForCompanyRole/{roleId}")]
-        [ProducesResponseType(typeof(List<ConsentForCompanyRole>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetCompanyRolesAsync(int roleId) =>
-            Ok((await _registrationBusinessLogic.GetConsentForCompanyRoleAsync(roleId).ConfigureAwait(false)).ToList());
-
-        [HttpGet]
-        [Authorize(Roles = "sign_consent")]
-        [Route("signedConsentsByCompanyId/{companyId}")]
-        [ProducesResponseType(typeof(List<SignedConsent>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> SignedConsentsByCompanyIdAsync(string companyId) =>
-            Ok((await _registrationBusinessLogic.SignedConsentsByCompanyIdAsync(companyId).ConfigureAwait(false)).ToList());
-
-        [HttpPut]
-        [Authorize(Roles = "sign_consent")]
-        [Route("signConsent")]
-        public async Task<IActionResult> SignConsentAsync([FromBody] SignConsentRequest signConsentRequest)
-        {
-            await _registrationBusinessLogic.SignConsentAsync(signConsentRequest).ConfigureAwait(false);
-            return Ok();
-        }
-
-        [HttpPut]
-        [Authorize(Roles = "invite_user")]
         [Route("idp")]
         public async Task<IActionResult> SetIdpAsync([FromBody] SetIdp idpToSet)
         {
@@ -180,104 +140,58 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
-        [ProducesResponseType(typeof(List<CompanyApplication>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetApplicationsWithStatusAsync()
-        {
-            try
-            {
-                var userId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
-                return Ok(await _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(userId).ToListAsync().ConfigureAwait(false));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
+            WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/status")]
-        public async Task<IActionResult> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status).ConfigureAwait(false));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
+            _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status);
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/status")]
-        [ProducesResponseType(typeof(CompanyApplicationStatusId), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetApplicationStatusAsync([FromRoute] Guid applicationId)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.GetApplicationStatusAsync(applicationId).ConfigureAwait(false));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetApplicationStatusAsync(applicationId);
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
-        [ProducesResponseType(typeof(CompanyWithAddress), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetCompanyWithAddressAsync([FromRoute] Guid applicationId)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetCompanyWithAddressAsync(applicationId);
 
         [HttpPost]
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
-        public async Task<IActionResult> SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress)
-        {
-            try
-            {
-                await _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress).ConfigureAwait(false);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) => 
+            _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
 
         [HttpPost]
         [Authorize(Roles = "invite_user")]
         [Route("application/{applicationId}/inviteNewUser")]
+        public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData) =>
+            _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData);
 
-        public async Task<IActionResult> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData).ConfigureAwait(false));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        [HttpPost]
+        [Authorize(Roles = "submit_registration")]
+        [Route("application/{applicationId}/companyRoleAgreementConsents")]
+        public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
+            WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, iamUserId));
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/companyRoleAgreementConsents")]
+        public Task<CompanyRoleAgreementConsents> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
+            WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId, iamUserId));
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("companyRoleAgreementData")]
+        public Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync() =>
+            _registrationBusinessLogic.GetCompanyRoleAgreementDataAsync();
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
@@ -307,5 +221,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Route("application/{applicationId}/invitedusers")]
         public  IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
+
+        private T WithIamUserId<T>(Func<string,T> _next) =>
+            _next(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
     }
 }

@@ -115,9 +115,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.HasKey(e => new { e.AgreementId, e.CompanyRoleId })
                     .HasName("pk_agreement_ass_comp_roles");
 
-                entity.HasIndex(e => e.CompanyRoleId, "uk_6df9o1r7dy987w1pt9qnkopc")
-                    .IsUnique();
-
                 entity.HasOne(d => d.Agreement)
                     .WithMany(p => p!.AgreementAssignedCompanyRoles)
                     .HasForeignKey(d => d.AgreementId)
@@ -125,8 +122,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .HasConstraintName("fk_ljol11mdo76f4kv7fwqn1qc6");
 
                 entity.HasOne(d => d.CompanyRole)
-                    .WithOne(p => p!.AgreementAssignedCompanyRole!)
-                    .HasForeignKey<AgreementAssignedCompanyRole>(d => d.CompanyRoleId)
+                    .WithMany(p => p!.AgreementAssignedCompanyRoles!)
+                    .HasForeignKey(d => d.CompanyRoleId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_qh1hby9qcrr3gmy1cvi7nd3h");
             });
@@ -362,6 +359,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         }
                     );
 
+                entity.HasMany(p => p.CompanyAssignedRoles)
+                    .WithOne(d => d.Company!)
+                    .HasForeignKey(d => d.CompanyId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_4db4hgj3yvqlkn9h6q8m4e0j");
+
                 entity.HasMany(p => p.UseCases)
                     .WithMany(p => p.Companies)
                     .UsingEntity<CompanyAssignedUseCase>(
@@ -443,6 +446,30 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             modelBuilder.Entity<CompanyRole>(entity =>
             {
                 entity.ToTable("company_roles", "portal");
+
+                entity.Property(e => e.CompanyRoleId)
+                    .ValueGeneratedNever();
+
+                entity.HasData(
+                    Enum.GetValues(typeof(CompanyRoleId))
+                        .Cast<CompanyRoleId>()
+                        .Select(e => new CompanyRole(e)));
+            });
+
+            modelBuilder.Entity<CompanyRoleDescription>(entity =>
+            {
+                entity.ToTable("company_role_descriptions", "portal");
+
+                entity.HasKey(e => new { e.CompanyRoleId, e.LanguageShortName })
+                    .HasName("pk_company_role_descriptions");
+
+                entity.HasOne(d => d.CompanyRole)
+                    .WithMany(p => p!.CompanyRoleDescriptions)
+                    .HasForeignKey(d => d.CompanyRoleId);
+                
+                entity.HasOne(d => d.Language)
+                    .WithMany(p => p!.CompanyRoleDescriptions)
+                    .HasForeignKey(d => d.LanguageShortName);
             });
 
             modelBuilder.Entity<CompanyStatus>(entity =>
