@@ -9,7 +9,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public CompanyRoleAgreementConsentData(Guid companyUserId, Guid companyId, IEnumerable<CompanyAssignedRole> companyAssignedRoles, IEnumerable<Consent> consents)
         {
             CompanyUserId = companyUserId;
-            CompanyId = CompanyId;
+            CompanyId = companyId;
             CompanyAssignedRoles = companyAssignedRoles;
             Consents = consents;
         }
