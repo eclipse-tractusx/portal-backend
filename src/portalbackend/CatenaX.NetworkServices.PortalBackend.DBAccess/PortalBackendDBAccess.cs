@@ -211,18 +211,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
 
-        public IAsyncEnumerable<InvitedUser> GetInvitedUsersDetail(Guid applicationId) =>
+        public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
             (from invitation in _dbContext.Invitations
                 join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
                 join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
                 join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
                 where invitation.CompanyApplicationId == applicationId
-                select new InvitedUser(
+                select new InvitedUserDetail(
                     iamuser.UserEntityId,
-                    invitationStatus.InvitationStatusId
-                ) {
-                    EmailId = companyuser.Email
-                })
+                    invitationStatus.InvitationStatusId,
+                    companyuser.Email
+                ))
                 .AsNoTracking()
                 .AsAsyncEnumerable();
     }
