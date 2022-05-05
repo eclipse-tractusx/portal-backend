@@ -353,13 +353,13 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await foreach (var item in _portalDBAccess.GetInvitedUsersDetail(applicationId).ConfigureAwait(false))
             {
-                var response = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
-                yield return new InvitedUser
-                {
-                    UserId = item.UserId,
+                var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+                yield return new InvitedUser(
+                    item.UserId,
+                    item.InvitationStatus
+                ) {
                     EmailId = item.EmailId,
-                    InvitationStatus = item.InvitationStatus,
-                    InvitedUserRoles = response
+                    InvitedUserRoles = userRoles
                 };
             }
         }
