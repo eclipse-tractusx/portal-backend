@@ -185,10 +185,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         {
             try
             {
-                var userId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;                
+                var userId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
                 return Ok(await _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(userId).ToListAsync().ConfigureAwait(false));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
@@ -204,7 +204,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             {
                 return Ok(await _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status).ConfigureAwait(false));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
@@ -221,7 +221,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             {
                 return Ok(await _registrationBusinessLogic.GetApplicationStatusAsync(applicationId).ConfigureAwait(false));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
@@ -301,5 +301,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
         }
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/invitedusers")]
+        public  IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
+            _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
     }
 }

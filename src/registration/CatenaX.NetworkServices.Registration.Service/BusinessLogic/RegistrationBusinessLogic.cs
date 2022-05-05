@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -162,9 +163,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     hash = builder.ToString();
                 }
             }
-            await _dbAccess.UploadDocument(name,documentContent,hash,userName);
+            await _dbAccess.UploadDocument(name, documentContent, hash, userName);
         }
-        
+
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
@@ -176,7 +177,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
-                yield return new CompanyApplication {
+                yield return new CompanyApplication
+                {
                     ApplicationId = applicationWithStatus.ApplicationId,
                     ApplicationStatus = applicationWithStatus.ApplicationStatus
                 };
@@ -191,7 +193,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
         }
-        
+
         public async Task SetCompanyWithAddressAsync(Guid? applicationId, CompanyWithAddress? companyWithAddress)
         {
             if (!applicationId.HasValue)
@@ -226,7 +228,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentNullException("CountryAlpha2Code must not be null");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId.Value,companyWithAddress.CompanyId.Value).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId.Value, companyWithAddress.CompanyId.Value).ConfigureAwait(false);
             if (company == null)
             {
                 throw new ArgumentException($"applicationId {applicationId} for companyId {companyWithAddress.CompanyId} not found");
@@ -288,7 +290,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
-                new UserProfile (
+                new UserProfile(
                     userInvitationData.userName,
                     userInvitationData.firstName,
                     userInvitationData.lastName,
@@ -308,7 +310,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
+            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" });
 
             return updates; //FIXME: this returns the number of entities written in the database. This is more or less for debugging. Might be changed to boolean return type.
         }
@@ -325,7 +327,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return _portalDBAccess.UpdateApplicationStatusAsync(applicationId.Value, status.Value);
         }
-            
+
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid? applicationId)
         {
             if (!applicationId.HasValue)
@@ -342,8 +344,22 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userEmail,mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
             return true;
+        }
+
+        public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
+        {
+
+            await foreach (var item in _portalDBAccess.GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
+            {
+                var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+                yield return new InvitedUser(
+                    item.InvitationStatus,
+                    item.EmailId,
+                    userRoles
+                );
+            }
         }
     }
 }
