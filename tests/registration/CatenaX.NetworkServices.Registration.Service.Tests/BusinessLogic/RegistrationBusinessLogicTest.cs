@@ -55,20 +55,23 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
         {
             //Arrange
             Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-            var invitedUserRole = _fixture.CreateMany<UserRole>(2).AsEnumerable();
-            var invitedUser = _fixture.CreateMany<InvitedUsers>(1).ToAsyncEnumerable();
+            var invitedUserRole = _fixture.CreateMany<string>(2).AsEnumerable();
+            var invitedUser = _fixture.CreateMany<InvitedUser>(1).ToAsyncEnumerable<InvitedUser>();
             A.CallTo(() => _portalDBAccess.GetInvitedUsersDetail(id))
                 .Returns(invitedUser);
             A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(A<string>._, A<string>._))
                 .Returns(invitedUserRole);
             //Act
-            var result = await this._logic.GetInvitedUsersDetail(id);
+            var result = this._logic.GetInvitedUsersDetail(id);
+            await foreach (var item in result)
+            {
+                //Assert
+                A.CallTo(() => _portalDBAccess.GetInvitedUsersDetail(id)).MustHaveHappened(1, Times.OrMore);
+                A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(A<string>._, A<string>._)).MustHaveHappened(1, Times.OrMore);
+                Assert.NotNull(item);
+                Assert.IsType<InvitedUser>(item);
+            }
 
-            //Assert
-            A.CallTo(() => _portalDBAccess.GetInvitedUsersDetail(id)).MustHaveHappened(1, Times.OrMore);
-            A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(A<string>._, A<string>._)).MustHaveHappened(1, Times.OrMore);
-            Assert.NotNull(result);
-            Assert.IsType<InvitedUserRoleMapper>(result);
         }
 
         [Fact]
@@ -76,18 +79,20 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
         {
             //Arrange
             Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-            var invitedUserRole = _fixture.CreateMany<UserRole>(2).AsEnumerable();
-            var invitedUser = _fixture.CreateMany<InvitedUsers>(1).ToAsyncEnumerable();
+            var invitedUserRole = _fixture.CreateMany<string>(2).AsEnumerable();
+            var invitedUser = _fixture.CreateMany<InvitedUser>(1).ToAsyncEnumerable<InvitedUser>();
             A.CallTo(() => _portalDBAccess.GetInvitedUsersDetail(id))
                 .Returns(invitedUser);
             A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(A<string>._, A<string>._))
                 .Returns(invitedUserRole);
             //Act
-            var result = await this._logic.GetInvitedUsersDetail(Guid.Empty);
-
-            //Assert
-            A.CallTo(() => _portalDBAccess.GetInvitedUsersDetail(Guid.Empty)).Throws(new Exception());
-            A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(string.Empty, string.Empty)).Throws(new Exception());
+            var result = this._logic.GetInvitedUsersDetail(Guid.Empty);
+            await foreach (var item in result)
+            {
+                //Assert
+                A.CallTo(() => _portalDBAccess.GetInvitedUsersDetail(Guid.Empty)).Throws(new Exception());
+                A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(string.Empty, string.Empty)).Throws(new Exception());
+            }
 
         }
 
