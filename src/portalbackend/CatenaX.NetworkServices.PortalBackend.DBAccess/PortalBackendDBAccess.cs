@@ -211,21 +211,19 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
 
-        public IAsyncEnumerable<InvitedUser> GetInvitedUsersDetail(Guid applicationId)
-        {
-            var result = (from invitation in _dbContext.Invitations
-                          join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
-                          join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
-                          join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
-                          where invitation.CompanyApplicationId == applicationId
-                          select new InvitedUser
-                          {
-                              InvitationStatus = invitationStatus.Label,
-                              EmailId = companyuser.Email,
-                              UserId = iamuser.UserEntityId
-                          }).AsNoTracking()
-                            .AsAsyncEnumerable();
-            return result;
-        }
+        public IAsyncEnumerable<InvitedUser> GetInvitedUsersDetail(Guid applicationId) =>
+            (from invitation in _dbContext.Invitations
+                join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
+                join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
+                join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
+                where invitation.CompanyApplicationId == applicationId
+                select new InvitedUser(
+                    iamuser.UserEntityId,
+                    invitationStatus.InvitationStatusId
+                ) {
+                    EmailId = companyuser.Email
+                })
+                .AsNoTracking()
+                .AsAsyncEnumerable();
     }
 }

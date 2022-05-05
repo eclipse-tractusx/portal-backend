@@ -210,11 +210,12 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         {
             return _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId, requiredActions);
         }
+
         public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
         {
             var idOfClient = await GetIdOfClientFromClientIDAsync(clientId).ConfigureAwait(false);
-            var result = await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false);
-            return result.Where(r => r.Composite == true).Select(x => x.Name);
+            return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
+                .Where(r => r.Composite == true).Select(x => x.Name);
         }
     }
 }
