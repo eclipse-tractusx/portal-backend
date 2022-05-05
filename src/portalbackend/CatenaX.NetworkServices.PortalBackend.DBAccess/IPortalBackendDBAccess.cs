@@ -22,7 +22,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code);
         Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null);
         CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
-        IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);        
+        IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
         Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId);
@@ -36,6 +36,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
+        IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<int> SaveAsync();
     }
 }

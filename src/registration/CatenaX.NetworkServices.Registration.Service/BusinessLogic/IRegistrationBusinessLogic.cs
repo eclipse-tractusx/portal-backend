@@ -30,5 +30,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
         Task<bool> SubmitRegistrationAsync(string userEmail);
+        IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
     }
 }

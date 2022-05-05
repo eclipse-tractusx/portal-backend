@@ -26,7 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 throw new ArgumentNullException(nameof(userId));
             }
             return _dbContext.IamUsers
-                    .Where(iamUser => 
+                    .Where(iamUser =>
                         iamUser.UserEntityId == userId
                         && iamUser.CompanyUser!.Company!.Bpn != null)
                     .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn!)
@@ -37,10 +37,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds)
         {
             return _dbContext.IamUsers
-                    .Where(iamUser => 
+                    .Where(iamUser =>
                         userIds.Contains(iamUser.UserEntityId)
                         && iamUser.CompanyUser!.Company!.Bpn != null)
-                    .Select(iamUser => new UserBpn {
+                    .Select(iamUser => new UserBpn
+                    {
                         userId = iamUser.UserEntityId,
                         bpn = iamUser.CompanyUser!.Company!.Bpn!
                     })
@@ -84,11 +85,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Guid.NewGuid(),
                     companyId,
                     DateTimeOffset.UtcNow)
-                    {
-                        Firstname = firstName,
-                        Lastname = lastName,
-                        Email = email,
-                    }).Entity;
+                {
+                    Firstname = firstName,
+                    Lastname = lastName,
+                    Email = email,
+                }).Entity;
 
         public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
             _dbContext.Invitations.Add(
@@ -158,7 +159,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.IamUsers
                 .Where(iamUser => iamUser.UserEntityId == iamUserId)
                 .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyApplications)
-                    .Select(companyApplication => new CompanyApplicationWithStatus {
+                    .Select(companyApplication => new CompanyApplicationWithStatus
+                    {
                         ApplicationId = companyApplication.Id,
                         ApplicationStatus = companyApplication.ApplicationStatusId
                     })
@@ -336,5 +338,19 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
+
+        public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
+            (from invitation in _dbContext.Invitations
+                join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
+                join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
+                join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
+                where invitation.CompanyApplicationId == applicationId
+                select new InvitedUserDetail(
+                    iamuser.UserEntityId,
+                    invitationStatus.InvitationStatusId,
+                    companyuser.Email
+                ))
+                .AsNoTracking()
+                .AsAsyncEnumerable();
     }
 }
