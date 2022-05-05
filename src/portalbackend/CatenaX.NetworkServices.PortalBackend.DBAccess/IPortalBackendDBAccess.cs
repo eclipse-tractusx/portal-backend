@@ -30,9 +30,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyIdWithUserId> GetCompanyWithUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId);
-        Task<IDictionary<CompanyRoleId,IEnumerable<Guid>>> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
-        Task<(Guid?,Guid?,IEnumerable<CompanyAssignedRole>?, IEnumerable<Consent>?)> GetCompanyRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
-        Task<(bool,IEnumerable<CompanyRoleId>?,IEnumerable<(Guid,ConsentStatusId)>?)> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
+        IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
+        Task<CompanyRoleAgreementConsentData> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId);
+        Task<CompanyRoleAgreementConsents> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
         CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();

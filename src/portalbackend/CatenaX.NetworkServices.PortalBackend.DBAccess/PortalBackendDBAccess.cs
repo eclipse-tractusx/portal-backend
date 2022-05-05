@@ -247,66 +247,40 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .SingleOrDefaultAsync();
         }
 
-        public async Task<IDictionary<CompanyRoleId,IEnumerable<Guid>>> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds)
-        {
-            var result = new Dictionary<CompanyRoleId,IEnumerable<Guid>>();
-            await foreach (var companyRoleAgreement in _dbContext.CompanyRoles
+        public IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
+            _dbContext.CompanyRoles
                 .AsNoTracking()
                 .Where(companyRole => companyRoleIds.Contains(companyRole.CompanyRoleId))
-                .Select(companyRole => new {
-                    CompanyRoleId = companyRole.CompanyRoleId,
-                    AgreementIds = companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
-                }).AsAsyncEnumerable().ConfigureAwait(false))
-                {
-                    result[companyRoleAgreement.CompanyRoleId]=companyRoleAgreement.AgreementIds;
-                }
-            return result;
-        }
-        public async Task<(Guid?,Guid?,IEnumerable<CompanyAssignedRole>?, IEnumerable<Consent>?)> GetCompanyRoleAgreementConsentsAsync(Guid applicationId, string iamUserId)
-        {
-            var result = (await _dbContext.IamUsers
+                .Select(companyRole => new AgreementsAssignedCompanyRoleData(
+                    companyRole.CompanyRoleId,
+                    companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
+                )).AsAsyncEnumerable();
+
+        public Task<CompanyRoleAgreementConsentData> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
                     && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser => new {
-                    CompanyUserId = iamUser.CompanyUserId,
-                    CompanyId = iamUser.CompanyUser!.CompanyId,
-                    CompanyAssignedRoles = iamUser.CompanyUser.Company!.CompanyAssignedRoles,
-                    Consents = iamUser.CompanyUser.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
-                })
-                .SingleOrDefaultAsync()
-                .ConfigureAwait(false));
-            return (
-                result?.CompanyUserId,
-                result?.CompanyId,
-                result?.CompanyAssignedRoles,
-                result?.Consents
-            );
-        }
+                .Select(iamUser => new CompanyRoleAgreementConsentData(
+                    iamUser.CompanyUserId,
+                    iamUser.CompanyUser!.CompanyId,
+                    iamUser.CompanyUser.Company!.CompanyAssignedRoles,
+                    iamUser.CompanyUser.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+                .SingleOrDefaultAsync();
 
-        public async Task<(bool,IEnumerable<CompanyRoleId>?,IEnumerable<(Guid,ConsentStatusId)>?)> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId)
-        {
-            var result = await _dbContext.IamUsers
+        public Task<CompanyRoleAgreementConsents> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
                 .AsQueryable()
                 .AsNoTracking()
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
                     && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser => new {
-                    CompanyUserId = iamUser.CompanyUserId,
-                    CompanyRoleIds = iamUser.CompanyUser!.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                    Consents = iamUser.CompanyUser.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE).Select(consent => new {
-                        ConsentStatusId = consent.ConsentStatusId,
-                        AgreementId = consent.AgreementId,
-                    })
-                }).SingleOrDefaultAsync()
-                .ConfigureAwait(false);
-            return (
-                result?.CompanyUserId != null,
-                result?.CompanyRoleIds,
-                result?.Consents.Select(consent => (consent.AgreementId,consent.ConsentStatusId))
-            );
-        }
+                .Select(iamUser => new CompanyRoleAgreementConsents(
+                    iamUser.CompanyUser!.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                    iamUser.CompanyUser.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(
+                        consent.AgreementId,
+                        consent.ConsentStatusId
+                    )))).SingleOrDefaultAsync();
 
         public async IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync()
         {
