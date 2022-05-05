@@ -1,19 +1,18 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.Collections.Generic;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
-    public class InvitedUser
+    public class InvitedUserDetail
     {
-        public InvitedUser(string userId, InvitationStatusId invitationStatus)
+        public InvitedUserDetail(string userId, InvitationStatusId invitationStatus, string? emailId)
         {
             UserId = userId;
             InvitationStatus = invitationStatus;
+            EmailId = emailId;
         }
 
         public string UserId { get; set; }
         public InvitationStatusId InvitationStatus { get; set; }
         public string? EmailId { get; set; }
-        public IEnumerable<string>? InvitedUserRoles { get; set; }
     }
 }

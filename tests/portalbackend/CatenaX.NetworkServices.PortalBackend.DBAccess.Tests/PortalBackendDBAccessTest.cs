@@ -1,20 +1,7 @@
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
 using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Xunit;
-using Microsoft.EntityFrameworkCore;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
 {
     public class PortalBackendDBAccessTest
@@ -65,13 +52,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
 
             backendDBAccess = new PortalBackendDBAccess(mockContext);
             //Act
-            var results = backendDBAccess.GetInvitedUsersDetail(id);
+            var results = backendDBAccess.GetInvitedUserDetailsUntrackedAsync(id);
 
             //Assert
             Assert.NotNull(results);
-
         }
-
-
     }
 }

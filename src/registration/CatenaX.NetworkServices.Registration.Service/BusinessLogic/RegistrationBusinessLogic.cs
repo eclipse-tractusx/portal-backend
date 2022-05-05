@@ -348,19 +348,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return true;
         }
 
-        public async IAsyncEnumerable<InvitedUser> GetInvitedUsersDetail(Guid applicationId)
+        public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
         {
 
-            await foreach (var item in _portalDBAccess.GetInvitedUsersDetail(applicationId).ConfigureAwait(false))
+            await foreach (var item in _portalDBAccess.GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
             {
                 var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
                 yield return new InvitedUser(
-                    item.UserId,
-                    item.InvitationStatus
-                ) {
-                    EmailId = item.EmailId,
-                    InvitedUserRoles = userRoles
-                };
+                    item.InvitationStatus,
+                    item.EmailId,
+                    userRoles
+                );
             }
         }
     }
