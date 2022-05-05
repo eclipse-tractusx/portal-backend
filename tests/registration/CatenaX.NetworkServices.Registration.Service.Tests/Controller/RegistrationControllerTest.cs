@@ -38,17 +38,20 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
         {
             //Arrange
             Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-            var invitedUserMapper = _fixture.CreateMany<InvitedUsers>(3).ToList();
+            var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
             A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersDetail(id))
-                .Returns(new InvitedUserRoleMapper { Users = invitedUserMapper.AsEnumerable() });
+                .Returns(invitedUserMapper);
 
             //Act
-            var result = await this.controller.GetInvitedUserDetailAsync(id);
+            var result = this.controller.GetInvitedUserDetailAsync(id);
+            await foreach (var item in result)
+            {
+                //Assert
+                A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersDetail(id)).MustHaveHappenedOnceExactly();
+                Assert.NotNull(item);
+                Assert.IsType<InvitedUser>(item);
+            }
 
-            //Assert
-            A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersDetail(id)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(result);
-            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
@@ -56,17 +59,19 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
         {
             //Arrange
             Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-            var invitedUserMapper = _fixture.CreateMany<InvitedUsers>(3).ToList();
+            var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
             A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersDetail(id))
-                .Returns(new InvitedUserRoleMapper { Users = invitedUserMapper.AsEnumerable() });
+                .Returns(invitedUserMapper);
 
             //Act
-            var result = await this.controller.GetInvitedUserDetailAsync(Guid.Empty);
+            var result = this.controller.GetInvitedUserDetailAsync(Guid.Empty);
 
             //Assert
-            A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersDetail(Guid.Empty)).Throws(new Exception());
-            ObjectResult objectResponse = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(200, objectResponse.StatusCode);
+            await foreach (var item in result)
+            {
+                A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersDetail(Guid.Empty)).Throws(new Exception());
+            }
+
         }
 
     }

@@ -348,36 +348,20 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return true;
         }
 
-        public async Task<InvitedUserRoleMapper> GetInvitedUsersDetail(Guid applicationId)
+        public async IAsyncEnumerable<InvitedUser> GetInvitedUsersDetail(Guid applicationId)
         {
 
-            var result = await _portalDBAccess.GetInvitedUsersDetail(applicationId).ToListAsync().ConfigureAwait(false);
-            var invitedUser = new List<InvitedUsers>();
-
-            foreach (var item in result)
+            await foreach (var item in _portalDBAccess.GetInvitedUsersDetail(applicationId).ConfigureAwait(false))
             {
-                var response = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID);
-                var invitedUserRoles = new List<Roles>();
-                foreach (var index in response)
-                {
-                    invitedUserRoles.Add(new Roles
-                    {
-                        Id = index.Id,
-                        Name = index.Name,
-                        ClientRole = index.ClientRole
-                    });
-                }
-                invitedUser.Add(new InvitedUsers
+                var response = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+                yield return new InvitedUser
                 {
                     UserId = item.UserId,
                     EmailId = item.EmailId,
                     InvitationStatus = item.InvitationStatus,
-                    InvitedUserRoles = invitedUserRoles.AsEnumerable()
-                });
+                    InvitedUserRoles = response
+                };
             }
-            var invitedUserRoleMapper = new InvitedUserRoleMapper();
-            invitedUserRoleMapper.Users = invitedUser.AsEnumerable();
-            return invitedUserRoleMapper;
         }
     }
 }

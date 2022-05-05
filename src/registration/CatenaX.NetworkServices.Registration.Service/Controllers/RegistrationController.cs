@@ -305,18 +305,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/invitedusers")]
-        public async Task<IActionResult> GetInvitedUserDetailAsync([FromRoute] Guid applicationId)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.GetInvitedUsersDetail(applicationId));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        public  IAsyncEnumerable<InvitedUser> GetInvitedUserDetailAsync([FromRoute] Guid applicationId)
+        =>_registrationBusinessLogic.GetInvitedUsersDetail(applicationId);
+            
+        
 
     }
 }
