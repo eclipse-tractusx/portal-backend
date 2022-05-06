@@ -26,7 +26,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 throw new ArgumentNullException(nameof(userId));
             }
             return _dbContext.IamUsers
-                    .Where(iamUser => 
+                    .Where(iamUser =>
                         iamUser.UserEntityId == userId
                         && iamUser.CompanyUser!.Company!.Bpn != null)
                     .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn!)
@@ -37,10 +37,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds)
         {
             return _dbContext.IamUsers
-                    .Where(iamUser => 
+                    .Where(iamUser =>
                         userIds.Contains(iamUser.UserEntityId)
                         && iamUser.CompanyUser!.Company!.Bpn != null)
-                    .Select(iamUser => new UserBpn {
+                    .Select(iamUser => new UserBpn
+                    {
                         userId = iamUser.UserEntityId,
                         bpn = iamUser.CompanyUser!.Company!.Bpn!
                     })
@@ -84,11 +85,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Guid.NewGuid(),
                     companyId,
                     DateTimeOffset.UtcNow)
-                    {
-                        Firstname = firstName,
-                        Lastname = lastName,
-                        Email = email,
-                    }).Entity;
+                {
+                    Firstname = firstName,
+                    Lastname = lastName,
+                    Email = email,
+                }).Entity;
 
         public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
             _dbContext.Invitations.Add(
@@ -147,7 +148,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     DocumentId = DocumentId
                 }).Entity;
 
-        public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, int companyRoleId) =>
+        public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId) =>
             _dbContext.CompanyAssignedRoles.Add(
                 new CompanyAssignedRole(
                     companyId,
@@ -158,7 +159,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.IamUsers
                 .Where(iamUser => iamUser.UserEntityId == iamUserId)
                 .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyApplications)
-                    .Select(companyApplication => new CompanyApplicationWithStatus {
+                    .Select(companyApplication => new CompanyApplicationWithStatus
+                    {
                         ApplicationId = companyApplication.Id,
                         ApplicationStatus = companyApplication.ApplicationStatusId
                     })
@@ -210,7 +212,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-        public Task<CompanyApplication> GetCompanyApplication(Guid applicationId) =>
+        public Task<CompanyApplication> GetCompanyApplicationAsync(Guid applicationId) =>
             _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
                 .SingleOrDefaultAsync();
@@ -258,8 +260,84 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     DocumentTypeId = documentTypeId,
                     CompanyUserId = companyUserId
                     }).Entity;
+        public IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
+            _dbContext.CompanyRoles
+                .AsNoTracking()
+                .Where(companyRole => companyRoleIds.Contains(companyRole.CompanyRoleId))
+                .Select(companyRole => new AgreementsAssignedCompanyRoleData(
+                    companyRole.CompanyRoleId,
+                    companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
+                )).AsAsyncEnumerable();
+
+        public Task<CompanyRoleAgreementConsentData> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser => new CompanyRoleAgreementConsentData(
+                    iamUser.CompanyUserId,
+                    iamUser.CompanyUser!.CompanyId,
+                    iamUser.CompanyUser.Company!.CompanyAssignedRoles,
+                    iamUser.CompanyUser.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyRoleAgreementConsents> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .AsQueryable()
+                .AsNoTracking()
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser => new CompanyRoleAgreementConsents(
+                    iamUser.CompanyUser!.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                    iamUser.CompanyUser.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(
+                        consent.AgreementId,
+                        consent.ConsentStatusId
+                    )))).SingleOrDefaultAsync();
+
+        public async IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync()
+        {
+            await foreach(var role in _dbContext.CompanyRoles
+                .AsNoTracking()
+                .Select(companyRole => new {
+                    Id = companyRole.CompanyRoleId,
+                    Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new { ShortName = description.LanguageShortName, Description = description.Description }),
+                    Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)})
+                .AsAsyncEnumerable())
+                {
+                    yield return new CompanyRoleData(
+                        role.Id,
+                        role.Descriptions.ToDictionary(d => d.ShortName, d => d.Description),
+                        role.Agreements);
+                }
+        }
+
+        public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
+            _dbContext.Agreements
+                .AsNoTracking()
+                .Select(agreement => new AgreementData(
+                    agreement.Id,
+                    agreement.Name))
+                .AsAsyncEnumerable();
+
+        public CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole) =>
+            _dbContext.Remove(companyAssignedRole).Entity;
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
+
+        public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
+            (from invitation in _dbContext.Invitations
+                join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
+                join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
+                join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
+                where invitation.CompanyApplicationId == applicationId
+                select new InvitedUserDetail(
+                    iamuser.UserEntityId,
+                    invitationStatus.InvitationStatusId,
+                    companyuser.Email
+                ))
+                .AsNoTracking()
+                .AsAsyncEnumerable();
     }
 }
