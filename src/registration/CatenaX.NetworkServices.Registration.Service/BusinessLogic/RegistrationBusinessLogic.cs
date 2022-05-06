@@ -127,26 +127,20 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
 
-        public Task SignConsentAsync(SignConsentRequest signedConsent) =>
-            _dbAccess.SignConsent(signedConsent);
-
-        public Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId) =>
-            _dbAccess.SignedConsentsByCompanyId(companyId);
-
-        public async Task<int> UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId)
+        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, string iamUserId, DocumentTypeId documentTypeId)
         {
             if (string.IsNullOrEmpty(document.FileName))
             {
-                throw ArgumentNullException("File name is must not be null");
+                throw new ArgumentNullException("File name is must not be null");
             }
 
-             var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
+            var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (companyUserId == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
             var documentName = document.FileName;
-            
+
             using (var ms = new MemoryStream())
             {
                 document.CopyTo(ms);
@@ -161,8 +155,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     {
                         builder.Append(hashValue[i].ToString("x2"));
                     }
-                   var hash = builder.ToString();
-                    _portalDBAccess.CreateDocument(applicationId,companyUserId,documentName,documentContent,hash,0,documentTypeId);
+                    var hash = builder.ToString();
+                    _portalDBAccess.CreateDocument(applicationId, companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
@@ -196,7 +190,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return result;
         }
-        
+
         public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
         {
             if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
@@ -316,10 +310,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             application.ApplicationStatusId = status;
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
-            
+
         public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
         {
-            var result = (CompanyApplicationStatusId?) await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
+            var result = (CompanyApplicationStatusId?)await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
             if (!result.HasValue)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -344,15 +338,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
             var activeConsents = companyRoleAgreementConsentData.Consents;
 
-            var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId,IEnumerable<Guid>>();
+            var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId, IEnumerable<Guid>>();
             await foreach (var companyRoleAgreement in _portalDBAccess.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
             {
-                companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId]=companyRoleAgreement.AgreementIds;
+                companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId] = companyRoleAgreement.AgreementIds;
             }
 
             if (!companyRoleIdsToSet
-                .All(companyRoleIdToSet => 
-                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId => 
+                .All(companyRoleIdToSet =>
+                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId =>
                         agreementConsentsToSet
                             .Any(agreementConsent =>
                                 agreementConsent.AgreementId == assignedAgreementId
