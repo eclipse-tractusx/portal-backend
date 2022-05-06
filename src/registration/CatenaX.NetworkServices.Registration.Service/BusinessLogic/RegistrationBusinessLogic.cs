@@ -1,5 +1,4 @@
-﻿using CatenaX.NetworkServices.Consent.Library.Data;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -18,8 +17,10 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -123,15 +124,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token) =>
             _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
 
-        public Task<IEnumerable<CompanyRole>> GetCompanyRolesAsync() =>
-            _dbAccess.GetAllCompanyRoles();
-
-        public Task<IEnumerable<ConsentForCompanyRole>> GetConsentForCompanyRoleAsync(int roleId) =>
-            _dbAccess.GetConsentForCompanyRole(roleId);
-
-        public Task SetCompanyRolesAsync(CompanyToRoles rolesToSet) =>
-            _dbAccess.SetCompanyRoles(rolesToSet);
-
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
 
@@ -143,6 +135,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId)
         {
+            if (string.IsNullOrEmpty(document.FileName))
+            {
+                throw ArgumentNullException("File name is must not be null");
+            }
 
              var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
             if (companyUserId == null)
@@ -171,7 +167,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
-        
+
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
@@ -183,7 +179,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
-                yield return new CompanyApplication {
+                yield return new CompanyApplication
+                {
                     ApplicationId = applicationWithStatus.ApplicationId,
                     ApplicationStatus = applicationWithStatus.ApplicationStatus
                 };
@@ -222,7 +219,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId,companyWithAddress.CompanyId).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
             if (company == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
@@ -280,7 +277,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var password = new Password().Next();
             var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
-                new UserProfile (
+                new UserProfile(
                     userInvitationData.userName,
                     userInvitationData.firstName,
                     userInvitationData.lastName,
@@ -300,7 +297,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" } );
+            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" });
 
             return updates;
         }
@@ -311,7 +308,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            var application = await _portalDBAccess.GetCompanyApplication(applicationId).ConfigureAwait(false);
+            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
             if (application == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -330,22 +327,92 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return result.Value;
         }
 
-        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, Guid agreementId, int companyRoleId, string iamUserId)
+        public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId)
         {
-            var result = await _portalDBAccess.GetCompanyWithUserIdForUserApplicationUntrackedAsync(applicationId,iamUserId).ConfigureAwait(false);
+            var companyRoleIdsToSet = roleAgreementConsentStatuses.CompanyRoleIds;
+            var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
+
+            var companyRoleAgreementConsentData = await _portalDBAccess.GetCompanyRoleAgreementConsentDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+
+            if (companyRoleAgreementConsentData == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+            }
+
+            var companyUserId = companyRoleAgreementConsentData.CompanyUserId;
+            var companyId = companyRoleAgreementConsentData.CompanyId;
+            var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
+            var activeConsents = companyRoleAgreementConsentData.Consents;
+
+            var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId,IEnumerable<Guid>>();
+            await foreach (var companyRoleAgreement in _portalDBAccess.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
+            {
+                companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId]=companyRoleAgreement.AgreementIds;
+            }
+
+            if (!companyRoleIdsToSet
+                .All(companyRoleIdToSet => 
+                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId => 
+                        agreementConsentsToSet
+                            .Any(agreementConsent =>
+                                agreementConsent.AgreementId == assignedAgreementId
+                                && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE))))
+            {
+                throw new ArgumentException("consent must be given to all CompanyRole assigned agreements");
+            }
+
+            foreach (var companyAssignedRoleToRemove in companyAssignedRoles
+                .Where(companyAssignedRole =>
+                    !companyRoleIdsToSet.Contains(companyAssignedRole.CompanyRoleId)))
+            {
+                _portalDBAccess.RemoveCompanyAssignedRole(companyAssignedRoleToRemove);
+            }
+
+            foreach (var companyRoleIdToAdd in companyRoleIdsToSet
+                .Where(companyRoleId =>
+                    !companyAssignedRoles.Any(companyAssignedRole =>
+                        companyAssignedRole.CompanyRoleId == companyRoleId)))
+            {
+                _portalDBAccess.CreateCompanyAssignedRole(companyId, companyRoleIdToAdd);
+            }
+
+            foreach (var consentToRemove in activeConsents
+                .Where(activeConsent =>
+                    !agreementConsentsToSet.Any(agreementConsent =>
+                        agreementConsent.AgreementId == activeConsent.AgreementId
+                        && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+            {
+                consentToRemove.ConsentStatusId = ConsentStatusId.INACTIVE;
+            }
+
+            foreach (var agreementConsentToAdd in agreementConsentsToSet
+                .Where(agreementConsent =>
+                    agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE
+                    && !activeConsents.Any(activeConsent =>
+                        activeConsent.AgreementId == agreementConsent.AgreementId)))
+            {
+                _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+            }
+
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+
+        public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId)
+        {
+            var result = await _portalDBAccess.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (result == null)
             {
-                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
-            _portalDBAccess.CreateConsent(
-                agreementId,
-                result.CompanyId,
-                result.CompanyUserId,
-                ConsentStatusId.ACTIVE);
-            _portalDBAccess.CreateCompanyAssignedRole(
-                result.CompanyId,
-                companyRoleId);
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return result;
+        }
+
+        public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync()
+        {
+            return new CompanyRoleAgreementData(
+                (await _portalDBAccess.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
+                (await _portalDBAccess.GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
+            );
         }
 
         public async Task<bool> SubmitRegistrationAsync(string userEmail)
@@ -355,8 +422,22 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userEmail,mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
             return true;
+        }
+
+        public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
+        {
+
+            await foreach (var item in _portalDBAccess.GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
+            {
+                var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+                yield return new InvitedUser(
+                    item.InvitationStatus,
+                    item.EmailId,
+                    userRoles
+                );
+            }
         }
     }
 }

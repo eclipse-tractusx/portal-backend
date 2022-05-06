@@ -21,16 +21,23 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
         Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code);
         Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null);
-        CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, int companyRoleId);
-        IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);        
+        CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
+        IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
         Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId);
-        Task<CompanyApplication> GetCompanyApplication(Guid applicationId);
+        Task<CompanyApplication> GetCompanyApplicationAsync(Guid applicationId);
         Task<CompanyIdWithUserId> GetCompanyWithUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId);
         Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName ,string documentContent, string hash, uint documentOId,DocumentTypeId documentTypeId);
+        IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
+        Task<CompanyRoleAgreementConsentData> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId);
+        Task<CompanyRoleAgreementConsents> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
+        CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
+        IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
+        IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
+        IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<int> SaveAsync();
     }
 }

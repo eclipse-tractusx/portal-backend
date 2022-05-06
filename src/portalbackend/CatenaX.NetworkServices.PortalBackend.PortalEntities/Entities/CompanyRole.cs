@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,35 +9,27 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
     {
         private CompanyRole()
         {
-            CompanyRoleText = null!;
-            NameDe = null!;
-            NameEn = null!;
+            Label = null!;
             Companies = new HashSet<Company>();
+            AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
+            CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
         }
 
-        public CompanyRole(int id, string companyRoleText, string nameDe, string nameEn) : this()
+        public CompanyRole(CompanyRoleId companyRoleId) : this()
         {
-            Id = id;
-            CompanyRoleText = companyRoleText;
-            NameDe = nameDe;
-            NameEn = nameEn;
+            CompanyRoleId = companyRoleId;
+            Label = companyRoleId.ToString();
         }
 
         [Key]
-        public int Id { get; private set; }
+        public CompanyRoleId CompanyRoleId { get; private set; }
 
         [MaxLength(255)]
-        [Column("company_role")]
-        public string CompanyRoleText { get; set; }
-
-        [MaxLength(255)]
-        public string NameDe { get; set; }
-
-        [MaxLength(255)]
-        public string NameEn { get; set; }
+        public string Label { get; set; }
 
         // Navigation properties
-        public virtual AgreementAssignedCompanyRole? AgreementAssignedCompanyRole { get; private set; }
+        public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
         public virtual ICollection<Company> Companies { get; private set; }
+        public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
     }
 }
