@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.App.Service.ViewModels;
+﻿using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +37,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                     UseCaseNames = a.UseCases.Select(uc => uc.Name),
                     ThumbnailUrl = (string?)a.ThumbnailUrl,
                     ShortDescription =
-                        this.context.Languages.SingleOrDefault(l => l.LanguageShortName == languageShortName) == null 
+                        this.context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
                         ? null 
                         : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                           ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
@@ -79,7 +80,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                     a.ContactNumber,
                     UseCases = a.UseCases.Select(u => u.Name),
                     LongDescription = 
-                        this.context.Languages.SingleOrDefault(l => l.LanguageShortName == languageShortName) == null 
+                        this.context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
                         ? null 
                         : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
                           ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
@@ -150,6 +151,41 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 new CompanyAssignedApp(appId, companyId)
             ).ConfigureAwait(false);
             await this.context.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> CreateAppAsync(AppInputModel appInputModel)
+        {
+            using var transaction = this.context.Database.BeginTransaction();
+
+            // Add app to db
+            var appEntity = new PortalBackend.PortalEntities.Entities.App(Guid.Empty, appInputModel.Provider, DateTimeOffset.UtcNow)
+            {
+                Name = appInputModel.Title,
+                MarketingUrl = appInputModel.ProviderUri,
+                AppUrl = appInputModel.AppUri,
+                ThumbnailUrl = appInputModel.LeadPictureUri,
+                ContactEmail = appInputModel.ContactEmail,
+                ContactNumber = appInputModel.ContactNumber,
+                ProviderCompanyId = appInputModel.ProviderCompanyId,
+                AppStatusId = PortalBackend.PortalEntities.Enums.AppStatusId.CREATED
+            };
+            await this.context.Apps.AddAsync(appEntity).ConfigureAwait(false);
+            await this.context.SaveChangesAsync();
+
+            var appLicenseEntity = new AppLicense(Guid.Empty, appInputModel.Price);
+            await this.context.AppLicenses.AddAsync(appLicenseEntity);
+            await this.context.SaveChangesAsync();                
+
+            await this.context.AppAssignedLicenses.AddAsync(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
+            await this.context.AppAssignedUseCases.AddRangeAsync(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
+            await this.context.AppDescriptions.AddRangeAsync(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+            await this.context.AppLanguages.AddRangeAsync(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
+            await this.context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return appEntity.Id;
         }
 
         private Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId) => 
