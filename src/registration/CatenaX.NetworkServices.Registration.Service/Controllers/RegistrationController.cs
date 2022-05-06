@@ -90,22 +90,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
-        public async Task<IActionResult> UploadDocumentAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId,[FromForm(Name = "document")] IFormFile document)
+        public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document)
         {
-            try
-            {
-                if (string.IsNullOrEmpty(document.FileName))
-                {
-                    return BadRequest();
-                }
-                WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId,document,user,documentTypeId));
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
+            return WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, user, documentTypeId));
         }
 
         [HttpPut]
@@ -163,7 +150,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
-        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) => 
+        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
             _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
 
         [HttpPost]
@@ -218,10 +205,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/invitedusers")]
-        public  IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
+        public IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
 
-        private T WithIamUserId<T>(Func<string,T> _next) =>
+        private T WithIamUserId<T>(Func<string, T> _next) =>
             _next(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
     }
 }

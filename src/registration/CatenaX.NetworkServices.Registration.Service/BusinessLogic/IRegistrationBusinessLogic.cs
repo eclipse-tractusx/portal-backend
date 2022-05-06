@@ -17,12 +17,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<IEnumerable<string>> CreateUsersAsync(List<UserCreationInfo> userList, string tenant, string createdByName);
-        Task SetCompanyRolesAsync(CompanyToRoles rolesToSet);
-        Task<int> UploadDocumentAsync(Guid applicationId,IFormFile document, string iamUserId,DocumentTypeId documentTypeId);
-        Task<IEnumerable<ConsentForCompanyRole>> GetConsentForCompanyRoleAsync(int roleId);
-        Task SignConsentAsync(SignConsentRequest signedConsent);
-        Task<IEnumerable<SignedConsent>> SignedConsentsByCompanyIdAsync(string companyId);
-        Task CreateDocument(IFormFile document, string userName);
+        Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, string iamUserId, DocumentTypeId documentTypeId);
         Task SetIdpAsync(SetIdp idpToSet);
         Task CreateCustodianWalletAsync(WalletInformation information);
         IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string? userId);
