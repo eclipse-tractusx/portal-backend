@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.App.Service.BusinessLogic;
+using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.App.Service.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -67,6 +68,30 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             }
 
             return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Creates an app according to input model.
+        /// </summary>
+        /// <param name="appInputModel">Input model for app creation.</param>
+        /// <returns>ID of created application.</returns>
+        /// <remarks>Example: POST: /api/apps</remarks>
+        /// <response code="201">Returns created app's ID.</response>
+        [HttpPost]
+        [Route("")]
+        [Authorize(Roles = "add_app")]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
+        {
+            try
+            {
+                return CreatedAtRoute(string.Empty, await this.appsBusinessLogic.CreateAppAsync(appInputModel));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
         }
 
         /// <summary>
