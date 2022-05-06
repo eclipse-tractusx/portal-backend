@@ -62,10 +62,6 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                 .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions",options));
 
-builder.Services.AddSwaggerGen(c => {
-                    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-                });
-   
 builder.Services.AddTransient<IIdentityProviderBusinessLogic,IdentityProviderBusinessLogic>()
                 .AddTransient<IClientBusinessLogic,ClientBusinessLogic>()
                 .AddTransient<IKeycloakFactory, KeycloakFactory>()
