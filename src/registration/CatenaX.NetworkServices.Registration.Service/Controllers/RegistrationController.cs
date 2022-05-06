@@ -6,17 +6,11 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.Controllers
 {
@@ -90,10 +84,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
-        public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document)
-        {
-            return WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, user, documentTypeId));
-        }
+        public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
+            WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
         [HttpPut]
         [Authorize(Roles = "invite_user")]
