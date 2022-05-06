@@ -74,8 +74,6 @@ builder.Services.AddTransient<IAuthorizationHandler,ClaimRequestPathHandler>()
                     })
                     .AddTransient<IHttpContextAccessor,HttpContextAccessor>();
 
-builder.Services.AddSwaggerGen(c => c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION }));
-
 builder.Services.AddTransient<IMailingService, MailingService>()
                 .AddTransient<ISendMail, SendMail>()
                 .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
