@@ -89,10 +89,10 @@ if (app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configurati
 }
 if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configuration.GetValue<bool>("SwaggerEnabled"))
 {
-    app.UseSwagger( c => c.RouteTemplate = "/api/registration/swagger/{documentName}/swagger.{json|yaml}");
+    app.UseSwagger( c => c.RouteTemplate = "/api/provisioning/swagger/{documentName}/swagger.{json|yaml}");
     app.UseSwaggerUI(c => {
-        c.SwaggerEndpoint(string.Format("/api/registration/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
-        c.RoutePrefix = "api/registration/swagger";
+        c.SwaggerEndpoint(string.Format("/api/provisioning/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
+        c.RoutePrefix = "api/provisioning/swagger";
     });
 }
 
