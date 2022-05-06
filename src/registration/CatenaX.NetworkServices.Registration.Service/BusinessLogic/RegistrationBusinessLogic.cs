@@ -11,19 +11,11 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -127,7 +119,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
 
-        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, string iamUserId, DocumentTypeId documentTypeId)
+        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
         {
             if (string.IsNullOrEmpty(document.FileName))
             {
