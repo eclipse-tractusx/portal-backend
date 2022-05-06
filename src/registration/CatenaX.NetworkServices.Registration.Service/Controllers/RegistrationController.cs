@@ -89,9 +89,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         }
 
         [HttpPost]
-        [Route("application/{applicationId}/documents")]
         [Authorize(Roles = "upload_documents")]
-        public async Task<IActionResult> UploadDocumentAsync([FromRoute] Guid applicationId,[FromForm(Name = "document")] IFormFile document,DocumentTypeId documentTypeId)
+        [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
+        public async Task<IActionResult> UploadDocumentAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId,[FromForm(Name = "document")] IFormFile document)
         {
             try
             {
