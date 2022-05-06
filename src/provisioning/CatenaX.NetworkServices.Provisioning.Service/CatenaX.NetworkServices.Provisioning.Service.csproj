@@ -19,7 +19,6 @@
     <UserSecretsId>a3d62b39-6ab6-449d-abe8-9ef7ab6cb575</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
 </Project>

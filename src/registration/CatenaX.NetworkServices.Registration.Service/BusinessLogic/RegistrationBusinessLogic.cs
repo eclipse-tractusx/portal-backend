@@ -11,19 +11,11 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -127,29 +119,39 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
 
-        public async Task CreateDocument(IFormFile document, string userName)
+        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
         {
-            var name = document.FileName;
-            var documentContent = "";
-            var hash = "";
+            if (string.IsNullOrEmpty(document.FileName))
+            {
+                throw new ArgumentNullException("File name is must not be null");
+            }
+
+            var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (companyUserId == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
+            }
+            var documentName = document.FileName;
+
             using (var ms = new MemoryStream())
             {
                 document.CopyTo(ms);
                 var fileBytes = ms.ToArray();
-                documentContent = Convert.ToBase64String(fileBytes);
+                var documentContent = Convert.ToBase64String(fileBytes);
                 using (SHA256 hashSHA256 = SHA256.Create())
                 {
                     byte[] hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
-                    hash = Encoding.UTF8.GetString(hashValue);
+                    // hash = Encoding.UTF8.GetString(hashValue);
                     StringBuilder builder = new StringBuilder();
                     for (int i = 0; i < hashValue.Length; i++)
                     {
                         builder.Append(hashValue[i].ToString("x2"));
                     }
-                    hash = builder.ToString();
+                    var hash = builder.ToString();
+                    _portalDBAccess.CreateDocument(applicationId, companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }
-            await _dbAccess.UploadDocument(name, documentContent, hash, userName);
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
@@ -180,7 +182,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return result;
         }
-        
+
         public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
         {
             if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
@@ -300,10 +302,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             application.ApplicationStatusId = status;
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
-            
+
         public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
         {
-            var result = (CompanyApplicationStatusId?) await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
+            var result = (CompanyApplicationStatusId?)await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
             if (!result.HasValue)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -328,15 +330,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
             var activeConsents = companyRoleAgreementConsentData.Consents;
 
-            var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId,IEnumerable<Guid>>();
+            var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId, IEnumerable<Guid>>();
             await foreach (var companyRoleAgreement in _portalDBAccess.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
             {
-                companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId]=companyRoleAgreement.AgreementIds;
+                companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId] = companyRoleAgreement.AgreementIds;
             }
 
             if (!companyRoleIdsToSet
-                .All(companyRoleIdToSet => 
-                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId => 
+                .All(companyRoleIdToSet =>
+                    companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId =>
                         agreementConsentsToSet
                             .Any(agreementConsent =>
                                 agreementConsent.AgreementId == assignedAgreementId
