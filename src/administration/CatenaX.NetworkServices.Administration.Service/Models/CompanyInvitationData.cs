@@ -4,13 +4,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Models
 {
     public class CompanyInvitationData
     {
-        private CompanyInvitationData()
+        public CompanyInvitationData(string userName, string firstName, string lastName, string email, string organisationName)
         {
-            userName = default!;
-            firstName = default!;
-            lastName = default!;
-            email = default!;
-            organisationName = default!;
+            this.userName = userName;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.email = email;
+            this.organisationName = organisationName;
         }
 
         [JsonPropertyName("userName")]

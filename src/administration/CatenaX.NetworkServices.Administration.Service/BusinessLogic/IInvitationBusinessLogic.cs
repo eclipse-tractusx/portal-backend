@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using CatenaX.NetworkServices.Administration.Service.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
