@@ -19,6 +19,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             UseCases = new HashSet<UseCase>();
             CompanyUsers = new HashSet<CompanyUser>();
             Tags = new HashSet<AppTag>();
+            SupportedLanguages = new HashSet<Language>();
         }
 
         public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
@@ -72,5 +73,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public virtual ICollection<AppLicense> AppLicenses { get; private set; }
         public virtual ICollection<UseCase> UseCases { get; private set; }
         public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+        public virtual ICollection<Language> SupportedLanguages { get; private set; }
     }
 }

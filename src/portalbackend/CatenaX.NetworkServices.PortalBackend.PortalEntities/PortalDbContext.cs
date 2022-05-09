@@ -28,6 +28,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
         public virtual DbSet<AppDescription> AppDescriptions { get; set; } = default!;
         public virtual DbSet<AppDetailImage> AppDetailImages { get; set; } = default!;
+        public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
         public virtual DbSet<AppLicense> AppLicenses { get; set; } = default!;
         public virtual DbSet<AppStatus> AppStatuses { get; set; } = default!;
         public virtual DbSet<AppTag> AppTags { get; set; } = default!;
@@ -218,6 +219,28 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             j.HasKey(e => new{ e.AppId, e.CompanyUserRoleId }).HasName("pk_app_assg_comp_user_roles");
                             j.ToTable("app_assigned_company_user_roles", "portal");
                         });
+
+                entity.HasMany(a => a.SupportedLanguages)
+                    .WithMany(l => l.SupportingApps)
+                    .UsingEntity<AppLanguage>(
+                        j => j
+                            .HasOne(d => d.Language!)
+                            .WithMany()
+                            .HasForeignKey(d => d.LanguageShortName)
+                            .OnDelete(DeleteBehavior.ClientSetNull)
+                            .HasConstraintName("fk_oayyvy590ngh5705yspep102"),
+                        j => j
+                            .HasOne(d => d.App!)
+                            .WithMany()
+                            .HasForeignKey(d => d.AppId)
+                            .OnDelete(DeleteBehavior.ClientSetNull)
+                            .HasConstraintName("fk_oayyvy590ngh5705yspep101"),
+                        j =>
+                        {
+                            j.HasKey(e => new { e.AppId, e.LanguageShortName }).HasName("pk_app_language");
+                            j.ToTable("app_languages", "portal");
+                        }
+                    );
                 
                 entity.HasMany(p => p.AppLicenses)
                     .WithMany(p => p.Apps)
@@ -729,7 +752,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
             {
                 entity.ToTable("languages", "portal");
 
-                entity.Property(e => e.LanguageShortName)
+                entity.Property(e => e.ShortName)
                     .IsFixedLength(true);
             });
 

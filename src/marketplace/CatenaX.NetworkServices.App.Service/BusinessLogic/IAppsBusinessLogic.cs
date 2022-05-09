@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.App.Service.ViewModels;
+﻿using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic
 {
@@ -50,5 +51,12 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <param name="appId">ID of the app to subscribe to.</param>
         /// <param name="userId">ID of the user that initiated app subscription for their company.</param>
         public Task AddCompanyAppSubscriptionAsync(Guid appId, string userId);
+
+        /// <summary>
+        /// Creates an application and returns its generated ID.
+        /// </summary>
+        /// <param name="appInputModel">Input model for app creation.</param>
+        /// <returns>Guid of the created app.</returns>
+        public Task<Guid> CreateAppAsync(AppInputModel appInputModel);
     }
 }
