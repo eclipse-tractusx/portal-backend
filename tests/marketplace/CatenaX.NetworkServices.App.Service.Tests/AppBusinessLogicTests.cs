@@ -31,7 +31,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         {
             // Arrange
             var apps = _fixture.Build<PortalBackend.PortalEntities.Entities.App>()
-                .With(a => a.DateReleased, System.DateTimeOffset.MinValue) // all are active
+                .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
                 .CreateMany(5);
             var appsDbSet = apps.AsFakeDbSet();
             var languagesDbSet = new List<Language>().AsFakeDbSet();
@@ -85,12 +85,13 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var companyUser = _fixture.Build<CompanyUser>()
                 .Without(u => u.IamUser)
                 .Create();
-            _fixture.Inject(companyUser);
             foreach (var app in favouriteApps)
             {
                 companyUser.Apps.Add(app);
             }
-            var iamUser = _fixture.Create<IamUser>();
+            var iamUser = _fixture.Build<IamUser>()
+                .With(u => u.CompanyUser, companyUser)
+                .Create();
             var iamUsersFakeDbSet = new List<IamUser>{ iamUser }.AsFakeDbSet();
 
             var contextFake = A.Fake<PortalDbContext>();
@@ -119,8 +120,9 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var companyUser = _fixture.Build<CompanyUser>()
                 .Without(u => u.IamUser)
                 .Create();
-            _fixture.Inject(companyUser);
-            var iamUser = _fixture.Create<IamUser>();
+            var iamUser = _fixture.Build<IamUser>()
+                .With(u => u.CompanyUser, companyUser)
+                .Create();
             companyUser.IamUser = iamUser;
             var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
@@ -149,8 +151,9 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var companyUser = _fixture.Build<CompanyUser>()
                 .Without(u => u.IamUser)
                 .Create();
-            _fixture.Inject(companyUser);
-            var iamUser = _fixture.Create<IamUser>();
+            var iamUser = _fixture.Build<IamUser>()
+                .With(u => u.CompanyUser, companyUser)
+                .Create();
             companyUser.IamUser = iamUser;
             var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
@@ -190,8 +193,9 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var companyUser = _fixture.Build<CompanyUser>()
                 .Without(u => u.IamUser)
                 .Create();
-            _fixture.Inject(companyUser);
-            var iamUser = _fixture.Create<IamUser>();
+            var iamUser = _fixture.Build<IamUser>()
+                .With(u => u.CompanyUser, companyUser)
+                .Create();
             companyUser.IamUser = iamUser;
             var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 

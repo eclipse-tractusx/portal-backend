@@ -10,14 +10,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             UserEntityId = null!;
         }
 
-        public IamUser(string iamUserId, Guid companyUserId, CompanyUser? companyUser = null)
+        public IamUser(string iamUserId, Guid companyUserId)
         {
             UserEntityId = iamUserId;
             CompanyUserId = companyUserId;
-            if(companyUser != null)
-            {
-                CompanyUser = companyUser;
-            }
         }
 
         [Key]
@@ -27,6 +23,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public Guid CompanyUserId { get; private set; }
 
         // Navigation properties
-        public virtual CompanyUser? CompanyUser { get; private set; }
+        public virtual CompanyUser? CompanyUser { get; set; }
     }
 }
