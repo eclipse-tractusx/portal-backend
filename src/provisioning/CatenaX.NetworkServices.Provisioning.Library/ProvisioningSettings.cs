@@ -12,6 +12,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public string ClientPrefix { get; set; }
         public string MappedIdpAttribute { get; set; }
         public string MappedCompanyAttribute { get; set; }
+        public string? MappedBpnAttribute { get; set; }
         public string UserNameMapperTemplate { get; set; }
         public IDictionary<string,IEnumerable<string>> InvitedUserInitialRoles { get; set; }
     }

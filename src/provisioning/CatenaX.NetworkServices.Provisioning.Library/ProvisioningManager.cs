@@ -90,7 +90,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return idpName;
         }
 
-        public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, string organisationName)
+        public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile)
         {
             var userIdShared = await CreateSharedRealmUserAsync(idpName, userProfile).ConfigureAwait(false);
 
@@ -101,13 +101,15 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
             var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile(
                 idpName + "." + userIdShared,
-                userProfile.FirstName,
-                userProfile.LastName,
-                userProfile.Email), organisationName).ConfigureAwait(false);
+                userProfile.Email,
+                userProfile.OrganisationName) {
+                    FirstName = userProfile.FirstName,
+                    LastName = userProfile.LastName,
+                }).ConfigureAwait(false);
 
             if (userIdCentral == null)
             {
-                throw new Exception($"failed to created user {userProfile.UserName} in central realm for organization {organisationName}");
+                throw new Exception($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
             }
 
             await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);

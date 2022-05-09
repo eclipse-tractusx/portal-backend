@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Administration.Service.Models;
 
@@ -9,7 +6,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
     public interface IUserBusinessLogic
     {
-        Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? userList, string? tenant, string? createdByName);
+        Task<IEnumerable<string>> CreateCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, Guid companyId, string createdByName);
+        Task<IEnumerable<string>> CreateTenantUsersAsync(IEnumerable<UserCreationInfo> userList, string tenant, string createdByName);
         Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
                 string? tenant,
                 string? userId = null,

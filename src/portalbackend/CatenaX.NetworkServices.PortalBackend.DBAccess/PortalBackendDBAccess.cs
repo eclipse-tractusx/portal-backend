@@ -15,49 +15,35 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        public Task<string> GetBpnForUserUntrackedAsync(string userId)
-        {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-            return _dbContext.IamUsers
-                    .Where(iamUser =>
-                        iamUser.UserEntityId == userId
-                        && iamUser.CompanyUser!.Company!.Bpn != null)
-                    .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn!)
-                    .AsNoTracking()
-                    .SingleAsync();
-        }
+        public Task<string> GetBpnForUserUntrackedAsync(string userId) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    iamUser.UserEntityId == userId
+                    && iamUser.CompanyUser!.Company!.Bpn != null)
+                .Select(iamUser => iamUser.CompanyUser!.Company!.Bpn!)
+                .AsNoTracking()
+                .SingleAsync();
 
-        public IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds)
-        {
-            return _dbContext.IamUsers
-                    .Where(iamUser =>
-                        userIds.Contains(iamUser.UserEntityId)
-                        && iamUser.CompanyUser!.Company!.Bpn != null)
-                    .Select(iamUser => new UserBpn
-                    {
-                        userId = iamUser.UserEntityId,
-                        bpn = iamUser.CompanyUser!.Company!.Bpn!
-                    })
-                    .AsNoTracking()
-                    .AsAsyncEnumerable();
-        }
+        public IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds) =>
+            _dbContext.IamUsers
+                .Where(iamUser =>
+                    userIds.Contains(iamUser.UserEntityId)
+                    && iamUser.CompanyUser!.Company!.Bpn != null)
+                .Select(iamUser => new UserBpn
+                {
+                    userId = iamUser.UserEntityId,
+                    bpn = iamUser.CompanyUser!.Company!.Bpn!
+                })
+                .AsNoTracking()
+                .AsAsyncEnumerable();
 
-        public IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId)
-        {
-            if (companyId == null)
-            {
-                throw new ArgumentNullException(nameof(companyId));
-            }
-            return _dbContext.CompanyIdentityProviders
+        public IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId) =>
+            _dbContext.CompanyIdentityProviders
                 .Where(cip => cip.CompanyId == companyId
                     && cip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias != null)
                 .Select(cip => cip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias)
                 .AsNoTracking()
                 .AsAsyncEnumerable();
-        }
 
         public Company CreateCompany(string companyName) =>
             _dbContext.Companies.Add(
@@ -75,7 +61,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyApplicationStatusId,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId) =>
+        public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId) =>
             _dbContext.CompanyUsers.Add(
                 new CompanyUser(
                     Guid.NewGuid(),
@@ -204,22 +190,46 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
                 .SingleOrDefaultAsync();
 
-        public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId) =>
-            _dbContext.CompanyApplications
-                .Where(companyApplication => companyApplication.Id == companyApplicationId)
-                .Select(
-                    companyApplication => new CompanyNameIdWithIdpAlias(
-                        companyApplication.Company!.Name!,
-                        companyApplication.CompanyId
+        public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
+            _dbContext.IamUsers
+                .AsNoTracking()
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId
+                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                .Select(iamUser => iamUser.CompanyUser!.Company)
+                .Select(company => new CompanyNameIdWithIdpAlias(
+                        company!.Name,
+                        company.Id
                     ) {
-                        IdpAlias = companyApplication.Company.IdentityProviders
+                        IdpAlias = company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                             .SingleOrDefault()
-                    }
-                )
-            .AsNoTracking()
-            .SingleOrDefaultAsync();
+                    })
+                .SingleOrDefaultAsync();
+
+        public IAsyncEnumerable<Guid> GetCompanyIdsForShardIdpAliasUntrackedAsync(string idpAlias) =>
+            _dbContext.IamIdentityProviders
+                .AsNoTracking()
+                .Where(iamIdentityProvider => iamIdentityProvider.IamIdpAlias == idpAlias
+                    && iamIdentityProvider.IdentityProvider!.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                .SelectMany(iamIdentityProvider => iamIdentityProvider.IdentityProvider!.Companies.Select(company => company.Id))
+                .AsAsyncEnumerable();
+
+        public Task<CompanyNameBpnIdpAlias> GetCompanyNameIdpAliasUntrackedAsync(Guid companyId, string iamUserId) =>
+            _dbContext.IamUsers
+                .AsNoTracking()
+                .Where(iamUser => iamUser.UserEntityId == iamUserId)
+                .Select(iamUser => iamUser!.CompanyUser!.Company)
+                .Where(company => company!.Id == companyId)
+                .Select(company => new CompanyNameBpnIdpAlias(
+                    company!.Name
+                ) {
+                    Bpn = company!.Bpn,
+                    IdpAlias = company!.IdentityProviders
+                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                        .SingleOrDefault()!.IamIdentityProvider!.IamIdpAlias,
+                }).SingleOrDefaultAsync();
 
         public Task<CompanyApplication> GetCompanyApplicationAsync(Guid applicationId) =>
             _dbContext.CompanyApplications

@@ -42,11 +42,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var password = new Password().Next();
             var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
                     invitationData.userName,
-                    invitationData.firstName,
-                    invitationData.lastName,
                     invitationData.email,
-                    password
-            ), invitationData.organisationName).ConfigureAwait(false);
+                    invitationData.organisationName
+            ) {
+                FirstName = invitationData.firstName,
+                LastName = invitationData.lastName,
+                OrganisationName = invitationData.organisationName,
+                Password = password
+            }).ConfigureAwait(false);
 
             await _provisioningManager.AssignInvitedUserInitialRoles(centralUserId).ConfigureAwait(false);
 

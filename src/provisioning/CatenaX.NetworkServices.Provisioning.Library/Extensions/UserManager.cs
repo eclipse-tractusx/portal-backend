@@ -26,7 +26,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return newUserId;
         }
 
-        private async Task<string> CreateCentralUserAsync(string alias, UserProfile profile, string companyName)
+        private async Task<string> CreateCentralUserAsync(string alias, UserProfile profile)
         {
             var newUser = CloneUser(_Settings.CentralUser);
             newUser.UserName = profile.UserName;
@@ -35,11 +35,15 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             newUser.Email = profile.Email;
             newUser.Attributes ??= new Dictionary<string,IEnumerable<string>>();
             newUser.Attributes[_Settings.MappedIdpAttribute] = Enumerable.Repeat<string>(alias,1);
-            newUser.Attributes[_Settings.MappedCompanyAttribute] = Enumerable.Repeat<string>(companyName,1);
+            newUser.Attributes[_Settings.MappedCompanyAttribute] = Enumerable.Repeat<string>(profile.OrganisationName,1);
+            if (!String.IsNullOrWhiteSpace(profile.BusinessPartnerNumber))
+            {
+                newUser.Attributes[_Settings.MappedBpnAttribute] = Enumerable.Repeat<string>(profile.BusinessPartnerNumber,1);
+            }
             var newUserId = await _CentralIdp.CreateAndRetrieveUserIdAsync(_Settings.CentralRealm, newUser).ConfigureAwait(false);
             if (newUserId == null)
             {
-                throw new Exception($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {companyName}");
+                throw new Exception($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {profile.OrganisationName}");
             }
             return newUserId;
         }

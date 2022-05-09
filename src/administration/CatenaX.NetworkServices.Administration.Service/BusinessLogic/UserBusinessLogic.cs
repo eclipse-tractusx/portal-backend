@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-
-using PasswordGenerator;
-
+﻿using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.Administration.Service.Models;
+using Microsoft.Extensions.Options;
+using PasswordGenerator;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -41,22 +35,33 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async Task<IEnumerable<string>> CreateUsersAsync(IEnumerable<UserCreationInfo>? usersToCreate, string? tenant, string? createdByName)
+        public async Task<IEnumerable<string>> CreateTenantUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string tenant, string createdById)
         {
-            if (usersToCreate == null)
+            var companyIds = _portalDBAccess.GetCompanyIdsForShardIdpAliasUntrackedAsync(tenant).GetAsyncEnumerator();
+            if (!await companyIds.MoveNextAsync().ConfigureAwait(false))
             {
-                throw new ArgumentNullException("usersToCreate must not be null");
+                throw new ArgumentException($"tenant {tenant} is not associated with a companyId");
             }
-            if (String.IsNullOrWhiteSpace(tenant))
+            var companyId = companyIds.Current;
+            if (await companyIds.MoveNextAsync().ConfigureAwait(false))
             {
-                throw new ArgumentNullException("tenant must not be empty");
+                throw new ArgumentOutOfRangeException($"tenant {tenant} is associated with more than a single company");
             }
-            if (String.IsNullOrWhiteSpace(createdByName))
+            await companyIds.DisposeAsync().ConfigureAwait(false);
+            return await CreateCompanyUsersAsync(usersToCreate, companyId, createdById).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<string>> CreateCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, Guid companyId, string createdById)
+        {
+            var companyIdpData = await _portalDBAccess.GetCompanyNameIdpAliasUntrackedAsync(companyId, createdById);
+            if (companyIdpData == null)
             {
-                throw new ArgumentNullException("createdByName must not be empty");
+                throw new ForbiddenException($"user {createdById} is not associated with company {companyId}");
             }
-            var idpName = tenant;
-            var organisationName = await _provisioningManager.GetOrganisationFromCentralIdentityProviderMapperAsync(idpName).ConfigureAwait(false);
+            if (companyIdpData.IdpAlias == null)
+            {
+                throw new ArgumentException($"company {companyId} is not associated with a shared idp");
+            }
             var clientId = _settings.Portal.KeyCloakClientID;
             var pwd = new Password();
             List<string> userList = new List<string>();
@@ -65,31 +70,30 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 try
                 {
                     var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
+                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(companyIdpData.IdpAlias, new UserProfile(
                         user.userName ?? user.eMail,
-                        user.firstName,
-                        user.lastName,
                         user.eMail,
-                        password
-                    ), organisationName).ConfigureAwait(false);
+                        companyIdpData.CompanyName
+                    ) {
+                        FirstName = user.firstName,
+                        LastName = user.lastName,
+                        Password = password,
+                        BusinessPartnerNumber = companyIdpData.Bpn
+                    }).ConfigureAwait(false);
 
-                    var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                    if (!String.IsNullOrWhiteSpace(user.Role))
                     {
-                        { clientId, new []{user.Role}}
-                    };
-
-                    await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
-
-                    // TODO: revaluate try...catch as soon as BPN can be found at UserCreation
-                    try
-                    {
-                        var bpn = await _portalDBAccess.GetBpnForUserUntrackedAsync(centralUserId).ConfigureAwait(false);
-                        await _provisioningManager.AddBpnAttributetoUserAsync(centralUserId, Enumerable.Repeat(bpn, 1)).ConfigureAwait(false);
+                        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                        {
+                            { clientId, new [] { user.Role } }
+                        };
+                        await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
                     }
-                    catch (InvalidOperationException e)
-                    {
-                        _logger.LogInformation(e, "BPN not found, will continue without");
-                    }
+
+                    var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId);
+                    var iamUser = _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+
+                    userList.Add(user.eMail);
 
                     var inviteTemplateName = "PortalTemplate";
                     if (!string.IsNullOrWhiteSpace(user.Message))
@@ -100,21 +104,20 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     var mailParameters = new Dictionary<string, string>
                     {
                         { "password", password },
-                        { "companyname", organisationName },
-                        { "message", user.Message },
-                        { "nameCreatedBy", createdByName},
-                        { "url", $"{_settings.Portal.BasePortalAddress}"},
-                        { "username", user.eMail},
+                        { "companyname", companyIdpData.CompanyName },
+                        { "message", user.Message ?? "" },
+                        { "nameCreatedBy", createdById },
+                        { "url", _settings.Portal.BasePortalAddress },
+                        { "username", user.eMail },
                     };
 
                     await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
-
-                    userList.Add(user.eMail);
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, $"Error while creating user {user.userName ?? user.eMail}");
                 }
+                await _portalDBAccess.SaveAsync().ConfigureAwait(false);
             }
             return userList;
         }
