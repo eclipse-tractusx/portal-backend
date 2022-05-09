@@ -82,16 +82,11 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         {
             // Arrange
             var favouriteApps = _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>(5);
-            var companyUser = _fixture.Build<CompanyUser>()
-                .Without(u => u.IamUser)
-                .Create();
+            var (companyUser, iamUser) = CreateTestUserPair();
             foreach (var app in favouriteApps)
             {
                 companyUser.Apps.Add(app);
             }
-            var iamUser = _fixture.Build<IamUser>()
-                .With(u => u.CompanyUser, companyUser)
-                .Create();
             var iamUsersFakeDbSet = new List<IamUser>{ iamUser }.AsFakeDbSet();
 
             var contextFake = A.Fake<PortalDbContext>();
@@ -117,13 +112,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var appFavourites = new List<CompanyUserAssignedAppFavourite>();
             var appFavouritesFakeDbSet = appFavourites.AsFakeDbSet();
 
-            var companyUser = _fixture.Build<CompanyUser>()
-                .Without(u => u.IamUser)
-                .Create();
-            var iamUser = _fixture.Build<IamUser>()
-                .With(u => u.CompanyUser, companyUser)
-                .Create();
-            companyUser.IamUser = iamUser;
+            var (companyUser, iamUser) = CreateTestUserPair();
             var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
             var contextFake = A.Fake<PortalDbContext>();
@@ -148,13 +137,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         public async void RemoveFavouriteAppForUser_ExecutesSuccessfully()
         {
             // Arrange
-            var companyUser = _fixture.Build<CompanyUser>()
-                .Without(u => u.IamUser)
-                .Create();
-            var iamUser = _fixture.Build<IamUser>()
-                .With(u => u.CompanyUser, companyUser)
-                .Create();
-            companyUser.IamUser = iamUser;
+            var (companyUser, iamUser) = CreateTestUserPair();
             var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
             var appId = _fixture.Create<Guid>();
@@ -190,13 +173,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var appSubscriptions = new List<CompanyAssignedApp>();
             var appSubscriptionsFakeDbSet = appSubscriptions.AsFakeDbSet();
 
-            var companyUser = _fixture.Build<CompanyUser>()
-                .Without(u => u.IamUser)
-                .Create();
-            var iamUser = _fixture.Build<IamUser>()
-                .With(u => u.CompanyUser, companyUser)
-                .Create();
-            companyUser.IamUser = iamUser;
+            var (companyUser, iamUser) = CreateTestUserPair();
             var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
             var contextFake = A.Fake<PortalDbContext>();
@@ -215,6 +192,18 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             appSubscriptions.Should().HaveCount(1);
             appSubscriptions.Single().AppId.Should().Be(appId);
             appSubscriptions.Single().CompanyId.Should().Be(companyUser.CompanyId);
+        }
+
+        private (CompanyUser, IamUser) CreateTestUserPair()
+        {
+            var companyUser = _fixture.Build<CompanyUser>()
+                .Without(u => u.IamUser)
+                .Create();
+            var iamUser = _fixture.Build<IamUser>()
+                .With(u => u.CompanyUser, companyUser)
+                .Create();
+            companyUser.IamUser = iamUser;
+            return (companyUser, iamUser);
         }
     }
 }
