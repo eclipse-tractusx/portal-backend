@@ -10,7 +10,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds);
         IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId);
         Company CreateCompany(string companyName);
-        CompanyApplication CreateCompanyApplication(Company company);
+        CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
         CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId);
         Invitation CreateInvitation(Guid applicationId, CompanyUser user);
         IdentityProvider CreateSharedIdentityProvider(Company company);

@@ -67,12 +67,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     CompanyStatusId.PENDING,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyApplication CreateCompanyApplication(Company company) =>
+        public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
             _dbContext.CompanyApplications.Add(
                 new CompanyApplication(
                     Guid.NewGuid(),
                     company.Id,
-                    CompanyApplicationStatusId.ADD_COMPANY_DATA,
+                    companyApplicationStatusId,
                     DateTimeOffset.UtcNow)).Entity;
 
         public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId) =>
