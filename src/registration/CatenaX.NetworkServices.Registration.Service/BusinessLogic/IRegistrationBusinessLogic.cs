@@ -1,14 +1,8 @@
-﻿using System;
-using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
-using Microsoft.AspNetCore.Http;
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -17,7 +11,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<IEnumerable<string>> CreateUsersAsync(List<UserCreationInfo> userList, string tenant, string createdByName);
-        Task CreateDocument(IFormFile document, string userName);
+        Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
         Task SetIdpAsync(SetIdp idpToSet);
         Task CreateCustodianWalletAsync(WalletInformation information);
         IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string? userId);
