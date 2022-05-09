@@ -5,13 +5,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using PasswordGenerator;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
     public class InvitationBusinessLogic : IInvitationBusinessLogic
@@ -47,7 +41,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var password = new Password().Next();
             var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
-                    invitationData.userName ?? invitationData.email,
+                    invitationData.userName,
                     invitationData.firstName,
                     invitationData.lastName,
                     invitationData.email,
