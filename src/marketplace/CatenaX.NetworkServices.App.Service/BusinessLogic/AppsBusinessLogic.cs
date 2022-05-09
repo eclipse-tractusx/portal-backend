@@ -137,9 +137,9 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
         {
             var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-            await this.context.CompanyUserAssignedAppFavourites.AddAsync(
+            this.context.CompanyUserAssignedAppFavourites.Add(
                 new CompanyUserAssignedAppFavourite(appId, companyUserId)
-            ).ConfigureAwait(false);
+            );
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
 
@@ -147,19 +147,15 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            await this.context.CompanyAssignedApps.AddAsync(
-                new CompanyAssignedApp(appId, companyId)
-            ).ConfigureAwait(false);
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId));
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<Guid> CreateAppAsync(AppInputModel appInputModel)
         {
-            using var transaction = this.context.Database.BeginTransaction();
-
             // Add app to db
-            var appEntity = new PortalBackend.PortalEntities.Entities.App(Guid.Empty, appInputModel.Provider, DateTimeOffset.UtcNow)
+            var appEntity = new PortalBackend.PortalEntities.Entities.App(Guid.NewGuid(), appInputModel.Provider, DateTimeOffset.UtcNow)
             {
                 Name = appInputModel.Title,
                 MarketingUrl = appInputModel.ProviderUri,
@@ -170,20 +166,16 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                 ProviderCompanyId = appInputModel.ProviderCompanyId,
                 AppStatusId = PortalBackend.PortalEntities.Enums.AppStatusId.CREATED
             };
-            await this.context.Apps.AddAsync(appEntity).ConfigureAwait(false);
-            await this.context.SaveChangesAsync();
+            this.context.Apps.Add(appEntity);
 
-            var appLicenseEntity = new AppLicense(Guid.Empty, appInputModel.Price);
-            await this.context.AppLicenses.AddAsync(appLicenseEntity);
-            await this.context.SaveChangesAsync();                
+            var appLicenseEntity = new AppLicense(Guid.NewGuid(), appInputModel.Price);
+            this.context.AppLicenses.Add(appLicenseEntity);           
 
-            await this.context.AppAssignedLicenses.AddAsync(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
-            await this.context.AppAssignedUseCases.AddRangeAsync(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
-            await this.context.AppDescriptions.AddRangeAsync(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-            await this.context.AppLanguages.AddRangeAsync(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
-            await this.context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
+            this.context.AppAssignedLicenses.Add(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
+            this.context.AppAssignedUseCases.AddRange(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
+            this.context.AppDescriptions.AddRange(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+            this.context.AppLanguages.AddRange(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
 
             return appEntity.Id;
         }
