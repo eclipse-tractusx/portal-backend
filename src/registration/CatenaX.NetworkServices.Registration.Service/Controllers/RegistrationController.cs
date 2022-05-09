@@ -6,17 +6,11 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.Controllers
 {
@@ -88,26 +82,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         }
 
         [HttpPost]
-        [Route("documents")]
         [Authorize(Roles = "upload_documents")]
-        public async Task<IActionResult> CreateDocument([FromForm(Name = "document")] IFormFile document)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(document.FileName))
-                {
-                    return BadRequest();
-                }
-                var userId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
-                await _registrationBusinessLogic.CreateDocument(document, userId);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
+        public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
+            WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
         [HttpPut]
         [Authorize(Roles = "invite_user")]
@@ -164,7 +142,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
-        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) => 
+        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
             _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
 
         [HttpPost]
@@ -219,10 +197,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/invitedusers")]
-        public  IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
+        public IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
 
-        private T WithIamUserId<T>(Func<string,T> _next) =>
+        private T WithIamUserId<T>(Func<string, T> _next) =>
             _next(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
     }
 }
