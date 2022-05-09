@@ -1,10 +1,6 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess
@@ -71,12 +67,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     CompanyStatusId.PENDING,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyApplication CreateCompanyApplication(Company company) =>
+        public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
             _dbContext.CompanyApplications.Add(
                 new CompanyApplication(
                     Guid.NewGuid(),
                     company.Id,
-                    CompanyApplicationStatusId.ADD_COMPANY_DATA,
+                    companyApplicationStatusId,
                     DateTimeOffset.UtcNow)).Entity;
 
         public CompanyUser CreateCompanyUser(string firstName, string lastName, string email, Guid companyId) =>
@@ -154,6 +150,19 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyId,
                     companyRoleId
                 )).Entity;
+
+        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName ,string documentContent, string hash,uint documentOId,DocumentTypeId documentTypeId) =>
+            _dbContext.Documents.Add(
+                new Document(
+                    Guid.NewGuid(),
+                    hash,
+                    documentName,
+                    DateTimeOffset.UtcNow)
+                    {
+                    DocumentOid = documentOId,
+                    DocumentTypeId = documentTypeId,
+                    CompanyUserId = companyUserId
+                    }).Entity;
 
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
