@@ -27,8 +27,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null)
         {
-            await foreach(var app in context.Apps.AsQueryable()
-                .AsNoTracking()
+            await foreach(var app in context.Apps.AsNoTracking()
                 .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
                 .Select(a => new {
                     a.Id,
@@ -117,7 +116,6 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId)
         {
             return this.context.IamUsers.AsNoTracking()
-                .Include(u => u.CompanyUser!.Apps)
                 .Where(u => u.UserEntityId == userId) // Id is unique, so single user
                 .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
                 .ToAsyncEnumerable();

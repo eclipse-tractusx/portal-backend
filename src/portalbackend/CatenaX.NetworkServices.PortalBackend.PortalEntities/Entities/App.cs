@@ -18,6 +18,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             AppLicenses = new HashSet<AppLicense>();
             UseCases = new HashSet<UseCase>();
             CompanyUsers = new HashSet<CompanyUser>();
+            Tags = new HashSet<AppTag>();
             SupportedLanguages = new HashSet<Language>();
         }
 
