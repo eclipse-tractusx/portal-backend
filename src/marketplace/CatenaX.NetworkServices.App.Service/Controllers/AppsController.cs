@@ -4,7 +4,6 @@ using CatenaX.NetworkServices.App.Service.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 namespace CatenaX.NetworkServices.App.Service.Controllers
 {
@@ -15,17 +14,14 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
     [ApiController]
     public class AppsController : ControllerBase
     {
-        private readonly ILogger<AppsController> logger;
         private readonly IAppsBusinessLogic appsBusinessLogic;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="logger">Logger dependency.</param>
         /// <param name="appsBusinessLogic">Logic dependency.</param>
-        public AppsController(ILogger<AppsController> logger, IAppsBusinessLogic appsBusinessLogic)
+        public AppsController(IAppsBusinessLogic appsBusinessLogic)
         {
-            this.logger = logger;
             this.appsBusinessLogic = appsBusinessLogic;
         }
 
@@ -83,15 +79,7 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
         {
-            try
-            {
-                return CreatedAtRoute(string.Empty, await this.appsBusinessLogic.CreateAppAsync(appInputModel));
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e.Message);
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
+            return CreatedAtRoute(string.Empty, await this.appsBusinessLogic.CreateAppAsync(appInputModel));
         }
 
         /// <summary>
@@ -145,11 +133,6 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             {
                 return BadRequest($"Parameters are invalid or app is already favourited.");
             }
-            catch (Exception e)
-            {
-                logger.LogError(e.Message);
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
             
             return Ok();
         }
@@ -182,11 +165,6 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             {
                 return BadRequest($"Parameters are invalid or favourite does not exist.");
             }
-            catch (Exception e)
-            {
-                logger.LogError(e.Message);
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
 
             return Ok();
         }
@@ -218,11 +196,6 @@ namespace CatenaX.NetworkServices.App.Service.Controllers
             catch (DbUpdateException)
             {
                 return BadRequest($"Parameters are invalid or app is already subscribed to.");
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e.Message);
-                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
 
             return Ok();
