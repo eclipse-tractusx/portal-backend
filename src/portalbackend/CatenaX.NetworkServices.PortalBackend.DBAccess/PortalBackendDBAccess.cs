@@ -61,11 +61,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyApplicationStatusId,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId) =>
+        public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId) =>
             _dbContext.CompanyUsers.Add(
                 new CompanyUser(
                     Guid.NewGuid(),
                     companyId,
+                    companyUserStatusId,
                     DateTimeOffset.UtcNow)
                 {
                     Firstname = firstName,

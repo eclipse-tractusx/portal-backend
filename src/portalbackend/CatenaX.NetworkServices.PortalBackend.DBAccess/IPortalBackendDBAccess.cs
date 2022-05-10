@@ -11,7 +11,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId);
         Company CreateCompany(string companyName);
         CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
-        CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId);
+        CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);
         Invitation CreateInvitation(Guid applicationId, CompanyUser user);
         IdentityProvider CreateSharedIdentityProvider(Company company);
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
