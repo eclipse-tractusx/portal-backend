@@ -14,7 +14,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
             AppDescriptions = new HashSet<AppDescription>();
             AppDetailImages = new HashSet<AppDetailImage>();
             Companies = new HashSet<Company>();
-            CompanyUserRoles = new HashSet<CompanyUserRole>();
+            UserRoles = new HashSet<UserRole>();
             AppLicenses = new HashSet<AppLicense>();
             UseCases = new HashSet<UseCase>();
             CompanyUsers = new HashSet<CompanyUser>();
@@ -69,7 +69,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         public virtual ICollection<Agreement> Agreements { get; private set; }
         public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
         public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
-        public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; private set; }
+        public virtual ICollection<UserRole> UserRoles { get; private set; }
         public virtual ICollection<AppLicense> AppLicenses { get; private set; }
         public virtual ICollection<UseCase> UseCases { get; private set; }
         public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }

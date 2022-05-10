@@ -2,29 +2,29 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUserRoleDescription
+public class UserRoleDescription
 {
-    private CompanyUserRoleDescription()
+    private UserRoleDescription()
     {
-        CompanyUserRoleId = default!;
+        UserRoleId = default!;
         LanguageShortName = null!;
         Description = null!;
     }
 
-    public CompanyUserRoleDescription(Guid companyUserRoleId, string languageShortName, string description)
+    public UserRoleDescription(Guid userRoleId, string languageShortName, string description)
     {
-        CompanyUserRoleId = companyUserRoleId;
+        UserRoleId = userRoleId;
         LanguageShortName = languageShortName;
         Description = description;
     }
 
-    public Guid CompanyUserRoleId { get; private set; }
+    public Guid UserRoleId { get; private set; }
 
     [StringLength(2, MinimumLength = 2)]
     public string LanguageShortName { get; private set; }
 
     public string Description { get; set; }
 
-    public virtual CompanyUserRole? CompanyUserRole { get; private set; }
+    public virtual UserRole? UserRole { get; private set; }
     public virtual Language? Language { get; private set; }
 }

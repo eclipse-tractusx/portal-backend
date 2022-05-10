@@ -21,9 +21,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
         public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
         public virtual DbSet<App> Apps { get; set; } = default!;
-        public virtual DbSet<AppAssignedCompanyUserRole> AppAssignedCompanyUserRoles { get; set; } = default!;
         public virtual DbSet<AppAssignedLicense> AppAssignedLicenses { get; set; } = default!;
         public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
+        public virtual DbSet<AppAssignedUserRole> AppAssignedUserRoles { get; set; } = default!;
         public virtual DbSet<AppDescription> AppDescriptions { get; set; } = default!;
         public virtual DbSet<AppDetailImage> AppDetailImages { get; set; } = default!;
         public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
@@ -42,7 +42,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
         public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
         public virtual DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; } = default!;
-        public virtual DbSet<CompanyUserRole> CompanyUserRoles { get; set; } = default!;
+        public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
         public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
         public virtual DbSet<Consent> Consents { get; set; } = default!;
         public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
@@ -200,13 +200,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         }
                     );
 
-                entity.HasMany(p => p.CompanyUserRoles)
+                entity.HasMany(p => p.UserRoles)
                     .WithMany(p => p.Apps)
-                    .UsingEntity<AppAssignedCompanyUserRole>(
+                    .UsingEntity<AppAssignedUserRole>(
                         j => j
-                            .HasOne(d => d.CompanyUserRole!)
+                            .HasOne(d => d.UserRole!)
                             .WithMany()
-                            .HasForeignKey(d => d.CompanyUserRoleId)
+                            .HasForeignKey(d => d.UserRoleId)
                             .HasConstraintName("fk_4m022ek8gffepnqlnuxwyxp8"),
                         j => j
                             .HasOne(d => d.App!)
@@ -216,8 +216,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             .HasConstraintName("fk_oayyvy590ngh5705yspep0up"),
                         j =>
                         {
-                            j.HasKey(e => new{ e.AppId, e.CompanyUserRoleId }).HasName("pk_app_assg_comp_user_roles");
-                            j.ToTable("app_assigned_company_user_roles", "portal");
+                            j.HasKey(e => new{ e.AppId, e.UserRoleId }).HasName("pk_app_assg_user_roles");
+                            j.ToTable("app_assigned_user_roles", "portal");
                         });
 
                 entity.HasMany(a => a.SupportedLanguages)
@@ -548,13 +548,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             j.ToTable("company_user_assigned_app_favourites", "portal");
                         });
                 
-                entity.HasMany(p => p.CompanyUserRoles)
+                entity.HasMany(p => p.UserRoles)
                     .WithMany(p => p.CompanyUsers)
                     .UsingEntity<CompanyUserAssignedRole>(
                         j => j
                             .HasOne(d => d.UserRole!)
                             .WithMany()
-                            .HasForeignKey(d => d.CompanyUserRoleId)
+                            .HasForeignKey(d => d.UserRoleId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_bw1yhel67uhrxfk7mevovq5p"),
                         j => j
@@ -565,33 +565,33 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             .HasConstraintName("fk_0c9rjjf9gm3l0n6reb4o0f1s"),
                         j =>
                         {
-                            j.HasKey(e => new { e.CompanyUserId, e.CompanyUserRoleId }).HasName("pk_comp_user_assigned_roles");
+                            j.HasKey(e => new { e.CompanyUserId, e.UserRoleId }).HasName("pk_comp_user_assigned_roles");
                             j.ToTable("company_user_assigned_roles", "portal");
                         });
             });
 
-            modelBuilder.Entity<CompanyUserRole>(entity =>
+            modelBuilder.Entity<UserRole>(entity =>
             {
-                entity.ToTable("company_user_roles", "portal");
+                entity.ToTable("user_roles", "portal");
 
                 entity.HasOne(d => d.IamClient)
-                    .WithMany(p => p!.CompanyUserRoles)
+                    .WithMany(p => p!.UserRoles)
                     .HasForeignKey(d => d.IamClientId);
             });
 
-            modelBuilder.Entity<CompanyUserRoleDescription>(entity =>
+            modelBuilder.Entity<UserRoleDescription>(entity =>
             {
-                entity.ToTable("company_user_role_descriptions", "portal");
+                entity.ToTable("user_role_descriptions", "portal");
 
-                entity.HasKey(e => new { e.CompanyUserRoleId, e.LanguageShortName })
+                entity.HasKey(e => new { e.UserRoleId, e.LanguageShortName })
                     .HasName("pk_company_role_descriptions");
 
-                entity.HasOne(d => d.CompanyUserRole)
-                    .WithMany(p => p!.CompanyUserRoleDescriptions)
-                    .HasForeignKey(d => d.CompanyUserRoleId);
+                entity.HasOne(d => d.UserRole)
+                    .WithMany(p => p!.UserRoleDescriptions)
+                    .HasForeignKey(d => d.UserRoleId);
                 
                 entity.HasOne(d => d.Language)
-                    .WithMany(p => p!.CompanyUserRoleDescriptions)
+                    .WithMany(p => p!.UserRoleDescriptions)
                     .HasForeignKey(d => d.LanguageShortName);
             });
 

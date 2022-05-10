@@ -1,8 +1,8 @@
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class CompanyUserRoleWithId
+public class UserRoleWithId
 {
-    public CompanyUserRoleWithId(string companyUserRoleText, Guid companyUserRoleId)
+    public UserRoleWithId(string companyUserRoleText, Guid companyUserRoleId)
     {
         CompanyUserRoleText = companyUserRoleText;
         CompanyUserRoleId = companyUserRoleId;

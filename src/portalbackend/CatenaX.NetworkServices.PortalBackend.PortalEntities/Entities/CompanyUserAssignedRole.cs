@@ -4,16 +4,16 @@ public class CompanyUserAssignedRole
 {
     private CompanyUserAssignedRole() {}
 
-    public CompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId)
+    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
     {
         CompanyUserId = companyUserId;
-        CompanyUserRoleId = companyUserRoleId;
+        UserRoleId = userRoleId;
     }
 
     public Guid CompanyUserId { get; private set; }
-    public Guid CompanyUserRoleId { get; private set; }
+    public Guid UserRoleId { get; private set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual CompanyUserRole? UserRole { get; private set; }
+    public virtual UserRole? UserRole { get; private set; }
 }

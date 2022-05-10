@@ -56,10 +56,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var company = _portalDBAccess.CreateCompany(invitationData.organisationName);
             var application = _portalDBAccess.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
-            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.INVITED);
-            await foreach(var companyUserRoleId in _portalDBAccess.GetCompanyUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ConfigureAwait(false))
+            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.ACTIVE);
+            await foreach(var userRoleId in _portalDBAccess.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ConfigureAwait(false))
             {
-                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyUserRoleId);
+                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
             }
             _portalDBAccess.CreateInvitation(application.Id, companyUser);
             var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);

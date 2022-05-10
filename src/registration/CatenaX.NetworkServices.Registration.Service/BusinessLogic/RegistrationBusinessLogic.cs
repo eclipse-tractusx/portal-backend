@@ -176,11 +176,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
 
             bool hasValidRole = false;
-            Guid? companyUserRoleId = null;
+            Guid? userRoleId = null;
             if (!String.IsNullOrWhiteSpace(userCreationInfo.Role))
             {
-                companyUserRoleId = await _portalDBAccess.GetCompanyUserRoleIdUntrackedAsync(_settings.KeyCloakClientID, userCreationInfo.Role).ConfigureAwait(false);
-                if (companyUserRoleId.Equals(Guid.Empty))
+                userRoleId = await _portalDBAccess.GetUserRoleIdUntrackedAsync(_settings.KeyCloakClientID, userCreationInfo.Role).ConfigureAwait(false);
+                if (userRoleId.Equals(Guid.Empty))
                 {
                     throw new ArgumentException($"invalid Role {userCreationInfo.Role}");
                 }
@@ -209,11 +209,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 };
                 await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
             }
-            var user = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.INVITED);
+            var user = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
             var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
             if (hasValidRole)
             {
-                _portalDBAccess.CreateCompanyUserAssignedRole(user.Id, companyUserRoleId!.Value);
+                _portalDBAccess.CreateCompanyUserAssignedRole(user.Id, userRoleId!.Value);
             }
             var iamUser = _portalDBAccess.CreateIamUser(user, centralUserId);
             var updates = await _portalDBAccess.SaveAsync();

@@ -22,5 +22,5 @@ public class IamClient
     public string ClientClientId { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<CompanyUserRole>? CompanyUserRoles { get; private set; }
+    public virtual ICollection<UserRole>? UserRoles { get; private set; }
 }

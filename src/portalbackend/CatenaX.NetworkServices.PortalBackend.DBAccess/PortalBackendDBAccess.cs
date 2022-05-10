@@ -83,11 +83,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     InvitationStatusId.CREATED,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId) =>
+        public CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId) =>
             _dbContext.CompanyUserAssignedRoles.Add(
                 new CompanyUserAssignedRole(
                     companyUserId,
-                    companyUserRoleId
+                    userRoleId
                 )).Entity;
 
         public IdentityProvider CreateSharedIdentityProvider(Company company)
@@ -340,38 +340,38 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole) =>
             _dbContext.Remove(companyAssignedRole).Entity;
 
-        public async IAsyncEnumerable<Guid> GetCompanyUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles)
+        public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles)
         {
             foreach (var clientRole in clientRoles)
             {
-                await foreach (var companyUserRoleId in _dbContext.CompanyUserRoles
+                await foreach (var userRoleId in _dbContext.UserRoles
                     .AsNoTracking()
-                    .Where(companyUserRole => companyUserRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(companyUserRole.CompanyUserRoleText))
+                    .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
                     .AsQueryable()
-                    .Select(companyUserRole => companyUserRole.Id)
+                    .Select(userRole => userRole.Id)
                     .AsAsyncEnumerable().ConfigureAwait(false))
                     {
-                        yield return companyUserRoleId;
+                        yield return userRoleId;
                     }
             }
         }
 
-        public IAsyncEnumerable<CompanyUserRoleWithId> GetCompanyUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles) =>                    
-            _dbContext.CompanyUserRoles
+        public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>                    
+            _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(companyUserRole => companyUserRole.IamClient!.ClientClientId == clientClientId && companyUserRoles.Contains(companyUserRole.CompanyUserRoleText))
+                .Where(userRole => userRole.IamClient!.ClientClientId == clientClientId && userRoles.Contains(userRole.UserRoleText))
                 .AsQueryable()
-                .Select(companyUserRole => new CompanyUserRoleWithId(
-                    companyUserRole.CompanyUserRoleText,
-                    companyUserRole.Id
+                .Select(userRole => new UserRoleWithId(
+                    userRole.UserRoleText,
+                    userRole.Id
                 ))
                 .AsAsyncEnumerable();
 
-        public Task<Guid> GetCompanyUserRoleIdUntrackedAsync(string clientClientId, string companyUserRoleText) =>
-            _dbContext.CompanyUserRoles
+        public Task<Guid> GetUserRoleIdUntrackedAsync(string clientClientId, string userRoleText) =>
+            _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(companyUserRole => companyUserRole.IamClient!.ClientClientId == clientClientId && companyUserRole.CompanyUserRoleText == companyUserRoleText)
-                .Select(companyUserRole => companyUserRole.Id)
+                .Where(userRole => userRole.IamClient!.ClientClientId == clientClientId && userRole.UserRoleText == userRoleText)
+                .Select(userRole => userRole.Id)
                 .SingleOrDefaultAsync();
 
         public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
