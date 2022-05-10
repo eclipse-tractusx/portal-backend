@@ -74,7 +74,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     .Select(user => user.Role!)
                     .Distinct();
 
-            var companyRoleIds = await _portalDBAccess.GetCompanyUserRoleWithIdsUntrackedAsync(
+            var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
                 clientId,
                 roles
                 )
@@ -118,7 +118,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
                     }
 
-                    var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.INVITED);
+                    var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
                     var iamUser = _portalDBAccess.CreateIamUser(companyUser, centralUserId);
 
                     if (!String.IsNullOrWhiteSpace(user.Role))

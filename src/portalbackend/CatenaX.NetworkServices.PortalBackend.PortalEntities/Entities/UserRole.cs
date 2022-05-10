@@ -3,20 +3,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUserRole
+public class UserRole
 {
-    private CompanyUserRole()
+    private UserRole()
     {
-        CompanyUserRoleText = null!;
+        UserRoleText = null!;
         Apps = new HashSet<App>();
         CompanyUsers = new HashSet<CompanyUser>();
-        CompanyUserRoleDescriptions = new HashSet<CompanyUserRoleDescription>();
+        UserRoleDescriptions = new HashSet<UserRoleDescription>();
     }
 
-    public CompanyUserRole(Guid id, string companyUserRoleText, Guid iamClientId) : this()
+    public UserRole(Guid id, string userRoleText, Guid iamClientId) : this()
     {
         Id = id;
-        CompanyUserRoleText = companyUserRoleText;
+        UserRoleText = userRoleText;
         IamClientId = iamClientId;
     }
 
@@ -24,8 +24,8 @@ public class CompanyUserRole
     public Guid Id { get; private set; }
 
     [MaxLength(255)]
-    [Column("company_user_role")]
-    public string CompanyUserRoleText { get; set; }
+    [Column("user_role")]
+    public string UserRoleText { get; set; }
 
     public Guid IamClientId { get; set; }
 
@@ -33,5 +33,5 @@ public class CompanyUserRole
     public virtual IamClient? IamClient { get; set; }
     public virtual ICollection<App> Apps { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
-    public virtual ICollection<CompanyUserRoleDescription> CompanyUserRoleDescriptions { get; private set; }
+    public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
 }

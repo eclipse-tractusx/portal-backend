@@ -37,9 +37,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
-        IAsyncEnumerable<Guid> GetCompanyUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles);
-        IAsyncEnumerable<CompanyUserRoleWithId> GetCompanyUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
-        Task<Guid> GetCompanyUserRoleIdUntrackedAsync(string clientClientId, string companyUserRoleText);
+        IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles);
+        IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
+        Task<Guid> GetUserRoleIdUntrackedAsync(string clientClientId, string companyUserRoleText);
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<int> SaveAsync();
     }
