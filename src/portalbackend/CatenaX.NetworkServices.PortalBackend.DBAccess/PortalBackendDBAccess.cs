@@ -152,18 +152,18 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyRoleId
                 )).Entity;
 
-        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName ,string documentContent, string hash,uint documentOId,DocumentTypeId documentTypeId) =>
+        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
             _dbContext.Documents.Add(
                 new Document(
                     Guid.NewGuid(),
                     hash,
                     documentName,
                     DateTimeOffset.UtcNow)
-                    {
+                {
                     DocumentOid = documentOId,
                     DocumentTypeId = documentTypeId,
                     CompanyUserId = companyUserId
-                    }).Entity;
+                }).Entity;
 
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
@@ -341,19 +341,16 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .AsAsyncEnumerable();
 
-        public async Task<IdpUser> GetIdpCategoryIdByUserId(string userId, string adminUserId)
+        public Task<IdpUser> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId)
         {
-
-            var result = await _dbContext.IamUsers
-             .Where(iamUser => iamUser.UserEntityId == adminUserId)
-             .Select(iamUser => iamUser!.CompanyUser!.Company)
-             .Select(company => new IdpUser
-             (
-                 company!.CompanyUsers.Where(companyUser => companyUser.Id == new Guid(userId)).Select(companyUser => companyUser.IamUser!.UserEntityId).SingleOrDefault(),
-                 company!.IdentityProviders.Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).SingleOrDefault().IamIdentityProvider.IamIdpAlias
-             )).SingleOrDefaultAsync().ConfigureAwait(false);
-
-            return result;
+            return _dbContext.IamUsers
+              .Where(iamUser => iamUser.UserEntityId == adminUserId)
+              .Select(iamUser => iamUser!.CompanyUser!.Company)
+              .Select(company => new IdpUser
+              (
+                  company!.CompanyUsers.Where(companyUser => companyUser.Id == companyUserId).Select(companyUser => companyUser.IamUser!.UserEntityId).SingleOrDefault(),
+                  company!.IdentityProviders.Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).SingleOrDefault().IamIdentityProvider.IamIdpAlias
+              )).SingleOrDefaultAsync();
         }
 
     }
