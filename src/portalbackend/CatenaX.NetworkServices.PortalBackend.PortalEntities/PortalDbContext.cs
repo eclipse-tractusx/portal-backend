@@ -554,7 +554,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         j => j
                             .HasOne(d => d.UserRole!)
                             .WithMany()
-                            .HasForeignKey(d => d.UserRoleId)
+                            .HasForeignKey(d => d.CompanyUserRoleId)
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("fk_bw1yhel67uhrxfk7mevovq5p"),
                         j => j
@@ -565,7 +565,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             .HasConstraintName("fk_0c9rjjf9gm3l0n6reb4o0f1s"),
                         j =>
                         {
-                            j.HasKey(e => new { e.CompanyUserId, e.UserRoleId }).HasName("pk_comp_user_assigned_roles");
+                            j.HasKey(e => new { e.CompanyUserId, e.CompanyUserRoleId }).HasName("pk_comp_user_assigned_roles");
                             j.ToTable("company_user_assigned_roles", "portal");
                         });
             });

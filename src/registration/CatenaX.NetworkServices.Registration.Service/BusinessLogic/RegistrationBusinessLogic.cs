@@ -57,7 +57,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
 
             var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
-            if (companyUserId == null)
+            if (companyUserId.Equals(Guid.Empty))
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
@@ -174,6 +174,19 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"shared idp for CompanyApplication {applicationId} not found");
             }
+
+            bool hasValidRole = false;
+            Guid? companyUserRoleId = null;
+            if (!String.IsNullOrWhiteSpace(userCreationInfo.Role))
+            {
+                companyUserRoleId = await _portalDBAccess.GetCompanyUserRoleIdUntrackedAsync(_settings.KeyCloakClientID, userCreationInfo.Role).ConfigureAwait(false);
+                if (companyUserRoleId.Equals(Guid.Empty))
+                {
+                    throw new ArgumentException($"invalid Role {userCreationInfo.Role}");
+                }
+                hasValidRole = true;
+            }
+
             var password = new Password().Next();
             var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
@@ -188,16 +201,20 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     Password = password
                 }).ConfigureAwait(false);
 
-            if (!String.IsNullOrWhiteSpace(userCreationInfo.Role))
+            if (hasValidRole)
             {
                 var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                 {
-                    { _settings.KeyCloakClientID, new [] {userCreationInfo.Role}}
+                    { _settings.KeyCloakClientID, new [] {userCreationInfo.Role!}}
                 };
                 await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
             }
             var user = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.INVITED);
             var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
+            if (hasValidRole)
+            {
+                _portalDBAccess.CreateCompanyUserAssignedRole(user.Id, companyUserRoleId!.Value);
+            }
             var iamUser = _portalDBAccess.CreateIamUser(user, centralUserId);
             var updates = await _portalDBAccess.SaveAsync();
 
