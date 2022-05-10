@@ -13,6 +13,7 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -282,5 +283,12 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             return false;
         }
+
+        public async Task<string> GetIdpCategoryIdByUserId(string userId, string adminUserId, string tenant)
+        {
+            var idpUser = await _portalDBAccess.GetIdpCategoryIdByUserId(userId, adminUserId).ConfigureAwait(false);
+            return (idpUser?.IdpName == tenant) ? idpUser?.TargetIamUserId : string.Empty;
+        }
+
     }
 }

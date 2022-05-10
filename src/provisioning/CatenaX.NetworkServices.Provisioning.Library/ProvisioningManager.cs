@@ -206,9 +206,11 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             }
         }
 
-        public Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
+        public async Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions)
         {
-            return _SharedIdp.SendUserUpdateAccountEmailAsync(realm, userId, requiredActions);
+            var providerUserId = await GetProviderUserIdForCentralUserIdAsync(userId).ConfigureAwait(false);
+            return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, requiredActions).ConfigureAwait(false);
+
         }
 
         public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)

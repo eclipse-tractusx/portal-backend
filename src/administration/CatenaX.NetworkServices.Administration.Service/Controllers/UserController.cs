@@ -166,17 +166,22 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             try
             {
                 var adminuserId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
-                if (await _logic.CanResetPassword(adminuserId).ConfigureAwait(false))
+                var idpUserName = await _logic.GetIdpCategoryIdByUserId(userId, adminuserId, tenant).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(idpUserName))
                 {
-                    var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, userId).ConfigureAwait(false);
-                    if (!updatedPassword)
+                    if (await _logic.CanResetPassword(adminuserId).ConfigureAwait(false))
                     {
-                        return StatusCode((int)HttpStatusCode.InternalServerError);
-                    }
-                    return Ok(updatedPassword);
+                        var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, idpUserName).ConfigureAwait(false);
+                        if (!updatedPassword)
+                        {
+                            return StatusCode((int)HttpStatusCode.InternalServerError);
+                        }
+                        return Ok(updatedPassword);
 
+                    }
+                    return StatusCode((int)HttpStatusCode.BadRequest);
                 }
-                return StatusCode((int)HttpStatusCode.BadRequest);
+                return StatusCode((int)HttpStatusCode.NotFound);
             }
             catch (Exception e)
             {
