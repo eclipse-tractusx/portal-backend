@@ -13,6 +13,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
         CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);
         Invitation CreateInvitation(Guid applicationId, CompanyUser user);
+        CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId);
         IdentityProvider CreateSharedIdentityProvider(Company company);
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
         IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
@@ -36,6 +37,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
+        IAsyncEnumerable<Guid> GetCompanyUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles);
+        IAsyncEnumerable<CompanyUserRoleWithId> GetCompanyUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
+        Task<Guid> GetCompanyUserRoleIdUntrackedAsync(string clientClientId, string companyUserRoleText);
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<int> SaveAsync();
     }

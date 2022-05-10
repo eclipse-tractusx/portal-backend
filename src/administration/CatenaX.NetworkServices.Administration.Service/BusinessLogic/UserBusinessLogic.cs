@@ -36,7 +36,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async Task<IEnumerable<string>> CreateTenantUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string tenant, string createdById)
+        public async IAsyncEnumerable<string> CreateTenantUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string tenant, string createdById)
         {
             var companyIds = _portalDBAccess.GetCompanyIdsForShardIdpAliasUntrackedAsync(tenant).GetAsyncEnumerator();
             if (!await companyIds.MoveNextAsync().ConfigureAwait(false))
@@ -49,10 +49,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ArgumentOutOfRangeException($"tenant {tenant} is associated with more than a single company");
             }
             await companyIds.DisposeAsync().ConfigureAwait(false);
-            return await CreateCompanyUsersAsync(usersToCreate, companyId, createdById).ConfigureAwait(false);
+            await foreach (var item in CreateCompanyUsersAsync(usersToCreate, companyId, createdById))
+            {
+                yield return item;
+            }
         }
 
-        public async Task<IEnumerable<string>> CreateCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, Guid companyId, string createdById)
+        public async IAsyncEnumerable<string> CreateCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, Guid companyId, string createdById)
         {
             var companyIdpData = await _portalDBAccess.GetCompanyNameIdpAliasUntrackedAsync(companyId, createdById);
             if (companyIdpData == null)
@@ -65,9 +68,33 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             var clientId = _settings.Portal.KeyCloakClientID;
             var pwd = new Password();
-            List<string> userList = new List<string>();
+
+            var roles = usersToCreate
+                    .Where(user => !String.IsNullOrWhiteSpace(user.Role))
+                    .Select(user => user.Role!)
+                    .Distinct();
+
+            var companyRoleIds = await _portalDBAccess.GetCompanyUserRoleWithIdsUntrackedAsync(
+                clientId,
+                roles
+                )
+                .ToDictionaryAsync(
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleId
+                )
+                .ConfigureAwait(false);
+
+            foreach (var role in roles)
+            {
+                if (!companyRoleIds.ContainsKey(role))
+                {
+                    throw new ArgumentException($"invalid Role: {role}");
+                }
+            }
+
             foreach (UserCreationInfo user in usersToCreate)
             {
+                bool success = false;
                 try
                 {
                     var password = pwd.Next();
@@ -94,7 +121,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.INVITED);
                     var iamUser = _portalDBAccess.CreateIamUser(companyUser, centralUserId);
 
-                    userList.Add(user.eMail);
+                    if (!String.IsNullOrWhiteSpace(user.Role))
+                    {
+                        _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[user.Role!]);
+                    }
 
                     var inviteTemplateName = "PortalTemplate";
                     if (!string.IsNullOrWhiteSpace(user.Message))
@@ -113,14 +143,21 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     };
 
                     await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
+
+                    success = true;
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, $"Error while creating user {user.userName ?? user.eMail}");
                 }
+
                 await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+    
+                if (success)
+                {
+                    yield return user.eMail;
+                }
             }
-            return userList;
         }
 
         public Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(

@@ -118,9 +118,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return userIdCentral;
         }
 
-        public Task AssignInvitedUserInitialRoles(string centralUserId) =>
-            AssignClientRolesToCentralUserAsync(centralUserId, _Settings.InvitedUserInitialRoles);
-
         public async Task<IEnumerable<string>> GetClientRolesAsync(string clientId)
         {
             var idOfClient = await GetIdOfClientFromClientIDAsync(clientId).ConfigureAwait(false);
