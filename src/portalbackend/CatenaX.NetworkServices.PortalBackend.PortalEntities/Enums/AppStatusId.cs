@@ -1,11 +1,9 @@
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
+public enum AppStatusId : int
 {
-    public enum AppStatusId : int
-    {
-        CREATED = 1,
-        IN_REVIEW = 2,
-        ACTIVE = 3,
-        INACTIVE = 4
-    }
+    CREATED = 1,
+    IN_REVIEW = 2,
+    ACTIVE = 3,
+    INACTIVE = 4
 }
