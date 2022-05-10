@@ -160,28 +160,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpPut]
         [Authorize(Policy = "CheckTenant")]
         [Authorize(Roles = "modify_user_account")]
-        [Route("tenant/{tenant}/users/{userId}/resetpassword")]
-        public async Task<IActionResult> ResetUserPassword([FromRoute] string tenant, [FromRoute] string userId)
+        [Route("tenant/{tenant}/users/{companyUserId}/resetpassword")]
+        public async Task<IActionResult> ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId)
         {
             try
             {
                 var adminuserId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
-                var idpUserName = await _logic.GetIdpCategoryIdByUserId(userId, adminuserId, tenant).ConfigureAwait(false);
-                if (!string.IsNullOrEmpty(idpUserName))
-                {
-                    if (await _logic.CanResetPassword(adminuserId).ConfigureAwait(false))
-                    {
-                        var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, idpUserName).ConfigureAwait(false);
-                        if (!updatedPassword)
-                        {
-                            return StatusCode((int)HttpStatusCode.InternalServerError);
-                        }
-                        return Ok(updatedPassword);
-
-                    }
-                    return StatusCode((int)HttpStatusCode.BadRequest);
-                }
-                return StatusCode((int)HttpStatusCode.NotFound);
+                var result = await _logic.GetStatusCode(companyUserId, adminuserId, tenant).ConfigureAwait(false);
+                return new StatusCodeResult((int)result);
             }
             catch (Exception e)
             {
