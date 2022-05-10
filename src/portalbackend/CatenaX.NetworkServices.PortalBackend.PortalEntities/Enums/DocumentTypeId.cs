@@ -1,8 +1,6 @@
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
+public enum DocumentTypeId : int
 {
-    public enum DocumentTypeId : int
-    {
-        DUMMY = 1
-    }
+    DUMMY = 1
 }
