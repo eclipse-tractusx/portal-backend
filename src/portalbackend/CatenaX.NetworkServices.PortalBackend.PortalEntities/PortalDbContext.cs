@@ -76,9 +76,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                 entity.Property(e => e.CountryAlpha2Code)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Zipcode)
-                    .HasPrecision(19, 2);
-
                 entity.HasOne(d => d.Country)
                     .WithMany(p => p!.Addresses)
                     .HasForeignKey(d => d.CountryAlpha2Code)

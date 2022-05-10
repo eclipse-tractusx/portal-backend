@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -46,6 +47,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
         [MaxLength(255)]
         public string? Streetnumber { get; set; }
 
+        [Precision(19,2)]
         public decimal Zipcode { get; set; }
 
         [StringLength(2, MinimumLength = 2)]
