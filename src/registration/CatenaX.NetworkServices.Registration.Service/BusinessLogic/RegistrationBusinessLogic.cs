@@ -184,6 +184,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 ) {
                     FirstName = userCreationInfo.firstName,
                     LastName = userCreationInfo.lastName,
+                    BusinessPartnerNumber = applicationData.Bpn,
                     Password = password
                 }).ConfigureAwait(false);
 
