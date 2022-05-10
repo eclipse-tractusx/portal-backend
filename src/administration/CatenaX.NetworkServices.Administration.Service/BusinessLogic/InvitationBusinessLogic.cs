@@ -47,7 +47,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             ) {
                 FirstName = invitationData.firstName,
                 LastName = invitationData.lastName,
-                OrganisationName = invitationData.organisationName,
                 Password = password
             }).ConfigureAwait(false);
 

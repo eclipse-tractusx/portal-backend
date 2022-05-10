@@ -191,17 +191,18 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
                 .SingleOrDefaultAsync();
 
-        public Task<CompanyNameIdWithIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
+        public Task<CompanyNameIdBpnIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
                     && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
                 .Select(iamUser => iamUser.CompanyUser!.Company)
-                .Select(company => new CompanyNameIdWithIdpAlias(
+                .Select(company => new CompanyNameIdBpnIdpAlias(
                         company!.Name,
                         company.Id
                     ) {
+                        Bpn = company.Bpn,
                         IdpAlias = company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)

@@ -105,6 +105,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 userProfile.OrganisationName) {
                     FirstName = userProfile.FirstName,
                     LastName = userProfile.LastName,
+                    BusinessPartnerNumber = userProfile.BusinessPartnerNumber
                 }).ConfigureAwait(false);
 
             if (userIdCentral == null)
@@ -199,7 +200,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 throw new Exception($"failed to retrieve central user {userId}");
             }
             user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
-            user.Attributes["bpn"] = (user.Attributes.TryGetValue("bpn", out var existingBpns))
+            user.Attributes[_Settings.MappedBpnAttribute] = (user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
                 ? existingBpns.Concat(bpns).Distinct()
                 : bpns;
             if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))
