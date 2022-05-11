@@ -27,6 +27,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData);
         Task<bool> ResetUserPasswordAsync(string realm, string userId);
         Task<bool> CanResetPassword(string userId);
-        Task<StatusErrorCode> GetStatusCode(Guid companyUserId, string adminUserId, string tenant);
+        Task<bool> GetStatusCode(Guid companyUserId, string adminUserId, string tenant);
     }
 }

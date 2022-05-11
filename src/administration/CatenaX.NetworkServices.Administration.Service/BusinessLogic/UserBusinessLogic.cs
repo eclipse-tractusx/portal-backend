@@ -14,6 +14,7 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Administration.Service.Enums;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -284,24 +285,23 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<StatusErrorCode> GetStatusCode(Guid companyUserId, string adminUserId, string tenant)
+        public async Task<bool> GetStatusCode(Guid companyUserId, string adminUserId, string tenant)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
-            if (idpUserName?.IdpName == tenant)
+            if (idpUserName?.IdpName == tenant && !string.IsNullOrEmpty(idpUserName?.TargetIamUserId))
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
                     var updatedPassword = await ResetUserPasswordAsync(tenant, idpUserName?.TargetIamUserId).ConfigureAwait(false);
                     if (!updatedPassword)
                     {
-                        return StatusErrorCode.SERVER_ERROR;
+                        throw new Exception();
                     }
-                    return StatusErrorCode.OK;
-
+                    return updatedPassword;
                 }
-                return StatusErrorCode.BAD_REQUEST;
+                throw new ArgumentException();
             }
-            return StatusErrorCode.NOT_FOUND;
+            throw new NotFoundException();
         }
     }
 }
