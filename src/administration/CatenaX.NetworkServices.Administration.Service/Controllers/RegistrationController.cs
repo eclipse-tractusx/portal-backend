@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,12 @@ public class RegistrationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
-    [ProducesResponseType(typeof(CompanyWithAddress), (int)HttpStatusCode.OK)]
-    public IAsyncEnumerable<CompanyApplicationDetails> GetApplicationDetailsAsync() =>
-        _logic.GetCompanyApplicationDetailsAsync();
+    public IAsyncEnumerable<CompanyApplicationDetails> GetApplicationDetailsAsync([FromQuery]int page) =>
+        _logic.GetCompanyApplicationDetailsAsync(page);
+
+    [HttpGet]
+    [Authorize(Roles = "view_submitted_applications")]
+    [Route("applications/pages")]
+    public Task<PaginationData> GetApplicationPaginationDataAsync() =>
+        _logic.GetApplicationPaginationDataAsync();
 }
