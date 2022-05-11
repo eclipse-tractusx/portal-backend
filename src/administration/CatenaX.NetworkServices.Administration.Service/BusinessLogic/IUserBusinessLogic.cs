@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Administration.Service.Models;
-using CatenaX.NetworkServices.Administration.Service.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -27,6 +26,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData);
         Task<bool> ResetUserPasswordAsync(string realm, string userId);
         Task<bool> CanResetPassword(string userId);
-        Task<bool> GetStatusCode(Guid companyUserId, string adminUserId, string tenant);
+        Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId, string tenant);
     }
 }
