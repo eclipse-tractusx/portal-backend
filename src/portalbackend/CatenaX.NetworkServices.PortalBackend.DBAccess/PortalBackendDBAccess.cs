@@ -341,17 +341,19 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .AsAsyncEnumerable();
 
-        public Task<IdpUser> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId)
-        {
-            return _dbContext.IamUsers
-              .Where(iamUser => iamUser.UserEntityId == adminUserId)
-              .Select(iamUser => iamUser!.CompanyUser!.Company)
-              .Select(company => new IdpUser
-              (
-                  company!.CompanyUsers.Where(companyUser => companyUser.Id == companyUserId).Select(companyUser => companyUser.IamUser!.UserEntityId).SingleOrDefault(),
-                  company!.IdentityProviders.Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).SingleOrDefault().IamIdentityProvider.IamIdpAlias
-              )).SingleOrDefaultAsync();
-        }
-
+        public Task<IdpUser> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser => iamUser.UserEntityId == adminUserId)
+                .Select(iamUser => iamUser!.CompanyUser!.Company)
+                .Select(company => new IdpUser {
+                    TargetIamUserId = company!.CompanyUsers
+                        .Where(companyUser => companyUser.Id == companyUserId)
+                        .Select(companyUser => companyUser.IamUser!.UserEntityId)
+                        .SingleOrDefault(),
+                    IdpName = company!.IdentityProviders
+                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                        .SingleOrDefault()
+                }).SingleOrDefaultAsync();
     }
 }
