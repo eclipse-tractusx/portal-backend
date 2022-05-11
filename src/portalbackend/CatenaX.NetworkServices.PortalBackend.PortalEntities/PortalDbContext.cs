@@ -21,9 +21,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
         public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
         public virtual DbSet<App> Apps { get; set; } = default!;
+        public virtual DbSet<AppAssignedClient> AppAssignedClients { get; set; } = default!;
         public virtual DbSet<AppAssignedLicense> AppAssignedLicenses { get; set; } = default!;
         public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
-        public virtual DbSet<AppAssignedUserRole> AppAssignedUserRoles { get; set; } = default!;
         public virtual DbSet<AppDescription> AppDescriptions { get; set; } = default!;
         public virtual DbSet<AppDetailImage> AppDetailImages { get; set; } = default!;
         public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
@@ -200,13 +200,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         }
                     );
 
-                entity.HasMany(p => p.UserRoles)
+                entity.HasMany(p => p.IamClients)
                     .WithMany(p => p.Apps)
-                    .UsingEntity<AppAssignedUserRole>(
+                    .UsingEntity<AppAssignedClient>(
                         j => j
-                            .HasOne(d => d.UserRole!)
+                            .HasOne(d => d.IamClient!)
                             .WithMany()
-                            .HasForeignKey(d => d.UserRoleId)
+                            .HasForeignKey(d => d.IamClientId)
                             .HasConstraintName("fk_4m022ek8gffepnqlnuxwyxp8"),
                         j => j
                             .HasOne(d => d.App!)
@@ -216,8 +216,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             .HasConstraintName("fk_oayyvy590ngh5705yspep0up"),
                         j =>
                         {
-                            j.HasKey(e => new{ e.AppId, e.UserRoleId }).HasName("pk_app_assg_user_roles");
-                            j.ToTable("app_assigned_user_roles", "portal");
+                            j.HasKey(e => new{ e.AppId, e.IamClientId }).HasName("pk_app_assigned_clients");
+                            j.ToTable("app_assigned_clients", "portal");
                         });
 
                 entity.HasMany(a => a.SupportedLanguages)

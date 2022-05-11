@@ -7,9 +7,11 @@ public class IamClient
     private IamClient()
     {
         ClientClientId = null!;
+        UserRoles = new HashSet<UserRole>();
+        Apps = new HashSet<App>();
     }
 
-    public IamClient(Guid id, string clientClientId)
+    public IamClient(Guid id, string clientClientId) : this()
     {
         Id = id;
         ClientClientId = clientClientId;
@@ -22,5 +24,6 @@ public class IamClient
     public string ClientClientId { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<UserRole>? UserRoles { get; private set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<App> Apps { get; private set; }
 }
