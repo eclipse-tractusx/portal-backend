@@ -160,7 +160,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("tenant/{tenant}/users/{companyUserId}/resetpassword")]
-        public Task ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId)
+        public Task<bool> ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId)
         {
             var adminuserId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
             return _logic.ExecutePasswordReset(companyUserId, adminuserId, tenant);
