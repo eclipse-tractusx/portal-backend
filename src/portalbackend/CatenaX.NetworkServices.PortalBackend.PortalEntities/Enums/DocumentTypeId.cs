@@ -1,8 +1,9 @@
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
+public enum DocumentTypeId : int
 {
-    public enum DocumentTypeId : int
-    {
-        DUMMY = 1
-    }
+    CX_FRAME_CONTRACT = 1,
+    COMMERCIAL_REGISTER_EXTRACT = 2,
+    APP_CONTRACT = 3,
+    DATA_CONTRACT = 4
 }

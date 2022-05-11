@@ -176,6 +176,30 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     })
                 .AsAsyncEnumerable();
 
+        public IAsyncEnumerable<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync()
+        {
+            return _dbContext.CompanyApplications
+                .AsNoTracking()
+                .OrderByDescending(application => application.DateCreated)
+                .Select(application => new CompanyApplicationDetails(
+                    application.Id,
+                    application.ApplicationStatusId,
+                    application.DateCreated,
+                    application.Company!.Name,
+                    application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
+                        document.Documenthash
+                    )
+                    {
+                        DocumentTypeId = document.DocumentTypeId,
+                    }))
+                    )
+                {
+                    Email = application.Invitations.Select(invitation => invitation.CompanyUser!.Email).FirstOrDefault(),
+                    BusinessPartnerNumber = application.Company.Bpn
+                })
+                .AsAsyncEnumerable();
+        }
+
         public Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
             _dbContext.CompanyApplications
                 .Where(companyApplication => companyApplication.Id == companyApplicationId)
