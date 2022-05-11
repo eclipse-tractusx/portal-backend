@@ -1,12 +1,10 @@
-﻿using System.Net;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
+﻿using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
@@ -104,32 +102,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policy = "CheckTenant")]
         [Authorize(Roles = "modify_user_account")]
-        [Route("tenant/{tenant}/users/{userId}/resetpassword")]
-        public async Task<IActionResult> ResetUserPassword([FromRoute] string tenant, [FromRoute] string userId)
-        {
-            try
-            {
-                var adminuserId = User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string;
-                if (await _logic.CanResetPassword(adminuserId).ConfigureAwait(false))
-                {
-                    var updatedPassword = await _logic.ResetUserPasswordAsync(tenant, userId).ConfigureAwait(false);
-                    if (!updatedPassword)
-                    {
-                        return StatusCode((int)HttpStatusCode.InternalServerError);
-                    }
-                    return Ok(updatedPassword);
-
-                }
-                return StatusCode((int)HttpStatusCode.BadRequest);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        [Route("tenant/{tenant}/users/{companyUserId}/resetpassword")]
+        public Task<bool> ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId) =>
+            WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId, tenant));
 
         private T WithIamUserId<T>(Func<string, T> _next)
         {
