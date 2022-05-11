@@ -138,7 +138,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyUserId,
                     consentStatusId,
                     DateTimeOffset.UtcNow
-                ) {
+                )
+                {
                     Comment = Comment,
                     Target = Target,
                     DocumentId = DocumentId
@@ -151,18 +152,18 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyRoleId
                 )).Entity;
 
-        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName ,string documentContent, string hash,uint documentOId,DocumentTypeId documentTypeId) =>
+        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
             _dbContext.Documents.Add(
                 new Document(
                     Guid.NewGuid(),
                     hash,
                     documentName,
                     DateTimeOffset.UtcNow)
-                    {
+                {
                     DocumentOid = documentOId,
                     DocumentTypeId = documentTypeId,
                     CompanyUserId = companyUserId
-                    }).Entity;
+                }).Entity;
 
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
@@ -185,7 +186,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         companyApplication.Company.Address!.City ?? "",
                         companyApplication.Company.Address.Streetname ?? "",
                         companyApplication.Company.Address.CountryAlpha2Code ?? ""
-                    ){
+                    )
+                    {
                         Bpn = companyApplication.Company!.Bpn,
                         Shortname = companyApplication.Company.Shortname,
                         Region = companyApplication.Company.Address.Region,
@@ -211,7 +213,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyApplication => new CompanyNameIdWithIdpAlias(
                         companyApplication.Company!.Name!,
                         companyApplication.CompanyId
-                    ) {
+                    )
+                    {
                         IdpAlias = companyApplication.Company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
@@ -293,19 +296,21 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public async IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync()
         {
-            await foreach(var role in _dbContext.CompanyRoles
+            await foreach (var role in _dbContext.CompanyRoles
                 .AsNoTracking()
-                .Select(companyRole => new {
+                .Select(companyRole => new
+                {
                     Id = companyRole.CompanyRoleId,
                     Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new { ShortName = description.LanguageShortName, Description = description.Description }),
-                    Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)})
+                    Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
+                })
                 .AsAsyncEnumerable())
-                {
-                    yield return new CompanyRoleData(
-                        role.Id,
-                        role.Descriptions.ToDictionary(d => d.ShortName, d => d.Description),
-                        role.Agreements);
-                }
+            {
+                yield return new CompanyRoleData(
+                    role.Id,
+                    role.Descriptions.ToDictionary(d => d.ShortName, d => d.Description),
+                    role.Agreements);
+            }
         }
 
         public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
@@ -324,16 +329,31 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
             (from invitation in _dbContext.Invitations
-                join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
-                join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
-                join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
-                where invitation.CompanyApplicationId == applicationId
-                select new InvitedUserDetail(
-                    iamuser.UserEntityId,
-                    invitationStatus.InvitationStatusId,
-                    companyuser.Email
-                ))
+             join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
+             join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
+             join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
+             where invitation.CompanyApplicationId == applicationId
+             select new InvitedUserDetail(
+                 iamuser.UserEntityId,
+                 invitationStatus.InvitationStatusId,
+                 companyuser.Email
+             ))
                 .AsNoTracking()
                 .AsAsyncEnumerable();
+
+        public Task<IdpUser> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
+            _dbContext.IamUsers
+                .Where(iamUser => iamUser.UserEntityId == adminUserId)
+                .Select(iamUser => iamUser!.CompanyUser!.Company)
+                .Select(company => new IdpUser {
+                    TargetIamUserId = company!.CompanyUsers
+                        .Where(companyUser => companyUser.Id == companyUserId)
+                        .Select(companyUser => companyUser.IamUser!.UserEntityId)
+                        .SingleOrDefault(),
+                    IdpName = company!.IdentityProviders
+                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                        .SingleOrDefault()
+                }).SingleOrDefaultAsync();
     }
 }
