@@ -13,7 +13,6 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Administration.Service.Models;
-using CatenaX.NetworkServices.Administration.Service.Enums;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
@@ -285,7 +284,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<bool> GetStatusCode(Guid companyUserId, string adminUserId, string tenant)
+        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId, string tenant)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
             if (idpUserName?.IdpName == tenant && !string.IsNullOrEmpty(idpUserName?.TargetIamUserId))
