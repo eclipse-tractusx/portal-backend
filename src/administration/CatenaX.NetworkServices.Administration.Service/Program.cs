@@ -87,7 +87,8 @@ builder.Services.AddTransient<IKeycloakFactory, KeycloakFactory>()
 builder.Services.AddTransient<IProvisioningManager, ProvisioningManager>()
                 .ConfigureProvisioningSettings(builder.Configuration.GetSection("Provisioning"));
                     
-builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>();
+builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
+                .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
 
 builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
                 .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
