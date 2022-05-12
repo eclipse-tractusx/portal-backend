@@ -6,8 +6,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
     public interface IUserBusinessLogic
     {
-        IAsyncEnumerable<string> CreateCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, Guid companyId, string createdByName);
-        IAsyncEnumerable<string> CreateTenantUsersAsync(IEnumerable<UserCreationInfo> userList, string tenant, string createdByName);
+        IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string createdByName);
         Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
                 string? tenant,
                 string? userId = null,

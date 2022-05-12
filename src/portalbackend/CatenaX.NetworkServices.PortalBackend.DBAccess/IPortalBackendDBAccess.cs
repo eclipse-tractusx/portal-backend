@@ -6,7 +6,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 {
     public interface IPortalBackendDBAccess
     {
-        Task<string> GetBpnForUserUntrackedAsync(string userId);
         IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds);
         IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId);
         Company CreateCompany(string companyName);
@@ -25,8 +24,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyWithAddress> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
         Task<CompanyNameIdBpnIdpAlias> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId, string iamUserId);
-        Task<CompanyNameBpnIdpAlias> GetCompanyNameIdpAliasUntrackedAsync(Guid companyId, string iamUserId);
-        IAsyncEnumerable<Guid> GetCompanyIdsForShardIdpAliasUntrackedAsync(string idpAlias);
+        Task<CompanyNameBpnIdpAlias> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId);
         Task<CompanyApplication> GetCompanyApplicationAsync(Guid applicationId);
         Task<CompanyIdWithUserId> GetCompanyWithUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
         Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
@@ -39,7 +37,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
         IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles);
         IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
-        Task<Guid> GetUserRoleIdUntrackedAsync(string clientClientId, string companyUserRoleText);
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<IdpUser> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId);
         Task<int> SaveAsync();

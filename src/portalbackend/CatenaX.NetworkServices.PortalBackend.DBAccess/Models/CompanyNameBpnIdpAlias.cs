@@ -2,12 +2,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public class CompanyNameBpnIdpAlias
 {
-    public CompanyNameBpnIdpAlias(string companyName)
+    public CompanyNameBpnIdpAlias(Guid companyId, string companyName)
     {
+        CompanyId = companyId;
         CompanyName = companyName;
     }
 
-    public string CompanyName { get; set; }
+    public Guid CompanyId { get; }
+    public string CompanyName { get; }
     public string? Bpn  { get; set; }
     public string? IdpAlias { get; set; }
 }

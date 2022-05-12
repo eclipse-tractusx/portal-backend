@@ -2,13 +2,13 @@
 namespace CatenaX.NetworkServices.Provisioning.Library;
 public class UserCreationInfo
 {
-    public UserCreationInfo(string? userName, string email, string? firstName, string? lastName, string? role, string? message)
+    public UserCreationInfo(string? userName, string email, string? firstName, string? lastName, IEnumerable<string> roles, string? message)
     {
         this.userName = userName;
         this.eMail = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.Role = role;
+        this.Roles = roles;
         this.Message = message;
     }
 
@@ -24,8 +24,8 @@ public class UserCreationInfo
     [JsonPropertyName("lastName")]
     public string? lastName { get; set; }
 
-    [JsonPropertyName("role")]
-    public string? Role { get; set; }
+    [JsonPropertyName("roles")]
+    public IEnumerable<string> Roles { get; set; }
 
     [JsonPropertyName("message")]
     public string? Message { get; set; }
