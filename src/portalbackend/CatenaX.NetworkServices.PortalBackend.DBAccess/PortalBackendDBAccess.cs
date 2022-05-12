@@ -335,5 +335,18 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 ))
                 .AsNoTracking()
                 .AsAsyncEnumerable();
+
+        public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId) =>
+        (from invitation in _dbContext.Invitations
+         join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
+         join company in _dbContext.Companies on companyuser.CompanyId equals company.Id
+         where invitation.CompanyApplicationId == applicationId
+         select new WelcomeEmailData(
+                     companyuser.Firstname + " " + companyuser.Lastname,
+                     companyuser.Email,
+                     company.Name
+                 ))
+        .AsNoTracking()
+        .AsAsyncEnumerable();
     }
 }

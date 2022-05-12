@@ -237,17 +237,26 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         }
 
         //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
-        public async Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData)
+        public async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
         {
-            var mailParameters = new Dictionary<string, string>
+            var userDetails = await _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ToListAsync().ConfigureAwait(false);
+
+            foreach (var user in userDetails)
             {
-                { "userName", welcomeData.userName },
-                { "companyName", welcomeData.companyName },
-                { "url", $"{_settings.Portal.BasePortalAddress}"},
-            };
+                var mailParameters = new Dictionary<string, string>
+                {
+                    { "userName", user.UserName },
+                    { "companyName", user.CompanyName },
+                    { "url", $"{_settings.Portal.BasePortalAddress}"},
+                };
 
-            await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+                if (String.IsNullOrWhiteSpace(user.EmailId))
+                {
+                    throw new ArgumentNullException("Email must not be empty");
+                }
 
+                await _mailingService.SendMails(user.EmailId, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+            }
             return true;
         }
 
