@@ -30,20 +30,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
         [HttpGet]
-        [Authorize(Policy = "CheckTenant")]
-        [Authorize(Roles = "view_user_management")]
-        [Route("tenant/{tenant}/users")]
-        public Task<IEnumerable<JoinedUserInfo>> QueryJoinedUsers(
-                [FromRoute] string tenant,
-                [FromQuery] string? userId = null,
-                [FromQuery] string? providerUserId = null,
-                [FromQuery] string? userName = null,
-                [FromQuery] string? firstName = null,
-                [FromQuery] string? lastName = null,
-                [FromQuery] string? email = null
-            ) => _logic.GetUsersAsync(tenant, userId, providerUserId, userName, firstName, lastName, email);
-
-        [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
         public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(

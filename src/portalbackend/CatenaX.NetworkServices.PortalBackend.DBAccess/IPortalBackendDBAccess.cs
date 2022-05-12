@@ -6,8 +6,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 {
     public interface IPortalBackendDBAccess
     {
-        IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds);
-        IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId);
+        Task<string?> GetBpnUntrackedAsync(Guid companyId);
+        IAsyncEnumerable<string> GetIamUsersUntrackedAsync(Guid companyId);
         Company CreateCompany(string companyName);
         CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
         CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);

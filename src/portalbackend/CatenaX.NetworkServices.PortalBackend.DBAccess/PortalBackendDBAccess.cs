@@ -15,23 +15,18 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        public IAsyncEnumerable<UserBpn> GetBpnForUsersUntrackedAsync(IEnumerable<string> userIds) =>
-            _dbContext.IamUsers
-                .Where(iamUser =>
-                    userIds.Contains(iamUser.UserEntityId)
-                    && iamUser.CompanyUser!.Company!.Bpn != null)
-                .Select(iamUser => new UserBpn(
-                    iamUser.UserEntityId,
-                    iamUser.CompanyUser!.Company!.Bpn!))
+        public Task<string?> GetBpnUntrackedAsync(Guid companyId) =>
+            _dbContext.Companies
                 .AsNoTracking()
-                .AsAsyncEnumerable();
+                .Where(company => company.Id == companyId)
+                .Select(company => company.Bpn)
+                .SingleOrDefaultAsync();
 
-        public IAsyncEnumerable<string> GetIdpAliaseForCompanyIdUntrackedAsync(Guid companyId) =>
-            _dbContext.CompanyIdentityProviders
-                .Where(cip => cip.CompanyId == companyId
-                    && cip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias != null)
-                .Select(cip => cip.IdentityProvider!.IamIdentityProvider!.IamIdpAlias)
+        public IAsyncEnumerable<string> GetIamUsersUntrackedAsync(Guid companyId) =>
+            _dbContext.IamUsers
                 .AsNoTracking()
+                .Where(iamUser => iamUser.CompanyUser!.CompanyId == companyId)
+                .Select(iamUser => iamUser.UserEntityId)
                 .AsAsyncEnumerable();
 
         public Company CreateCompany(string companyName) =>
