@@ -1,5 +1,8 @@
 ﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Registration.Service.BPN;
@@ -7,13 +10,8 @@ using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 using CatenaX.NetworkServices.Registration.Service.Custodian;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
-
 using System.Security.Cryptography;
 using System.Text;
 
@@ -42,74 +40,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _logger = logger;
         }
 
-        public async Task<IEnumerable<string>> CreateUsersAsync(List<UserCreationInfo>? usersToCreate, string? tenant, string? createdByName)
-        {
-            if (usersToCreate == null)
-            {
-                throw new ArgumentNullException("usersToCreate must not be null");
-            }
-            if (String.IsNullOrWhiteSpace(tenant))
-            {
-                throw new ArgumentNullException("tenant must not be empty");
-            }
-            if (String.IsNullOrWhiteSpace(createdByName))
-            {
-                throw new ArgumentNullException("createdByName must not be empty");
-            }
-            var idpName = tenant;
-            var organisationName = await _provisioningManager.GetOrganisationFromCentralIdentityProviderMapperAsync(idpName).ConfigureAwait(false);
-            var clientId = _settings.KeyCloakClientID;
-            var pwd = new Password();
-            List<string> userList = new List<string>();
-            foreach (UserCreationInfo user in usersToCreate)
-            {
-                try
-                {
-                    var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
-                        user.userName ?? user.eMail,
-                        user.firstName,
-                        user.lastName,
-                        user.eMail,
-                        password
-                    ), organisationName).ConfigureAwait(false);
-
-                    var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                    {
-                        { clientId, new []{user.Role}}
-                    };
-
-                    await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
-
-                    var inviteTemplateName = "invite";
-                    if (!String.IsNullOrWhiteSpace(user.Message))
-                    {
-                        inviteTemplateName = "inviteWithMessage";
-                    }
-
-                    var mailParameters = new Dictionary<string, string>
-                    {
-                        { "password", password },
-                        { "companyname", organisationName },
-                        { "message", user.Message },
-                        { "nameCreatedBy", createdByName},
-                        { "url", $"{_settings.BasePortalAddress}"},
-                        { "username", user.eMail},
-
-                    };
-
-                    await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
-
-                    userList.Add(user.eMail);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Error while creating user");
-                }
-            }
-            return userList;
-        }
-
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
             _provisioningManager.GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
@@ -127,7 +57,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
 
             var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
-            if (companyUserId == null)
+            if (companyUserId.Equals(Guid.Empty))
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
@@ -157,12 +87,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public Task CreateCustodianWalletAsync(WalletInformation information) =>
             _custodianService.CreateWallet(information.bpn, information.name);
 
-        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string? userId)
+        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
         {
-            if (String.IsNullOrWhiteSpace(userId))
-            {
-                throw new ArgumentNullException("userId must not be empty");
-            }
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
                 yield return new CompanyApplication
@@ -237,55 +163,92 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<int> InviteNewUserAsync(Guid applicationId, UserInvitationData userInvitationData)
+        public async Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById)
         {
-            if (String.IsNullOrWhiteSpace(userInvitationData.firstName))
+            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
+            if (applicationData == null)
             {
-                throw new ArgumentNullException("fistName must not be empty");
+                throw new ForbiddenException($"user {createdById} is not associated with application {applicationId}");
             }
-            if (String.IsNullOrWhiteSpace(userInvitationData.lastName))
-            {
-                throw new ArgumentNullException("lastName must not be empty");
-            }
-            if (String.IsNullOrWhiteSpace(userInvitationData.userName))
-            {
-                throw new ArgumentNullException("userName must not be empty");
-            }
-            if (String.IsNullOrWhiteSpace(userInvitationData.email))
-            {
-                throw new ArgumentNullException("email must not be empty");
-            }
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId).ConfigureAwait(false);
-            if (applicationData == null || applicationData.IdpAlias == null)
+            if (applicationData.IdpAlias == null)
             {
                 throw new NotFoundException($"shared idp for CompanyApplication {applicationId} not found");
             }
+
+            var clientId = _settings.KeyCloakClientID;
+
+            var roles = userCreationInfo.Roles
+                    .Where(role => !String.IsNullOrWhiteSpace(role))
+                    .Distinct();
+
+            var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
+                clientId,
+                roles
+                )
+                .ToDictionaryAsync(
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleId
+                )
+                .ConfigureAwait(false);
+
+            foreach (var role in roles)
+            {
+                if (!companyRoleIds.ContainsKey(role))
+                {
+                    throw new ArgumentException($"invalid Role: {role}");
+                }
+            }
+
             var password = new Password().Next();
-            var iamUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
+            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
                 applicationData.IdpAlias,
                 new UserProfile(
-                    userInvitationData.userName,
-                    userInvitationData.firstName,
-                    userInvitationData.lastName,
-                    userInvitationData.email,
-                    password
-                ),
-                applicationData.CompanyName).ConfigureAwait(false);
-            await _provisioningManager.AssignInvitedUserInitialRoles(iamUserId).ConfigureAwait(false);
-            var user = _portalDBAccess.CreateCompanyUser(userInvitationData.firstName, userInvitationData.lastName, userInvitationData.email, applicationData.CompanyId);
-            var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
-            var iamUser = _portalDBAccess.CreateIamUser(user, iamUserId);
-            var updates = await _portalDBAccess.SaveAsync();
+                    userCreationInfo.userName ?? userCreationInfo.eMail,
+                    userCreationInfo.eMail,
+                    applicationData.CompanyName
+                ) {
+                    FirstName = userCreationInfo.firstName,
+                    LastName = userCreationInfo.lastName,
+                    Password = password
+                }).ConfigureAwait(false);
+
+            if (roles.Count() > 0)
+            {
+                var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                {
+                    { _settings.KeyCloakClientID, roles }
+                };
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
+            }
+            var companyUser = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+
+            foreach(var role in roles)
+            {
+                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+            }
+            
+            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+            _portalDBAccess.CreateInvitation(applicationId, companyUser);
+
+            var inviteTemplateName = "invite";
+            if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
+            {
+                inviteTemplateName = "inviteWithMessage";
+            }
+
             var mailParameters = new Dictionary<string, string>
-            { //FIXME: parameters must match the templates for invite and password - adjust accordingly!
+            {
                 { "password", password },
                 { "companyname", applicationData.CompanyName },
-                { "url", $"{_settings.BasePortalAddress}"},
+                { "message", userCreationInfo.Message ?? "" },
+                { "nameCreatedBy", createdById },
+                { "url", _settings.BasePortalAddress },
+                { "username", userCreationInfo.eMail },
             };
 
-            await _mailingService.SendMails(userInvitationData.email, mailParameters, new List<string> { "invite", "password" });
+            await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
 
-            return updates;
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
