@@ -36,42 +36,23 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _settings = settings.Value;
         }
 
-        public async IAsyncEnumerable<string> CreateTenantUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string tenant, string createdById)
+        public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
         {
-            var companyIds = _portalDBAccess.GetCompanyIdsForShardIdpAliasUntrackedAsync(tenant).GetAsyncEnumerator();
-            if (!await companyIds.MoveNextAsync().ConfigureAwait(false))
-            {
-                throw new ArgumentException($"tenant {tenant} is not associated with a companyId");
-            }
-            var companyId = companyIds.Current;
-            if (await companyIds.MoveNextAsync().ConfigureAwait(false))
-            {
-                throw new ArgumentOutOfRangeException($"tenant {tenant} is associated with more than a single company");
-            }
-            await companyIds.DisposeAsync().ConfigureAwait(false);
-            await foreach (var item in CreateCompanyUsersAsync(usersToCreate, companyId, createdById))
-            {
-                yield return item;
-            }
-        }
-
-        public async IAsyncEnumerable<string> CreateCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, Guid companyId, string createdById)
-        {
-            var companyIdpData = await _portalDBAccess.GetCompanyNameIdpAliasUntrackedAsync(companyId, createdById);
+            var companyIdpData = await _portalDBAccess.GetCompanyNameIdpAliasUntrackedAsync(createdById);
             if (companyIdpData == null)
             {
-                throw new ForbiddenException($"user {createdById} is not associated with company {companyId}");
+                throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
             }
             if (companyIdpData.IdpAlias == null)
             {
-                throw new ArgumentException($"company {companyId} is not associated with a shared idp");
+                throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
             }
+
             var clientId = _settings.Portal.KeyCloakClientID;
-            var pwd = new Password();
 
             var roles = usersToCreate
-                    .Where(user => !String.IsNullOrWhiteSpace(user.Role))
-                    .Select(user => user.Role!)
+                    .SelectMany(user => user.Roles)
+                    .Where(role => !String.IsNullOrWhiteSpace(role))
                     .Distinct();
 
             var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
@@ -92,6 +73,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 }
             }
 
+            var pwd = new Password();
+
             foreach (UserCreationInfo user in usersToCreate)
             {
                 bool success = false;
@@ -109,22 +92,24 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         BusinessPartnerNumber = companyIdpData.Bpn
                     }).ConfigureAwait(false);
 
-                    if (!String.IsNullOrWhiteSpace(user.Role))
+                    var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
+                    if (validRoles.Count() > 0)
                     {
                         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
-                            { clientId, new [] { user.Role } }
+                            { clientId, user.Roles }
                         };
                         await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
                     }
 
-                    var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
-                    var iamUser = _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+                    var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyIdpData.CompanyId, CompanyUserStatusId.ACTIVE);
 
-                    if (!String.IsNullOrWhiteSpace(user.Role))
+                    foreach (var role in validRoles)
                     {
-                        _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[user.Role!]);
+                        _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
                     }
+                    
+                    _portalDBAccess.CreateIamUser(companyUser, centralUserId);
 
                     var inviteTemplateName = "PortalTemplate";
                     if (!string.IsNullOrWhiteSpace(user.Message))
@@ -246,7 +231,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 {
                     foreach (var userBpn in await _portalDBAccess.GetBpnForUsersUntrackedAsync(usersToUpdate).ToListAsync().ConfigureAwait(false))
                     {
-                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.userId, Enumerable.Repeat(userBpn.bpn, 1));
+                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.UserId, Enumerable.Repeat(userBpn.BusinessPartnerNumber, 1));
                     }
                 }
                 catch (Exception e)

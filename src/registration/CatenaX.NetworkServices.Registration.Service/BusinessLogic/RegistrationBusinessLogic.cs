@@ -175,16 +175,28 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new NotFoundException($"shared idp for CompanyApplication {applicationId} not found");
             }
 
-            bool hasValidRole = false;
-            Guid? userRoleId = null;
-            if (!String.IsNullOrWhiteSpace(userCreationInfo.Role))
+            var clientId = _settings.KeyCloakClientID;
+
+            var roles = userCreationInfo.Roles
+                    .Where(role => !String.IsNullOrWhiteSpace(role))
+                    .Distinct();
+
+            var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
+                clientId,
+                roles
+                )
+                .ToDictionaryAsync(
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleId
+                )
+                .ConfigureAwait(false);
+
+            foreach (var role in roles)
             {
-                userRoleId = await _portalDBAccess.GetUserRoleIdUntrackedAsync(_settings.KeyCloakClientID, userCreationInfo.Role).ConfigureAwait(false);
-                if (userRoleId.Equals(Guid.Empty))
+                if (!companyRoleIds.ContainsKey(role))
                 {
-                    throw new ArgumentException($"invalid Role {userCreationInfo.Role}");
+                    throw new ArgumentException($"invalid Role: {role}");
                 }
-                hasValidRole = true;
             }
 
             var password = new Password().Next();
@@ -197,26 +209,26 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 ) {
                     FirstName = userCreationInfo.firstName,
                     LastName = userCreationInfo.lastName,
-                    BusinessPartnerNumber = applicationData.Bpn,
                     Password = password
                 }).ConfigureAwait(false);
 
-            if (hasValidRole)
+            if (roles.Count() > 0)
             {
                 var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                 {
-                    { _settings.KeyCloakClientID, new [] {userCreationInfo.Role!}}
+                    { _settings.KeyCloakClientID, roles }
                 };
                 await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
             }
-            var user = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
-            var invitation = _portalDBAccess.CreateInvitation(applicationId, user);
-            if (hasValidRole)
+            var companyUser = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+
+            foreach(var role in roles)
             {
-                _portalDBAccess.CreateCompanyUserAssignedRole(user.Id, userRoleId!.Value);
+                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
             }
-            var iamUser = _portalDBAccess.CreateIamUser(user, centralUserId);
-            var updates = await _portalDBAccess.SaveAsync();
+            
+            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+            _portalDBAccess.CreateInvitation(applicationId, companyUser);
 
             var inviteTemplateName = "invite";
             if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
@@ -236,7 +248,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
 
-            return updates;
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)

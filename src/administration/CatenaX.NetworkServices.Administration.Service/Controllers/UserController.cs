@@ -22,17 +22,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "CheckTenant")]
         [Authorize(Roles = "add_user_account")]
-        [Route("tenant/{tenant}/users")]
-        public IAsyncEnumerable<string> ExecuteUserCreation([FromRoute] string tenant, [FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
-            WithIamUserId(createdByName => _logic.CreateTenantUsersAsync(usersToCreate, tenant, createdByName));
-
-        [HttpPost]
-        [Authorize(Roles = "add_user_account")]
-        [Route("company/{companyId}/users")]
-        public IAsyncEnumerable<string> ExecuteCompanyUserCreation([FromRoute] Guid companyId, [FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
-            WithIamUserId(createdByName => _logic.CreateCompanyUsersAsync(usersToCreate, companyId, createdByName));
+        [Route("owncompany/users")]
+        public IAsyncEnumerable<string> ExecuteCompanyUserCreation([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
+            WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
         [HttpGet]
         [Authorize(Policy = "CheckTenant")]
