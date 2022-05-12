@@ -45,26 +45,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "CheckTenant")]
-        [Authorize(Roles = "invite_user")]
-        [Route("tenant/{tenant}/users")]
-        public async Task<IActionResult> CreateUsersAsync([FromRoute] string tenant, [FromBody] List<UserCreationInfo> usersToCreate)
-        {
-            try
-            {
-                var createdByName = User.Claims.SingleOrDefault(x => x.Type == "name").Value as string;
-                var createdUsers = await _registrationBusinessLogic.CreateUsersAsync(usersToCreate, tenant, createdByName).ConfigureAwait(false);
-
-                return Ok(createdUsers);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPost]
         [Authorize(Roles = "submit_registration")]
         [Route("custodianWallet")]
         public async Task<IActionResult> CreateWallet([FromBody] WalletInformation walletToCreate)
@@ -148,8 +128,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "invite_user")]
         [Route("application/{applicationId}/inviteNewUser")]
-        public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserInvitationData userInvitationData) =>
-            _registrationBusinessLogic.InviteNewUserAsync(applicationId, userInvitationData);
+        public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfo userCreationInfo) =>
+            WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
@@ -200,7 +181,14 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
 
-        private T WithIamUserId<T>(Func<string, T> _next) =>
-            _next(User.Claims.SingleOrDefault(x => x.Type == "sub").Value as string);
+        private T WithIamUserId<T>(Func<string, T> _next)
+        {
+            var sub = User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value as string;
+            if (String.IsNullOrWhiteSpace(sub))
+            {
+                throw new ArgumentException("claim sub must not be null or empty","sub");
+            }
+            return _next(sub);
+        }
     }
 }
