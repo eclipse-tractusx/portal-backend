@@ -35,6 +35,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
+        IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId);
         Task<int> SaveAsync();
     }
 }
