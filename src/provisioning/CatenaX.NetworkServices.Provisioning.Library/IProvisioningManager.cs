@@ -10,10 +10,10 @@ public interface IProvisioningManager
     Task AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
     Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
     Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
-    Task<string> GetOrganisationFromCentralIdentityProviderMapperAsync(string alias);
     Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
-    Task<string> GetProviderUserIdForCentralUserIdAsync(string userId);
-    Task DeleteSharedAndCentralUserAsync(string idpName, string userId);
+    Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
+    Task<bool> DeleteSharedRealmUserAsync(string idpName, string userIdShared);
+    Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
     Task<IEnumerable<JoinedUserInfo>> GetJoinedUsersAsync(
         string idpName,
         string? userId = null,

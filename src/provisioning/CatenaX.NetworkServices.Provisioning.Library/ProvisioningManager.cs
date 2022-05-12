@@ -133,25 +133,10 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Select(g => g.Name);
         }
 
-        public async Task<string> GetProviderUserIdForCentralUserIdAsync(string userId)
-        {
-            var providerUserid = (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
+        public async Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId) =>
+            (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
+                .Where(federatedIdentity => federatedIdentity.IdentityProvider == identityProvider)
                 .SingleOrDefault()?.UserId;
-            if (providerUserid == null)
-            {
-                throw new Exception($"failed to retrieve provider userid for {userId}");
-            }
-            return providerUserid;
-        }
-
-        public async Task DeleteSharedAndCentralUserAsync(string idpName, string userIdShared)
-        {
-            var userIdCentral = await GetCentralUserIdForProviderIdAsync(idpName, userIdShared).ConfigureAwait(false);
-
-            await DeleteSharedRealmUserAsync(idpName, userIdShared).ConfigureAwait(false);
-
-            await DeleteCentralRealmUserAsync(_Settings.CentralRealm, userIdCentral).ConfigureAwait(false);
-        }
 
         public async Task<IEnumerable<JoinedUserInfo>> GetJoinedUsersAsync(string idpName,
                                                                string? userId = null,
@@ -208,7 +193,11 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)
         {
-            var providerUserId = await GetProviderUserIdForCentralUserIdAsync(userId).ConfigureAwait(false);
+            var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
+            if (providerUserId == null)
+            {
+                throw new ArgumentOutOfRangeException($"userId {userId} is not linked to shared realm {realm}");
+            }
             return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD",1)).ConfigureAwait(false);
         }
 

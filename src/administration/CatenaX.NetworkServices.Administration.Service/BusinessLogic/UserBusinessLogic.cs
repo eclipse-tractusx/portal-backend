@@ -2,6 +2,8 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -169,6 +171,34 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             );
         }
 
+        public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(
+            string adminUserId,
+            Guid? companyUserId = null,
+            string? userEntityId = null,
+            string? firstName = null,
+            string? lastName = null,
+            string? email = null,
+            CompanyUserStatusId? status = null)
+            {
+                if (!companyUserId.HasValue
+                    && String.IsNullOrWhiteSpace(userEntityId)
+                    && String.IsNullOrWhiteSpace(firstName)
+                    && String.IsNullOrWhiteSpace(lastName)
+                    && String.IsNullOrWhiteSpace(email)
+                    && !status.HasValue)
+                {
+                    throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
+                }
+                return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
+                    adminUserId,
+                    companyUserId,
+                    userEntityId,
+                    firstName,
+                    lastName,
+                    email,
+                    status);
+            }
+
         public Task<IEnumerable<string>> GetAppRolesAsync(string? clientId)
         {
             if (String.IsNullOrWhiteSpace(clientId))
@@ -178,43 +208,53 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return _provisioningManager.GetClientRolesAsync(clientId);
         }
 
-        public async Task DeleteUserAsync(string? tenant, string? userId)
+        public async Task<int> DeleteUserAsync(string iamUserId)
         {
-            if (String.IsNullOrWhiteSpace(tenant))
+            var userData = await _portalDBAccess.GetCompanyUserWithIdpAsync(iamUserId).ConfigureAwait(false);
+            if (userData == null)
             {
-                throw new ArgumentNullException("tenant must not be empty");
+                throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
             }
-            if (String.IsNullOrWhiteSpace(userId))
+            if (await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false))
             {
-                throw new ArgumentNullException("userId must not be empty");
+                return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
             }
-            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(userId);
-            await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userIdShared).ConfigureAwait(false);
+            return -1;
         }
 
-        public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds? usersToDelete, string? tenant)
+        public async IAsyncEnumerable<Guid> DeleteUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
         {
-            if (usersToDelete == null)
+            var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
+            if (iamIdpAlias == null)
             {
-                throw new ArgumentException("usersToDelete must not be null");
+                throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
             }
-            if (String.IsNullOrWhiteSpace(tenant))
+            await foreach(var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
-                throw new ArgumentException("tenant must not be empty");
+                if (await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false))
+                {
+                    yield return companyUser.Id;
+                }
             }
-            return (await Task.WhenAll(usersToDelete.userIds.Select(async userId =>
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+
+        private async Task<bool> DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
+        {
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            if (userIdShared != null
+                && (await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false))
+                && (await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false))) //TODO doesn't handle the case where user is both shared and own idp user
             {
-                try
+                foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
                 {
-                    await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false);
-                    return userId;
+                    _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
                 }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Error while deleting user {userId}, {e.Message}");
-                    return null!;
-                }
-            })).ConfigureAwait(false)).Where(userName => userName != null);
+                _portalDBAccess.RemoveIamUser(companyUser.IamUser);
+                companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
+                return true;
+            }
+            return false;
         }
 
         public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid? companyId)
