@@ -147,30 +147,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
         }
 
-        public Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
-            string? tenant,
-            string? userId = null,
-            string? providerUserId = null,
-            string? userName = null,
-            string? firstName = null,
-            string? lastName = null,
-            string? email = null)
-        {
-            if (String.IsNullOrWhiteSpace(tenant))
-            {
-                throw new ArgumentNullException("tenant must not be empty");
-            }
-            return _provisioningManager.GetJoinedUsersAsync(
-                tenant,
-                userId,
-                providerUserId,
-                userName,
-                firstName,
-                lastName,
-                email
-            );
-        }
-
         public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(
             string adminUserId,
             Guid? companyUserId = null,
@@ -231,7 +207,16 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             await foreach(var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
-                if (await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false))
+                var success = false;
+                try
+                {
+                    success = await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Error while deleting comapnyUser {companyUser.Id} from shared idp {iamIdpAlias}");
+                }
+                if (success)
                 {
                     yield return companyUser.Id;
                 }
@@ -257,26 +242,22 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid? companyId)
+        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
         {
-            if (!companyId.HasValue)
+            var bpn = await _portalDBAccess.GetBpnUntrackedAsync(companyId).ConfigureAwait(false);
+            if (String.IsNullOrWhiteSpace(bpn))
             {
-                throw new ArgumentNullException("companyId must not be empty");
+                throw new NotFoundException($"company {companyId} does not have a bpn");
             }
-            foreach (var tenant in await _portalDBAccess.GetIdpAliaseForCompanyIdUntrackedAsync(companyId.Value).ToListAsync().ConfigureAwait(false))
+            await foreach (var userEntityId in _portalDBAccess.GetIamUsersUntrackedAsync(companyId).ConfigureAwait(false))
             {
-                var usersToUpdate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
-                    .Select(g => g.userId);
                 try
                 {
-                    foreach (var userBpn in await _portalDBAccess.GetBpnForUsersUntrackedAsync(usersToUpdate).ToListAsync().ConfigureAwait(false))
-                    {
-                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.UserId, Enumerable.Repeat(userBpn.BusinessPartnerNumber, 1));
-                    }
+                    await _provisioningManager.AddBpnAttributetoUserAsync(userEntityId, Enumerable.Repeat(bpn, 1));
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error while adding BPN attribute to {usersToUpdate}");
+                    _logger.LogError(e, $"Error while adding BPN attribute to {userEntityId}");
                 }
             }
             return true;

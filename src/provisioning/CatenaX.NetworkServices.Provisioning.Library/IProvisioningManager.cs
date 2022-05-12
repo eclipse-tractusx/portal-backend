@@ -14,14 +14,6 @@ public interface IProvisioningManager
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     Task<bool> DeleteSharedRealmUserAsync(string idpName, string userIdShared);
     Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
-    Task<IEnumerable<JoinedUserInfo>> GetJoinedUsersAsync(
-        string idpName,
-        string? userId = null,
-        string? providerUserId = null,
-        string? userName = null,
-        string? firstName = null,
-        string? lastName = null,
-        string? email = null);
     Task<string> SetupClientAsync(string redirectUrl);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
