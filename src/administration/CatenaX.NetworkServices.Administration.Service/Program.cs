@@ -93,7 +93,8 @@ builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>
 builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
                 .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
 
-builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>();
+builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
+                .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IKeycloakDBAccess, KeycloakDBAccess>();
 
