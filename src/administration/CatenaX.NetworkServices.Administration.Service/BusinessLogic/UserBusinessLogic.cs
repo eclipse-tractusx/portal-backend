@@ -13,6 +13,7 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -260,13 +261,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return true;
         }
 
-        public Task<bool> ResetUserPasswordAsync(string realm, string userId)
-        {
-            IEnumerable<string> requiredActions = new List<string>() { "UPDATE_PASSWORD" };
-            return _provisioningManager.ResetUserPasswordAsync(realm, userId, requiredActions);
-        }
-
-        public async Task<bool> CanResetPassword(string userId)
+        private async Task<bool> CanResetPassword(string userId)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
 
@@ -290,6 +285,25 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 return true;
             }
             return false;
+        }
+
+        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId, string tenant)
+        {
+            var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
+            if (idpUserName?.IdpName == tenant && !string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId))
+            {
+                if (await CanResetPassword(adminUserId).ConfigureAwait(false))
+                {
+                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(tenant, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                    if (!updatedPassword)
+                    {
+                        throw new Exception("password reset failed");
+                    }
+                    return updatedPassword;
+                }
+                throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
+            }
+            throw new NotFoundException($"no shared idp user {companyUserId} found in company of {adminUserId}");
         }
     }
 }

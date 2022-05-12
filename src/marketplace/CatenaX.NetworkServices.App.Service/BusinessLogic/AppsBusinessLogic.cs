@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.App.Service.ViewModels;
+﻿using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -26,8 +27,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         /// <inheritdoc/>
         public async IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null)
         {
-            await foreach(var app in context.Apps.AsQueryable()
-                .AsNoTracking()
+            await foreach(var app in context.Apps.AsNoTracking()
                 .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
                 .Select(a => new {
                     a.Id,
@@ -36,7 +36,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                     UseCaseNames = a.UseCases.Select(uc => uc.Name),
                     ThumbnailUrl = (string?)a.ThumbnailUrl,
                     ShortDescription =
-                        this.context.Languages.SingleOrDefault(l => l.LanguageShortName == languageShortName) == null 
+                        this.context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
                         ? null 
                         : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                           ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
@@ -79,7 +79,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
                     a.ContactNumber,
                     UseCases = a.UseCases.Select(u => u.Name),
                     LongDescription = 
-                        this.context.Languages.SingleOrDefault(l => l.LanguageShortName == languageShortName) == null 
+                        this.context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
                         ? null 
                         : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
                           ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
@@ -116,7 +116,6 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId)
         {
             return this.context.IamUsers.AsNoTracking()
-                .Include(u => u.CompanyUser!.Apps)
                 .Where(u => u.UserEntityId == userId) // Id is unique, so single user
                 .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
                 .ToAsyncEnumerable();
@@ -136,9 +135,9 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
         {
             var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-            await this.context.CompanyUserAssignedAppFavourites.AddAsync(
+            this.context.CompanyUserAssignedAppFavourites.Add(
                 new CompanyUserAssignedAppFavourite(appId, companyUserId)
-            ).ConfigureAwait(false);
+            );
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
 
@@ -146,10 +145,37 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic
         public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            await this.context.CompanyAssignedApps.AddAsync(
-                new CompanyAssignedApp(appId, companyId)
-            ).ConfigureAwait(false);
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId));
             await this.context.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> CreateAppAsync(AppInputModel appInputModel)
+        {
+            // Add app to db
+            var appEntity = new PortalBackend.PortalEntities.Entities.App(Guid.NewGuid(), appInputModel.Provider, DateTimeOffset.UtcNow)
+            {
+                Name = appInputModel.Title,
+                MarketingUrl = appInputModel.ProviderUri,
+                AppUrl = appInputModel.AppUri,
+                ThumbnailUrl = appInputModel.LeadPictureUri,
+                ContactEmail = appInputModel.ContactEmail,
+                ContactNumber = appInputModel.ContactNumber,
+                ProviderCompanyId = appInputModel.ProviderCompanyId,
+                AppStatusId = PortalBackend.PortalEntities.Enums.AppStatusId.CREATED
+            };
+            this.context.Apps.Add(appEntity);
+
+            var appLicenseEntity = new AppLicense(Guid.NewGuid(), appInputModel.Price);
+            this.context.AppLicenses.Add(appLicenseEntity);           
+
+            this.context.AppAssignedLicenses.Add(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
+            this.context.AppAssignedUseCases.AddRange(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
+            this.context.AppDescriptions.AddRange(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+            this.context.AppLanguages.AddRange(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
+
+            return appEntity.Id;
         }
 
         private Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId) => 
