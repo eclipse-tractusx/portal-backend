@@ -568,6 +568,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId }).HasName("pk_comp_user_assigned_roles");
                             j.ToTable("company_user_assigned_roles", "portal");
                         });
+
+                entity.HasMany(p => p.CompanyUserAssignedRoles)
+                    .WithOne(d => d.CompanyUser!)
+                    .HasConstraintName("fk_0c9rjjf9gm3l0n6reb4o0f1s");
             });
 
             modelBuilder.Entity<UserRole>(entity =>

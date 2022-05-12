@@ -1,6 +1,8 @@
-﻿using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Administration.Service.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -15,9 +17,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 string? firstName = null,
                 string? lastName = null,
                 string? email = null);
+        IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? status = null);
         Task<IEnumerable<string>> GetAppRolesAsync(string? clientId);
-        Task DeleteUserAsync(string? tenant, string? userId);
-        Task<IEnumerable<string>> DeleteUsersAsync(UserIds? userList, string? tenant);
+        Task<int> DeleteUserAsync(string iamUser);
+        IAsyncEnumerable<Guid> DeleteUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId);
         Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid? companyId);
         Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
         Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData);

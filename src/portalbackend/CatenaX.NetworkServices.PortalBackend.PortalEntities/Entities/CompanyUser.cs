@@ -12,6 +12,7 @@ public class CompanyUser
         Invitations = new HashSet<Invitation>();
         Apps = new HashSet<App>();
         UserRoles = new HashSet<UserRole>();
+        CompanyUserAssignedRoles = new HashSet<CompanyUserAssignedRole>();
     }
     
     public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) : this()
@@ -53,4 +54,5 @@ public class CompanyUser
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<App> Apps { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
 }
