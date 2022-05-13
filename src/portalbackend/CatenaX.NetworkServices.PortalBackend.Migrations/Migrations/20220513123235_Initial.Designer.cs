@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220513103832_Initial")]
+    [Migration("20220513123235_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -379,7 +379,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("image_url");
 
                     b.HasKey("Id")
@@ -438,7 +439,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Property<string>("Label")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
                     b.HasKey("AppStatusId")
@@ -762,7 +764,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
                     b.HasKey("CompanyRoleId", "LanguageShortName")
@@ -1148,7 +1151,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Property<string>("Label")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
                     b.HasKey("DocumentTypeId")
@@ -1160,22 +1164,22 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         new
                         {
                             DocumentTypeId = 1,
-                            Label = "CXFrameContract"
+                            Label = "CX_FRAME_CONTRACT"
                         },
                         new
                         {
                             DocumentTypeId = 2,
-                            Label = "CommercialRegisterExtract"
+                            Label = "COMMERCIAL_REGISTER_EXTRACT"
                         },
                         new
                         {
                             DocumentTypeId = 3,
-                            Label = "AppContract"
+                            Label = "APP_CONTRACT"
                         },
                         new
                         {
                             DocumentTypeId = 4,
-                            Label = "DataContract"
+                            Label = "DATA_CONTRACT"
                         });
                 });
 
@@ -1471,7 +1475,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
                     b.HasKey("UserRoleId", "LanguageShortName")

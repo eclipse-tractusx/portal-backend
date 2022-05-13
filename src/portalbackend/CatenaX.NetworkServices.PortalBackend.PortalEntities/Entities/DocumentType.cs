@@ -20,6 +20,7 @@ public class DocumentType
     [Key]
     public DocumentTypeId DocumentTypeId { get; private set; }
 
+    [MaxLength(255)]
     public string Label { get; private set; }
 
     // Navigation properties

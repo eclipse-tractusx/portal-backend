@@ -20,6 +20,7 @@ public class AppDetailImage
 
     public Guid AppId { get; set; }
 
+    [MaxLength(255)]
     public string ImageUrl { get; set; }
 
     // Navigation properties
