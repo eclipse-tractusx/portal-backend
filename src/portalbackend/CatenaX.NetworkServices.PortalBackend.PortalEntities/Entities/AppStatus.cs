@@ -20,6 +20,7 @@ public class AppStatus
     [Key]
     public AppStatusId AppStatusId { get; private set; }
 
+    [MaxLength(255)]
     public string Label { get; private set; }
 
     // Navigation properties

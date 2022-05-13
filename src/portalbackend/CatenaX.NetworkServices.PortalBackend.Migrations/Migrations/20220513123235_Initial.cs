@@ -44,7 +44,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     app_status_id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "text", nullable: false)
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,7 +153,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     document_type_id = table.Column<int>(type: "integer", nullable: false),
-                    label = table.Column<string>(type: "text", nullable: false)
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -303,7 +303,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     company_role_id = table.Column<int>(type: "integer", nullable: false),
                     language_short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false)
+                    description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -364,7 +364,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     user_role_id = table.Column<Guid>(type: "uuid", nullable: false),
                     language_short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false)
+                    description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -731,7 +731,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     app_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    image_url = table.Column<string>(type: "text", nullable: false)
+                    image_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1124,10 +1124,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: new[] { "document_type_id", "label" },
                 values: new object[,]
                 {
-                    { 1, "CXFrameContract" },
-                    { 2, "CommercialRegisterExtract" },
-                    { 3, "AppContract" },
-                    { 4, "DataContract" }
+                    { 1, "CX_FRAME_CONTRACT" },
+                    { 2, "COMMERCIAL_REGISTER_EXTRACT" },
+                    { 3, "APP_CONTRACT" },
+                    { 4, "DATA_CONTRACT" }
                 });
 
             migrationBuilder.InsertData(
