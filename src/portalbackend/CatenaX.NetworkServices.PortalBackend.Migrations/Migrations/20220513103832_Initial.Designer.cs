@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220513095225_Initial")]
+    [Migration("20220513103832_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1475,7 +1475,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("description");
 
                     b.HasKey("UserRoleId", "LanguageShortName")
-                        .HasName("pk_company_role_descriptions");
+                        .HasName("pk_user_role_descriptions");
 
                     b.HasIndex("LanguageShortName")
                         .HasDatabaseName("ix_user_role_descriptions_language_short_name");
