@@ -12,7 +12,9 @@ internal class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbCont
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
         optionsBuilder.UseNpgsql(
             config.GetConnectionString("PortalDb"),
-            x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name));
+            x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
+                  .MigrationsHistoryTable("__EFMigrationsHistory_portal")
+        );
 
         return new PortalDbContext(optionsBuilder.Options);
     }
