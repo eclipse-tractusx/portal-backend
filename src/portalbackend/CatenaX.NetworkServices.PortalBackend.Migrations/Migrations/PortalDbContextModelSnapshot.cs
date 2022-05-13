@@ -1473,7 +1473,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("description");
 
                     b.HasKey("UserRoleId", "LanguageShortName")
-                        .HasName("pk_company_role_descriptions");
+                        .HasName("pk_user_role_descriptions");
 
                     b.HasIndex("LanguageShortName")
                         .HasDatabaseName("ix_user_role_descriptions_language_short_name");

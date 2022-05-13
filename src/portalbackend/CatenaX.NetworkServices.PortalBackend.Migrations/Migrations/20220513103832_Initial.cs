@@ -368,7 +368,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_role_descriptions", x => new { x.user_role_id, x.language_short_name });
+                    table.PrimaryKey("pk_user_role_descriptions", x => new { x.user_role_id, x.language_short_name });
                     table.ForeignKey(
                         name: "fk_user_role_descriptions_languages_language_short_name",
                         column: x => x.language_short_name,
