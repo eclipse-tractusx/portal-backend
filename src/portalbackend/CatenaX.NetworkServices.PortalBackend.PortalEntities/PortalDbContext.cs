@@ -581,7 +581,7 @@ public class PortalDbContext : DbContext
             entity.ToTable("user_role_descriptions", "portal");
 
             entity.HasKey(e => new { e.UserRoleId, e.LanguageShortName })
-                .HasName("pk_company_role_descriptions");
+                .HasName("pk_user_role_descriptions");
 
             entity.HasOne(d => d.UserRole)
                 .WithMany(p => p!.UserRoleDescriptions)
