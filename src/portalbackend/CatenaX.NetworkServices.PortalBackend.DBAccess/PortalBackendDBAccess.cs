@@ -389,6 +389,28 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .AsAsyncEnumerable();
 
+        public async IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId)
+        {
+            await foreach (var userData in _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .Select(application => application.Company)
+            .SelectMany(company => company.CompanyUsers.Select(user => new
+            {
+                FirstName = user.Firstname,
+                LastName = user.Lastname,
+                Email = user.Email,
+                CompanyName = user.Company!.Name
+
+            })).AsAsyncEnumerable())
+            {
+                yield return new WelcomeEmailData(
+                userData.FirstName + " " + userData.LastName,
+                userData.Email,
+                userData.CompanyName);
+            }
+
+        }
         public Task<IdpUser> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
             _dbContext.IamUsers
                 .Where(iamUser => iamUser.UserEntityId == adminUserId)
