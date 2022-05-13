@@ -11,6 +11,7 @@ public class Language
         LongNameEn = null!;
         AppDescriptions = new HashSet<AppDescription>();
         CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
+        UserRoleDescriptions = new HashSet<UserRoleDescription>();
         SupportingApps = new HashSet<App>();
     }
 
@@ -34,5 +35,6 @@ public class Language
     // Navigation properties
     public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
     public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
+    public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
     public virtual ICollection<App> SupportingApps { get; private set; }
 }

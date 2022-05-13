@@ -12,12 +12,12 @@ public class Company
         BoughtApps = new HashSet<App>();
         ProvidedApps = new HashSet<App>();
         CompanyApplications = new HashSet<CompanyApplication>();
+        CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
         IdentityProviders = new HashSet<IdentityProvider>();
         CompanyUsers = new HashSet<CompanyUser>();
         Consents = new HashSet<Consent>();
         CompanyRoles = new HashSet<CompanyRole>();
         UseCases = new HashSet<UseCase>();
-        CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
     }
     
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()

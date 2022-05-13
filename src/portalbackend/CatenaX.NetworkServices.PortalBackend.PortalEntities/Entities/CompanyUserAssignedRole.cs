@@ -15,5 +15,5 @@ public class CompanyUserAssignedRole
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual CompanyUserRole? UserRole { get; private set; }
+    public virtual UserRole? UserRole { get; private set; }
 }

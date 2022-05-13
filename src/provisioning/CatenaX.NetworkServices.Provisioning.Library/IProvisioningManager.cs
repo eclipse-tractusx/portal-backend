@@ -1,33 +1,29 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 
-namespace CatenaX.NetworkServices.Provisioning.Library
+namespace CatenaX.NetworkServices.Provisioning.Library;
+
+public interface IProvisioningManager
 {
-    public interface IProvisioningManager
-    {
-        Task<string> GetNextCentralIdentityProviderNameAsync();
-        Task SetupSharedIdpAsync(string idpName, string organisationName);
-        Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, string companyName);
-        Task AssignInvitedUserInitialRoles(string centralUserId);
-        Task AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
-        Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
-        Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
-        Task<string> GetOrganisationFromCentralIdentityProviderMapperAsync(string alias);
-        Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
-        Task<string> GetProviderUserIdForCentralUserIdAsync(string userId);
-        Task DeleteSharedAndCentralUserAsync(string idpName, string userId);
-        Task<IEnumerable<JoinedUserInfo>> GetJoinedUsersAsync(
-            string idpName,
-            string? userId = null,
-            string? providerUserId = null,
-            string? userName = null,
-            string? firstName = null,
-            string? lastName = null,
-            string? email = null);
-        Task<string> SetupClientAsync(string redirectUrl);
-        Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
-        Task<bool> ResetUserPasswordAsync(string realm, string userId, IEnumerable<string> requiredActions);
-        Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
-    }
+    Task<string> GetNextCentralIdentityProviderNameAsync();
+    Task SetupSharedIdpAsync(string idpName, string organisationName);
+    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile);
+    Task AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
+    Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
+    Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
+    Task<string> GetOrganisationFromCentralIdentityProviderMapperAsync(string alias);
+    Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
+    Task<string> GetProviderUserIdForCentralUserIdAsync(string userId);
+    Task DeleteSharedAndCentralUserAsync(string idpName, string userId);
+    Task<IEnumerable<JoinedUserInfo>> GetJoinedUsersAsync(
+        string idpName,
+        string? userId = null,
+        string? providerUserId = null,
+        string? userName = null,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null);
+    Task<string> SetupClientAsync(string redirectUrl);
+    Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
+    Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
+    Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
 }
