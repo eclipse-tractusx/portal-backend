@@ -90,7 +90,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return idpName;
         }
 
-        public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, string organisationName)
+        public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile)
         {
             var userIdShared = await CreateSharedRealmUserAsync(idpName, userProfile).ConfigureAwait(false);
 
@@ -101,22 +101,22 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
             var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile(
                 idpName + "." + userIdShared,
-                userProfile.FirstName,
-                userProfile.LastName,
-                userProfile.Email), organisationName).ConfigureAwait(false);
+                userProfile.Email,
+                userProfile.OrganisationName) {
+                    FirstName = userProfile.FirstName,
+                    LastName = userProfile.LastName,
+                    BusinessPartnerNumber = userProfile.BusinessPartnerNumber
+                }).ConfigureAwait(false);
 
             if (userIdCentral == null)
             {
-                throw new Exception($"failed to created user {userProfile.UserName} in central realm for organization {organisationName}");
+                throw new Exception($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
             }
 
             await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);
 
             return userIdCentral;
         }
-
-        public Task AssignInvitedUserInitialRoles(string centralUserId) =>
-            AssignClientRolesToCentralUserAsync(centralUserId, _Settings.InvitedUserInitialRoles);
 
         public async Task<IEnumerable<string>> GetClientRolesAsync(string clientId)
         {
@@ -197,7 +197,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 throw new Exception($"failed to retrieve central user {userId}");
             }
             user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
-            user.Attributes["bpn"] = (user.Attributes.TryGetValue("bpn", out var existingBpns))
+            user.Attributes[_Settings.MappedBpnAttribute] = (user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
                 ? existingBpns.Concat(bpns).Distinct()
                 : bpns;
             if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))

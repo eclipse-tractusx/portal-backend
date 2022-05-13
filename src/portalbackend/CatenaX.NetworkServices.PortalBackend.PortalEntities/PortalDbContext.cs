@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +21,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
         public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
         public virtual DbSet<App> Apps { get; set; } = default!;
-        public virtual DbSet<AppAssignedCompanyUserRole> AppAssignedCompanyUserRoles { get; set; } = default!;
+        public virtual DbSet<AppAssignedClient> AppAssignedClients { get; set; } = default!;
         public virtual DbSet<AppAssignedLicense> AppAssignedLicenses { get; set; } = default!;
         public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
         public virtual DbSet<AppDescription> AppDescriptions { get; set; } = default!;
@@ -44,13 +42,15 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
         public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
         public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
         public virtual DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; } = default!;
-        public virtual DbSet<CompanyUserRole> CompanyUserRoles { get; set; } = default!;
+        public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
+        public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
         public virtual DbSet<Consent> Consents { get; set; } = default!;
         public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
         public virtual DbSet<Country> Countries { get; set; } = default!;
         public virtual DbSet<Document> Documents { get; set; } = default!;
         public virtual DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
         public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
+        public virtual DbSet<IamClient> IamClients { get; set; } = default!;
         public virtual DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
         public virtual DbSet<IamUser> IamUsers { get; set; } = default!;
         public virtual DbSet<IdentityProvider> IdentityProviders { get; set; } = default!;
@@ -200,13 +200,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         }
                     );
 
-                entity.HasMany(p => p.CompanyUserRoles)
+                entity.HasMany(p => p.IamClients)
                     .WithMany(p => p.Apps)
-                    .UsingEntity<AppAssignedCompanyUserRole>(
+                    .UsingEntity<AppAssignedClient>(
                         j => j
-                            .HasOne(d => d.CompanyUserRole!)
+                            .HasOne(d => d.IamClient!)
                             .WithMany()
-                            .HasForeignKey(d => d.CompanyUserRoleId)
+                            .HasForeignKey(d => d.IamClientId)
                             .HasConstraintName("fk_4m022ek8gffepnqlnuxwyxp8"),
                         j => j
                             .HasOne(d => d.App!)
@@ -216,8 +216,8 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             .HasConstraintName("fk_oayyvy590ngh5705yspep0up"),
                         j =>
                         {
-                            j.HasKey(e => new{ e.AppId, e.CompanyUserRoleId }).HasName("pk_app_assg_comp_user_roles");
-                            j.ToTable("app_assigned_company_user_roles", "portal");
+                            j.HasKey(e => new{ e.AppId, e.IamClientId }).HasName("pk_app_assigned_clients");
+                            j.ToTable("app_assigned_clients", "portal");
                         });
 
                 entity.HasMany(a => a.SupportedLanguages)
@@ -521,6 +521,11 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     .HasForeignKey(d => d.CompanyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_ku01366dbcqk8h32lh8k5sx1");
+
+                entity.HasOne(d => d.CompanyUserStatus)
+                    .WithMany(p => p!.CompanyUsers)
+                    .HasForeignKey(d => d.CompanyUserStatusId)
+                    .HasConstraintName("fk_company_users_company_user_status_id");
                 
                 entity.HasMany(p => p.Apps)
                     .WithMany(p => p.CompanyUsers)
@@ -543,7 +548,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                             j.ToTable("company_user_assigned_app_favourites", "portal");
                         });
                 
-                entity.HasMany(p => p.CompanyUserRoles)
+                entity.HasMany(p => p.UserRoles)
                     .WithMany(p => p.CompanyUsers)
                     .UsingEntity<CompanyUserAssignedRole>(
                         j => j
@@ -565,9 +570,42 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                         });
             });
 
-            modelBuilder.Entity<CompanyUserRole>(entity =>
+            modelBuilder.Entity<UserRole>(entity =>
             {
-                entity.ToTable("company_user_roles", "portal");
+                entity.ToTable("user_roles", "portal");
+
+                entity.HasOne(d => d.IamClient)
+                    .WithMany(p => p!.UserRoles)
+                    .HasForeignKey(d => d.IamClientId);
+            });
+
+            modelBuilder.Entity<UserRoleDescription>(entity =>
+            {
+                entity.ToTable("user_role_descriptions", "portal");
+
+                entity.HasKey(e => new { e.UserRoleId, e.LanguageShortName })
+                    .HasName("pk_company_role_descriptions");
+
+                entity.HasOne(d => d.UserRole)
+                    .WithMany(p => p!.UserRoleDescriptions)
+                    .HasForeignKey(d => d.UserRoleId);
+                
+                entity.HasOne(d => d.Language)
+                    .WithMany(p => p!.UserRoleDescriptions)
+                    .HasForeignKey(d => d.LanguageShortName);
+            });
+
+            modelBuilder.Entity<CompanyUserStatus>(entity =>
+            {
+                entity.ToTable("company_user_status", "portal");
+
+                entity.Property(e => e.CompanyUserStatusId)
+                    .ValueGeneratedNever();
+
+                entity.HasData(
+                    Enum.GetValues(typeof(CompanyUserStatusId))
+                        .Cast<CompanyUserStatusId>()
+                        .Select(e => new CompanyUserStatus(e)));
             });
 
             modelBuilder.Entity<Consent>(entity =>
@@ -659,6 +697,14 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities
                     Enum.GetValues(typeof(DocumentTypeId))
                         .Cast<DocumentTypeId>()
                         .Select(e => new DocumentType(e)));
+            });
+
+            modelBuilder.Entity<IamClient>(entity =>
+            {
+                entity.ToTable("iam_clients", "portal");
+
+                entity.HasIndex(e => e.ClientClientId, "uk_iam_client_client_client_id")
+                    .IsUnique();
             });
 
             modelBuilder.Entity<IamIdentityProvider>(entity =>
