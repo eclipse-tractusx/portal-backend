@@ -1,62 +1,86 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling
+namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+
+public class GeneralHttpErrorHandler
 {
-    public class GeneralHttpErrorHandler
+    private readonly RequestDelegate _next;
+    private readonly ILogger _logger;
+
+    public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
+        _next = next;
+        _logger = logger;
+    }
 
-        public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger)
+    public async Task Invoke(HttpContext context)
+    {
+        try
         {
-            _next = next;
-            _logger = logger;
+            await _next(context).ConfigureAwait(false);
         }
-
-        public async Task Invoke(HttpContext context)
+        catch (Exception error)
         {
-            try
+            ErrorResponse errorResponse = null!;
+            if (error is ArgumentException)
             {
-                await _next(context);
+                errorResponse = new ErrorResponse(
+                    "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    "One or more validation errors occurred.",
+                    (int)HttpStatusCode.BadRequest,
+                    new Dictionary<String,IEnumerable<string>>()
+                    {
+                        { (error as ArgumentException)!.ParamName ?? error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
+                    }
+                );
+                _logger.LogInformation(error.Message);
             }
-            catch (Exception error)
+            else if (error is NotFoundException)
             {
-                var response = context.Response;
-                string _message;
-                if (error is ArgumentException)
-                {
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    _message = "Bad Request";
-                    _logger.LogInformation(error.Message);
-                }
-                else if (error is NotFoundException)
-                {
-                    response.StatusCode = (int)HttpStatusCode.NotFound;
-                    _message = "Resource Not Found";
-                    _logger.LogInformation(error.Message);
-                }
-                else if (error is ForbiddenException)
-                {
-                    response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    _message = "Forbidden";
-                    _logger.LogInformation(error.Message);
-                }
-                else
-                {
-                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    _message = "Internal Server Error";
-                    _logger.LogError(error.ToString());
-                }
-                response.ContentType = "application/json";
-                var result = JsonSerializer.Serialize(new { message = _message });
-                await response.WriteAsync(result);
+                errorResponse = new ErrorResponse(
+                    "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4",
+                    "Cannot find representation of target resource.",
+                    (int)HttpStatusCode.NotFound,
+                    new Dictionary<String,IEnumerable<string>>()
+                    {
+                        { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
+                    }
+                );
+                _logger.LogInformation(error.Message);
             }
+            else if (error is ForbiddenException)
+            {
+                errorResponse = new ErrorResponse(
+                    "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3",
+                    "Access to requested resource is not permitted.",
+                    (int)HttpStatusCode.Forbidden,
+                    new Dictionary<String,IEnumerable<string>>()
+                    {
+                        { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
+                    }
+                );
+                _logger.LogInformation(error.Message);
+            }
+            else
+            {
+                errorResponse = new ErrorResponse(
+                    "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
+                    "The server encountered an unexpected condition.",
+                    (int)HttpStatusCode.InternalServerError,
+                    new Dictionary<String,IEnumerable<string>>()
+                    {
+                        { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
+                    }
+                );
+                _logger.LogError(error.Message);
+            }
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = errorResponse.Status;
+            await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse)).ConfigureAwait(false);
         }
     }
 }
