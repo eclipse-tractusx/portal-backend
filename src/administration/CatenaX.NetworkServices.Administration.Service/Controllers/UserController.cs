@@ -75,8 +75,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "approve_new_partner")]
         [Route("application/{applicationId}/welcomeEmail")]
-        public async Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
-            await _logic.PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
+        public Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
+             _logic.PostRegistrationWelcomeEmailAsync(applicationId);
                 
         
 
