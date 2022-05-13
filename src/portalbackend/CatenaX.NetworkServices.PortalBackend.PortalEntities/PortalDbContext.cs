@@ -494,6 +494,8 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.Language)
                 .WithMany(p => p!.CompanyRoleDescriptions)
                 .HasForeignKey(d => d.LanguageShortName);
+
+            entity.HasData(StaticPortalData.CompanyRoleDescriptions);
         });
 
         modelBuilder.Entity<CompanyStatus>(entity =>
@@ -661,6 +663,8 @@ public class PortalDbContext : DbContext
 
             entity.Property(e => e.Alpha3Code)
                 .IsFixedLength(true);
+
+            entity.HasData(StaticPortalData.Countries);
         });
 
         modelBuilder.Entity<Document>(entity =>
@@ -797,11 +801,15 @@ public class PortalDbContext : DbContext
 
             entity.Property(e => e.ShortName)
                 .IsFixedLength(true);
+
+            entity.HasData(StaticPortalData.Languages);
         });
 
         modelBuilder.Entity<UseCase>(entity =>
         {
             entity.ToTable("use_cases", "portal");
+
+            entity.HasData(StaticPortalData.UseCases);
         });
     }
 }
