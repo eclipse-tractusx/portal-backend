@@ -17,7 +17,7 @@ public class UseCase
     {
         Id = id;
         Name = name;
-        Shortname = name;
+        Shortname = shortname;
     }
 
     [Key]
