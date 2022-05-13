@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
@@ -10,14 +11,15 @@ public class CompanyUser
         Documents = new HashSet<Document>();
         Invitations = new HashSet<Invitation>();
         Apps = new HashSet<App>();
-        CompanyUserRoles = new HashSet<CompanyUserRole>();
+        UserRoles = new HashSet<UserRole>();
     }
- 
-    public CompanyUser(Guid id, Guid companyId, DateTimeOffset dateCreated) : this()
+    
+    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
         DateCreated = dateCreated;
         CompanyId = companyId;
+        CompanyUserStatusId = companyUserStatusId;
     }
 
     [Key]
@@ -40,12 +42,15 @@ public class CompanyUser
 
     public Guid CompanyId { get; private set; }
 
+    public CompanyUserStatusId CompanyUserStatusId { get; set; }
+
     // Navigation properties
     public virtual Company? Company { get; private set; }
     public virtual IamUser? IamUser { get; set; }
+    public virtual CompanyUserStatus? CompanyUserStatus { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<App> Apps { get; private set; }
-    public virtual ICollection<CompanyUserRole> CompanyUserRoles { get; private set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
 }
