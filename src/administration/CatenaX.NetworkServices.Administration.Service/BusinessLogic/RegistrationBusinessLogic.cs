@@ -25,25 +25,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
     }
 
-    public IAsyncEnumerable<CompanyApplicationDetails> GetCompanyApplicationDetailsAsync(int page)
-    {
-        if (page <= 0)
-        {
-            throw new ArgumentException("parameter page must be > 0", "page");
-        }
-        return _portalDBAccess.GetCompanyApplicationDetailsUntrackedAsync(
-            _settings.ApplicationsPageSize * (page-1),
-            _settings.ApplicationsPageSize
-        );
-    }
-
-    public async Task<PaginationData> GetApplicationPaginationDataAsync()
-    {
-        int count = await _portalDBAccess.GetApplicationsCountAsync().ConfigureAwait(false);
-        return new PaginationData(
-            count,
-            count / _settings.ApplicationsPageSize + 1,
-            _settings.ApplicationsPageSize
-        );
-    }
+    public Task<PaginationResponse<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size) =>
+        PaginationResponse<CompanyApplicationDetails>.CreatePaginationResponseAsync(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            () => _portalDBAccess.GetApplicationsCountAsync(),
+            (skip, take) => _portalDBAccess.GetCompanyApplicationDetailsUntrackedAsync(skip, take));
 }
