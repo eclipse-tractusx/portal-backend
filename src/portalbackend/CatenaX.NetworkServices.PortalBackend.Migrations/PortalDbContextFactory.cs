@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
@@ -8,7 +9,10 @@ internal class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbCont
 {
     public PortalDbContext CreateDbContext(string[] args)
     {
-        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddUserSecrets(Assembly.GetExecutingAssembly())
+            .Build();
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
         optionsBuilder.UseNpgsql(
             config.GetConnectionString("PortalDb"),
