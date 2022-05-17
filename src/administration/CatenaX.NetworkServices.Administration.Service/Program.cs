@@ -1,8 +1,6 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Keycloak.DBAccess;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
@@ -21,7 +19,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Text.Json.Serialization;
 
 var VERSION = "v2";
@@ -96,14 +93,9 @@ builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IKeycloakDBAccess, KeycloakDBAccess>();
-
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
-
-builder.Services.AddTransient<IDBConnectionFactories, PostgreConnectionFactories>()
-                .ConfigureDBConnectionSettingsMap(builder.Configuration.GetSection("DatabaseAccess"));
 
 builder.Services.AddDbContext<PortalDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("PortalDB")));
