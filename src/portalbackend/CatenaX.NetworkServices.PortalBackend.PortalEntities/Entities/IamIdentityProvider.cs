@@ -1,28 +1,26 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+
+public class IamIdentityProvider
 {
-    public class IamIdentityProvider
+    private IamIdentityProvider()
     {
-        private IamIdentityProvider()
-        {
-            IamIdpAlias = null!;
-        }
-
-        public IamIdentityProvider(string iamIdpAlias, Guid identityProviderId)
-        {
-            IamIdpAlias = iamIdpAlias;
-            IdentityProviderId = identityProviderId;
-        }
-
-        public Guid IdentityProviderId { get; private set; }
-
-        [Key]
-        [MaxLength(255)]
-        public string IamIdpAlias { get; private set; }
-
-        // Navigation properties
-        public virtual IdentityProvider? IdentityProvider { get; private set; }
+        IamIdpAlias = null!;
     }
+
+    public IamIdentityProvider(string iamIdpAlias, Guid identityProviderId)
+    {
+        IamIdpAlias = iamIdpAlias;
+        IdentityProviderId = identityProviderId;
+    }
+
+    public Guid IdentityProviderId { get; private set; }
+
+    [Key]
+    [MaxLength(255)]
+    public string IamIdpAlias { get; private set; }
+
+    // Navigation properties
+    public virtual IdentityProvider? IdentityProvider { get; private set; }
 }
