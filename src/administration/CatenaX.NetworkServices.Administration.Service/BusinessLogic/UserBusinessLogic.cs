@@ -2,6 +2,8 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -145,29 +147,33 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
         }
 
-        public Task<IEnumerable<JoinedUserInfo>> GetUsersAsync(
-            string? tenant,
-            string? userId = null,
-            string? providerUserId = null,
-            string? userName = null,
+        public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(
+            string adminUserId,
+            Guid? companyUserId = null,
+            string? userEntityId = null,
             string? firstName = null,
             string? lastName = null,
-            string? email = null)
-        {
-            if (String.IsNullOrWhiteSpace(tenant))
+            string? email = null,
+            CompanyUserStatusId? status = null)
             {
-                throw new ArgumentNullException("tenant must not be empty");
+                if (!companyUserId.HasValue
+                    && String.IsNullOrWhiteSpace(userEntityId)
+                    && String.IsNullOrWhiteSpace(firstName)
+                    && String.IsNullOrWhiteSpace(lastName)
+                    && String.IsNullOrWhiteSpace(email)
+                    && !status.HasValue)
+                {
+                    throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
+                }
+                return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
+                    adminUserId,
+                    companyUserId,
+                    userEntityId,
+                    firstName,
+                    lastName,
+                    email,
+                    status);
             }
-            return _provisioningManager.GetJoinedUsersAsync(
-                tenant,
-                userId,
-                providerUserId,
-                userName,
-                firstName,
-                lastName,
-                email
-            );
-        }
 
         public Task<IEnumerable<string>> GetAppRolesAsync(string? clientId)
         {
@@ -178,65 +184,80 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return _provisioningManager.GetClientRolesAsync(clientId);
         }
 
-        public async Task DeleteUserAsync(string? tenant, string? userId)
+        public async Task<int> DeleteUserAsync(string iamUserId)
         {
-            if (String.IsNullOrWhiteSpace(tenant))
+            var userData = await _portalDBAccess.GetCompanyUserWithIdpAsync(iamUserId).ConfigureAwait(false);
+            if (userData == null)
             {
-                throw new ArgumentNullException("tenant must not be empty");
+                throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
             }
-            if (String.IsNullOrWhiteSpace(userId))
+            if (await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false))
             {
-                throw new ArgumentNullException("userId must not be empty");
+                return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
             }
-            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(userId);
-            await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userIdShared).ConfigureAwait(false);
+            return -1;
         }
 
-        public async Task<IEnumerable<string>> DeleteUsersAsync(UserIds? usersToDelete, string? tenant)
+        public async IAsyncEnumerable<Guid> DeleteUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
         {
-            if (usersToDelete == null)
+            var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
+            if (iamIdpAlias == null)
             {
-                throw new ArgumentException("usersToDelete must not be null");
+                throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
             }
-            if (String.IsNullOrWhiteSpace(tenant))
+            await foreach(var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
-                throw new ArgumentException("tenant must not be empty");
-            }
-            return (await Task.WhenAll(usersToDelete.userIds.Select(async userId =>
-            {
+                var success = false;
                 try
                 {
-                    await _provisioningManager.DeleteSharedAndCentralUserAsync(tenant, userId).ConfigureAwait(false);
-                    return userId;
+                    success = await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error while deleting user {userId}, {e.Message}");
-                    return null!;
+                    _logger.LogError(e, $"Error while deleting comapnyUser {companyUser.Id} from shared idp {iamIdpAlias}");
                 }
-            })).ConfigureAwait(false)).Where(userName => userName != null);
+                if (success)
+                {
+                    yield return companyUser.Id;
+                }
+            }
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid? companyId)
+        private async Task<bool> DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
         {
-            if (!companyId.HasValue)
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            if (userIdShared != null
+                && (await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false))
+                && (await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false))) //TODO doesn't handle the case where user is both shared and own idp user
             {
-                throw new ArgumentNullException("companyId must not be empty");
+                foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
+                {
+                    _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
+                }
+                _portalDBAccess.RemoveIamUser(companyUser.IamUser);
+                companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
+                return true;
             }
-            foreach (var tenant in await _portalDBAccess.GetIdpAliaseForCompanyIdUntrackedAsync(companyId.Value).ToListAsync().ConfigureAwait(false))
+            return false;
+        }
+
+        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
+        {
+            var bpn = await _portalDBAccess.GetBpnUntrackedAsync(companyId).ConfigureAwait(false);
+            if (String.IsNullOrWhiteSpace(bpn))
             {
-                var usersToUpdate = (await _provisioningManager.GetJoinedUsersAsync(tenant).ConfigureAwait(false))
-                    .Select(g => g.userId);
+                throw new NotFoundException($"company {companyId} does not have a bpn");
+            }
+            await foreach (var userEntityId in _portalDBAccess.GetIamUsersUntrackedAsync(companyId).ConfigureAwait(false))
+            {
                 try
                 {
-                    foreach (var userBpn in await _portalDBAccess.GetBpnForUsersUntrackedAsync(usersToUpdate).ToListAsync().ConfigureAwait(false))
-                    {
-                        await _provisioningManager.AddBpnAttributetoUserAsync(userBpn.UserId, Enumerable.Repeat(userBpn.BusinessPartnerNumber, 1));
-                    }
+                    await _provisioningManager.AddBpnAttributetoUserAsync(userEntityId, Enumerable.Repeat(bpn, 1));
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error while adding BPN attribute to {usersToUpdate}");
+                    _logger.LogError(e, $"Error while adding BPN attribute to {userEntityId}");
                 }
             }
             return true;
@@ -262,18 +283,24 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return true;
         }
 
-        //TODO: full functionality is not yet delivered and currently the service is working with a submitted Json file
-        public async Task<bool> PostRegistrationWelcomeEmailAsync(WelcomeData welcomeData)
+        public async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
         {
-            var mailParameters = new Dictionary<string, string>
-            {
-                { "userName", welcomeData.userName },
-                { "companyName", welcomeData.companyName },
-                { "url", $"{_settings.Portal.BasePortalAddress}"},
-            };
+            await foreach (var user in _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
+             {
+                if (String.IsNullOrWhiteSpace(user.EmailId))
+                {
+                    throw new ArgumentException($"user {user.UserName} has no assigned email");
+                }
 
-            await _mailingService.SendMails(welcomeData.email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+                var mailParameters = new Dictionary<string, string>
+                {
+                    { "userName", user.UserName },
+                    { "companyName", user.CompanyName },
+                    { "url", $"{_settings.Portal.BasePortalAddress}"},
+                };
 
+                await _mailingService.SendMails(user.EmailId, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+            }
             return true;
         }
 
