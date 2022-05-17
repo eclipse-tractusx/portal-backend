@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Keycloak.Net.Models.Users;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 
@@ -60,35 +56,13 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             }
         }
 
-        private async Task<string> GetCentralUserIdForProviderIdAsync(string idpName, string providerUserId)
-        {
-            var centralUserId = (await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: idpName + "." + providerUserId, max: 1, briefRepresentation: true).ConfigureAwait(false))
-                .SingleOrDefault()
-                ?.Id;
-            if (centralUserId == null)
-            {
-                throw new Exception($"failed to retrieve central userid for identityprovider {idpName} user {providerUserId}");
-            }
-            return centralUserId;
-        }
+        public Task<bool> DeleteSharedRealmUserAsync(string realm, string userId) =>
+            _SharedIdp.DeleteUserAsync(realm, userId);
+
+        public Task<bool> DeleteCentralRealmUserAsync(string userId) =>
+            _CentralIdp.DeleteUserAsync(_Settings.CentralRealm, userId);
 
         private User CloneUser(User user) =>
-            JsonSerializer.Deserialize<User>(JsonSerializer.Serialize(user));
-
-        private async Task DeleteSharedRealmUserAsync(string realm, string userId)
-        {
-            if (! await _SharedIdp.DeleteUserAsync(realm, userId).ConfigureAwait(false))
-            {
-                throw new Exception($"failed to delete shared realm {realm} user {userId}");
-            }
-        }
-
-        private async Task DeleteCentralRealmUserAsync(string realm, string userId)
-        {
-            if (! await _CentralIdp.DeleteUserAsync(realm, userId))
-            {
-                throw new Exception($"failed to delete central realm {realm} user {userId}");
-            }
-        }
+            JsonSerializer.Deserialize<User>(JsonSerializer.Serialize(user))!;
     }
 }

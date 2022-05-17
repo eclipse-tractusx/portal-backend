@@ -1,4 +1,6 @@
-﻿using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -28,18 +30,23 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
         [HttpGet]
-        [Authorize(Policy = "CheckTenant")]
         [Authorize(Roles = "view_user_management")]
-        [Route("tenant/{tenant}/users")]
-        public Task<IEnumerable<JoinedUserInfo>> QueryJoinedUsers(
-                [FromRoute] string tenant,
-                [FromQuery] string? userId = null,
-                [FromQuery] string? providerUserId = null,
-                [FromQuery] string? userName = null,
-                [FromQuery] string? firstName = null,
-                [FromQuery] string? lastName = null,
-                [FromQuery] string? email = null
-            ) => _logic.GetUsersAsync(tenant, userId, providerUserId, userName, firstName, lastName, email);
+        [Route("owncompany/users")]
+        public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(
+            [FromQuery] string? userEntityId = null,
+            [FromQuery] Guid? companyUserId = null,
+            [FromQuery] string? firstName = null,
+            [FromQuery] string? lastName = null,
+            [FromQuery] string? email = null,
+            [FromQuery] CompanyUserStatusId? status = null) =>
+            WithIamUserId(adminUserId => _logic.GetCompanyUserDetailsAsync(
+                adminUserId,
+                companyUserId,
+                userEntityId,
+                firstName,
+                lastName,
+                email,
+                status));
 
         [HttpGet]
         [Authorize(Roles = "view_client_roles")]
@@ -48,17 +55,15 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             _logic.GetAppRolesAsync(clientId);
 
         [HttpDelete]
-        [Authorize(Policy = "CheckTenant")]
-        [Route("tenant/{tenant}/ownUser")]
-        public Task ExecuteOwnUserDeletion([FromRoute] string tenant) =>
-            WithIamUserId(userName => _logic.DeleteUserAsync(tenant, userName));
+        [Route("owncompany/ownUser")]
+        public Task<int> ExecuteOwnUserDeletion() =>
+            WithIamUserId(iamUserId => _logic.DeleteUserAsync(iamUserId));
 
         [HttpDelete]
-        [Authorize(Policy = "CheckTenant")]
         [Authorize(Roles = "delete_user_account")]
-        [Route("tenant/{tenant}/users")]
-        public Task ExecuteUserDeletion([FromRoute] string tenant, [FromBody] UserIds usersToDelete) =>
-            _logic.DeleteUsersAsync(usersToDelete, tenant);
+        [Route("owncompany/users")]
+        public IAsyncEnumerable<Guid> ExecuteUserDeletion([FromBody] IEnumerable<Guid> usersToDelete) =>
+            WithIamUserId(adminUserId => _logic.DeleteUsersAsync(usersToDelete, adminUserId));
 
         [HttpPut]
         [Authorize(Roles = "approve_new_partner")]
