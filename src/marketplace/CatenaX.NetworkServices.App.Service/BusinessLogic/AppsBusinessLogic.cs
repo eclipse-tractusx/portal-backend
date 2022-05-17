@@ -59,6 +59,36 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<BusinessAppViewModel> GetAllUserUserBusinessAppsAsync(string userId)
+    {
+        await foreach (var app in context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+            .SelectMany(u => u.CompanyUser!.Company!.BoughtApps)
+            .Intersect(
+                context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+                .SelectMany(u => u.CompanyUser!.UserRoles.SelectMany(r => r.IamClient!.Apps))
+            )
+            .Select( a => new
+            {
+                a.Id,
+                a.Name,
+                a.AppUrl,
+                a.ThumbnailUrl,
+                a.Provider
+            }).AsAsyncEnumerable())
+        {
+            yield return new BusinessAppViewModel(
+                app.Name ?? ERROR_STRING, 
+                app.AppUrl ?? ERROR_STRING, 
+                app.ThumbnailUrl ?? ERROR_STRING, 
+                app.Provider
+            )
+            {
+                Id = app.Id
+            };
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
     {
         var companyId = userId == null ?
