@@ -42,6 +42,29 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
+    /// Get all apps that currently logged in user has been assigned roles in.
+    /// </summary>
+    /// <returns>Collection of BusinessAppViewModels user has been assigned active roles in.</returns>
+    /// <remarks>Example: GET: /api/apps/business</remarks>
+    /// <response code="200">Returns the list of the user's business apps.</response>
+    /// <response code="400">If sub claim is empty/invalid.</response>
+    [HttpGet]
+    [Route("business")]
+    [Authorize(Roles = "view_apps")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public ActionResult<IAsyncEnumerable<BusinessAppViewModel>> GetAllBusinessAppsForCurrentUserAsync()
+    {
+        var userId = GetIamUserIdFromClaims();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return BadRequest("User information not provided in claims.");
+        }
+
+        return Ok(this.appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
+    }
+
+    /// <summary>
     /// Retrieves app details for an app referenced by id.
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to retrieve.</param>
