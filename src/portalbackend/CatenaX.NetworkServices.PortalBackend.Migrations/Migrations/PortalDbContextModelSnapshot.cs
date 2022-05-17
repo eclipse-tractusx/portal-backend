@@ -3717,7 +3717,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedRole", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
-                        .WithMany()
+                        .WithMany("CompanyUserAssignedRoles")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
                         .HasConstraintName("fk_0c9rjjf9gm3l0n6reb4o0f1s");
@@ -3960,6 +3960,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
+                    b.Navigation("CompanyUserAssignedRoles");
+
                     b.Navigation("Consents");
 
                     b.Navigation("Documents");
