@@ -1,6 +1,6 @@
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.Models;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
