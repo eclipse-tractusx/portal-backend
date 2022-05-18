@@ -39,6 +39,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
     public virtual DbSet<CompanyRoleDescription> CompanyRoleDescriptions { get; set; } = default!;
+    public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
+    public virtual DbSet<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; set; } = default!;
+    public virtual DbSet<CompanyServiceAccountStatus> CompanyServiceAccountStatuses { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
@@ -57,6 +60,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
     public virtual DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
+    public virtual DbSet<IamServiceAccount> IamServiceAccounts { get; set; } = default!;
     public virtual DbSet<IamUser> IamUsers { get; set; } = default!;
     public virtual DbSet<IdentityProvider> IdentityProviders { get; set; } = default!;
     public virtual DbSet<IdentityProviderCategory> IdentityProviderCategories { get; set; } = default!;
@@ -352,6 +356,46 @@ public class PortalDbContext : DbContext
             entity.HasData(StaticPortalData.CompanyRoleDescriptions);
         });
 
+        modelBuilder.Entity<CompanyServiceAccount>(entity =>
+        {
+            entity.HasOne(d => d.Company)
+                .WithMany(p => p!.CompanyServiceAccounts)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.CompanyServiceAccountStatus)
+                .WithMany(p => p!.CompanyServiceAccounts)
+                .HasForeignKey(d => d.CompanyServiceAccountStatusId);
+                
+            entity.HasMany(p => p.UserRoles)
+                .WithMany(p => p.CompanyServiceAccounts)
+                .UsingEntity<CompanyServiceAccountAssignedRole>(
+                    j => j
+                        .HasOne(d => d.UserRole!)
+                        .WithMany()
+                        .HasForeignKey(d => d.UserRoleId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.CompanyServiceAccount!)
+                        .WithMany()
+                        .HasForeignKey(d => d.CompanyServiceAccountId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.CompanyServiceAccountId, e.UserRoleId });
+                    });
+
+            entity.HasMany(p => p.CompanyServiceAccountAssignedRoles)
+                .WithOne(d => d.CompanyServiceAccount!);
+        });
+
+        modelBuilder.Entity<CompanyServiceAccountStatus>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyServiceAccountStatusId))
+                    .Cast<CompanyServiceAccountStatusId>()
+                    .Select(e => new CompanyServiceAccountStatus(e))
+            );
+
         modelBuilder.Entity<CompanyStatus>()
             .HasData(
                 Enum.GetValues(typeof(CompanyStatusId))
@@ -470,6 +514,17 @@ public class PortalDbContext : DbContext
                 .WithOne(p => p!.IamIdentityProvider!)
                 .HasForeignKey<IamIdentityProvider>(d => d.IdentityProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+        modelBuilder.Entity<IamServiceAccount>(entity =>
+        {
+            entity.HasIndex(e => e.ClientClientId)
+                .IsUnique();
+
+            entity.HasOne(d => d.CompanyServiceAccount)
+                .WithOne(p => p!.IamServiceAccount!)
+                .HasForeignKey<IamServiceAccount>(d => d.CompanyServiceAccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
         modelBuilder.Entity<IamUser>()
             .HasOne(d => d.CompanyUser)
