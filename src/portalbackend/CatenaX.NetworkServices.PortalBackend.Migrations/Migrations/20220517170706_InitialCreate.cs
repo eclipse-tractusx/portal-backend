@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -1045,6 +1045,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalSchema: "portal",
                         principalTable: "company_users",
                         principalColumn: "id");
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "agreement_categories",
+                columns: new[] { "agreement_category_id", "label" },
+                values: new object[,]
+                {
+                    { 1, "CX_FRAME_CONTRACT" },
+                    { 2, "APP_CONTRACT" },
+                    { 3, "DATA_CONTRACT" }
                 });
 
             migrationBuilder.InsertData(
