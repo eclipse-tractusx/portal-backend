@@ -1,6 +1,7 @@
+using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Administration.Service.Models;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
@@ -16,13 +17,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _settings = configuration.Value;
     }
 
-    public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
+    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
     {
         if (!applicationId.HasValue)
         {
             throw new ArgumentNullException("applicationId must not be null");
         }
-        return _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value);
+        var companyWithAddress = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+        if (companyWithAddress == null)
+        {
+            throw new NotFoundException($"no company found for applicationId {applicationId.Value}");
+        }
+        return companyWithAddress;
     }
 
     public IAsyncEnumerable<CompanyApplicationDetails> GetCompanyApplicationDetailsAsync(int page)
