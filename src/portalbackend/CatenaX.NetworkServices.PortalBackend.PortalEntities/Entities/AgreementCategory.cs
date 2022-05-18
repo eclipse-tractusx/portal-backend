@@ -11,6 +11,12 @@ public class AgreementCategory
         Agreements = new HashSet<Agreement>();
     }
 
+    public AgreementCategory(AgreementCategoryId agreementCategoryId) : this()
+    {
+        AgreementCategoryId = agreementCategoryId;
+        Label = agreementCategoryId.ToString();
+    }
+
     [Key]
     public AgreementCategoryId AgreementCategoryId { get; private set; }
 

@@ -159,6 +159,11 @@ public class PortalDbContext : DbContext
 
             entity.Property(e => e.AgreementCategoryId)
                 .ValueGeneratedNever();
+
+            entity.HasData(
+                Enum.GetValues(typeof(AgreementCategoryId))
+                    .Cast<AgreementCategoryId>()
+                    .Select(e => new AgreementCategory(e)));
         });
 
         modelBuilder.Entity<App>(entity =>
