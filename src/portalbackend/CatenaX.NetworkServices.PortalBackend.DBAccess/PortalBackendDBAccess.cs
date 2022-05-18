@@ -465,20 +465,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         }
         public Task<IdpUser?> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
-            _dbContext.IamUsers
-                .Where(iamUser => iamUser.UserEntityId == adminUserId)
-                .Select(iamUser => iamUser!.CompanyUser!.Company)
-                .Select(company => new IdpUser
+            _dbContext.CompanyUsers.AsNoTracking()
+                .Where(companyUser => companyUser.Id == companyUserId
+                  && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Select(companyUser => new IdpUser
                 {
-                    TargetIamUserId = company!.CompanyUsers
-                        .Where(companyUser => companyUser.Id == companyUserId)
-                        .Select(companyUser => companyUser.IamUser!.UserEntityId)
-                        .SingleOrDefault(),
-                    CompanyId = company!.CompanyUsers
-                        .Where(companyUser => companyUser.Id == companyUserId)
-                        .Select(companyUser => companyUser.CompanyId)
-                        .SingleOrDefault(),
-                    IdpName = company!.IdentityProviders
+                    TargetIamUserId = companyUser.IamUser!.UserEntityId,
+                    CompanyId = companyUser!.CompanyId,
+                    IdpName = companyUser.Company!.IdentityProviders
                         .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                         .SingleOrDefault()

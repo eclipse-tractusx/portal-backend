@@ -351,7 +351,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 }
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
-            throw new ArgumentException($"Company ID  does not exist");
+            throw new ArgumentException($"Cannot identify companyId: companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
     }
 }
