@@ -87,7 +87,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         user.userName ?? user.eMail,
                         user.eMail,
                         companyIdpData.CompanyName
-                    ) {
+                    )
+                    {
                         FirstName = user.firstName,
                         LastName = user.lastName,
                         Password = password,
@@ -110,7 +111,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     {
                         _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
                     }
-                    
+
                     _portalDBAccess.CreateIamUser(companyUser, centralUserId);
 
                     var inviteTemplateName = "PortalTemplate";
@@ -139,7 +140,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 }
 
                 await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-    
+
                 if (success)
                 {
                     yield return user.eMail;
@@ -155,25 +156,25 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             string? lastName = null,
             string? email = null,
             CompanyUserStatusId? status = null)
+        {
+            if (!companyUserId.HasValue
+                && String.IsNullOrWhiteSpace(userEntityId)
+                && String.IsNullOrWhiteSpace(firstName)
+                && String.IsNullOrWhiteSpace(lastName)
+                && String.IsNullOrWhiteSpace(email)
+                && !status.HasValue)
             {
-                if (!companyUserId.HasValue
-                    && String.IsNullOrWhiteSpace(userEntityId)
-                    && String.IsNullOrWhiteSpace(firstName)
-                    && String.IsNullOrWhiteSpace(lastName)
-                    && String.IsNullOrWhiteSpace(email)
-                    && !status.HasValue)
-                {
-                    throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
-                }
-                return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
-                    adminUserId,
-                    companyUserId,
-                    userEntityId,
-                    firstName,
-                    lastName,
-                    email,
-                    status);
+                throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
             }
+            return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
+                adminUserId,
+                companyUserId,
+                userEntityId,
+                firstName,
+                lastName,
+                email,
+                status);
+        }
 
         public Task<IEnumerable<string>> GetAppRolesAsync(string? clientId)
         {
@@ -205,7 +206,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
             }
-            await foreach(var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
+            await foreach (var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
                 var success = false;
                 try
@@ -286,7 +287,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
         {
             await foreach (var user in _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
-             {
+            {
                 if (String.IsNullOrWhiteSpace(user.EmailId))
                 {
                     throw new ArgumentException($"user {user.UserName} has no assigned email");
@@ -330,23 +331,27 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId, string tenant)
+        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
-            if (idpUserName?.IdpName == tenant && !string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId))
+            if (idpUserName?.CompanyId != null)
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
-                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(tenant, idpUserName.TargetIamUserId).ConfigureAwait(false);
-                    if (!updatedPassword)
+                    if (!string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName?.IdpName))
                     {
-                        throw new Exception("password reset failed");
+                        var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                        if (!updatedPassword)
+                        {
+                            throw new Exception("password reset failed");
+                        }
+                        return updatedPassword;
                     }
-                    return updatedPassword;
+                    throw new NotFoundException($"no shared idp user {companyUserId} found in company of {adminUserId}");
                 }
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
-            throw new NotFoundException($"no shared idp user {companyUserId} found in company of {adminUserId}");
+            throw new ArgumentException($"Company ID  does not exist");
         }
     }
 }

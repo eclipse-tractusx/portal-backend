@@ -82,21 +82,21 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("application/{applicationId}/welcomeEmail")]
         public Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
              _logic.PostRegistrationWelcomeEmailAsync(applicationId);
-                
-        
+
+
 
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
-        [Route("tenant/{tenant}/users/{companyUserId}/resetpassword")]
-        public Task<bool> ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId) =>
-            WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId, tenant));
+        [Route("users/{companyUserId}/resetpassword")]
+        public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
+            WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId));
 
         private T WithIamUserId<T>(Func<string, T> _next)
         {
             var sub = User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value as string;
             if (String.IsNullOrWhiteSpace(sub))
             {
-                throw new ArgumentException("claim sub must not be null or empty","sub");
+                throw new ArgumentException("claim sub must not be null or empty", "sub");
             }
             return _next(sub);
         }
