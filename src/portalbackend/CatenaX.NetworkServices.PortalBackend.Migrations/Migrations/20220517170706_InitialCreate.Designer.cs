@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220517121718_Initial")]
-    partial class Initial
+    [Migration("20220517170706_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -203,6 +203,23 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasName("pk_agreement_categories");
 
                     b.ToTable("agreement_categories", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            AgreementCategoryId = 1,
+                            Label = "CX_FRAME_CONTRACT"
+                        },
+                        new
+                        {
+                            AgreementCategoryId = 2,
+                            Label = "APP_CONTRACT"
+                        },
+                        new
+                        {
+                            AgreementCategoryId = 3,
+                            Label = "DATA_CONTRACT"
+                        });
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", b =>
