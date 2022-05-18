@@ -58,7 +58,7 @@ public class AppsController : ControllerBase
         var userId = GetIamUserIdFromClaims();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return BadRequest("User information not provided in claims.");
+            throw new ArgumentException("User information not provided in claims.", "claims");
         }
 
         return Ok(this.appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
@@ -83,7 +83,7 @@ public class AppsController : ControllerBase
         var userId = GetIamUserIdFromClaims();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return BadRequest("User information not provided in claims.");
+            throw new ArgumentException("User information not provided in claims.", "claims");
         }
 
         return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang).ConfigureAwait(false));
@@ -122,7 +122,7 @@ public class AppsController : ControllerBase
         var userId = GetIamUserIdFromClaims();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return BadRequest("User information not provided in claims.");
+            throw new ArgumentException("User information not provided in claims.", "claims");
         }
 
         return Ok(this.appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
@@ -145,7 +145,7 @@ public class AppsController : ControllerBase
         var userId = GetIamUserIdFromClaims();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return BadRequest("User information not provided in claims.");
+            throw new ArgumentException("User information not provided in claims.", "claims");
         }
 
         try
@@ -154,7 +154,7 @@ public class AppsController : ControllerBase
         }
         catch (DbUpdateException)
         {
-            return BadRequest($"Parameters are invalid or app is already favourited.");
+            throw new ArgumentException($"Parameters are invalid or app is already favourited.");
         }
         
         return Ok();
@@ -177,7 +177,7 @@ public class AppsController : ControllerBase
         var userId = GetIamUserIdFromClaims();
         if(string.IsNullOrWhiteSpace(userId))
         {
-            return BadRequest("User information not provided in claims.");
+            throw new ArgumentException("User information not provided in claims.", "claims");
         }
 
         try
@@ -186,7 +186,7 @@ public class AppsController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
-            return BadRequest($"Parameters are invalid or favourite does not exist.");
+            throw new ArgumentException($"Parameters are invalid or favourite does not exist.");
         }
 
         return Ok();
@@ -209,7 +209,7 @@ public class AppsController : ControllerBase
         var userId = GetIamUserIdFromClaims();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return BadRequest("User information not provided in claims.");
+            throw new ArgumentException("User information not provided in claims.", "claims");
         }
 
         try
@@ -218,7 +218,7 @@ public class AppsController : ControllerBase
         }
         catch (DbUpdateException)
         {
-            return BadRequest($"Parameters are invalid or app is already subscribed to.");
+            throw new ArgumentException($"Parameters are invalid or app is already subscribed to.");
         }
 
         return Ok();
