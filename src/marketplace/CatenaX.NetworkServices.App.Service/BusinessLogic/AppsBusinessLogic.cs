@@ -89,7 +89,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 Tags = a.Tags.Select(t => t.Name),
                 IsPurchased = companyId == null ?
                     (bool?)null :
-                    a.Companies.Any(c => c.Id == companyId)
+                    a.Companies.Any(c => c.Id == companyId),
+                Languages = a.SupportedLanguages.Select(l => l.ShortName)
             })
             .SingleAsync().ConfigureAwait(false);
 
@@ -108,7 +109,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             UseCases = app.UseCases,
             DetailPictureUris = app.DetailPictureUris,
             ContactEmail = app.ContactEmail,
-            ContactNumber = app.ContactNumber
+            ContactNumber = app.ContactNumber,
+            Languages = app.Languages
         };
     }
 
