@@ -67,6 +67,13 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
             WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/documentType/{documentTypeId}/getDocuments")]
+        public IAsyncEnumerable<UploadDocumentDetails> GetUploadedDocumentsAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId) =>
+           WithIamUserId(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId,user));
+
         [HttpPut]
         [Authorize(Roles = "invite_user")]
         [Route("idp")]
