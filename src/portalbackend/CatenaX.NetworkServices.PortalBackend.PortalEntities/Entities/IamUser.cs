@@ -1,28 +1,26 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+
+public class IamUser
 {
-    public class IamUser
+    private IamUser()
     {
-        private IamUser()
-        {
-            UserEntityId = null!;
-        }
-
-        public IamUser(string iamUserId, Guid companyUserId)
-        {
-            UserEntityId = iamUserId;
-            CompanyUserId = companyUserId;
-        }
-
-        [Key]
-        [StringLength(36)]
-        public string UserEntityId { get; private set; }
-
-        public Guid CompanyUserId { get; private set; }
-
-        // Navigation properties
-        public virtual CompanyUser? CompanyUser { get; set; }
+        UserEntityId = null!;
     }
+
+    public IamUser(string iamUserId, Guid companyUserId)
+    {
+        UserEntityId = iamUserId;
+        CompanyUserId = companyUserId;
+    }
+
+    [Key]
+    [StringLength(36)]
+    public string UserEntityId { get; private set; }
+
+    public Guid CompanyUserId { get; private set; }
+
+    // Navigation properties
+    public virtual CompanyUser? CompanyUser { get; set; }
 }

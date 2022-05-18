@@ -37,13 +37,21 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async Task ExecuteInvitation(CompanyInvitationData invitationData)
         {
+            if (String.IsNullOrWhiteSpace(invitationData.email))
+            {
+                throw new ArgumentException("email must not be empty", "email");
+            }
+            if (String.IsNullOrWhiteSpace(invitationData.organisationName))
+            {
+                throw new ArgumentException("organisationName must not be empty", "organisationName");
+            }
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
             await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
 
             var password = new Password().Next();
             var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
-                    invitationData.userName,
+                    String.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
                     invitationData.email,
                     invitationData.organisationName
             ) {
