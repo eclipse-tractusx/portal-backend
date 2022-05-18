@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace CatenaX.NetworkServices.Framework.Models;
 
 public class PaginationResponse<T>
 {
