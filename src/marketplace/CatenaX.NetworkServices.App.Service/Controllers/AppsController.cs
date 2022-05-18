@@ -56,10 +56,6 @@ public class AppsController : ControllerBase
     public ActionResult<IAsyncEnumerable<BusinessAppViewModel>> GetAllBusinessAppsForCurrentUserAsync()
     {
         var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("User information not provided in claims.", "claims");
-        }
 
         return Ok(this.appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
     }
@@ -81,10 +77,6 @@ public class AppsController : ControllerBase
     public async Task<ActionResult<AppDetailsViewModel>> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null)
     {
         var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("User information not provided in claims.", "claims");
-        }
 
         return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang).ConfigureAwait(false));
     }
@@ -120,10 +112,6 @@ public class AppsController : ControllerBase
     public ActionResult<IAsyncEnumerable<Guid>> GetAllFavouriteAppsForCurrentUserAsync()
     {
         var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("User information not provided in claims.", "claims");
-        }
 
         return Ok(this.appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
     }
@@ -143,10 +131,6 @@ public class AppsController : ControllerBase
     public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
         var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("User information not provided in claims.", "claims");
-        }
 
         try
         {
@@ -175,10 +159,6 @@ public class AppsController : ControllerBase
     public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
         var userId = GetIamUserIdFromClaims();
-        if(string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("User information not provided in claims.", "claims");
-        }
 
         try
         {
@@ -207,11 +187,7 @@ public class AppsController : ControllerBase
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
         var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("User information not provided in claims.", "claims");
-        }
-
+        
         try
         {
             await this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId).ConfigureAwait(false);
@@ -224,5 +200,13 @@ public class AppsController : ControllerBase
         return Ok();
     }
 
-    private string? GetIamUserIdFromClaims() => User.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
+    private string GetIamUserIdFromClaims()
+    {
+        var userId = User.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new ArgumentException("User information not provided in claims.", "claims");
+        }
+        return userId;
+    }
 }
