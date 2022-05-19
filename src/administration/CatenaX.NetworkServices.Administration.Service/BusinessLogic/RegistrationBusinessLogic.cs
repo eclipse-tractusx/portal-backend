@@ -1,8 +1,7 @@
-using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Framework.Models;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
@@ -32,11 +31,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return companyWithAddress;
     }
 
-    public Task<PaginationResponse<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size) =>
-        PaginationResponse<CompanyApplicationDetails>.CreatePaginationResponseAsync(
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size) =>
+        Pagination.CreateResponseAsync<CompanyApplicationDetails>(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            () => _portalDBAccess.GetApplicationsCountAsync(),
             (skip, take) => _portalDBAccess.GetCompanyApplicationDetailsUntrackedAsync(skip, take));
 }

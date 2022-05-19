@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -21,8 +22,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
         Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
         IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
-        IAsyncEnumerable<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take);
-        Task<int> GetApplicationsCountAsync();
+        Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take);
         Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
         Task<CompanyNameIdBpnIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId, string iamUserId);

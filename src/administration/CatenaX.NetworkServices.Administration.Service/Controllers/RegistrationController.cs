@@ -27,6 +27,6 @@ public class RegistrationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
-    public Task<PaginationResponse<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size) =>
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size) =>
         _logic.GetCompanyApplicationDetailsAsync(page, size);
 }
