@@ -23,6 +23,7 @@ public class UserRoleDescription
     [StringLength(2, MinimumLength = 2)]
     public string LanguageShortName { get; private set; }
 
+    [MaxLength(255)]
     public string Description { get; set; }
 
     public virtual UserRole? UserRole { get; private set; }
