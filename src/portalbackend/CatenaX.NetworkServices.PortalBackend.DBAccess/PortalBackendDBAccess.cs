@@ -221,13 +221,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(company => new CompanyNameIdBpnIdpAlias(
                         company!.Name,
                         company.Id)
-                    {
-                        Bpn = company.Bpn,
-                        IdpAlias = company.IdentityProviders
+                {
+                    Bpn = company.Bpn,
+                    IdpAlias = company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                             .SingleOrDefault()
-                    })
+                })
                 .SingleOrDefaultAsync();
 
         public Task<CompanyNameBpnIdpAlias?> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId) =>
@@ -301,11 +301,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyUser.IamUser!.UserEntityId,
                     companyUser.Id,
                     companyUser.CompanyUserStatusId)
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email
-                    })
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email
+                })
                 .AsAsyncEnumerable();
 
         public Task<CompanyApplication?> GetCompanyApplicationAsync(Guid applicationId) =>
@@ -405,7 +405,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IamUser RemoveIamUser(IamUser iamUser) =>
             _dbContext.Remove(iamUser).Entity;
 
-        public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles)
+        public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
         {
             foreach (var clientRole in clientRoles)
             {
@@ -415,13 +415,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     .AsQueryable()
                     .Select(userRole => userRole.Id)
                     .AsAsyncEnumerable().ConfigureAwait(false))
-                    {
-                        yield return userRoleId;
-                    }
+                {
+                    yield return userRoleId;
+                }
             }
         }
 
-        public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>                    
+        public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
             _dbContext.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.IamClient!.ClientClientId == clientClientId && userRoles.Contains(userRole.UserRoleText))
@@ -469,15 +469,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         }
         public Task<IdpUser?> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
-            _dbContext.IamUsers
-                .Where(iamUser => iamUser.UserEntityId == adminUserId)
-                .Select(iamUser => iamUser!.CompanyUser!.Company)
-                .Select(company => new IdpUser {
-                    TargetIamUserId = company!.CompanyUsers
-                        .Where(companyUser => companyUser.Id == companyUserId)
-                        .Select(companyUser => companyUser.IamUser!.UserEntityId)
-                        .SingleOrDefault(),
-                    IdpName = company!.IdentityProviders
+            _dbContext.CompanyUsers.AsNoTracking()
+                .Where(companyUser => companyUser.Id == companyUserId
+                    && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Select(companyUser => new IdpUser
+                {
+                    TargetIamUserId = companyUser.IamUser!.UserEntityId,
+                    IdpName = companyUser.Company!.IdentityProviders
                         .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                         .SingleOrDefault()

@@ -81,13 +81,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("application/{applicationId}/welcomeEmail")]
         public Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
              _logic.PostRegistrationWelcomeEmailAsync(applicationId);
-                
-        
+
+
 
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
-        [Route("tenant/{tenant}/users/{companyUserId}/resetpassword")]
-        public Task<bool> ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId) =>
-            this.WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId, tenant));
+        [Route("users/{companyUserId}/resetpassword")]
+        public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
+            this.WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId));
     }
 }
