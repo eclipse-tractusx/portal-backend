@@ -1,5 +1,5 @@
-using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.Extensions.Options;
@@ -31,25 +31,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return companyWithAddress;
     }
 
-    public IAsyncEnumerable<CompanyApplicationDetails> GetCompanyApplicationDetailsAsync(int page)
-    {
-        if (page <= 0)
-        {
-            throw new ArgumentException("parameter page must be > 0", "page");
-        }
-        return _portalDBAccess.GetCompanyApplicationDetailsUntrackedAsync(
-            _settings.ApplicationsPageSize * (page-1),
-            _settings.ApplicationsPageSize
-        );
-    }
-
-    public async Task<PaginationData> GetApplicationPaginationDataAsync()
-    {
-        int count = await _portalDBAccess.GetApplicationsCountAsync().ConfigureAwait(false);
-        return new PaginationData(
-            count,
-            count / _settings.ApplicationsPageSize + 1,
-            _settings.ApplicationsPageSize
-        );
-    }
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size) =>
+        Pagination.CreateResponseAsync<CompanyApplicationDetails>(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (skip, take) => _portalDBAccess.GetCompanyApplicationDetailsUntrackedAsync(skip, take));
 }

@@ -1,8 +1,10 @@
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
 {
@@ -144,6 +146,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
+                .AsNoTracking()
                 .Where(iamUser => iamUser.UserEntityId == iamUserId)
                 .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyApplications)
                     .Select(companyApplication => new CompanyApplicationWithStatus
@@ -153,30 +156,31 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     })
                 .AsAsyncEnumerable();
 
-        public IAsyncEnumerable<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take) =>
-            _dbContext.CompanyApplications
-                .AsNoTracking()
-                .OrderByDescending(application => application.DateCreated)
-                .Skip(skip)
-                .Take(take)
-                .Select(application => new CompanyApplicationDetails(
-                    application.Id,
-                    application.ApplicationStatusId,
-                    application.DateCreated,
-                    application.Company!.Name,
-                    application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                        document.Documenthash)
+        public Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take) =>
+            new Pagination.AsyncSource<CompanyApplicationDetails>(
+                _dbContext.CompanyApplications
+                    .AsNoTracking()
+                    .CountAsync(),
+                _dbContext.CompanyApplications
+                    .AsNoTracking()
+                    .OrderByDescending(application => application.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new CompanyApplicationDetails(
+                        application.Id,
+                        application.ApplicationStatusId,
+                        application.DateCreated,
+                        application.Company!.Name,
+                        application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
+                            document.Documenthash)
+                        {
+                            DocumentTypeId = document.DocumentTypeId,
+                        })))
                     {
-                        DocumentTypeId = document.DocumentTypeId,
-                    })))
-                {
-                    Email = application.Invitations.Select(invitation => invitation.CompanyUser!.Email).FirstOrDefault(),
-                    BusinessPartnerNumber = application.Company.Bpn
-                })
-                .AsAsyncEnumerable();
-
-        public Task<int> GetApplicationsCountAsync() =>
-            _dbContext.CompanyApplications.CountAsync();
+                        Email = application.Invitations.Select(invitation => invitation.CompanyUser!.Email).FirstOrDefault(),
+                        BusinessPartnerNumber = application.Company.Bpn
+                    })
+                    .AsAsyncEnumerable());
 
         public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
             _dbContext.CompanyApplications
@@ -311,6 +315,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
             _dbContext.IamUsers
+                .AsNoTracking()
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
                     && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
@@ -352,7 +357,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId) =>
             _dbContext.IamUsers
-                .AsQueryable()
                 .AsNoTracking()
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
