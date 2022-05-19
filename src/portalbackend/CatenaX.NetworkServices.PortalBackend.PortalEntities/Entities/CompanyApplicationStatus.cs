@@ -17,6 +17,7 @@ public class CompanyApplicationStatus
         Label = applicationStatusId.ToString();
     }
 
+    [Key]
     public CompanyApplicationStatusId ApplicationStatusId { get; private set; }
 
     [MaxLength(255)]
