@@ -334,7 +334,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
-            if (idpUserName?.CompanyId != null && !string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName?.IdpName))
+            if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
