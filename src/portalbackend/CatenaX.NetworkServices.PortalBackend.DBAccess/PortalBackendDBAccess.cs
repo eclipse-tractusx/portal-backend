@@ -471,11 +471,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public Task<IdpUser?> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
             _dbContext.CompanyUsers.AsNoTracking()
                 .Where(companyUser => companyUser.Id == companyUserId
-                  && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                    && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
                 .Select(companyUser => new IdpUser
                 {
                     TargetIamUserId = companyUser.IamUser!.UserEntityId,
-                    CompanyId = companyUser!.CompanyId,
                     IdpName = companyUser.Company!.IdentityProviders
                         .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
