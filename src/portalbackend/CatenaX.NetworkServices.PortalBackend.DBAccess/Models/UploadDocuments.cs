@@ -4,7 +4,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class UploadDocuments
     {
-        public Guid DocumentId { get; set; }
-        public string DocumentName { get; set; }
+        public UploadDocuments(Guid documentId, string documentName)
+        {
+            DocumentId = documentId;
+            DocumentName = documentName;
+        }
+        public Guid DocumentId { get;}
+        public string DocumentName { get;}
     }
 }
