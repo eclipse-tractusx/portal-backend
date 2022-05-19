@@ -1,10 +1,9 @@
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
+public enum CompanyStatusId : int
 {
-    public enum CompanyStatusId : int
-    {
-        PENDING = 1,
-        ACTIVE = 2,
-        REJECTED = 3,
-        INACTIVE = 4
-    }
+    PENDING = 1,
+    ACTIVE = 2,
+    REJECTED = 3,
+    INACTIVE = 4
 }

@@ -4,7 +4,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Models
 {
     public class CompanyInvitationData
     {
-        public CompanyInvitationData(string userName, string firstName, string lastName, string email, string organisationName)
+        public CompanyInvitationData(string? userName, string firstName, string lastName, string email, string organisationName)
         {
             this.userName = userName;
             this.firstName = firstName;
@@ -14,7 +14,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Models
         }
 
         [JsonPropertyName("userName")]
-        public string userName { get; set; }
+        public string? userName { get; set; }
         [JsonPropertyName("firstName")]
         public string firstName { get; set; }
         [JsonPropertyName("lastName")]
