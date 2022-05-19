@@ -334,24 +334,20 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
-            if (idpUserName?.CompanyId != null)
+            if (idpUserName?.CompanyId != null && !string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName?.IdpName))
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
-                    if (!string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName?.IdpName))
+                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                    if (!updatedPassword)
                     {
-                        var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
-                        if (!updatedPassword)
-                        {
-                            throw new Exception("password reset failed");
-                        }
-                        return updatedPassword;
+                        throw new Exception("password reset failed");
                     }
-                    throw new NotFoundException($"no shared idp user {companyUserId} found in company of {adminUserId}");
+                    return updatedPassword;
                 }
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
-            throw new ArgumentException($"Cannot identify companyId: companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
+            throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
     }
 }
