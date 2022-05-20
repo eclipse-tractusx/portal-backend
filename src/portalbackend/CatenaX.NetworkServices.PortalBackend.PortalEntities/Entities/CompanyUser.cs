@@ -23,7 +23,6 @@ public class CompanyUser
         CompanyUserStatusId = companyUserStatusId;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }

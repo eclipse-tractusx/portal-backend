@@ -43,6 +43,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; } = default!;
+    public virtual DbSet<Connector> Connectors { get; set; } = default!;
+    public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
+    public virtual DbSet<ConnectorType> ConnectorTypes { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
@@ -505,6 +508,39 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(InvitationStatusId))
                     .Cast<InvitationStatusId>()
                     .Select(e => new InvitationStatus(e))
+            );
+
+        modelBuilder.Entity<Connector>(entity =>
+        {
+            entity.HasOne(d => d.Status)
+                .WithMany(p => p.Connectors)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Type)
+                .WithMany(p => p.Connectors)
+                .HasForeignKey(d => d.TypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Provider)
+                .WithMany(p => p.ProvidedConnectors);
+
+            entity.HasOne(d => d.Host)
+                .WithMany(p => p.HostedConnectors);
+        });
+
+        modelBuilder.Entity<ConnectorStatus>()
+            .HasData(
+                Enum.GetValues(typeof(ConnectorStatusId))
+                    .Cast<ConnectorStatusId>()
+                    .Select(e => new ConnectorStatus(e))
+            );
+
+        modelBuilder.Entity<ConnectorType>()
+            .HasData(
+                Enum.GetValues(typeof(ConnectorTypeId))
+                    .Cast<ConnectorTypeId>()
+                    .Select(e => new ConnectorType(e))
             );
 
         modelBuilder.Entity<Language>(entity =>
