@@ -2,7 +2,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
 public class RegistrationSettings
 {
-    public int ApplicationsPageSize { get; set; }
+    public int ApplicationsMaxPageSize { get; set; }
 }
 
 public static class RegistrationSettingsExtension
