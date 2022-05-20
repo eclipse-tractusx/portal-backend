@@ -13,12 +13,11 @@ public class AppStatus
 
     public AppStatus(AppStatusId appStatusId) : this()
     {
-        AppStatusId = appStatusId;
+        Id = appStatusId;
         Label = appStatusId.ToString();
     }
 
-    [Key]
-    public AppStatusId AppStatusId { get; private set; }
+    public AppStatusId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }

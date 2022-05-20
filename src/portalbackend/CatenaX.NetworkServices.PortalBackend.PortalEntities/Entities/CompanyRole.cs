@@ -15,12 +15,11 @@ public class CompanyRole
 
     public CompanyRole(CompanyRoleId companyRoleId) : this()
     {
-        CompanyRoleId = companyRoleId;
+        Id = companyRoleId;
         Label = companyRoleId.ToString();
     }
 
-    [Key]
-    public CompanyRoleId CompanyRoleId { get; private set; }
+    public CompanyRoleId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; set; }

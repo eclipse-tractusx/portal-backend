@@ -13,12 +13,11 @@ public class ConsentStatus
 
     public ConsentStatus(ConsentStatusId consentStatusId) : this()
     {
-        ConsentStatusId = consentStatusId;
+        Id = consentStatusId;
         Label = consentStatusId.ToString();
     }
 
-    [Key]
-    public ConsentStatusId ConsentStatusId { get; private set; }
+    public ConsentStatusId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }

@@ -336,9 +336,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
             _dbContext.CompanyRoles
                 .AsNoTracking()
-                .Where(companyRole => companyRoleIds.Contains(companyRole.CompanyRoleId))
+                .Where(companyRole => companyRoleIds.Contains(companyRole.Id))
                 .Select(companyRole => new AgreementsAssignedCompanyRoleData(
-                    companyRole.CompanyRoleId,
+                    companyRole.Id,
                     companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
                 )).AsAsyncEnumerable();
 
@@ -375,7 +375,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .Select(companyRole => new
                 {
-                    Id = companyRole.CompanyRoleId,
+                    Id = companyRole.Id,
                     Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new { ShortName = description.LanguageShortName, Description = description.Description }),
                     Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
                 })
@@ -434,13 +434,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
             (from invitation in _dbContext.Invitations
-             join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.InvitationStatusId
+             join invitationStatus in _dbContext.InvitationStatuses on invitation.InvitationStatusId equals invitationStatus.Id
              join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
              join iamuser in _dbContext.IamUsers on companyuser.Id equals iamuser.CompanyUserId
              where invitation.CompanyApplicationId == applicationId
              select new InvitedUserDetail(
                  iamuser.UserEntityId,
-                 invitationStatus.InvitationStatusId,
+                 invitationStatus.Id,
                  companyuser.Email
              ))
                 .AsNoTracking()
