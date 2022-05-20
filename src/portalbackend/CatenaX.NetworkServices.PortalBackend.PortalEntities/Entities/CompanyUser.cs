@@ -46,7 +46,7 @@ public class CompanyUser
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
     // Navigation properties
-    public virtual Company? Company { get; private set; }
+    public virtual Company? Company { get; set; }
     public virtual IamUser? IamUser { get; set; }
     public virtual CompanyUserStatus? CompanyUserStatus { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }

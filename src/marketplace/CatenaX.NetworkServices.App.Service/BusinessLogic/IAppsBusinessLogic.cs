@@ -16,6 +16,13 @@ public interface IAppsBusinessLogic
     public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null);
 
     /// <summary>
+    /// Get all apps that a user has been assigned roles in.
+    /// </summary>
+    /// <param name="userId">ID of the user to get available apps for.</param>
+    /// <returns>List of available apps for user.</returns>
+    public IAsyncEnumerable<BusinessAppViewModel> GetAllUserUserBusinessAppsAsync(string userId);
+
+    /// <summary>
     /// Get detailed application data for a single app by id.
     /// </summary>
     /// <param name="appId">Persistence ID of the application to be retrieved.</param>
