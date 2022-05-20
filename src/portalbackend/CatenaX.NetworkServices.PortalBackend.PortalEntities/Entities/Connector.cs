@@ -5,14 +5,15 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class Connector
 {
-    public Connector(string name, string locationId, string connectorUrl)
+    public Connector(Guid id, string name, string locationId, string connectorUrl)
     {
+        Id = id;
         Name = name;
         LocationId = locationId;
         ConnectorUrl = connectorUrl;
     }
 
-    public Guid Id { get; set; }
+    public Guid Id { get; private set; }
 
     [MaxLength(255)]
     public string Name { get; set; }
