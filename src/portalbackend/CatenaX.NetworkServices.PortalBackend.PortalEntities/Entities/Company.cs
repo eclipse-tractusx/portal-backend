@@ -18,6 +18,8 @@ public class Company
         Consents = new HashSet<Consent>();
         CompanyRoles = new HashSet<CompanyRole>();
         UseCases = new HashSet<UseCase>();
+        ProvidedConnectors = new HashSet<Connector>();
+        HostedConnectors = new HashSet<Connector>();
     }
     
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -65,4 +67,6 @@ public class Company
     public virtual ICollection<CompanyRole> CompanyRoles { get; private set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
     public virtual ICollection<UseCase> UseCases { get; private set; }
+    public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
+    public virtual ICollection<Connector> HostedConnectors { get; private set; }
 }
