@@ -13,12 +13,11 @@ public class AgreementCategory
 
     public AgreementCategory(AgreementCategoryId agreementCategoryId) : this()
     {
-        AgreementCategoryId = agreementCategoryId;
+        Id = agreementCategoryId;
         Label = agreementCategoryId.ToString();
     }
 
-    [Key]
-    public AgreementCategoryId AgreementCategoryId { get; private set; }
+    public AgreementCategoryId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }

@@ -13,12 +13,11 @@ public class DocumentType
 
     public DocumentType(DocumentTypeId documentTypeId) : this()
     {
-        DocumentTypeId = documentTypeId;
+        Id = documentTypeId;
         Label = documentTypeId.ToString();
     }
     
-    [Key]
-    public DocumentTypeId DocumentTypeId { get; private set; }
+    public DocumentTypeId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }

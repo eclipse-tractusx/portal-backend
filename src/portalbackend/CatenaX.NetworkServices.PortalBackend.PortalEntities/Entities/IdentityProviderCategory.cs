@@ -13,12 +13,11 @@ public class IdentityProviderCategory
 
     public IdentityProviderCategory(IdentityProviderCategoryId identityProviderCategoryId) : this()
     {
-        IdentityProviderCategoryId = identityProviderCategoryId;
+        Id = identityProviderCategoryId;
         Label = identityProviderCategoryId.ToString();
     }
 
-    [Key]
-    public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
+    public IdentityProviderCategoryId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
