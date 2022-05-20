@@ -1,9 +1,9 @@
 ﻿using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.App.Service.Controllers;
 
@@ -36,10 +36,23 @@ public class AppsController : ControllerBase
     [Route("active")]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AppViewModel>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync([FromQuery] string? lang = null)
-    {
-        return this.appsBusinessLogic.GetAllActiveAppsAsync(lang);
-    }
+    public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync([FromQuery] string? lang = null) =>
+        this.appsBusinessLogic.GetAllActiveAppsAsync(lang);
+
+    /// <summary>
+    /// Get all apps that currently logged in user has been assigned roles in.
+    /// </summary>
+    /// <returns>Collection of BusinessAppViewModels user has been assigned active roles in.</returns>
+    /// <remarks>Example: GET: /api/apps/business</remarks>
+    /// <response code="200">Returns the list of the user's business apps.</response>
+    /// <response code="400">If sub claim is empty/invalid.</response>
+    [HttpGet]
+    [Route("business")]
+    [Authorize(Roles = "view_apps")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<BusinessAppViewModel> GetAllBusinessAppsForCurrentUserAsync() =>
+        this.WithIamUserId(userId => appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
 
     /// <summary>
     /// Retrieves app details for an app referenced by id.
@@ -55,16 +68,8 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AppDetailsViewModel>> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null)
-    {
-        var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest("User information not provided in claims.");
-        }
-
-        return Ok(await this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang).ConfigureAwait(false));
-    }
+    public Task<AppDetailsViewModel> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>
     /// Creates an app according to input model.
@@ -77,10 +82,8 @@ public class AppsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
-    {
-        return CreatedAtRoute(string.Empty, await this.appsBusinessLogic.CreateAppAsync(appInputModel));
-    }
+    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel) =>
+        CreatedAtRoute(string.Empty, await this.appsBusinessLogic.CreateAppAsync(appInputModel));
 
     /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
@@ -94,16 +97,8 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public ActionResult<IAsyncEnumerable<Guid>> GetAllFavouriteAppsForCurrentUserAsync()
-    {
-        var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest("User information not provided in claims.");
-        }
-
-        return Ok(this.appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
-    }
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForCurrentUserAsync() =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
 
     /// <summary>
     /// Adds an app to current user's favourites.
@@ -117,25 +112,8 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
-    {
-        var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest("User information not provided in claims.");
-        }
-
-        try
-        {
-            await this.appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId).ConfigureAwait(false);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest($"Parameters are invalid or app is already favourited.");
-        }
-        
-        return Ok();
-    }
+    public Task AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId) =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId));
 
     /// <summary>
     /// Removes an app from current user's favourites.
@@ -149,25 +127,8 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
-    {
-        var userId = GetIamUserIdFromClaims();
-        if(string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest("User information not provided in claims.");
-        }
-
-        try
-        {
-            await this.appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId).ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return BadRequest($"Parameters are invalid or favourite does not exist.");
-        }
-
-        return Ok();
-    }
+    public Task RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId) =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId));
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
@@ -181,25 +142,6 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
-    {
-        var userId = GetIamUserIdFromClaims();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return BadRequest("User information not provided in claims.");
-        }
-
-        try
-        {
-            await this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId).ConfigureAwait(false);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest($"Parameters are invalid or app is already subscribed to.");
-        }
-
-        return Ok();
-    }
-
-    private string? GetIamUserIdFromClaims() => User.Claims.SingleOrDefault(c => c.Type == "sub")?.Value;
+    public Task AddCompanyAppSubscriptionAsync([FromRoute] Guid appId) =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId));
 }

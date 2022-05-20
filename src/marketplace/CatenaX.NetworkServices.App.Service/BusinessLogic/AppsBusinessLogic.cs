@@ -59,6 +59,36 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<BusinessAppViewModel> GetAllUserUserBusinessAppsAsync(string userId)
+    {
+        await foreach (var app in context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+            .SelectMany(u => u.CompanyUser!.Company!.BoughtApps)
+            .Intersect(
+                context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+                .SelectMany(u => u.CompanyUser!.UserRoles.SelectMany(r => r.IamClient!.Apps))
+            )
+            .Select( a => new
+            {
+                a.Id,
+                a.Name,
+                a.AppUrl,
+                a.ThumbnailUrl,
+                a.Provider
+            }).AsAsyncEnumerable())
+        {
+            yield return new BusinessAppViewModel(
+                app.Name ?? ERROR_STRING, 
+                app.AppUrl ?? ERROR_STRING, 
+                app.ThumbnailUrl ?? ERROR_STRING, 
+                app.Provider
+            )
+            {
+                Id = app.Id
+            };
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
     {
         var companyId = userId == null ?
@@ -124,29 +154,51 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
     {
-        var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-        var rowToRemove = new CompanyUserAssignedAppFavourite(appId, companyUserId);
-        this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
-        this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
-        await this.context.SaveChangesAsync().ConfigureAwait(false);
+        try
+        {
+            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
+            var rowToRemove = new CompanyUserAssignedAppFavourite(appId, companyUserId);
+            this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
+            this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ArgumentException($"Parameters are invalid or favourite does not exist.");
+        }
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
     {
-        var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-        this.context.CompanyUserAssignedAppFavourites.Add(
-            new CompanyUserAssignedAppFavourite(appId, companyUserId)
-        );
-        await this.context.SaveChangesAsync().ConfigureAwait(false);
+        try
+        {
+            var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
+            this.context.CompanyUserAssignedAppFavourites.Add(
+                new CompanyUserAssignedAppFavourite(appId, companyUserId)
+            );
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
+        }
+            catch (DbUpdateException)
+        {
+            throw new ArgumentException($"Parameters are invalid or app is already favourited.");
+        }
+
     }
 
     /// <inheritdoc/>
     public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
     {
-        var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-        this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId));
-        await this.context.SaveChangesAsync().ConfigureAwait(false);
+        try
+        {
+            var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId));
+            await this.context.SaveChangesAsync().ConfigureAwait(false);
+        }
+        catch (DbUpdateException)
+        {
+            throw new ArgumentException($"Parameters are invalid or app is already subscribed to.");
+        }
     }
 
     /// <inheritdoc/>
