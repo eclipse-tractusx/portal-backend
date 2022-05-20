@@ -131,6 +131,23 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyRoleId
                 )).Entity;
 
+        public CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description) =>
+            _dbContext.CompanyServiceAccounts.Add(
+                new CompanyServiceAccount(
+                    Guid.NewGuid(),
+                    companyId,
+                    companyServiceAccountStatusId,
+                    name,
+                    description,
+                    DateTimeOffset.UtcNow)).Entity;
+
+        public IamServiceAccount CreateIamServiceAccount(string userEntityId, string clientClientId, Guid companyServiceAccountId) =>
+            _dbContext.IamServiceAccounts.Add(
+                new IamServiceAccount(
+                    userEntityId,
+                    clientClientId,
+                    companyServiceAccountId)).Entity;
+
         public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
             _dbContext.Documents.Add(
                 new Document(
@@ -308,6 +325,15 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 })
                 .AsAsyncEnumerable();
 
+        public Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId) =>
+            _dbContext.IamUsers
+                .AsNoTracking()
+                .Where(iamUser =>
+                    iamUser.UserEntityId == iamUserId)
+                .Select(iamUser =>
+                    iamUser.CompanyUser!.Company!.Id)
+                .SingleOrDefaultAsync();
+
         public Task<CompanyApplication?> GetCompanyApplicationAsync(Guid applicationId) =>
             _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
@@ -405,6 +431,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IamUser RemoveIamUser(IamUser iamUser) =>
             _dbContext.Remove(iamUser).Entity;
 
+        public IamServiceAccount RemoveIamServiceAccount(IamServiceAccount iamServiceAccount) =>
+            _dbContext.Remove(iamServiceAccount).Entity;
+
         public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
         {
             foreach (var clientRole in clientRoles)
@@ -480,6 +509,63 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                         .SingleOrDefault()
                 }).SingleOrDefaultAsync();
+
+        public Task<ServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
+            _dbContext.CompanyServiceAccounts
+                .Where(serviceAccount =>
+                    serviceAccount.Id == serviceAccountId
+                    && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
+                    && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Select( serviceAccount =>
+                    new ServiceAccountWithClientId(
+                        serviceAccount,
+                        serviceAccount.IamServiceAccount!.ClientClientId
+                    )
+                )
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyServiceAccount?> GetOwnCompanyServiceAccountWithIamServiceAccountAsync(Guid serviceAccountId, string adminUserId) =>
+            _dbContext.CompanyServiceAccounts
+                .Where(serviceAccount =>
+                    serviceAccount.Id == serviceAccountId
+                    && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
+                    && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Include(serviceAccount => serviceAccount.IamServiceAccount)
+                .SingleOrDefaultAsync();
+
+        public Task<ServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string adminUserId) =>
+            _dbContext.CompanyServiceAccounts
+                .AsNoTracking()
+                .Where(serviceAccount =>
+                    serviceAccount.Id == serviceAccountId
+                    && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
+                    && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Select(serviceAccount => new ServiceAccountDetailedData(
+                        serviceAccount.Id,
+                        serviceAccount.IamServiceAccount!.ClientClientId,
+                        serviceAccount.Name,
+                        serviceAccount.Description))
+                .SingleOrDefaultAsync();
+
+        public Task<Pagination.Source<ServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId) =>
+            _dbContext.Companies
+                .AsNoTracking()
+                .Where(company =>
+                    company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Select(company => new Pagination.Source<ServiceAccountData>(
+                    company.CompanyServiceAccounts
+                        .Where(serviceAccount => serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
+                        .Count(),
+                    company.CompanyServiceAccounts
+                        .Where(serviceAccount => serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
+                        .OrderBy(serviceAccount => serviceAccount.Name)
+                        .Skip(skip)
+                        .Take(take)
+                        .Select(serviceAccount => new ServiceAccountData(
+                            serviceAccount.Id,
+                            serviceAccount.IamServiceAccount!.ClientClientId,
+                            serviceAccount.Name))))
+                .SingleOrDefaultAsync();
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
