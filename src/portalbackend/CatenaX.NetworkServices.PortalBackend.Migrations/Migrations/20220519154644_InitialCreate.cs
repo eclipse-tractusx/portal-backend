@@ -39,7 +39,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "app_status",
+                name: "app_statuses",
                 schema: "portal",
                 columns: table => new
                 {
@@ -48,11 +48,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_app_status", x => x.app_status_id);
+                    table.PrimaryKey("pk_app_statuses", x => x.app_status_id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_application_status",
+                name: "company_application_statuses",
                 schema: "portal",
                 columns: table => new
                 {
@@ -61,7 +61,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("company_application_status_pkey", x => x.application_status_id);
+                    table.PrimaryKey("pk_company_application_statuses", x => x.application_status_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -78,7 +78,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_status",
+                name: "company_statuses",
                 schema: "portal",
                 columns: table => new
                 {
@@ -87,11 +87,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_status", x => x.company_status_id);
+                    table.PrimaryKey("pk_company_statuses", x => x.company_status_id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_user_status",
+                name: "company_user_statuses",
                 schema: "portal",
                 columns: table => new
                 {
@@ -100,11 +100,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_user_status", x => x.company_user_status_id);
+                    table.PrimaryKey("pk_company_user_statuses", x => x.company_user_status_id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "consent_status",
+                name: "consent_statuses",
                 schema: "portal",
                 columns: table => new
                 {
@@ -113,7 +113,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_consent_status", x => x.consent_status_id);
+                    table.PrimaryKey("pk_consent_statuses", x => x.consent_status_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -187,7 +187,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "invitation_status",
+                name: "invitation_statuses",
                 schema: "portal",
                 columns: table => new
                 {
@@ -196,7 +196,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_invitation_status", x => x.invitation_status_id);
+                    table.PrimaryKey("pk_invitation_statuses", x => x.invitation_status_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -241,13 +241,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     streetname = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     streetnumber = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     zipcode = table.Column<decimal>(type: "numeric(19,2)", precision: 19, scale: 2, nullable: false),
-                    country_alpha2code = table.Column<string>(type: "character(2)", fixedLength: true, maxLength: 2, nullable: false)
+                    country_alpha2code = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_addresses", x => x.id);
                     table.ForeignKey(
-                        name: "fk_6jg6itw07d2qww62deuyk0kh",
+                        name: "fk_addresses_countries_country_temp_id",
                         column: x => x.country_alpha2code,
                         principalSchema: "portal",
                         principalTable: "countries",
@@ -289,7 +289,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_identity_providers", x => x.id);
                     table.ForeignKey(
-                        name: "fk_iwohgwi9342adf9asdnfuie28",
+                        name: "fk_identity_providers_identity_provider_categories_identity_pr",
                         column: x => x.identity_provider_category_id,
                         principalSchema: "portal",
                         principalTable: "identity_provider_categories",
@@ -316,7 +316,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalColumn: "company_role_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_company_role_descriptions_languages_language_short_name",
+                        name: "fk_company_role_descriptions_languages_language_temp_id2",
                         column: x => x.language_short_name,
                         principalSchema: "portal",
                         principalTable: "languages",
@@ -343,18 +343,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_companies", x => x.id);
                     table.ForeignKey(
-                        name: "fk_owihadhfweilwefhaf682khj",
-                        column: x => x.company_status_id,
-                        principalSchema: "portal",
-                        principalTable: "company_status",
-                        principalColumn: "company_status_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_w70yf6urddd0ky7ev90okenf",
+                        name: "fk_companies_addresses_address_id",
                         column: x => x.address_id,
                         principalSchema: "portal",
                         principalTable: "addresses",
                         principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_companies_company_statuses_company_status_id",
+                        column: x => x.company_status_id,
+                        principalSchema: "portal",
+                        principalTable: "company_statuses",
+                        principalColumn: "company_status_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -397,7 +397,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_iam_identity_providers", x => x.iam_idp_alias);
                     table.ForeignKey(
-                        name: "fk_9balkda89j2498dkj2lkjd9s3",
+                        name: "fk_iam_identity_providers_identity_providers_identity_provider",
                         column: x => x.identity_provider_id,
                         principalSchema: "portal",
                         principalTable: "identity_providers",
@@ -426,18 +426,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_apps", x => x.id);
                     table.ForeignKey(
-                        name: "fk_68a9joedhyf43smfx2xc4rgm",
+                        name: "fk_apps_app_statuses_app_status_id",
+                        column: x => x.app_status_id,
+                        principalSchema: "portal",
+                        principalTable: "app_statuses",
+                        principalColumn: "app_status_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_apps_companies_provider_company_id",
                         column: x => x.provider_company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_owihadhfweilwefhaf111aaa",
-                        column: x => x.app_status_id,
-                        principalSchema: "portal",
-                        principalTable: "app_status",
-                        principalColumn: "app_status_id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -455,16 +455,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_company_applications", x => x.id);
                     table.ForeignKey(
-                        name: "fk_3prv5i3o84vwvh7v0hh3sav7",
+                        name: "fk_company_applications_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_akuwiehfiadf8928fhefhuda",
+                        name: "fk_company_applications_company_application_statuses_applicati",
                         column: x => x.application_status_id,
                         principalSchema: "portal",
-                        principalTable: "company_application_status",
+                        principalTable: "company_application_statuses",
                         principalColumn: "application_status_id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -481,13 +481,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_company_assigned_roles", x => new { x.company_id, x.company_role_id });
                     table.ForeignKey(
-                        name: "fk_4db4hgj3yvqlkn9h6q8m4e0j",
+                        name: "fk_company_assigned_roles_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_my2p7jlqrjf0tq1f8rhk0i0a",
+                        name: "fk_company_assigned_roles_company_roles_company_role_id",
                         column: x => x.company_role_id,
                         principalSchema: "portal",
                         principalTable: "company_roles",
@@ -504,23 +504,23 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_assigned_use_cas", x => new { x.company_id, x.use_case_id });
+                    table.PrimaryKey("pk_company_assigned_use_cases", x => new { x.company_id, x.use_case_id });
                     table.ForeignKey(
-                        name: "fk_m5eyaohrl0g9ju52byxsouqk",
-                        column: x => x.use_case_id,
-                        principalSchema: "portal",
-                        principalTable: "use_cases",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_u65fkdrxnbkp8n0s7mate01v",
+                        name: "fk_company_assigned_use_cases_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_assigned_use_cases_use_cases_use_case_id",
+                        column: x => x.use_case_id,
+                        principalSchema: "portal",
+                        principalTable: "use_cases",
+                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_identity_provider",
+                name: "company_identity_providers",
                 schema: "portal",
                 columns: table => new
                 {
@@ -529,15 +529,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_identity_provider", x => new { x.company_id, x.identity_provider_id });
+                    table.PrimaryKey("pk_company_identity_providers", x => new { x.company_id, x.identity_provider_id });
                     table.ForeignKey(
-                        name: "fk_haad983jkald89wlkejidk234",
+                        name: "fk_company_identity_providers_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_iwzehadf8whjd8asjdfuwefhs",
+                        name: "fk_company_identity_providers_identity_providers_identity_prov",
                         column: x => x.identity_provider_id,
                         principalSchema: "portal",
                         principalTable: "identity_providers",
@@ -563,18 +563,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_company_users", x => x.id);
                     table.ForeignKey(
-                        name: "fk_company_users_company_user_status_id",
-                        column: x => x.company_user_status_id,
-                        principalSchema: "portal",
-                        principalTable: "company_user_status",
-                        principalColumn: "company_user_status_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_ku01366dbcqk8h32lh8k5sx1",
+                        name: "fk_company_users_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_users_company_user_statuses_company_user_status_id",
+                        column: x => x.company_user_status_id,
+                        principalSchema: "portal",
+                        principalTable: "company_user_statuses",
+                        principalColumn: "company_user_status_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -596,25 +596,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_agreements", x => x.id);
                     table.ForeignKey(
-                        name: "fk_n4nnf5bn8i3i9ijrf7kchfvc",
-                        column: x => x.issuer_company_id,
-                        principalSchema: "portal",
-                        principalTable: "companies",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_ooy9ydkah696jxh4lq7pn0xe",
-                        column: x => x.app_id,
-                        principalSchema: "portal",
-                        principalTable: "apps",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_owqie84qkle78dasifljiwer",
+                        name: "fk_agreements_agreement_categories_agreement_category_id",
                         column: x => x.agreement_category_id,
                         principalSchema: "portal",
                         principalTable: "agreement_categories",
                         principalColumn: "agreement_category_id");
                     table.ForeignKey(
-                        name: "fk_whby66dika71srejhja6g75a",
+                        name: "fk_agreements_apps_app_id",
+                        column: x => x.app_id,
+                        principalSchema: "portal",
+                        principalTable: "apps",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_agreements_companies_issuer_company_id",
+                        column: x => x.issuer_company_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_agreements_use_cases_use_case_id",
                         column: x => x.use_case_id,
                         principalSchema: "portal",
                         principalTable: "use_cases",
@@ -633,18 +633,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_app_assigned_clients", x => new { x.app_id, x.iam_client_id });
                     table.ForeignKey(
-                        name: "fk_4m022ek8gffepnqlnuxwyxp8",
+                        name: "fk_app_assigned_clients_apps_app_id",
+                        column: x => x.app_id,
+                        principalSchema: "portal",
+                        principalTable: "apps",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_app_assigned_clients_iam_clients_iam_client_id",
                         column: x => x.iam_client_id,
                         principalSchema: "portal",
                         principalTable: "iam_clients",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_oayyvy590ngh5705yspep0up",
-                        column: x => x.app_id,
-                        principalSchema: "portal",
-                        principalTable: "apps",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -659,16 +659,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_app_assigned_licenses", x => new { x.app_id, x.app_license_id });
                     table.ForeignKey(
-                        name: "fk_3of613iyw1jx8gcj5i46jc1h",
-                        column: x => x.app_id,
-                        principalSchema: "portal",
-                        principalTable: "apps",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_mes2xm3i1wotryfc88be4dkf",
+                        name: "fk_app_assigned_licenses_app_licenses_app_license_id",
                         column: x => x.app_license_id,
                         principalSchema: "portal",
                         principalTable: "app_licenses",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_app_assigned_licenses_apps_app_id",
+                        column: x => x.app_id,
+                        principalSchema: "portal",
+                        principalTable: "apps",
                         principalColumn: "id");
                 });
 
@@ -684,13 +684,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_app_assigned_use_cases", x => new { x.app_id, x.use_case_id });
                     table.ForeignKey(
-                        name: "fk_qi320sp8lxy7drw6kt4vheka",
+                        name: "fk_app_assigned_use_cases_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_sjyfs49ma0kxaqfknjbaye0i",
+                        name: "fk_app_assigned_use_cases_use_cases_use_case_id",
                         column: x => x.use_case_id,
                         principalSchema: "portal",
                         principalTable: "use_cases",
@@ -703,21 +703,21 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     app_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    language_short_name = table.Column<string>(type: "character(2)", fixedLength: true, maxLength: 2, nullable: false),
+                    language_short_name = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
                     description_long = table.Column<string>(type: "character varying(4096)", maxLength: 4096, nullable: false),
                     description_short = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("app_descriptions_pkey", x => new { x.app_id, x.language_short_name });
+                    table.PrimaryKey("pk_app_descriptions", x => new { x.app_id, x.language_short_name });
                     table.ForeignKey(
-                        name: "fk_qamy6j7s3klebrf2s69v9k0i",
+                        name: "fk_app_descriptions_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_vrom2pjij9x6stgovhaqkfxf",
+                        name: "fk_app_descriptions_languages_language_temp_id",
                         column: x => x.language_short_name,
                         principalSchema: "portal",
                         principalTable: "languages",
@@ -737,7 +737,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_app_detail_images", x => x.id);
                     table.ForeignKey(
-                        name: "fk_oayyvy590ngh5705yspep12a",
+                        name: "fk_app_detail_images_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
@@ -754,15 +754,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_app_language", x => new { x.app_id, x.language_short_name });
+                    table.PrimaryKey("pk_app_languages", x => new { x.app_id, x.language_short_name });
                     table.ForeignKey(
-                        name: "fk_oayyvy590ngh5705yspep101",
+                        name: "fk_app_languages_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_oayyvy590ngh5705yspep102",
+                        name: "fk_app_languages_languages_language_temp_id1",
                         column: x => x.language_short_name,
                         principalSchema: "portal",
                         principalTable: "languages",
@@ -781,7 +781,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_app_tags", x => new { x.app_id, x.tag_name });
                     table.ForeignKey(
-                        name: "fk_qi320sp8lxy7drw6kt4vheka",
+                        name: "fk_app_tags_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
@@ -800,16 +800,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_company_assigned_apps", x => new { x.company_id, x.app_id });
                     table.ForeignKey(
-                        name: "fk_k1dqlv81463yes0k8f2giyaf",
-                        column: x => x.company_id,
-                        principalSchema: "portal",
-                        principalTable: "companies",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_t365qpfvehuq40om25dyrnn5",
+                        name: "fk_company_assigned_apps_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_assigned_apps_companies_company_id",
+                        column: x => x.company_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
                         principalColumn: "id");
                 });
 
@@ -823,15 +823,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_comp_user_ass_app_favour", x => new { x.company_user_id, x.app_id });
+                    table.PrimaryKey("pk_company_user_assigned_app_favourites", x => new { x.company_user_id, x.app_id });
                     table.ForeignKey(
-                        name: "fk_eip97mygnbglivrtmkagesjh",
+                        name: "fk_company_user_assigned_app_favourites_apps_app_id",
                         column: x => x.app_id,
                         principalSchema: "portal",
                         principalTable: "apps",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_wva553r3xiew3ngbdkvafk85",
+                        name: "fk_company_user_assigned_app_favourites_company_users_company_",
                         column: x => x.company_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
@@ -848,15 +848,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_comp_user_assigned_roles", x => new { x.company_user_id, x.user_role_id });
+                    table.PrimaryKey("pk_company_user_assigned_roles", x => new { x.company_user_id, x.user_role_id });
                     table.ForeignKey(
-                        name: "fk_0c9rjjf9gm3l0n6reb4o0f1s",
+                        name: "fk_company_user_assigned_roles_company_users_company_user_id",
                         column: x => x.company_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_bw1yhel67uhrxfk7mevovq5p",
+                        name: "fk_company_user_assigned_roles_user_roles_user_role_id",
                         column: x => x.user_role_id,
                         principalSchema: "portal",
                         principalTable: "user_roles",
@@ -880,17 +880,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_documents", x => x.id);
                     table.ForeignKey(
-                        name: "fk_xcgobngn7vk56k8nfkualsvn",
-                        column: x => x.document_type_id,
-                        principalSchema: "portal",
-                        principalTable: "document_types",
-                        principalColumn: "document_type_id");
-                    table.ForeignKey(
-                        name: "fk_xcgobngn7vk56k8nfkuaysvn",
+                        name: "fk_documents_company_users_company_user_id",
                         column: x => x.company_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
                         principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_documents_document_types_document_type_id",
+                        column: x => x.document_type_id,
+                        principalSchema: "portal",
+                        principalTable: "document_types",
+                        principalColumn: "document_type_id");
                 });
 
             migrationBuilder.CreateTable(
@@ -905,7 +905,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_iam_users", x => x.user_entity_id);
                     table.ForeignKey(
-                        name: "fk_iweorqwaeilskjeijekkalwo",
+                        name: "fk_iam_users_company_users_company_user_id",
                         column: x => x.company_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
@@ -927,23 +927,23 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_invitations", x => x.id);
                     table.ForeignKey(
-                        name: "fk_9tgenb7p09hr5c24haxjw259",
-                        column: x => x.company_user_id,
-                        principalSchema: "portal",
-                        principalTable: "company_users",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_dlrst4ju9d0wcgkh4w1nnoj3",
+                        name: "fk_invitations_company_applications_company_application_id",
                         column: x => x.company_application_id,
                         principalSchema: "portal",
                         principalTable: "company_applications",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_woihaodhawoeir72alfidosd",
+                        name: "fk_invitations_company_users_company_user_id",
+                        column: x => x.company_user_id,
+                        principalSchema: "portal",
+                        principalTable: "company_users",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_invitations_invitation_statuses_invitation_status_id",
                         column: x => x.invitation_status_id,
                         principalSchema: "portal",
-                        principalTable: "invitation_status",
+                        principalTable: "invitation_statuses",
                         principalColumn: "invitation_status_id");
                 });
 
@@ -957,15 +957,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_agreement_ass_comp_roles", x => new { x.agreement_id, x.company_role_id });
+                    table.PrimaryKey("pk_agreement_assigned_company_roles", x => new { x.agreement_id, x.company_role_id });
                     table.ForeignKey(
-                        name: "fk_ljol11mdo76f4kv7fwqn1qc6",
+                        name: "fk_agreement_assigned_company_roles_agreements_agreement_id",
                         column: x => x.agreement_id,
                         principalSchema: "portal",
                         principalTable: "agreements",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_qh1hby9qcrr3gmy1cvi7nd3h",
+                        name: "fk_agreement_assigned_company_roles_company_roles_company_role",
                         column: x => x.company_role_id,
                         principalSchema: "portal",
                         principalTable: "company_roles",
@@ -982,18 +982,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_agreement_ass_doc_templa", x => new { x.agreement_id, x.document_template_id });
+                    table.PrimaryKey("pk_agreement_assigned_document_templates", x => new { x.agreement_id, x.document_template_id });
                     table.ForeignKey(
-                        name: "fk_bvrvs5aktrcn4t6565pnj3ur",
-                        column: x => x.document_template_id,
-                        principalSchema: "portal",
-                        principalTable: "document_templates",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_fvcwoptsuer9p23m055osose",
+                        name: "fk_agreement_assigned_document_templates_agreements_agreement_",
                         column: x => x.agreement_id,
                         principalSchema: "portal",
                         principalTable: "agreements",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_agreement_assigned_document_templates_document_templates_do",
+                        column: x => x.document_template_id,
+                        principalSchema: "portal",
+                        principalTable: "document_templates",
                         principalColumn: "id");
                 });
 
@@ -1016,34 +1016,34 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_consents", x => x.id);
                     table.ForeignKey(
-                        name: "fk_36j22f34lgi2444n4tynxamh",
-                        column: x => x.document_id,
-                        principalSchema: "portal",
-                        principalTable: "documents",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_39a5cbiv35v59ysgfon5oole",
+                        name: "fk_consents_agreements_agreement_id",
                         column: x => x.agreement_id,
                         principalSchema: "portal",
                         principalTable: "agreements",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_aiodhuwehw8wee20adskdfo2",
-                        column: x => x.consent_status_id,
-                        principalSchema: "portal",
-                        principalTable: "consent_status",
-                        principalColumn: "consent_status_id");
-                    table.ForeignKey(
-                        name: "fk_asqxie2r7yr06cdrw9ifaex8",
+                        name: "fk_consents_companies_company_id",
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_cnrtafckouq96m0fw2qtpwbs",
+                        name: "fk_consents_company_users_company_user_id",
                         column: x => x.company_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_consents_consent_statuses_consent_status_id",
+                        column: x => x.consent_status_id,
+                        principalSchema: "portal",
+                        principalTable: "consent_statuses",
+                        principalColumn: "consent_status_id");
+                    table.ForeignKey(
+                        name: "fk_consents_documents_document_id",
+                        column: x => x.document_id,
+                        principalSchema: "portal",
+                        principalTable: "documents",
                         principalColumn: "id");
                 });
 
@@ -1060,7 +1060,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "app_status",
+                table: "app_statuses",
                 columns: new[] { "app_status_id", "label" },
                 values: new object[,]
                 {
@@ -1072,7 +1072,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "company_application_status",
+                table: "company_application_statuses",
                 columns: new[] { "application_status_id", "label" },
                 values: new object[,]
                 {
@@ -1099,7 +1099,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "company_status",
+                table: "company_statuses",
                 columns: new[] { "company_status_id", "label" },
                 values: new object[,]
                 {
@@ -1111,7 +1111,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "company_user_status",
+                table: "company_user_statuses",
                 columns: new[] { "company_user_status_id", "label" },
                 values: new object[,]
                 {
@@ -1121,7 +1121,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "consent_status",
+                table: "consent_statuses",
                 columns: new[] { "consent_status_id", "label" },
                 values: new object[,]
                 {
@@ -1409,7 +1409,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "invitation_status",
+                table: "invitation_statuses",
                 columns: new[] { "invitation_status_id", "label" },
                 values: new object[,]
                 {
@@ -1593,9 +1593,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 column: "use_case_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_identity_provider_identity_provider_id",
+                name: "ix_company_identity_providers_identity_provider_id",
                 schema: "portal",
-                table: "company_identity_provider",
+                table: "company_identity_providers",
                 column: "identity_provider_id");
 
             migrationBuilder.CreateIndex(
@@ -1779,7 +1779,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "company_identity_provider",
+                name: "company_identity_providers",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1827,15 +1827,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "documents",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
                 name: "agreements",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "consent_status",
+                name: "consent_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "documents",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1847,7 +1847,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "invitation_status",
+                name: "invitation_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1859,11 +1859,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "document_types",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "company_users",
+                name: "agreement_categories",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1871,11 +1867,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "agreement_categories",
+                name: "use_cases",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "use_cases",
+                name: "company_users",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "document_types",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1883,7 +1883,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "company_application_status",
+                name: "company_application_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1891,7 +1891,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "company_user_status",
+                name: "app_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -1899,15 +1899,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "app_status",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "company_status",
+                name: "company_user_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "addresses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "company_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
