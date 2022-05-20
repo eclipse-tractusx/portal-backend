@@ -1,4 +1,4 @@
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+namespace CatenaX.NetworkServices.Provisioning.Library.Enums;
 
 public enum IamClientAuthMethod : int
 {
