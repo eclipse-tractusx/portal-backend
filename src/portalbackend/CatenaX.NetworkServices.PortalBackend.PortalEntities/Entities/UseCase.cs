@@ -20,7 +20,6 @@ public class UseCase
         Shortname = shortname;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     [MaxLength(255)]

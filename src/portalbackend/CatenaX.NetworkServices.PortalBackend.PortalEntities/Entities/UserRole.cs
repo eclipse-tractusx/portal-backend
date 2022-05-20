@@ -19,7 +19,6 @@ public class UserRole
         IamClientId = iamClientId;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     [MaxLength(255)]

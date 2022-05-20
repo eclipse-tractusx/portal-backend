@@ -16,7 +16,6 @@ public class AppLicense
         Licensetext = licensetext;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     [MaxLength(255)]
