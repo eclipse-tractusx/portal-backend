@@ -15,7 +15,6 @@ public class AppDetailImage
         ImageUrl = imageUrl;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     public Guid AppId { get; set; }
