@@ -13,12 +13,12 @@ public class CompanyServiceAccountStatus
 
     public CompanyServiceAccountStatus(CompanyServiceAccountStatusId companyServiceAccountStatusId) : this()
     {
-        CompanyServiceAccountStatusId = companyServiceAccountStatusId;
+        Id = companyServiceAccountStatusId;
         Label = companyServiceAccountStatusId.ToString();
     }
 
     [Key]
-    public CompanyServiceAccountStatusId CompanyServiceAccountStatusId { get; private set; }
+    public CompanyServiceAccountStatusId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
