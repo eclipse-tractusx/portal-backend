@@ -20,6 +20,7 @@ using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -96,6 +97,10 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
+
+builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
+                .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
+                .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
 builder.Services.AddDbContext<PortalDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("PortalDB")));
