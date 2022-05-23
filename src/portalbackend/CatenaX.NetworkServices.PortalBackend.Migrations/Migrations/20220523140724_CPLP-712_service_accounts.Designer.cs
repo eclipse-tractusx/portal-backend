@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220523104020_CPLP-712_service_accounts")]
+    [Migration("20220523140724_CPLP-712_service_accounts")]
     partial class CPLP712_service_accounts
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -882,9 +882,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", b =>
                 {
-                    b.Property<int>("CompanyServiceAccountStatusId")
+                    b.Property<int>("Id")
                         .HasColumnType("integer")
-                        .HasColumnName("company_service_account_status_id");
+                        .HasColumnName("id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -892,7 +892,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("CompanyServiceAccountStatusId")
+                    b.HasKey("Id")
                         .HasName("pk_company_service_account_statuses");
 
                     b.ToTable("company_service_account_statuses", "portal");
@@ -900,12 +900,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            CompanyServiceAccountStatusId = 1,
+                            Id = 1,
                             Label = "ACTIVE"
                         },
                         new
                         {
-                            CompanyServiceAccountStatusId = 2,
+                            Id = 2,
                             Label = "INACTIVE"
                         });
                 });
