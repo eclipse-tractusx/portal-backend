@@ -6,23 +6,28 @@ public class IamServiceAccount
 {
     private IamServiceAccount()
     {
-        UserEntityId = null!;
+        ClientId = null!;
         ClientClientId = null!;
+        UserEntityId = null!;
     }
 
-    public IamServiceAccount(string userEntityId, string clientClientId, Guid companyServiceAccountId)
+    public IamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId)
     {
-        UserEntityId = userEntityId;
+        ClientId = clientId;
         ClientClientId = clientClientId;
+        UserEntityId = userEntityId;
         CompanyServiceAccountId = companyServiceAccountId;
     }
 
     [Key]
     [StringLength(36)]
-    public string UserEntityId { get; private set; }
+    public string ClientId { get; private set; }
 
     [StringLength(255)]
     public string ClientClientId { get; private set; }
+
+    [StringLength(36)]
+    public string UserEntityId { get; private set; }
 
     public Guid CompanyServiceAccountId { get; private set; }
 

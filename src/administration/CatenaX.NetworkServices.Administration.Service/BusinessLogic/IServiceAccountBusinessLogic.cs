@@ -11,5 +11,6 @@ public interface IServiceAccountBusinessLogic
     Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, string iamAdminId);
     Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, string iamAdminId);
     Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, string iamAdminId);
-    Task<Pagination.Response<ServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId);
+    Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, string iamAdminId);
+    Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId);
 }

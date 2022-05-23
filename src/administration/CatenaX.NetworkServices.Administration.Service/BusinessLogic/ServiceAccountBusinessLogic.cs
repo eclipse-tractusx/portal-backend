@@ -4,9 +4,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using CatenaX.NetworkServices.Provisioning.DBAccess;
-using Microsoft.Extensions.Options;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Provisioning.Library.ViewModels;
 
@@ -15,20 +13,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 {
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IProvisioningDBAccess _provisioningDBAccess;
     private readonly IPortalBackendDBAccess _portalDBAccess;
-    private readonly UserSettings _settings;
 
     public ServiceAccountBusinessLogic(
         IProvisioningManager provisioningManager,
-        IProvisioningDBAccess provisioningDBAccess,
-        IPortalBackendDBAccess portalDBAccess,
-        IOptions<UserSettings> settings)
+        IPortalBackendDBAccess portalDBAccess)
     {
         _provisioningManager = provisioningManager;
-        _provisioningDBAccess = provisioningDBAccess;
         _portalDBAccess = portalDBAccess;
-        _settings = settings.Value;
     }
 
     public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, string iamAdminId)
@@ -38,10 +30,19 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ArgumentException("name must not be empty","name");
         }
 
-        var iamServiceAccountUserEntityId = Guid.NewGuid().ToString(); //TODO create serviceaccount on keycloak and retrieve serviceAccounts userEntityId
-        var clientId = "dummy-client";
-
         var companyId = await _portalDBAccess.GetCompanyIdForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
+        if (companyId == null)
+        {
+            throw new ArgumentException($"user {iamAdminId} is not associated with any company","iamAdminId");
+        }
+
+        var clientId = await _provisioningManager.GetNextServiceAccountClientIdAsync().ConfigureAwait(false);
+        var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
+            clientId,
+            new ClientConfigData(
+                serviceAccountCreationInfos.Name,
+                serviceAccountCreationInfos.Description,
+                serviceAccountCreationInfos.IamClientAuthMethod)).ConfigureAwait(false);
 
         var serviceAccount = _portalDBAccess.CreateCompanyServiceAccount(
             companyId,
@@ -50,8 +51,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountCreationInfos.Description);
 
         var IamServiceAccount = _portalDBAccess.CreateIamServiceAccount(
-            iamServiceAccountUserEntityId,
+            serviceAccountData.InternalClientId,
             clientId,
+            serviceAccountData.UserEntityId,
             serviceAccount.Id);
 
         await _portalDBAccess.SaveAsync().ConfigureAwait(false);
@@ -62,7 +64,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountCreationInfos.Description,
             serviceAccountCreationInfos.IamClientAuthMethod)
         {
-            Secret = "asdhgöaölsdgh" //TODO get secret from keycloak
+            Secret = serviceAccountData.AuthData.Secret
         };
     }
 
@@ -93,10 +95,36 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {iamAdminId}");
         }
-        return new ServiceAccountDetails(result.ServiceAccountId, result.ClientId, result.Name, result.Description, IamClientAuthMethod.SECRET) //get add clientAuthMethod, and secret from keycloak
+        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
+        return new ServiceAccountDetails(
+            result.ServiceAccountId,
+            result.ClientClientId,
+            result.Name,
+            result.Description,
+            authData.IamClientAuthMethod)
+            {
+                Secret = authData.Secret
+            };
+    }
+
+    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, string iamAdminId)
+    {
+        var result = await _portalDBAccess.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, iamAdminId);
+
+        if (result == null)
         {
-            Secret = "asdhgöaölsdgh"
-        };
+            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {iamAdminId}");
+        }
+        var authData = await _provisioningManager.ResetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
+        return new ServiceAccountDetails(
+            result.ServiceAccountId,
+            result.ClientClientId,
+            result.Name,
+            result.Description,
+            authData.IamClientAuthMethod)
+            {
+                Secret = authData.Secret
+            };
     }
 
     public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountEditableDetails, string iamAdminId)
@@ -115,6 +143,16 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new ArgumentException($"serviceAccount {serviceAccountId} is already INACTIVE");
         }
+
+        await _provisioningManager.UpdateCentralClientAsync(
+            result.ClientId,
+            new ClientConfigData(
+                serviceAccountEditableDetails.Name,
+                serviceAccountEditableDetails.Description,
+                serviceAccountEditableDetails.IamClientAuthMethod)).ConfigureAwait(false);
+        
+        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
+
         serviceAccount.Name = serviceAccountEditableDetails.Name;
         serviceAccount.Description = serviceAccountEditableDetails.Description;
 
@@ -125,15 +163,15 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.ClientClientId,
             serviceAccount.Name,
             serviceAccount.Description,
-            serviceAccountEditableDetails.IamClientAuthMethod) //TODO update iamClientAuthMethod in Keycloak and retrieve secret
+            authData.IamClientAuthMethod)
         {
-            Secret = "asdhgöaölsdgh"
+            Secret = authData.Secret
         };
     }
 
-    public async Task<Pagination.Response<ServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId)
+    public async Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId)
     {
-        var result = await Pagination.CreateResponseAsync<ServiceAccountData>(
+        var result = await Pagination.CreateResponseAsync<CompanyServiceAccountData>(
             page,
             size,
             15,

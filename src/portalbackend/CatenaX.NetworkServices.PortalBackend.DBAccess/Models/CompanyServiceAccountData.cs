@@ -1,20 +1,22 @@
+using System.Text.Json.Serialization;
+
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class ServiceAccountDetailedData
+public class CompanyServiceAccountData
 {
-    public ServiceAccountDetailedData(Guid serviceAccountId, string clientId, string name, string description)
+    public CompanyServiceAccountData(Guid serviceAccountId, string clientId, string name)
     {
         ServiceAccountId = serviceAccountId;
         ClientId = clientId;
         Name = name;
-        Description = description;
     }
 
+    [JsonPropertyName("serviceAccountId")]
     public Guid ServiceAccountId { get; set; }
 
+    [JsonPropertyName("clientId")]
     public string ClientId { get; set; }
 
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-
-    public string Description { get; set; }
 }

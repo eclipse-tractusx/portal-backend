@@ -2,7 +2,6 @@ using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
@@ -12,7 +11,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
     public class InvitationBusinessLogic : IInvitationBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
-        private readonly IProvisioningDBAccess _provisioningDBAccess;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly IMailingService _mailingService;
         private readonly InvitationSettings _settings;
@@ -20,7 +18,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public InvitationBusinessLogic(
             IProvisioningManager provisioningManager,
-            IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
             IOptions<InvitationSettings> configuration,
@@ -28,7 +25,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             )
         {
             _provisioningManager = provisioningManager;
-            _provisioningDBAccess = provisioningDBAccess;
             _portalDBAccess = portalDBAccess;
             _mailingService = mailingService;
             _settings = configuration.Value;

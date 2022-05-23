@@ -141,11 +141,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     description,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public IamServiceAccount CreateIamServiceAccount(string userEntityId, string clientClientId, Guid companyServiceAccountId) =>
+        public IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId) =>
             _dbContext.IamServiceAccounts.Add(
                 new IamServiceAccount(
-                    userEntityId,
+                    clientId,
                     clientClientId,
+                    userEntityId,
                     companyServiceAccountId)).Entity;
 
         public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
@@ -510,16 +511,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         .SingleOrDefault()
                 }).SingleOrDefaultAsync();
 
-        public Task<ServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
+        public Task<CompanyServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
             _dbContext.CompanyServiceAccounts
                 .Where(serviceAccount =>
                     serviceAccount.Id == serviceAccountId
                     && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
                     && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
                 .Select( serviceAccount =>
-                    new ServiceAccountWithClientId(
+                    new CompanyServiceAccountWithClientId(
                         serviceAccount,
-                        serviceAccount.IamServiceAccount!.ClientClientId
+                        serviceAccount.IamServiceAccount!.ClientId,
+                        serviceAccount.IamServiceAccount.ClientClientId
                     )
                 )
                 .SingleOrDefaultAsync();
@@ -533,26 +535,28 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(serviceAccount => serviceAccount.IamServiceAccount)
                 .SingleOrDefaultAsync();
 
-        public Task<ServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string adminUserId) =>
+        public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string adminUserId) =>
             _dbContext.CompanyServiceAccounts
                 .AsNoTracking()
                 .Where(serviceAccount =>
                     serviceAccount.Id == serviceAccountId
                     && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
                     && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Select(serviceAccount => new ServiceAccountDetailedData(
+                .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                         serviceAccount.Id,
-                        serviceAccount.IamServiceAccount!.ClientClientId,
+                        serviceAccount.IamServiceAccount!.ClientId,
+                        serviceAccount.IamServiceAccount.ClientClientId,
+                        serviceAccount.IamServiceAccount.UserEntityId,
                         serviceAccount.Name,
                         serviceAccount.Description))
                 .SingleOrDefaultAsync();
 
-        public Task<Pagination.Source<ServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId) =>
+        public Task<Pagination.Source<CompanyServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId) =>
             _dbContext.Companies
                 .AsNoTracking()
                 .Where(company =>
                     company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Select(company => new Pagination.Source<ServiceAccountData>(
+                .Select(company => new Pagination.Source<CompanyServiceAccountData>(
                     company.CompanyServiceAccounts
                         .Where(serviceAccount => serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
                         .Count(),
@@ -561,7 +565,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         .OrderBy(serviceAccount => serviceAccount.Name)
                         .Skip(skip)
                         .Take(take)
-                        .Select(serviceAccount => new ServiceAccountData(
+                        .Select(serviceAccount => new CompanyServiceAccountData(
                             serviceAccount.Id,
                             serviceAccount.IamServiceAccount!.ClientClientId,
                             serviceAccount.Name))))
