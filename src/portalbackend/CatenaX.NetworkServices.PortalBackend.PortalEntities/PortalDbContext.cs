@@ -520,6 +520,9 @@ public class PortalDbContext : DbContext
             entity.HasIndex(e => e.ClientClientId)
                 .IsUnique();
 
+            entity.HasIndex(e => e.UserEntityId)
+                .IsUnique();
+
             entity.HasOne(d => d.CompanyServiceAccount)
                 .WithOne(p => p!.IamServiceAccount!)
                 .HasForeignKey<IamServiceAccount>(d => d.CompanyServiceAccountId)

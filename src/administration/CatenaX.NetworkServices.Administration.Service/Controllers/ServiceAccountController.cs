@@ -47,9 +47,15 @@ public class ServiceAccountController : ControllerBase
     public Task<ServiceAccountDetails> PutServiceAccountDetails([FromRoute] Guid serviceAccountId, [FromBody] ServiceAccountEditableDetails serviceAccountDetails) =>
         this.WithIamUserId(adminId => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails, adminId));
 
+    [HttpPost]
+    [Authorize(Roles = "add_tech_user_management")]
+    [Route("owncompany/serviceaccounts/{serviceAccountId}/resetCredentials")]
+    public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
+        this.WithIamUserId(adminId => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, adminId));
+
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
     [Route("owncompany/serviceaccounts")]
-    public Task<Pagination.Response<ServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
         this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, adminId));
 }

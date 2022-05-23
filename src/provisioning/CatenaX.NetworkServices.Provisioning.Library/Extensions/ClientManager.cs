@@ -1,77 +1,157 @@
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Keycloak.Net.Models.Clients;
 using Keycloak.Net.Models.ProtocolMappers;
-
-using System;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
 
-namespace CatenaX.NetworkServices.Provisioning.Library
+namespace CatenaX.NetworkServices.Provisioning.Library;
+
+public partial class ProvisioningManager
 {
-    public partial class ProvisioningManager
+    private static readonly IReadOnlyDictionary<string,IamClientAuthMethod> CredentialTypesIamClientAuthMethodDictionary = new Dictionary<string,IamClientAuthMethod>()
     {
-        private async Task<Client> GetCentralClientViewableAsync(string clientId)
+        { "jwt", IamClientAuthMethod.JWT },
+        { "secret", IamClientAuthMethod.SECRET },
+        { "x509", IamClientAuthMethod.X509 },
+        { "secret-jwt", IamClientAuthMethod.SECRET_JWT }
+    };
+
+    private static readonly IReadOnlyDictionary<IamClientAuthMethod,string> IamClientAuthMethodsInternalDictionary = new Dictionary<IamClientAuthMethod,string>()
+    {
+        { IamClientAuthMethod.JWT, "client-jwt" },
+        { IamClientAuthMethod.SECRET, "client-secret" },
+        { IamClientAuthMethod.X509, "client-x509" },
+        { IamClientAuthMethod.SECRET_JWT, "client-secret-jwt" }
+    };
+
+    public async Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config)
+    {
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        if (client == null)
         {
-            var client = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
-                .SingleOrDefault();
-            if (client == null)
-            {
-                throw new Exception($"failed to retrieve central client {clientId}");
-            }
-            return client;
+            throw new NotFoundException($"failed to retrieve central client {internalClientId}");
         }
-
-        private async Task CreateSharedRealmIdentityProviderClientAsync(string realm, IdentityProviderClientConfig config)
+        client.Name = config.Name;
+        client.ClientAuthenticatorType = IamClientAuthMethodToInternal(config.IamClientAuthMethod);
+        if (! await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false))
         {
-            var newClient = CloneClient(_Settings.SharedRealmClient);
-            newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
-            newClient.Attributes["jwks.url"] = config.JwksUrl;
-            if (! await _SharedIdp.CreateClientAsync(realm,newClient))
-            {
-                throw new Exception($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
-            }
+            throw new Exception($"failed to update client {internalClientId}");
         }
+    }
 
-        private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri)
+    public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
+    {
+        var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        if (credentials == null)
         {
-            var newClient = CloneClient(_Settings.CentralOIDCClient);
-            newClient.ClientId = clientId;
-            newClient.RedirectUris = Enumerable.Repeat<string>(redirectUri, 1);
-            var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
-            if (newClientId == null)
-            {
-                throw new Exception($"failed to create new client {clientId} in central realm");
-            }
-            return newClientId;
+            throw new NotFoundException($"credentials of client {internalClientId} not found in keycloak");
         }
+        return new ClientAuthData(
+            CredentialsTypeToIamClientAuthMethod(credentials.Type))
+            {
+                Secret = credentials.Value
+            };
+    }
 
-        private async Task CreateCentralOIDCClientAudienceMapperAsync(string internalClientId, string clientAudienceId)
+    public async Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId)
+    {
+        var credentials = await _CentralIdp.GenerateClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        if (credentials == null)
         {
-            if (! await _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper {
-                Name = $"{clientAudienceId}-mapper",
-                Protocol = "openid-connect",
-                _ProtocolMapper = "oidc-audience-mapper",
-                ConsentRequired =  false,
-                Config = new Config {
-                    IncludedClientAudience = clientAudienceId,
-                    IdTokenClaim = "false",
-                    AccessTokenClaim = "true",
-                }
-            }).ConfigureAwait(false))
-            {
-                throw new Exception($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
-            }
+            throw new NotFoundException($"credentials of client {internalClientId} not found in keycloak");
         }
+        return new ClientAuthData(
+            CredentialsTypeToIamClientAuthMethod(credentials.Type))
+            {
+                Secret = credentials.Value
+            };
+    }
 
-        private async Task<string> GetNextClientIdAsync() =>
-            _Settings.ClientPrefix + (await _ProvisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(false)) + "_DummySuffix"; //TODO: implement full client naming scheme
+    private async Task<Client> GetCentralClientViewableAsync(string clientId)
+    {
+        var client = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
+            .SingleOrDefault();
+        if (client == null)
+        {
+            throw new NotFoundException($"failed to retrieve central client {clientId}");
+        }
+        return client;
+    }
 
-        private Client CloneClient(Client client) =>
-            JsonSerializer.Deserialize<Client>(JsonSerializer.Serialize(client));
+    private async Task CreateSharedRealmIdentityProviderClientAsync(string realm, IdentityProviderClientConfig config)
+    {
+        var newClient = CloneClient(_Settings.SharedRealmClient);
+        newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
+        newClient.Attributes["jwks.url"] = config.JwksUrl;
+        if (! await _SharedIdp.CreateClientAsync(realm,newClient))
+        {
+            throw new Exception($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
+        }
+    }
 
-        private async Task<string> GetIdOfClientFromClientIDAsync(string clientId) =>
-            (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))
-                .Id;
-   }
+    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri)
+    {
+        var newClient = CloneClient(_Settings.CentralOIDCClient);
+        newClient.ClientId = clientId;
+        newClient.RedirectUris = Enumerable.Repeat<string>(redirectUri, 1);
+        var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
+        if (newClientId == null)
+        {
+            throw new Exception($"failed to create new client {clientId} in central realm");
+        }
+        return newClientId;
+    }
+
+    private async Task CreateCentralOIDCClientAudienceMapperAsync(string internalClientId, string clientAudienceId)
+    {
+        if (! await _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper {
+            Name = $"{clientAudienceId}-mapper",
+            Protocol = "openid-connect",
+            _ProtocolMapper = "oidc-audience-mapper",
+            ConsentRequired =  false,
+            Config = new Config {
+                IncludedClientAudience = clientAudienceId,
+                IdTokenClaim = "false",
+                AccessTokenClaim = "true",
+            }
+        }).ConfigureAwait(false))
+        {
+            throw new Exception($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
+        }
+    }
+
+    private async Task<string> GetCentralInternalClientIdFromClientIDAsync(string clientId) =>
+        (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))
+            .Id;
+
+    private IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
+    {
+        try
+        {
+            return CredentialTypesIamClientAuthMethodDictionary[clientAuthMethod];
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}","clientAuthMethod");
+        }
+    }
+
+    private string IamClientAuthMethodToInternal(IamClientAuthMethod iamClientAuthMethod)
+    {
+        try
+        {
+            return IamClientAuthMethodsInternalDictionary[iamClientAuthMethod];
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}","authMethod");
+        }
+    }
+
+    private async Task<string> GetNextClientIdAsync() =>
+        _Settings.ClientPrefix + (await _ProvisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(false));
+
+    private Client CloneClient(Client client) =>
+        JsonSerializer.Deserialize<Client>(JsonSerializer.Serialize(client))!;
 }
