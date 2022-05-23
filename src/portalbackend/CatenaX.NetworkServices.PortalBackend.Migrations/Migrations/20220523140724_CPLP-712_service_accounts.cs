@@ -14,12 +14,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 columns: table => new
                 {
-                    company_service_account_status_id = table.Column<int>(type: "integer", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false),
                     label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_company_service_account_statuses", x => x.company_service_account_status_id);
+                    table.PrimaryKey("pk_company_service_account_statuses", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -48,7 +48,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         column: x => x.company_service_account_status_id,
                         principalSchema: "portal",
                         principalTable: "company_service_account_statuses",
-                        principalColumn: "company_service_account_status_id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -101,7 +101,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "company_service_account_statuses",
-                columns: new[] { "company_service_account_status_id", "label" },
+                columns: new[] { "id", "label" },
                 values: new object[,]
                 {
                     { 1, "ACTIVE" },
