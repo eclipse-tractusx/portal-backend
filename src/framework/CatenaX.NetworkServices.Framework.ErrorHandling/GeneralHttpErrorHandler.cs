@@ -32,7 +32,7 @@ public class GeneralHttpErrorHandler
                     "https://tools.ietf.org/html/rfc7231#section-6.5.1",
                     "One or more validation errors occurred.",
                     (int)HttpStatusCode.BadRequest,
-                    new Dictionary<String,IEnumerable<string>>()
+                    new Dictionary<String, IEnumerable<string>>()
                     {
                         { (error as ArgumentException)!.ParamName ?? error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
                     }
@@ -45,7 +45,7 @@ public class GeneralHttpErrorHandler
                     "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4",
                     "Cannot find representation of target resource.",
                     (int)HttpStatusCode.NotFound,
-                    new Dictionary<String,IEnumerable<string>>()
+                    new Dictionary<String, IEnumerable<string>>()
                     {
                         { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
                     }
@@ -58,7 +58,20 @@ public class GeneralHttpErrorHandler
                     "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3",
                     "Access to requested resource is not permitted.",
                     (int)HttpStatusCode.Forbidden,
-                    new Dictionary<String,IEnumerable<string>>()
+                    new Dictionary<String, IEnumerable<string>>()
+                    {
+                        { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
+                    }
+                );
+                _logger.LogInformation(error.Message);
+            }
+            else if (error is ServiceException)
+            {
+                errorResponse = new ErrorResponse(
+                    "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4",
+                    "Service Not Responded.",
+                    (int)(error as ServiceException)!.StatusCode,
+                    new Dictionary<String, IEnumerable<string>>()
                     {
                         { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
                     }
@@ -71,7 +84,7 @@ public class GeneralHttpErrorHandler
                     "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
                     "The server encountered an unexpected condition.",
                     (int)HttpStatusCode.InternalServerError,
-                    new Dictionary<String,IEnumerable<string>>()
+                    new Dictionary<String, IEnumerable<string>>()
                     {
                         { error.Source ?? "unknown", Enumerable.Repeat(error.Message, 1) }
                     }

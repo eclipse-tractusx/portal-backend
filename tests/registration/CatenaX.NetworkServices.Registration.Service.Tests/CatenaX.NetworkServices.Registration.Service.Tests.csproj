@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\registration\CatenaX.NetworkServices.Registration.Service\CatenaX.NetworkServices.Registration.Service.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
   </ItemGroup>
 
 </Project>

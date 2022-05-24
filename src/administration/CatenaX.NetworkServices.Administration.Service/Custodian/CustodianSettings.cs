@@ -1,4 +1,4 @@
-﻿namespace CatenaX.NetworkServices.Registration.Service.Custodian
+namespace CatenaX.NetworkServices.Administration.Service.Custodian
 {
     public class CustodianSettings
     {

@@ -12,7 +12,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
         Task SetIdpAsync(SetIdp idpToSet);
-        Task CreateCustodianWalletAsync(WalletInformation information);
         IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
         Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress);

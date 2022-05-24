@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Net.Http;
 
-namespace CatenaX.NetworkServices.Registration.Service.Custodian
+namespace CatenaX.NetworkServices.Administration.Service.Custodian
 {
     public static class CustodianServiceCollectionExtension
     {

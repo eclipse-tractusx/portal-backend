@@ -8,6 +8,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
+using CatenaX.NetworkServices.Administration.Service.Custodian;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
@@ -21,14 +22,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
-
+        private readonly ICustodianService _custodianService;
         public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
             ILogger<UserBusinessLogic> logger,
-            IOptions<UserSettings> settings)
+            IOptions<UserSettings> settings,
+            ICustodianService custodianService)
         {
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;
@@ -36,6 +38,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
+            _custodianService = custodianService;
         }
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
@@ -87,7 +90,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         user.userName ?? user.eMail,
                         user.eMail,
                         companyIdpData.CompanyName
-                    ) {
+                    )
+                    {
                         FirstName = user.firstName,
                         LastName = user.lastName,
                         Password = password,
@@ -110,7 +114,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     {
                         _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
                     }
-                    
+
                     _portalDBAccess.CreateIamUser(companyUser, centralUserId);
 
                     var inviteTemplateName = "PortalTemplate";
@@ -139,7 +143,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 }
 
                 await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-    
+
                 if (success)
                 {
                     yield return user.eMail;
@@ -155,25 +159,25 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             string? lastName = null,
             string? email = null,
             CompanyUserStatusId? status = null)
+        {
+            if (!companyUserId.HasValue
+                && String.IsNullOrWhiteSpace(userEntityId)
+                && String.IsNullOrWhiteSpace(firstName)
+                && String.IsNullOrWhiteSpace(lastName)
+                && String.IsNullOrWhiteSpace(email)
+                && !status.HasValue)
             {
-                if (!companyUserId.HasValue
-                    && String.IsNullOrWhiteSpace(userEntityId)
-                    && String.IsNullOrWhiteSpace(firstName)
-                    && String.IsNullOrWhiteSpace(lastName)
-                    && String.IsNullOrWhiteSpace(email)
-                    && !status.HasValue)
-                {
-                    throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
-                }
-                return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
-                    adminUserId,
-                    companyUserId,
-                    userEntityId,
-                    firstName,
-                    lastName,
-                    email,
-                    status);
+                throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
             }
+            return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
+                adminUserId,
+                companyUserId,
+                userEntityId,
+                firstName,
+                lastName,
+                email,
+                status);
+        }
 
         public Task<IEnumerable<string>> GetAppRolesAsync(string? clientId)
         {
@@ -205,7 +209,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
             }
-            await foreach(var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
+            await foreach (var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
                 var success = false;
                 try
@@ -286,7 +290,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
         {
             await foreach (var user in _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
-             {
+            {
                 if (String.IsNullOrWhiteSpace(user.EmailId))
                 {
                     throw new ArgumentException($"user {user.UserName} has no assigned email");
@@ -347,6 +351,64 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
             throw new NotFoundException($"no shared idp user {companyUserId} found in company of {adminUserId}");
+        }
+
+        public async Task<bool> ApprovePartnerRequest(Guid applicationId)
+        {
+            bool success = false;
+            var result = (CompanyApplicationStatusId?)await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
+            if (result.HasValue && result.Value == CompanyApplicationStatusId.SUBMITTED)
+            {
+                var response = await _portalDBAccess.GetInvitedUsersByApplicationId(applicationId).ToListAsync().ConfigureAwait(false);
+                Guid companyId = response.ToList().FirstOrDefault().CompanyId;
+                if (companyId == null)
+                {
+                    throw new NotFoundException($"User Company Key {companyId} is incorrect");
+                }
+                var clientId = _settings.Portal.KeyCloakClientID;
+                string roleName = "IT Admin";
+                List<string> role = new List<string> { roleName };
+                var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                        {
+                            { clientId, role.AsEnumerable() }
+                        };
+
+                var company = await _portalDBAccess.GetCompanyAsync(companyId).ConfigureAwait(false);
+                foreach (var item in response)
+                {
+                    await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, clientRoleNames).ConfigureAwait(false);
+                    await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(company.Bpn, 1));
+                }
+
+                company.CompanyStatusId = CompanyStatusId.ACTIVE;
+                var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
+                if (application == null)
+                {
+                    throw new NotFoundException($"CompanyApplication {applicationId} not found");
+                }
+                application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                application.DateLastChanged = DateTimeOffset.UtcNow;
+                var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
+                clientId,
+                role.AsEnumerable()
+                )
+                .ToDictionaryAsync(
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
+                    companyRoleWithId => companyRoleWithId.CompanyUserRoleId
+                )
+                .ConfigureAwait(false);
+                foreach (var item in response)
+                {
+                    _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, companyRoleIds[roleName]);
+                }
+                await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+
+                await _custodianService.CreateWallet(company.Bpn, company.Name).ConfigureAwait(false);
+                await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
+
+                success = true;
+            }
+            throw new ArgumentException($"CompanyApplication {applicationId} is in wrong status");
         }
     }
 }

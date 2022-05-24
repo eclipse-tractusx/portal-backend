@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Net;
 
-namespace CatenaX.NetworkServices.Registration.Service.CustomException
+namespace CatenaX.NetworkServices.Framework.ErrorHandling
 {
-    public class ServiceException: Exception
+    public class ServiceException : Exception
     {
         public HttpStatusCode StatusCode { get; set; }
 

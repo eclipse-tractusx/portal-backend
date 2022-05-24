@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace CatenaX.NetworkServices.Registration.Service.Custodian.Models
+namespace CatenaX.NetworkServices.Administration.Service.Custodian.Models
 {
     public class GetWallets
     {

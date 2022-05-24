@@ -10,6 +10,7 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.Administration.Service.Custodian;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -96,7 +97,7 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
-
+builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 builder.Services.AddDbContext<PortalDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("PortalDB")));
 
