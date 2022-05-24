@@ -36,7 +36,21 @@ public class ConnectorsController : ControllerBase
     [HttpGet]
     [Route("")]
     [Authorize(Roles = "view_connectors")]
-   [ProducesResponseType(typeof(Pagination.Response<ConnectorViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Pagination.Response<ConnectorViewModel>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorViewModel>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 1, [FromQuery] int size = 15) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(iamUserId, page, size));
+
+    /// <summary>
+    /// Created a new connector with provided parameters from body.
+    /// </summary>
+    /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <returns>View model of the created connector.</returns>
+    /// <remarks>Example: POST: /api/connectors</remarks>
+    /// <response code="201">Returns a view model of the created connector.</response>
+    [HttpPost]
+    [Route("")]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
+    public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
+        CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel));
 }
