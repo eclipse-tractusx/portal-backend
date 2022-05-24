@@ -13,6 +13,7 @@ public interface IProvisioningManager
     Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
     Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
+    Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
     Task<bool> DeleteSharedRealmUserAsync(string idpName, string userIdShared);
     Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
     Task<string> SetupClientAsync(string redirectUrl);
