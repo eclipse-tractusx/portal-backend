@@ -50,7 +50,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountCreationInfos.Name,
             serviceAccountCreationInfos.Description);
 
-        var IamServiceAccount = _portalDBAccess.CreateIamServiceAccount(
+        _portalDBAccess.CreateIamServiceAccount(
             serviceAccountData.InternalClientId,
             clientId,
             serviceAccountData.UserEntityId,
@@ -82,6 +82,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
         if (serviceAccount.IamServiceAccount != null)
         {
+            await _provisioningManager.DeleteCentralClientAsync(serviceAccount.IamServiceAccount.ClientId).ConfigureAwait(false);
             _portalDBAccess.RemoveIamServiceAccount(serviceAccount.IamServiceAccount);
         }
         return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
