@@ -65,4 +65,10 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             Type = createdConnector.TypeId
         };
     }
+
+    /// <inheritdoc/>
+    public async Task DeleteConnectorAsync(Guid connectorId)
+    {
+        await _repository.DeleteConnectorAsync(connectorId);
+    }
 }

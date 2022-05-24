@@ -20,4 +20,10 @@ public interface IConnectorsRepository
     /// <param name="connector">Connector to create.</param>
     /// <returns>Created and persisted connector.</returns>
     public Task<Connector> CreateConnectorAsync(Connector connector);
+
+    /// <summary>
+    /// Removes a connector from persistence layer by id.
+    /// </summary>
+    /// <param name="connectorId">ID of the connector to be deleted.</param>
+    public Task DeleteConnectorAsync(Guid connectorId);
 }

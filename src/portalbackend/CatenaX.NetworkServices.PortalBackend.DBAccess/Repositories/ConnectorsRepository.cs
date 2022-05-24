@@ -33,4 +33,13 @@ public class ConnectorsRepository : IConnectorsRepository
         await _context.SaveChangesAsync();
         return createdConnector.Entity;
     }
+
+    /// <inheritdoc/>
+    public async Task DeleteConnectorAsync(Guid connectorId)
+    {
+        var connector = new Connector(connectorId, string.Empty, string.Empty, string.Empty);
+        _context.Connectors.Attach(connector);
+        _context.Connectors.Remove(connector);
+        await _context.SaveChangesAsync();
+    }
 }
