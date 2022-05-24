@@ -371,7 +371,7 @@ namespace Keycloak.Net
             .ReceiveJson<Client>()
             .ConfigureAwait(false);
 
-        [Obsolete("Not working yet")]
+        // [Obsolete("Not working yet")] - seems to work fine?
         public async Task<User> GetUserForServiceAccountAsync(string realm, string clientId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
