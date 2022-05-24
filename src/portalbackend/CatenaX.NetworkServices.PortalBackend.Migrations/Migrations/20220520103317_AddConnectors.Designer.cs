@@ -3,6 +3,7 @@ using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220520103317_AddConnectors")]
+    partial class AddConnectors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,9 +189,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("AgreementCategoryId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("agreement_category_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -197,7 +199,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("AgreementCategoryId")
                         .HasName("pk_agreement_categories");
 
                     b.ToTable("agreement_categories", "portal");
@@ -205,17 +207,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            AgreementCategoryId = 1,
                             Label = "CX_FRAME_CONTRACT"
                         },
                         new
                         {
-                            Id = 2,
+                            AgreementCategoryId = 2,
                             Label = "APP_CONTRACT"
                         },
                         new
                         {
-                            Id = 3,
+                            AgreementCategoryId = 3,
                             Label = "DATA_CONTRACT"
                         });
                 });
@@ -447,9 +449,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppStatus", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("AppStatusId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("app_status_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -457,7 +459,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("AppStatusId")
                         .HasName("pk_app_statuses");
 
                     b.ToTable("app_statuses", "portal");
@@ -465,22 +467,22 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            AppStatusId = 1,
                             Label = "CREATED"
                         },
                         new
                         {
-                            Id = 2,
+                            AppStatusId = 2,
                             Label = "IN_REVIEW"
                         },
                         new
                         {
-                            Id = 3,
+                            AppStatusId = 3,
                             Label = "ACTIVE"
                         },
                         new
                         {
-                            Id = 4,
+                            AppStatusId = 4,
                             Label = "INACTIVE"
                         });
                 });
@@ -596,9 +598,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ApplicationStatusId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("application_status_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -606,7 +608,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("ApplicationStatusId")
                         .HasName("pk_company_application_statuses");
 
                     b.ToTable("company_application_statuses", "portal");
@@ -614,47 +616,47 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            ApplicationStatusId = 1,
                             Label = "CREATED"
                         },
                         new
                         {
-                            Id = 2,
+                            ApplicationStatusId = 2,
                             Label = "ADD_COMPANY_DATA"
                         },
                         new
                         {
-                            Id = 3,
+                            ApplicationStatusId = 3,
                             Label = "INVITE_USER"
                         },
                         new
                         {
-                            Id = 4,
+                            ApplicationStatusId = 4,
                             Label = "SELECT_COMPANY_ROLE"
                         },
                         new
                         {
-                            Id = 5,
+                            ApplicationStatusId = 5,
                             Label = "UPLOAD_DOCUMENTS"
                         },
                         new
                         {
-                            Id = 6,
+                            ApplicationStatusId = 6,
                             Label = "VERIFY"
                         },
                         new
                         {
-                            Id = 7,
+                            ApplicationStatusId = 7,
                             Label = "SUBMITTED"
                         },
                         new
                         {
-                            Id = 8,
+                            ApplicationStatusId = 8,
                             Label = "CONFIRMED"
                         },
                         new
                         {
-                            Id = 9,
+                            ApplicationStatusId = 9,
                             Label = "DECLINED"
                         });
                 });
@@ -737,9 +739,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CompanyRoleId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("company_role_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -747,7 +749,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("CompanyRoleId")
                         .HasName("pk_company_roles");
 
                     b.ToTable("company_roles", "portal");
@@ -755,12 +757,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            CompanyRoleId = 1,
                             Label = "ACTIVE_PARTICIPANT"
                         },
                         new
                         {
-                            Id = 2,
+                            CompanyRoleId = 2,
                             Label = "APP_PROVIDER"
                         });
                 });
@@ -819,9 +821,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CompanyStatusId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("company_status_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -829,7 +831,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("CompanyStatusId")
                         .HasName("pk_company_statuses");
 
                     b.ToTable("company_statuses", "portal");
@@ -837,22 +839,22 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            CompanyStatusId = 1,
                             Label = "PENDING"
                         },
                         new
                         {
-                            Id = 2,
+                            CompanyStatusId = 2,
                             Label = "ACTIVE"
                         },
                         new
                         {
-                            Id = 3,
+                            CompanyStatusId = 3,
                             Label = "REJECTED"
                         },
                         new
                         {
-                            Id = 4,
+                            CompanyStatusId = 4,
                             Label = "INACTIVE"
                         });
                 });
@@ -951,9 +953,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CompanyUserStatusId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("company_user_status_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -961,7 +963,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("CompanyUserStatusId")
                         .HasName("pk_company_user_statuses");
 
                     b.ToTable("company_user_statuses", "portal");
@@ -969,12 +971,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            CompanyUserStatusId = 1,
                             Label = "ACTIVE"
                         },
                         new
                         {
-                            Id = 2,
+                            CompanyUserStatusId = 2,
                             Label = "INACTIVE"
                         });
                 });
@@ -1165,9 +1167,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ConsentStatusId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("consent_status_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -1175,7 +1177,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("ConsentStatusId")
                         .HasName("pk_consent_statuses");
 
                     b.ToTable("consent_statuses", "portal");
@@ -1183,12 +1185,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            ConsentStatusId = 1,
                             Label = "ACTIVE"
                         },
                         new
                         {
-                            Id = 2,
+                            ConsentStatusId = 2,
                             Label = "INACTIVE"
                         });
                 });
@@ -3038,9 +3040,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentType", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("DocumentTypeId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("document_type_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -3048,7 +3050,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("DocumentTypeId")
                         .HasName("pk_document_types");
 
                     b.ToTable("document_types", "portal");
@@ -3056,22 +3058,22 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            DocumentTypeId = 1,
                             Label = "CX_FRAME_CONTRACT"
                         },
                         new
                         {
-                            Id = 2,
+                            DocumentTypeId = 2,
                             Label = "COMMERCIAL_REGISTER_EXTRACT"
                         },
                         new
                         {
-                            Id = 3,
+                            DocumentTypeId = 3,
                             Label = "APP_CONTRACT"
                         },
                         new
                         {
-                            Id = 4,
+                            DocumentTypeId = 4,
                             Label = "DATA_CONTRACT"
                         });
                 });
@@ -3167,9 +3169,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("IdentityProviderCategoryId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("identity_provider_category_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -3177,7 +3179,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("IdentityProviderCategoryId")
                         .HasName("pk_identity_provider_categories");
 
                     b.ToTable("identity_provider_categories", "portal");
@@ -3185,17 +3187,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            IdentityProviderCategoryId = 1,
                             Label = "KEYCLOAK_SHARED"
                         },
                         new
                         {
-                            Id = 2,
+                            IdentityProviderCategoryId = 2,
                             Label = "KEYCLOAK_OIDC"
                         },
                         new
                         {
-                            Id = 3,
+                            IdentityProviderCategoryId = 3,
                             Label = "KEYCLOAK_SAML"
                         });
                 });
@@ -3240,9 +3242,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.InvitationStatus", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("InvitationStatusId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("invitation_status_id");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -3250,7 +3252,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("label");
 
-                    b.HasKey("Id")
+                    b.HasKey("InvitationStatusId")
                         .HasName("pk_invitation_statuses");
 
                     b.ToTable("invitation_statuses", "portal");
@@ -3258,22 +3260,22 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            InvitationStatusId = 1,
                             Label = "CREATED"
                         },
                         new
                         {
-                            Id = 2,
+                            InvitationStatusId = 2,
                             Label = "PENDING"
                         },
                         new
                         {
-                            Id = 3,
+                            InvitationStatusId = 3,
                             Label = "ACCEPTED"
                         },
                         new
                         {
-                            Id = 4,
+                            InvitationStatusId = 4,
                             Label = "DECLINED"
                         });
                 });

@@ -16,7 +16,7 @@ public class IamUser
     }
 
     [Key]
-    [StringLength(36)]
+    [MaxLength(36)]
     public string UserEntityId { get; private set; }
 
     public Guid CompanyUserId { get; private set; }

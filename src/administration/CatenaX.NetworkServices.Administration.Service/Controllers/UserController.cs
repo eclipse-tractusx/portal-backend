@@ -1,12 +1,11 @@
-﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+﻿using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
@@ -27,7 +26,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Authorize(Roles = "add_user_account")]
         [Route("owncompany/users")]
         public IAsyncEnumerable<string> ExecuteCompanyUserCreation([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
-            WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
+            this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
@@ -39,7 +38,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             [FromQuery] string? lastName = null,
             [FromQuery] string? email = null,
             [FromQuery] CompanyUserStatusId? status = null) =>
-            WithIamUserId(adminUserId => _logic.GetCompanyUserDetailsAsync(
+            this.WithIamUserId(adminUserId => _logic.GetCompanyUserDetailsAsync(
                 adminUserId,
                 companyUserId,
                 userEntityId,
@@ -57,13 +56,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpDelete]
         [Route("owncompany/ownUser")]
         public Task<int> ExecuteOwnUserDeletion() =>
-            WithIamUserId(iamUserId => _logic.DeleteUserAsync(iamUserId));
+            this.WithIamUserId(iamUserId => _logic.DeleteUserAsync(iamUserId));
 
         [HttpDelete]
         [Authorize(Roles = "delete_user_account")]
         [Route("owncompany/users")]
         public IAsyncEnumerable<Guid> ExecuteUserDeletion([FromBody] IEnumerable<Guid> usersToDelete) =>
-            WithIamUserId(adminUserId => _logic.DeleteUsersAsync(usersToDelete, adminUserId));
+            this.WithIamUserId(adminUserId => _logic.DeleteUsersAsync(usersToDelete, adminUserId));
 
         [HttpPut]
         [Authorize(Roles = "approve_new_partner")]
@@ -87,9 +86,9 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
-        [Route("tenant/{tenant}/users/{companyUserId}/resetpassword")]
-        public Task<bool> ResetUserPassword([FromRoute] string tenant, [FromRoute] Guid companyUserId) =>
-            WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId, tenant));
+        [Route("users/{companyUserId}/resetpassword")]
+        public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
+            this.WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId));
 
         [HttpPut]
         [Authorize(Roles = "approve_new_partner")]
@@ -97,14 +96,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
              _logic.ApprovePartnerRequest(applicationId);
 
-        private T WithIamUserId<T>(Func<string, T> _next)
-        {
-            var sub = User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value as string;
-            if (String.IsNullOrWhiteSpace(sub))
-            {
-                throw new ArgumentException("claim sub must not be null or empty", "sub");
-            }
-            return _next(sub);
-        }
+
     }
 }

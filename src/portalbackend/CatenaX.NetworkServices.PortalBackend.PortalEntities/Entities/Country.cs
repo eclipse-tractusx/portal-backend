@@ -10,6 +10,7 @@ public class Country
         CountryNameDe = null!;
         CountryNameEn = null!;
         Addresses = new HashSet<Address>();
+        Connectors = new HashSet<Connector>();
     }
 
     public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
@@ -34,4 +35,5 @@ public class Country
 
     // Navigation properties
     public virtual ICollection<Address> Addresses { get; private set; }
+    public virtual ICollection<Connector> Connectors { get; private set; }
 }

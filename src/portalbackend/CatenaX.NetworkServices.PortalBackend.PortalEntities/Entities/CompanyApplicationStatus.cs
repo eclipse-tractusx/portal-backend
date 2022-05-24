@@ -13,11 +13,11 @@ public class CompanyApplicationStatus
 
     public CompanyApplicationStatus(CompanyApplicationStatusId applicationStatusId) : this()
     {
-        ApplicationStatusId = applicationStatusId;
+        Id = applicationStatusId;
         Label = applicationStatusId.ToString();
     }
 
-    public CompanyApplicationStatusId ApplicationStatusId { get; private set; }
+    public CompanyApplicationStatusId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }

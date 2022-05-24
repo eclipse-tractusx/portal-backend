@@ -13,12 +13,11 @@ public class InvitationStatus
 
     public InvitationStatus(InvitationStatusId invitationStatusId) : this()
     {
-        InvitationStatusId = invitationStatusId;
+        Id = invitationStatusId;
         Label = invitationStatusId.ToString();
     }
 
-    [Key]
-    public InvitationStatusId InvitationStatusId { get; private set; }
+    public InvitationStatusId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
