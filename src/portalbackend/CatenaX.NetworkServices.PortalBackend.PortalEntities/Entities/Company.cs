@@ -15,6 +15,7 @@ public class Company
         CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
         IdentityProviders = new HashSet<IdentityProvider>();
         CompanyUsers = new HashSet<CompanyUser>();
+        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
         Consents = new HashSet<Consent>();
         CompanyRoles = new HashSet<CompanyRole>();
         UseCases = new HashSet<UseCase>();
@@ -62,6 +63,7 @@ public class Company
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
     public virtual ICollection<IdentityProvider> IdentityProviders { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<CompanyRole> CompanyRoles { get; private set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
