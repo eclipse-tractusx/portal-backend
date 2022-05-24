@@ -1,6 +1,7 @@
-using System.Text.Json;
-using Keycloak.Net.Models.Users;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
+using Keycloak.Net.Models.Users;
+using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
 {
@@ -54,6 +55,19 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             {
                 throw new Exception($"failed to create link in between central user {centralUserId} and shared realm {alias} user {sharedUserId}");
             }
+        }
+
+        public async Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
+        {
+            var user = await _SharedIdp.GetUserAsync(realm, userId).ConfigureAwait(false);
+            if (user == null)
+            {
+                throw new NotFoundException($"userId {userId} not found in shared realm {realm}");
+            }
+            user.FirstName = firstName;
+            user.LastName = lastName;
+            user.Email = email;
+            return await _SharedIdp.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
         }
 
         public Task<bool> DeleteSharedRealmUserAsync(string realm, string userId) =>
