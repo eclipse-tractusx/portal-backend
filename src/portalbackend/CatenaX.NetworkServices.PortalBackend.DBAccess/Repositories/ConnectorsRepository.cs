@@ -25,4 +25,12 @@ public class ConnectorsRepository : IConnectorsRepository
             .Where(u => u.UserEntityId == iamUserId)
             .SelectMany(u => u.CompanyUser!.Company!.ProvidedConnectors);
     }
+
+    /// <inheritdoc/>
+    public async Task<Connector> CreateConnectorAsync(Connector connector)
+    {
+        var createdConnector = _context.Connectors.Add(connector);
+        await _context.SaveChangesAsync();
+        return createdConnector.Entity;
+    }
 }
