@@ -40,6 +40,14 @@ public partial class ProvisioningManager
         }
     }
 
+    public async Task DeleteCentralClientAsync(string internalClientId)
+    {
+        if (! await _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false))
+        {
+            throw new Exception($"failed to delete client {internalClientId} in keycloak {_Settings.CentralRealm}");
+        }
+    }
+
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
     {
         var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
