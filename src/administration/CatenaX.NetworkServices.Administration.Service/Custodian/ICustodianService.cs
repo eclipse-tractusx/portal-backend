@@ -1,10 +1,10 @@
-﻿using CatenaX.NetworkServices.Registration.Service.Custodian.Models;
+using CatenaX.NetworkServices.Administration.Service.Custodian.Models;
 
 using System.Collections.Generic;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
-namespace CatenaX.NetworkServices.Registration.Service.Custodian
+namespace CatenaX.NetworkServices.Administration.Service.Custodian
 {
     public interface ICustodianService
     {

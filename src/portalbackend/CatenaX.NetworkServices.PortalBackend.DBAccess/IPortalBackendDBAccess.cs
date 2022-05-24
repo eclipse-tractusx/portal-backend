@@ -42,11 +42,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IamUser RemoveIamUser(IamUser iamUser);
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
-        IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles);
+        IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
         IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId);
         Task<IdpUser?> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId);
+        IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationId(Guid applicationId);
+        Task<Company?> GetCompanyAsync(Guid companyId);
+        
         Task<int> SaveAsync();
     }
 }

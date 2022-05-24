@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
-using CatenaX.NetworkServices.Registration.Service.Custodian;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -24,7 +23,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
         private readonly IRegistrationDBAccess _dbAccess;
         private readonly IMailingService _mailingService;
         private readonly IBPNAccess _bpnAccess;
-        private readonly ICustodianService _custodianService;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
@@ -36,12 +34,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
             _dbAccess = A.Fake<IRegistrationDBAccess>();
             _mailingService = A.Fake<IMailingService>();
             _bpnAccess = A.Fake<IBPNAccess>();
-            _custodianService = A.Fake<ICustodianService>();
             _provisioningManager = A.Fake<IProvisioningManager>();
             _portalDBAccess = A.Fake<IPortalBackendDBAccess>();
             _logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
             _settings = A.Fake<IOptions<RegistrationSettings>>();
-            this._logic = new RegistrationBusinessLogic(_settings, _dbAccess, _mailingService, _bpnAccess, _custodianService, _provisioningManager, _portalDBAccess, _logger);
+            this._logic = new RegistrationBusinessLogic(_settings, _dbAccess, _mailingService, _bpnAccess, _provisioningManager, _portalDBAccess, _logger);
         }
 
         [Fact]
