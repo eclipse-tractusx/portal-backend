@@ -66,6 +66,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.PortalBackend.Migrations", "portalbackend\CatenaX.NetworkServices.PortalBackend.Migrations\CatenaX.NetworkServices.PortalBackend.Migrations.csproj", "{EFCD2C12-39CD-4471-9C19-428B562F595B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Framework.Models", "framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj", "{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -340,6 +342,18 @@ Global
 		{5A161CA2-061C-4E72-A8B2-5BB0EE329F9C}.Release|x64.Build.0 = Release|Any CPU
 		{5A161CA2-061C-4E72-A8B2-5BB0EE329F9C}.Release|x86.ActiveCfg = Release|Any CPU
 		{5A161CA2-061C-4E72-A8B2-5BB0EE329F9C}.Release|x86.Build.0 = Release|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Release|x64.Build.0 = Release|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB}.Release|x86.Build.0 = Release|Any CPU
 		{EFCD2C12-39CD-4471-9C19-428B562F595B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EFCD2C12-39CD-4471-9C19-428B562F595B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFCD2C12-39CD-4471-9C19-428B562F595B}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -378,6 +392,7 @@ Global
 		{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256} = {2DE6516D-6278-4778-8E1B-7F451E4195D3}
 		{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 		{5A161CA2-061C-4E72-A8B2-5BB0EE329F9C} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
+		{C1A7E53F-8624-47EA-B2FF-DE134C94F3CB} = {79657784-5B49-4B63-B7EF-57620C4EEA20}
 		{EFCD2C12-39CD-4471-9C19-428B562F595B} = {BBA072EF-B4EE-455D-BC4F-931AFAC3C821}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

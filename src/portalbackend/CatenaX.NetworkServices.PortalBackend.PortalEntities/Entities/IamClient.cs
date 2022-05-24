@@ -17,7 +17,6 @@ public class IamClient
         ClientClientId = clientClientId;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     [StringLength(255)]

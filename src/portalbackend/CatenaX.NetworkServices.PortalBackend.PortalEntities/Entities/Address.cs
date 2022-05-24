@@ -23,7 +23,6 @@ public class Address
         CountryAlpha2Code = countryAlpha2Code;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }

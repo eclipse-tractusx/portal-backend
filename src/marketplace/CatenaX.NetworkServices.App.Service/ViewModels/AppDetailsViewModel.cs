@@ -25,6 +25,7 @@ public class AppDetailsViewModel
         LongDescription = longDescription;
         Price = price;
         Tags = new List<string>();
+        Languages = new List<string>();
     }
 
     /// <summary>
@@ -91,4 +92,9 @@ public class AppDetailsViewModel
     /// Whether app has been purchased by the user's company.
     /// </summary>
     public bool? IsSubscribed { get; set; }
+
+    /// <summary>
+    /// Languages that the app is available in.
+    /// </summary>
+    public IEnumerable<string> Languages { get; set; }
 }

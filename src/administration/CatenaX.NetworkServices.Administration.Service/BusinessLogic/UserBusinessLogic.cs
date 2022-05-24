@@ -334,14 +334,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId, string tenant)
+        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserId(companyUserId, adminUserId).ConfigureAwait(false);
-            if (idpUserName?.IdpName == tenant && !string.IsNullOrWhiteSpace(idpUserName?.TargetIamUserId))
+            if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
-                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(tenant, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
                     if (!updatedPassword)
                     {
                         throw new Exception("password reset failed");
@@ -350,7 +350,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 }
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
-            throw new NotFoundException($"no shared idp user {companyUserId} found in company of {adminUserId}");
+            throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
         public async Task<bool> ApprovePartnerRequest(Guid applicationId)
