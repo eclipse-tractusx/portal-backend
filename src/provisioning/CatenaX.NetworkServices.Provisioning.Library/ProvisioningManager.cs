@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -103,14 +104,14 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async Task<IEnumerable<string>> GetClientRolesAsync(string clientId)
         {
-            var idOfClient = await GetIdOfClientFromClientIDAsync(clientId).ConfigureAwait(false);
+            var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
             return (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false))
                 .Select(g => g.Name);
         }
 
         public async Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId)
         {
-            var idOfClient = await GetIdOfClientFromClientIDAsync(clientId).ConfigureAwait(false);
+            var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
             return (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false))
                 .Where(r => r.Composite == true)
                 .Select(g => g.Name);
@@ -124,7 +125,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public async Task<string> SetupClientAsync(string redirectUrl)
         {
             var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
-            var internalId = (await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false));
+            var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
             await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
             return clientId;
         }
@@ -158,7 +159,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
         {
-            var idOfClient = await GetIdOfClientFromClientIDAsync(clientId).ConfigureAwait(false);
+            var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
             return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
                 .Where(r => r.Composite == true).Select(x => x.Name);
         }
