@@ -1,5 +1,4 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
@@ -18,7 +17,6 @@ public class CompanyApplication
         DateCreated = dateCreated;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }

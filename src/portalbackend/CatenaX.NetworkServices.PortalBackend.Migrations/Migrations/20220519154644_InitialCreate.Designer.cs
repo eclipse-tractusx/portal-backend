@@ -12,13 +12,14 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220517170706_InitialCreate")]
+    [Migration("20220519154644_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
                 .HasAnnotation("ProductVersion", "6.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
@@ -42,8 +43,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasMaxLength(2)
                         .HasColumnType("character(2)")
-                        .HasColumnName("country_alpha2code")
-                        .IsFixedLength();
+                        .HasColumnName("country_alpha2code");
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
@@ -159,7 +159,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("company_role_id");
 
                     b.HasKey("AgreementId", "CompanyRoleId")
-                        .HasName("pk_agreement_ass_comp_roles");
+                        .HasName("pk_agreement_assigned_company_roles");
 
                     b.HasIndex("CompanyRoleId")
                         .HasDatabaseName("ix_agreement_assigned_company_roles_company_role_id");
@@ -178,9 +178,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("document_template_id");
 
                     b.HasKey("AgreementId", "DocumentTemplateId")
-                        .HasName("pk_agreement_ass_doc_templa");
+                        .HasName("pk_agreement_assigned_document_templates");
 
-                    b.HasIndex(new[] { "DocumentTemplateId" }, "uk_9ib7xuc1vke96s9rvlyhxbtu")
+                    b.HasIndex("DocumentTemplateId")
                         .IsUnique()
                         .HasDatabaseName("ix_agreement_assigned_document_templates_document_template_id");
 
@@ -359,8 +359,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Property<string>("LanguageShortName")
                         .HasMaxLength(2)
                         .HasColumnType("character(2)")
-                        .HasColumnName("language_short_name")
-                        .IsFixedLength();
+                        .HasColumnName("language_short_name");
 
                     b.Property<string>("DescriptionLong")
                         .IsRequired()
@@ -375,7 +374,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("description_short");
 
                     b.HasKey("AppId", "LanguageShortName")
-                        .HasName("app_descriptions_pkey");
+                        .HasName("pk_app_descriptions");
 
                     b.HasIndex("LanguageShortName")
                         .HasDatabaseName("ix_app_descriptions_language_short_name");
@@ -421,7 +420,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("language_short_name");
 
                     b.HasKey("AppId", "LanguageShortName")
-                        .HasName("pk_app_language");
+                        .HasName("pk_app_languages");
 
                     b.HasIndex("LanguageShortName")
                         .HasDatabaseName("ix_app_languages_language_short_name");
@@ -461,9 +460,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("label");
 
                     b.HasKey("AppStatusId")
-                        .HasName("pk_app_status");
+                        .HasName("pk_app_statuses");
 
-                    b.ToTable("app_status", "portal");
+                    b.ToTable("app_statuses", "portal");
 
                     b.HasData(
                         new
@@ -610,9 +609,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("label");
 
                     b.HasKey("ApplicationStatusId")
-                        .HasName("company_application_status_pkey");
+                        .HasName("pk_company_application_statuses");
 
-                    b.ToTable("company_application_status", "portal");
+                    b.ToTable("company_application_statuses", "portal");
 
                     b.HasData(
                         new
@@ -711,7 +710,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("use_case_id");
 
                     b.HasKey("CompanyId", "UseCaseId")
-                        .HasName("pk_company_assigned_use_cas");
+                        .HasName("pk_company_assigned_use_cases");
 
                     b.HasIndex("UseCaseId")
                         .HasDatabaseName("ix_company_assigned_use_cases_use_case_id");
@@ -730,12 +729,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("identity_provider_id");
 
                     b.HasKey("CompanyId", "IdentityProviderId")
-                        .HasName("pk_company_identity_provider");
+                        .HasName("pk_company_identity_providers");
 
                     b.HasIndex("IdentityProviderId")
-                        .HasDatabaseName("ix_company_identity_provider_identity_provider_id");
+                        .HasDatabaseName("ix_company_identity_providers_identity_provider_id");
 
-                    b.ToTable("company_identity_provider", "portal");
+                    b.ToTable("company_identity_providers", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
@@ -833,9 +832,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("label");
 
                     b.HasKey("CompanyStatusId")
-                        .HasName("pk_company_status");
+                        .HasName("pk_company_statuses");
 
-                    b.ToTable("company_status", "portal");
+                    b.ToTable("company_statuses", "portal");
 
                     b.HasData(
                         new
@@ -925,7 +924,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("app_id");
 
                     b.HasKey("CompanyUserId", "AppId")
-                        .HasName("pk_comp_user_ass_app_favour");
+                        .HasName("pk_company_user_assigned_app_favourites");
 
                     b.HasIndex("AppId")
                         .HasDatabaseName("ix_company_user_assigned_app_favourites_app_id");
@@ -944,7 +943,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("user_role_id");
 
                     b.HasKey("CompanyUserId", "UserRoleId")
-                        .HasName("pk_comp_user_assigned_roles");
+                        .HasName("pk_company_user_assigned_roles");
 
                     b.HasIndex("UserRoleId")
                         .HasDatabaseName("ix_company_user_assigned_roles_user_role_id");
@@ -965,9 +964,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("label");
 
                     b.HasKey("CompanyUserStatusId")
-                        .HasName("pk_company_user_status");
+                        .HasName("pk_company_user_statuses");
 
-                    b.ToTable("company_user_status", "portal");
+                    b.ToTable("company_user_statuses", "portal");
 
                     b.HasData(
                         new
@@ -1057,9 +1056,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("label");
 
                     b.HasKey("ConsentStatusId")
-                        .HasName("pk_consent_status");
+                        .HasName("pk_consent_statuses");
 
-                    b.ToTable("consent_status", "portal");
+                    b.ToTable("consent_statuses", "portal");
 
                     b.HasData(
                         new
@@ -2973,7 +2972,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_iam_clients");
 
-                    b.HasIndex(new[] { "ClientClientId" }, "uk_iam_client_client_client_id")
+                    b.HasIndex("ClientClientId")
                         .IsUnique()
                         .HasDatabaseName("ix_iam_clients_client_client_id");
 
@@ -2994,7 +2993,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasKey("IamIdpAlias")
                         .HasName("pk_iam_identity_providers");
 
-                    b.HasIndex(new[] { "IdentityProviderId" }, "uk_aiehoat94wlhasdfiwlkefisi")
+                    b.HasIndex("IdentityProviderId")
                         .IsUnique()
                         .HasDatabaseName("ix_iam_identity_providers_identity_provider_id");
 
@@ -3015,7 +3014,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasKey("UserEntityId")
                         .HasName("pk_iam_users");
 
-                    b.HasIndex(new[] { "CompanyUserId" }, "uk_wiodwiowhdfo84f0sd9afsd2")
+                    b.HasIndex("CompanyUserId")
                         .IsUnique()
                         .HasDatabaseName("ix_iam_users_company_user_id");
 
@@ -3132,9 +3131,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("label");
 
                     b.HasKey("InvitationStatusId")
-                        .HasName("pk_invitation_status");
+                        .HasName("pk_invitation_statuses");
 
-                    b.ToTable("invitation_status", "portal");
+                    b.ToTable("invitation_statuses", "portal");
 
                     b.HasData(
                         new
@@ -3345,7 +3344,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("CountryAlpha2Code")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_6jg6itw07d2qww62deuyk0kh");
+                        .HasConstraintName("fk_addresses_countries_country_temp_id");
 
                     b.Navigation("Country");
                 });
@@ -3356,23 +3355,23 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("Agreements")
                         .HasForeignKey("AgreementCategoryId")
                         .IsRequired()
-                        .HasConstraintName("fk_owqie84qkle78dasifljiwer");
+                        .HasConstraintName("fk_agreements_agreement_categories_agreement_category_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany("Agreements")
                         .HasForeignKey("AppId")
-                        .HasConstraintName("fk_ooy9ydkah696jxh4lq7pn0xe");
+                        .HasConstraintName("fk_agreements_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "IssuerCompany")
                         .WithMany("Agreements")
                         .HasForeignKey("IssuerCompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_n4nnf5bn8i3i9ijrf7kchfvc");
+                        .HasConstraintName("fk_agreements_companies_issuer_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany("Agreements")
                         .HasForeignKey("UseCaseId")
-                        .HasConstraintName("fk_whby66dika71srejhja6g75a");
+                        .HasConstraintName("fk_agreements_use_cases_use_case_id");
 
                     b.Navigation("AgreementCategory");
 
@@ -3389,13 +3388,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("AgreementAssignedCompanyRoles")
                         .HasForeignKey("AgreementId")
                         .IsRequired()
-                        .HasConstraintName("fk_ljol11mdo76f4kv7fwqn1qc6");
+                        .HasConstraintName("fk_agreement_assigned_company_roles_agreements_agreement_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
                         .WithMany("AgreementAssignedCompanyRoles")
                         .HasForeignKey("CompanyRoleId")
                         .IsRequired()
-                        .HasConstraintName("fk_qh1hby9qcrr3gmy1cvi7nd3h");
+                        .HasConstraintName("fk_agreement_assigned_company_roles_company_roles_company_role");
 
                     b.Navigation("Agreement");
 
@@ -3408,13 +3407,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("AgreementAssignedDocumentTemplates")
                         .HasForeignKey("AgreementId")
                         .IsRequired()
-                        .HasConstraintName("fk_fvcwoptsuer9p23m055osose");
+                        .HasConstraintName("fk_agreement_assigned_document_templates_agreements_agreement_");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentTemplate", "DocumentTemplate")
                         .WithOne("AgreementAssignedDocumentTemplate")
                         .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", "DocumentTemplateId")
                         .IsRequired()
-                        .HasConstraintName("fk_bvrvs5aktrcn4t6565pnj3ur");
+                        .HasConstraintName("fk_agreement_assigned_document_templates_document_templates_do");
 
                     b.Navigation("Agreement");
 
@@ -3428,12 +3427,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("AppStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_owihadhfweilwefhaf111aaa");
+                        .HasConstraintName("fk_apps_app_statuses_app_status_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "ProviderCompany")
                         .WithMany("ProvidedApps")
                         .HasForeignKey("ProviderCompanyId")
-                        .HasConstraintName("fk_68a9joedhyf43smfx2xc4rgm");
+                        .HasConstraintName("fk_apps_companies_provider_company_id");
 
                     b.Navigation("AppStatus");
 
@@ -3446,14 +3445,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_oayyvy590ngh5705yspep0up");
+                        .HasConstraintName("fk_app_assigned_clients_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
                         .WithMany()
                         .HasForeignKey("IamClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_4m022ek8gffepnqlnuxwyxp8");
+                        .HasConstraintName("fk_app_assigned_clients_iam_clients_iam_client_id");
 
                     b.Navigation("App");
 
@@ -3466,13 +3465,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_3of613iyw1jx8gcj5i46jc1h");
+                        .HasConstraintName("fk_app_assigned_licenses_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLicense", "AppLicense")
                         .WithMany()
                         .HasForeignKey("AppLicenseId")
                         .IsRequired()
-                        .HasConstraintName("fk_mes2xm3i1wotryfc88be4dkf");
+                        .HasConstraintName("fk_app_assigned_licenses_app_licenses_app_license_id");
 
                     b.Navigation("App");
 
@@ -3485,13 +3484,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_qi320sp8lxy7drw6kt4vheka");
+                        .HasConstraintName("fk_app_assigned_use_cases_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany()
                         .HasForeignKey("UseCaseId")
                         .IsRequired()
-                        .HasConstraintName("fk_sjyfs49ma0kxaqfknjbaye0i");
+                        .HasConstraintName("fk_app_assigned_use_cases_use_cases_use_case_id");
 
                     b.Navigation("App");
 
@@ -3504,13 +3503,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("AppDescriptions")
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_qamy6j7s3klebrf2s69v9k0i");
+                        .HasConstraintName("fk_app_descriptions_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("AppDescriptions")
                         .HasForeignKey("LanguageShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_vrom2pjij9x6stgovhaqkfxf");
+                        .HasConstraintName("fk_app_descriptions_languages_language_temp_id");
 
                     b.Navigation("App");
 
@@ -3523,7 +3522,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("AppDetailImages")
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_oayyvy590ngh5705yspep12a");
+                        .HasConstraintName("fk_app_detail_images_apps_app_id");
 
                     b.Navigation("App");
                 });
@@ -3534,13 +3533,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_oayyvy590ngh5705yspep101");
+                        .HasConstraintName("fk_app_languages_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_oayyvy590ngh5705yspep102");
+                        .HasConstraintName("fk_app_languages_languages_language_temp_id1");
 
                     b.Navigation("App");
 
@@ -3553,7 +3552,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("Tags")
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_qi320sp8lxy7drw6kt4vheka");
+                        .HasConstraintName("fk_app_tags_apps_app_id");
 
                     b.Navigation("App");
                 });
@@ -3563,14 +3562,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", "Address")
                         .WithMany("Companies")
                         .HasForeignKey("AddressId")
-                        .HasConstraintName("fk_w70yf6urddd0ky7ev90okenf");
+                        .HasConstraintName("fk_companies_addresses_address_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyStatus", "CompanyStatus")
                         .WithMany("Companies")
                         .HasForeignKey("CompanyStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_owihadhfweilwefhaf682khj");
+                        .HasConstraintName("fk_companies_company_statuses_company_status_id");
 
                     b.Navigation("Address");
 
@@ -3584,13 +3583,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("ApplicationStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_akuwiehfiadf8928fhefhuda");
+                        .HasConstraintName("fk_company_applications_company_application_statuses_applicati");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("CompanyApplications")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_3prv5i3o84vwvh7v0hh3sav7");
+                        .HasConstraintName("fk_company_applications_companies_company_id");
 
                     b.Navigation("ApplicationStatus");
 
@@ -3603,13 +3602,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_t365qpfvehuq40om25dyrnn5");
+                        .HasConstraintName("fk_company_assigned_apps_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_k1dqlv81463yes0k8f2giyaf");
+                        .HasConstraintName("fk_company_assigned_apps_companies_company_id");
 
                     b.Navigation("App");
 
@@ -3622,13 +3621,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("CompanyAssignedRoles")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_4db4hgj3yvqlkn9h6q8m4e0j");
+                        .HasConstraintName("fk_company_assigned_roles_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
                         .WithMany()
                         .HasForeignKey("CompanyRoleId")
                         .IsRequired()
-                        .HasConstraintName("fk_my2p7jlqrjf0tq1f8rhk0i0a");
+                        .HasConstraintName("fk_company_assigned_roles_company_roles_company_role_id");
 
                     b.Navigation("Company");
 
@@ -3641,13 +3640,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_u65fkdrxnbkp8n0s7mate01v");
+                        .HasConstraintName("fk_company_assigned_use_cases_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany()
                         .HasForeignKey("UseCaseId")
                         .IsRequired()
-                        .HasConstraintName("fk_m5eyaohrl0g9ju52byxsouqk");
+                        .HasConstraintName("fk_company_assigned_use_cases_use_cases_use_case_id");
 
                     b.Navigation("Company");
 
@@ -3660,13 +3659,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_haad983jkald89wlkejidk234");
+                        .HasConstraintName("fk_company_identity_providers_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
                         .WithMany()
                         .HasForeignKey("IdentityProviderId")
                         .IsRequired()
-                        .HasConstraintName("fk_iwzehadf8whjd8asjdfuwefhs");
+                        .HasConstraintName("fk_company_identity_providers_identity_providers_identity_prov");
 
                     b.Navigation("Company");
 
@@ -3687,7 +3686,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_role_descriptions_languages_language_short_name");
+                        .HasConstraintName("fk_company_role_descriptions_languages_language_temp_id2");
 
                     b.Navigation("CompanyRole");
 
@@ -3700,14 +3699,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("CompanyUsers")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_ku01366dbcqk8h32lh8k5sx1");
+                        .HasConstraintName("fk_company_users_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", "CompanyUserStatus")
                         .WithMany("CompanyUsers")
                         .HasForeignKey("CompanyUserStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_users_company_user_status_id");
+                        .HasConstraintName("fk_company_users_company_user_statuses_company_user_status_id");
 
                     b.Navigation("Company");
 
@@ -3720,13 +3719,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
-                        .HasConstraintName("fk_eip97mygnbglivrtmkagesjh");
+                        .HasConstraintName("fk_company_user_assigned_app_favourites_apps_app_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany()
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
-                        .HasConstraintName("fk_wva553r3xiew3ngbdkvafk85");
+                        .HasConstraintName("fk_company_user_assigned_app_favourites_company_users_company_");
 
                     b.Navigation("App");
 
@@ -3739,13 +3738,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("CompanyUserAssignedRoles")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
-                        .HasConstraintName("fk_0c9rjjf9gm3l0n6reb4o0f1s");
+                        .HasConstraintName("fk_company_user_assigned_roles_company_users_company_user_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
                         .WithMany()
                         .HasForeignKey("UserRoleId")
                         .IsRequired()
-                        .HasConstraintName("fk_bw1yhel67uhrxfk7mevovq5p");
+                        .HasConstraintName("fk_company_user_assigned_roles_user_roles_user_role_id");
 
                     b.Navigation("CompanyUser");
 
@@ -3758,30 +3757,30 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("Consents")
                         .HasForeignKey("AgreementId")
                         .IsRequired()
-                        .HasConstraintName("fk_39a5cbiv35v59ysgfon5oole");
+                        .HasConstraintName("fk_consents_agreements_agreement_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("Consents")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_asqxie2r7yr06cdrw9ifaex8");
+                        .HasConstraintName("fk_consents_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("Consents")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
-                        .HasConstraintName("fk_cnrtafckouq96m0fw2qtpwbs");
+                        .HasConstraintName("fk_consents_company_users_company_user_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", "ConsentStatus")
                         .WithMany("Consents")
                         .HasForeignKey("ConsentStatusId")
                         .IsRequired()
-                        .HasConstraintName("fk_aiodhuwehw8wee20adskdfo2");
+                        .HasConstraintName("fk_consents_consent_statuses_consent_status_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", "Document")
                         .WithMany("Consents")
                         .HasForeignKey("DocumentId")
-                        .HasConstraintName("fk_36j22f34lgi2444n4tynxamh");
+                        .HasConstraintName("fk_consents_documents_document_id");
 
                     b.Navigation("Agreement");
 
@@ -3799,12 +3798,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("Documents")
                         .HasForeignKey("CompanyUserId")
-                        .HasConstraintName("fk_xcgobngn7vk56k8nfkuaysvn");
+                        .HasConstraintName("fk_documents_company_users_company_user_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentType", "DocumentType")
                         .WithMany("Documents")
                         .HasForeignKey("DocumentTypeId")
-                        .HasConstraintName("fk_xcgobngn7vk56k8nfkualsvn");
+                        .HasConstraintName("fk_documents_document_types_document_type_id");
 
                     b.Navigation("CompanyUser");
 
@@ -3817,7 +3816,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithOne("IamIdentityProvider")
                         .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamIdentityProvider", "IdentityProviderId")
                         .IsRequired()
-                        .HasConstraintName("fk_9balkda89j2498dkj2lkjd9s3");
+                        .HasConstraintName("fk_iam_identity_providers_identity_providers_identity_provider");
 
                     b.Navigation("IdentityProvider");
                 });
@@ -3828,7 +3827,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithOne("IamUser")
                         .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamUser", "CompanyUserId")
                         .IsRequired()
-                        .HasConstraintName("fk_iweorqwaeilskjeijekkalwo");
+                        .HasConstraintName("fk_iam_users_company_users_company_user_id");
 
                     b.Navigation("CompanyUser");
                 });
@@ -3839,7 +3838,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .WithMany("IdentityProviders")
                         .HasForeignKey("IdentityProviderCategoryId")
                         .IsRequired()
-                        .HasConstraintName("fk_iwohgwi9342adf9asdnfuie28");
+                        .HasConstraintName("fk_identity_providers_identity_provider_categories_identity_pr");
 
                     b.Navigation("IdentityProviderCategory");
                 });
@@ -3851,19 +3850,19 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("CompanyApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_dlrst4ju9d0wcgkh4w1nnoj3");
+                        .HasConstraintName("fk_invitations_company_applications_company_application_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("Invitations")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
-                        .HasConstraintName("fk_9tgenb7p09hr5c24haxjw259");
+                        .HasConstraintName("fk_invitations_company_users_company_user_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.InvitationStatus", "InvitationStatus")
                         .WithMany("Invitations")
                         .HasForeignKey("InvitationStatusId")
                         .IsRequired()
-                        .HasConstraintName("fk_woihaodhawoeir72alfidosd");
+                        .HasConstraintName("fk_invitations_invitation_statuses_invitation_status_id");
 
                     b.Navigation("CompanyApplication");
 

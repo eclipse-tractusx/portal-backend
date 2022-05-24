@@ -32,7 +32,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             // Arrange
             var apps = _fixture.Build<PortalBackend.PortalEntities.Entities.App>()
                 .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
-                .CreateMany(5);
+                .CreateMany();
             var appsDbSet = apps.AsFakeDbSet();
             var languagesDbSet = new List<Language>().AsFakeDbSet();
 
@@ -81,7 +81,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         public async void GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
         {
             // Arrange
-            var favouriteApps = _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>(5);
+            var favouriteApps = _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>();
             var (companyUser, iamUser) = CreateTestUserPair();
             foreach (var app in favouriteApps)
             {
@@ -192,6 +192,47 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             appSubscriptions.Should().HaveCount(1);
             appSubscriptions.Single().AppId.Should().Be(appId);
             appSubscriptions.Single().CompanyId.Should().Be(companyUser.CompanyId);
+        }
+
+        [Fact]
+        public async void GetBusinessApps_ReturnsAppListSuccessfully()
+        {
+            // Arrange
+            var expectedApp = _fixture.Create<PortalBackend.PortalEntities.Entities.App>();
+            var (companyUser, iamUser) = CreateTestUserPair();
+            companyUser.Company!.BoughtApps.Add(expectedApp);
+            foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
+            {
+                companyUser.Company.BoughtApps.Add(app);
+            }
+
+            var iamClient = _fixture.Create<IamClient>();
+            iamClient.Apps.Add(expectedApp);
+            foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
+            {
+                iamClient.Apps.Add(app);
+            }
+
+            foreach (var role in _fixture.Build<UserRole>().With(r => r.IamClient, iamClient).CreateMany())
+            {
+                companyUser.UserRoles.Add(role);
+            }
+
+            var iamUserFakeDbSet = new List<IamUser>() { iamUser }.AsFakeDbSet();
+
+            var contextFake = A.Fake<PortalDbContext>();
+            A.CallTo(() => contextFake.IamUsers).Returns(iamUserFakeDbSet);
+            _fixture.Inject(contextFake);
+
+            var sut = _fixture.Create<AppsBusinessLogic>();
+
+            // Act
+            var result = await sut.GetAllUserUserBusinessAppsAsync(iamUser.UserEntityId).ToListAsync();
+
+            // Assert
+            result.Should().NotBeNullOrEmpty();
+            result.Should().HaveCount(1);
+            result.Single().Id.Should().Be(expectedApp.Id);
         }
 
         private (CompanyUser, IamUser) CreateTestUserPair()
