@@ -16,4 +16,11 @@ public interface IConnectorsBusinessLogic
     /// <param name="size"></param>
     /// <returns>AsyncEnumerable of the result connectors.</returns>
     public Task<Pagination.Response<ConnectorViewModel>> GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(string iamUserId, int page, int size);
+
+    /// <summary>
+    /// Add a connector to persistence layer.
+    /// </summary>
+    /// <param name="connectorInputModel">Connector parameters for creation.</param>
+    /// <returns>View model of created connector.</returns>
+    public Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel);
 }

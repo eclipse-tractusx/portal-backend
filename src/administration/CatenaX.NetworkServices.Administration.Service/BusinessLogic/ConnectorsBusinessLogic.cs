@@ -1,6 +1,7 @@
 ﻿using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -43,4 +44,25 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                     ).AsAsyncEnumerable()
             )
         );
+
+    /// <inheritdoc/>
+    public async Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel)
+    {
+        var connector = new Connector(Guid.NewGuid(), connectorInputModel.Name, connectorInputModel.Location, connectorInputModel.ConnectorUrl)
+        {
+            ProviderId = connectorInputModel.Provider,
+            HostId = connectorInputModel.Host,
+            TypeId = connectorInputModel.Type,
+            StatusId = connectorInputModel.Status
+        };
+
+        var createdConnector = await _repository.CreateConnectorAsync(connector);
+
+        return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
+        {
+            Id = createdConnector.Id,
+            Status = createdConnector.StatusId,
+            Type = createdConnector.TypeId
+        };
+    }
 }
