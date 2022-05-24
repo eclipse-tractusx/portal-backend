@@ -53,4 +53,21 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
         CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel));
+
+    /// <summary>
+    /// Removes a connector from persistence layer by id.
+    /// </summary>
+    /// <param name="connectorId">ID of the connector to be deleted.</param>
+    /// <remarks>Example: DELETE: /api/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
+    /// <response code="204">Empty response on success.</response>
+    [HttpDelete]
+    [Route("{connectorId}")]
+    [Authorize(Roles = "delete_connectors")]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId)
+    {
+        await _businessLogic.DeleteConnectorAsync(connectorId);
+        return NoContent();
+    }
+        
 }

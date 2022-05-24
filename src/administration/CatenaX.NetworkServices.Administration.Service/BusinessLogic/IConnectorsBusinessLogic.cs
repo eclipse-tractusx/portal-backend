@@ -23,4 +23,10 @@ public interface IConnectorsBusinessLogic
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
     /// <returns>View model of created connector.</returns>
     public Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel);
+
+    /// <summary>
+    /// Remove a connector from persistence layer by id.
+    /// </summary>
+    /// <param name="connectorId">ID of the connector to be deleted.</param>
+    public Task DeleteConnectorAsync(Guid connectorId);
 }
