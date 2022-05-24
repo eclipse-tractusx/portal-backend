@@ -27,7 +27,6 @@ public class App
         DateCreated = dateCreated;
     }
 
-    [Key]
     public Guid Id { get; private set; }
 
     [MaxLength(255)]
