@@ -4,6 +4,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Provisioning.Library.ViewModels;
@@ -25,6 +26,10 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
     public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, string iamAdminId)
     {
+        if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
+        {
+            throw new ArgumentException("other authenticationType values than SECRET are not supported yet", "authenticationType"); //TODO implement other authenticationTypes
+        }
         if (String.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
         {
             throw new ArgumentException("name must not be empty","name");
@@ -130,6 +135,10 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
     public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountEditableDetails, string iamAdminId)
     {
+        if (serviceAccountEditableDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
+        {
+            throw new ArgumentException("other authenticationType values than SECRET are not supported yet", "authenticationType"); //TODO implement other authenticationTypes
+        }
         if (serviceAccountId != serviceAccountEditableDetails.ServiceAccountId)
         {
             throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountEditableDetails.ServiceAccountId}","serviceAccountId");
