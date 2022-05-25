@@ -68,23 +68,16 @@ public class Pagination
 
     public static async Task<Response<T>> CreateResponseAsync<T>(int page, int size, int maxSize, Func<int, int, AsyncSource<T>> getSource)
     {
-        if (page < 0)
-        {
-            throw new ArgumentException("parameter page must be >= 0", "page");
-        }
-        if (size > maxSize)
-        {
-            throw new ArgumentException($"parameter size muse be <= {maxSize}", "size");
-        }
+        ValidatePaginationParameters(page, size, maxSize);
 
-        var source = getSource(size * (page), size);
+        var source = getSource(size * page, size);
         var count = await source.Count.ConfigureAwait(false);
         var data = await source.Data.ToListAsync().ConfigureAwait(false);
 
         return new Response<T>(
             new Metadata(
                 count,
-                count/size + 1,
+                count / size + Math.Clamp(count % size, 0, 1),
                 page,
                 data.Count()),
             data);
@@ -92,24 +85,29 @@ public class Pagination
 
     public static async Task<Response<T>?> CreateResponseAsync<T>(int page, int size, int maxSize, Func<int, int, Task<Source<T>?>> getSource)
     {
-        if (page < 0)
-        {
-            throw new ArgumentException("parameter page must be >= 0", "page");
-        }
-        if (size > maxSize)
-        {
-            throw new ArgumentException($"parameter size muse be <= {maxSize}", "size");
-        }
+        ValidatePaginationParameters(page, size, maxSize);
 
-        var source = await getSource(size * (page), size).ConfigureAwait(false);
+        var source = await getSource(size * page, size).ConfigureAwait(false);
         return source == null
             ? null
             : new Response<T>(
                 new Metadata(
                     source.Count,
-                    source.Count/size + 1,
+                    source.Count / size + Math.Clamp(source.Count % size, 0, 1),
                     page,
                     source.Data.Count()),
                 source.Data);
+    }
+
+    private static void ValidatePaginationParameters(int page, int size, int maxSize)
+    {
+        if (page < 0)
+        {
+            throw new ArgumentException("Parameter page must be >= 0", nameof(page));
+        }
+        if (size <= 0 || size > maxSize)
+        {
+            throw new ArgumentException($"Parameter size muse be between 1 and {maxSize}", nameof(size));
+        }
     }
 }
