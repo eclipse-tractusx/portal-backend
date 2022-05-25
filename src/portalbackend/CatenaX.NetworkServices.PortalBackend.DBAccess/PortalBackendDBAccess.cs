@@ -547,12 +547,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.Invitations
                 .AsNoTracking()
                 .Where(invitation => invitation.CompanyApplicationId == applicationId)
-                .Select(invitation => new CompanyInvitedUser
-                {
-                    CompanyId = invitation.CompanyUser!.CompanyId,
-                    CompanyUserId = invitation.CompanyUserId,
-                    UserEntityId = invitation.CompanyUser!.IamUser!.UserEntityId
-                })
+                .Select(invitation => new CompanyInvitedUser(
+                    invitation.CompanyUserId,
+                    invitation.CompanyUser!.IamUser!.UserEntityId))
                 .AsAsyncEnumerable();
 
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
