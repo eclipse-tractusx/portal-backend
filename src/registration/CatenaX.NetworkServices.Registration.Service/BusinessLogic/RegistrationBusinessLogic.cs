@@ -377,7 +377,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
         {
-
             await foreach (var item in _portalDBAccess.GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
             {
                 var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
@@ -388,5 +387,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 );
             }
         }
+
+        //TODO: Need to implement storage for document upload
+        public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
+            _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
     }
 }
