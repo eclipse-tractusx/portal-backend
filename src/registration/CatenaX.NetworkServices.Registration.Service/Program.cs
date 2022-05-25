@@ -7,7 +7,6 @@ using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-//using CatenaX.NetworkServices.Registration.Service.Custodian;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
@@ -21,7 +20,6 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Text.Json.Serialization;
 
 var VERSION = "v2";
@@ -83,8 +81,6 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IRegistrationDBAccess, RegistrationDBAccess>();
-
-//builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
 builder.Services.AddTransient<IBPNAccess, BPNAccess>();
 builder.Services.AddHttpClient("bpn", c =>
