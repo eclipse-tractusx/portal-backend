@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.Provisioning.Library;
+﻿using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.CustomException;
 using CatenaX.NetworkServices.Registration.Service.Model;
@@ -65,14 +66,14 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "upload_documents")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
-            WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
+            this.WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId) =>
-           WithIamUserId(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId,user));
+           this.WithIamUserId(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId,user));
 
         [HttpPut]
         [Authorize(Roles = "invite_user")]
@@ -106,7 +107,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
         public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
-            WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
+            this.WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
@@ -136,21 +137,21 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "invite_user")]
         [Route("application/{applicationId}/inviteNewUser")]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfo userCreationInfo) =>
-            WithIamUserId(iamUserId =>
+            this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
-            WithIamUserId(iamUserId =>
+            this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, iamUserId));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         public Task<CompanyRoleAgreementConsents> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
-            WithIamUserId(iamUserId =>
+            this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId, iamUserId));
 
         [HttpGet]
@@ -187,15 +188,5 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Route("application/{applicationId}/invitedusers")]
         public IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
-
-        private T WithIamUserId<T>(Func<string, T> _next)
-        {
-            var sub = User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value as string;
-            if (String.IsNullOrWhiteSpace(sub))
-            {
-                throw new ArgumentException("claim sub must not be null or empty","sub");
-            }
-            return _next(sub);
-        }
     }
 }
