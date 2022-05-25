@@ -287,6 +287,38 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 ))
                 .SingleOrDefaultAsync();
 
+        public Task<OwnCompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId) =>
+            _dbContext.CompanyUsers
+                .AsNoTracking()
+                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                .Select(companyUser => new OwnCompanyUserDetails(
+                    companyUser.Id,
+                    companyUser.DateCreated,
+                    companyUser.Company!.Name,
+                    companyUser.CompanyUserStatusId)
+                    {
+                        FirstName = companyUser.Firstname,
+                        LastName = companyUser.Lastname,
+                        Email = companyUser.Email,
+                        BusinessPartnerNumber = companyUser.Company.Bpn
+                    })
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyUserWithIdpData?> GetCompanyUserWithCompanyIdpAsync(string iamUserId) =>
+        _dbContext.CompanyUsers
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId
+                && companyUser!.Company!.IdentityProviders
+                    .Any(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED))
+            .Include(companyUser => companyUser.Company)
+            .Include(companyUser => companyUser.IamUser)
+            .Select(companyUser => new CompanyUserWithIdpData(
+                companyUser,
+                companyUser.Company!.IdentityProviders.Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    .SingleOrDefault()!
+            ))
+            .SingleOrDefaultAsync();
+
         public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId) =>
             _dbContext.CompanyUsers
                 .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)

@@ -53,10 +53,20 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<IEnumerable<string>> ReturnRoles([FromRoute] string clientId) =>
             _logic.GetAppRolesAsync(clientId);
 
+        [HttpGet]
+        [Route("ownUser")]
+        public Task<OwnCompanyUserDetails> GetOwnUserDetails() =>
+            this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetails(iamUserId));
+
+        [HttpPut]
+        [Route("ownUser/{companyUserId}")]
+        public Task<OwnCompanyUserDetails> UpdateOwnUserDetails([FromRoute] Guid companyUserId, [FromBody] OwnCompanyUserEditableDetails ownCompanyUserEditableDetails) =>
+            this.WithIamUserId(iamUserId => _logic.UpdateOwnCompanyUserDetails(companyUserId, ownCompanyUserEditableDetails, iamUserId));
+
         [HttpDelete]
-        [Route("owncompany/ownUser")]
-        public Task<int> ExecuteOwnUserDeletion() =>
-            this.WithIamUserId(iamUserId => _logic.DeleteUserAsync(iamUserId));
+        [Route("ownUser/{companyUserId}")]
+        public Task<int> ExecuteOwnUserDeletion([FromRoute] Guid companyUserId) =>
+            this.WithIamUserId(iamUserId => _logic.DeleteUserAsync(companyUserId, iamUserId));
 
         [HttpDelete]
         [Authorize(Roles = "delete_user_account")]
@@ -81,8 +91,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("application/{applicationId}/welcomeEmail")]
         public Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
              _logic.PostRegistrationWelcomeEmailAsync(applicationId);
-
-
 
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
