@@ -523,12 +523,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 })
                 .AsAsyncEnumerable();
 
-        public Task<Company?> GetCompanyAsync(Guid companyId) =>
-            _dbContext.Companies
-                .AsNoTracking()
-                .Where(company => company.Id == companyId)
-                .SingleOrDefaultAsync();
-
         public Task<CompanyServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
             _dbContext.CompanyServiceAccounts
                 .Where(serviceAccount =>
@@ -587,6 +581,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             serviceAccount.Id,
                             serviceAccount.IamServiceAccount!.ClientClientId,
                             serviceAccount.Name))))
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
+            _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId
+                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+                .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
         public Task<int> SaveAsync() =>

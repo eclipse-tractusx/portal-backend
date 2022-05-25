@@ -355,58 +355,37 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async Task<bool> ApprovePartnerRequest(Guid applicationId)
         {
-            bool success = false;
-            var result = (CompanyApplicationStatusId?)await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
-            if (result.HasValue && result.Value == CompanyApplicationStatusId.SUBMITTED)
+            var companyApplication = await _portalDBAccess.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
+            if (companyApplication != null)
             {
-                var response = await _portalDBAccess.GetInvitedUsersByApplicationIdUntrackedAsync(applicationId).ToListAsync().ConfigureAwait(false);
-                Guid companyId = response.ToList().FirstOrDefault().CompanyId;
-                if (companyId == null)
-                {
-                    throw new NotFoundException($"User Company Key {companyId} is incorrect");
-                }
+                bool success = false;
                 var clientId = _settings.Portal.KeyCloakClientID;
-                string roleName = "IT Admin";
-                List<string> role = new List<string> { roleName };
-                var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                        {
-                            { clientId, role.AsEnumerable() }
-                        };
-
-                var company = await _portalDBAccess.GetCompanyAsync(companyId).ConfigureAwait(false);
-                foreach (var item in response)
-                {
-                    await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, clientRoleNames).ConfigureAwait(false);
-                    await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(company.Bpn, 1));
-                }
-
-                company.CompanyStatusId = CompanyStatusId.ACTIVE;
-                var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
-                if (application == null)
-                {
-                    throw new NotFoundException($"CompanyApplication {applicationId} not found");
-                }
-                application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
-                application.DateLastChanged = DateTimeOffset.UtcNow;
                 var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
-                clientId,
-                role.AsEnumerable()
-                )
+                     clientId,
+                     _settings.ApplicationApprovalInitialRoles.First().Value
+               )
                 .ToDictionaryAsync(
-                    companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
-                    companyRoleWithId => companyRoleWithId.CompanyUserRoleId
+                companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
+                companyRoleWithId => companyRoleWithId.CompanyUserRoleId
                 )
                 .ConfigureAwait(false);
-                foreach (var item in response)
+
+                await foreach (var item in _portalDBAccess.GetInvitedUsersByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
                 {
-                    _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, companyRoleIds[roleName]);
+                    await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
+                    await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(companyApplication.Company!.Bpn, 1));
+                    _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, companyRoleIds[_settings.ApplicationApprovalInitialRoles.First().Value.FirstOrDefault()]);
                 }
+                companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
+                companyApplication.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
                 await _portalDBAccess.SaveAsync().ConfigureAwait(false);
 
-                await _custodianService.CreateWallet(company.Bpn, company.Name).ConfigureAwait(false);
+                await _custodianService.CreateWallet(companyApplication.Company!.Bpn, companyApplication.Company!.Name).ConfigureAwait(false);
                 await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
                 success = true;
+                return success;
             }
             throw new ArgumentException($"CompanyApplication {applicationId} is in wrong status");
         }
