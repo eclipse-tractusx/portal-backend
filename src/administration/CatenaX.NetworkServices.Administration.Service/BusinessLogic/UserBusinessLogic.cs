@@ -376,7 +376,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 }
             }
             companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
-            companyApplication.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+            companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
             companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
 
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
