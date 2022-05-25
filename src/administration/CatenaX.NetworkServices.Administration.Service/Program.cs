@@ -99,7 +99,9 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
+
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
+
 builder.Services.AddDbContext<PortalDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("PortalDB")));
 
