@@ -70,7 +70,7 @@ public class Pagination
     {
         ValidatePaginationParameters(page, size, maxSize);
 
-        var source = getSource(size * (page-1), size);
+        var source = getSource(size * page, size);
         var count = await source.Count.ConfigureAwait(false);
         var data = await source.Data.ToListAsync().ConfigureAwait(false);
 
@@ -87,7 +87,7 @@ public class Pagination
     {
         ValidatePaginationParameters(page, size, maxSize);
 
-        var source = await getSource(size * (page - 1), size).ConfigureAwait(false);
+        var source = await getSource(size * page, size).ConfigureAwait(false);
         return source == null
             ? null
             : new Response<T>(
@@ -101,9 +101,9 @@ public class Pagination
 
     private static void ValidatePaginationParameters(int page, int size, int maxSize)
     {
-        if (page <= 0)
+        if (page < 0)
         {
-            throw new ArgumentException("Parameter page must be > 0", nameof(page));
+            throw new ArgumentException("Parameter page must be >= 0", nameof(page));
         }
         if (size <= 0 || size > maxSize)
         {
