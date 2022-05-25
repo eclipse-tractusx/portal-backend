@@ -8,6 +8,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public string RegistrationBasePortalAddress { get; set; }
         public UserSetting Portal { get; set; }
         public PasswordReset PasswordReset { get; set; }
+        public IDictionary<string, IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
     }
 
     public class UserSetting
