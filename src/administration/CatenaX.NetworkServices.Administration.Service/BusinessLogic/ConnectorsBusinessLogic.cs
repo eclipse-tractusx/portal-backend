@@ -56,7 +56,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             StatusId = connectorInputModel.Status
         };
 
-        var createdConnector = await _repository.CreateConnectorAsync(connector);
+        var createdConnector = await _repository.CreateConnectorAsync(connector).ConfigureAwait(false);
 
         return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
         {
@@ -69,6 +69,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <inheritdoc/>
     public async Task DeleteConnectorAsync(Guid connectorId)
     {
-        await _repository.DeleteConnectorAsync(connectorId);
+        await _repository.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
     }
 }

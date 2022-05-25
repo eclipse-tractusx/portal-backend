@@ -32,7 +32,7 @@ public class ConnectorsRepository : IConnectorsRepository
         try
         {
             var createdConnector = _context.Connectors.Add(connector);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return createdConnector.Entity;
         }
         catch (DbUpdateException)
@@ -49,7 +49,7 @@ public class ConnectorsRepository : IConnectorsRepository
             var connector = new Connector(connectorId, string.Empty, string.Empty, string.Empty);
             _context.Connectors.Attach(connector);
             _context.Connectors.Remove(connector);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
         {
