@@ -185,12 +185,70 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return _provisioningManager.GetClientRolesAsync(clientId);
         }
 
-        public async Task<int> DeleteUserAsync(string iamUserId)
+        public async Task<OwnCompanyUserDetails> GetOwnCompanyUserDetails(string iamUserId)
+        {
+            var details = await _portalDBAccess.GetOwnCompanyUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
+            if (details == null)
+            {
+                throw new NotFoundException($"no company-user data found for user {iamUserId}");
+            }
+            return details;
+        }
+
+        public async Task<OwnCompanyUserDetails> UpdateOwnCompanyUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId)
+        {
+            var userData = await _portalDBAccess.GetCompanyUserWithCompanyIdpAsync(iamUserId).ConfigureAwait(false);
+            if (userData == null)
+            {
+                throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
+            }
+            if (userData.CompanyUser.Id != companyUserId)
+            {
+                throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");                
+            }
+            var companyUser = userData.CompanyUser;
+            var iamIdpAlias = userData.IamIdpAlias;
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            if (userIdShared == null)
+            {
+                throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
+            }
+            if (! await _provisioningManager.UpdateSharedRealmUserAsync(
+                iamIdpAlias,
+                userIdShared,
+                ownCompanyUserEditableDetails.FirstName ?? "",
+                ownCompanyUserEditableDetails.LastName ?? "",
+                ownCompanyUserEditableDetails.Email ?? "").ConfigureAwait(false))
+            {
+                throw new Exception($"failed to update shared realm userid {userIdShared} in realm {iamIdpAlias}");
+            }
+            companyUser.Firstname = ownCompanyUserEditableDetails.FirstName;
+            companyUser.Lastname = ownCompanyUserEditableDetails.LastName;
+            companyUser.Email = ownCompanyUserEditableDetails.Email;
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return new OwnCompanyUserDetails(
+                companyUser.Id,
+                companyUser.DateCreated,
+                companyUser.Company!.Name,
+                companyUser.CompanyUserStatusId)
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email,
+                    BusinessPartnerNumber = companyUser.Company.Bpn
+                };
+        }
+
+        public async Task<int> DeleteUserAsync(Guid companyUserId, string iamUserId)
         {
             var userData = await _portalDBAccess.GetCompanyUserWithIdpAsync(iamUserId).ConfigureAwait(false);
             if (userData == null)
             {
                 throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
+            }
+            if (userData.CompanyUser.Id != companyUserId)
+            {
+                throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");                
             }
             if (await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false))
             {

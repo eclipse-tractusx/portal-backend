@@ -68,16 +68,16 @@ public class Pagination
 
     public static async Task<Response<T>> CreateResponseAsync<T>(int page, int size, int maxSize, Func<int, int, AsyncSource<T>> getSource)
     {
-        if (page <= 0)
+        if (page < 0)
         {
-            throw new ArgumentException("parameter page must be > 0", "page");
+            throw new ArgumentException("parameter page must be >= 0", "page");
         }
         if (size > maxSize)
         {
             throw new ArgumentException($"parameter size muse be <= {maxSize}", "size");
         }
 
-        var source = getSource(size * (page-1), size);
+        var source = getSource(size * (page), size);
         var count = await source.Count.ConfigureAwait(false);
         var data = await source.Data.ToListAsync().ConfigureAwait(false);
 
@@ -92,16 +92,16 @@ public class Pagination
 
     public static async Task<Response<T>?> CreateResponseAsync<T>(int page, int size, int maxSize, Func<int, int, Task<Source<T>?>> getSource)
     {
-        if (page <= 0)
+        if (page < 0)
         {
-            throw new ArgumentException("parameter page must be > 0", "page");
+            throw new ArgumentException("parameter page must be >= 0", "page");
         }
         if (size > maxSize)
         {
             throw new ArgumentException($"parameter size muse be <= {maxSize}", "size");
         }
 
-        var source = await getSource(size * (page-1), size).ConfigureAwait(false);
+        var source = await getSource(size * (page), size).ConfigureAwait(false);
         return source == null
             ? null
             : new Response<T>(
