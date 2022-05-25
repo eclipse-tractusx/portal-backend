@@ -31,6 +31,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyNameBpnIdpAlias?> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId);
         Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
         Task<CompanyUserWithIdpData?> GetCompanyUserWithIdpAsync(string iamUserId);
+        Task<OwnCompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId);
+        Task<CompanyUserWithIdpData?> GetCompanyUserWithCompanyIdpAsync(string iamUserId);
         IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUser);
         IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsUntrackedAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? companyUserStatusId = null);
         Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
@@ -52,6 +54,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId);
         Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
         IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId);
+        IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<CompanyServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId);
         Task<CompanyServiceAccount?> GetOwnCompanyServiceAccountWithIamServiceAccountAsync(Guid serviceAccountId, string adminUserId);
         Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string iamAdminId);
