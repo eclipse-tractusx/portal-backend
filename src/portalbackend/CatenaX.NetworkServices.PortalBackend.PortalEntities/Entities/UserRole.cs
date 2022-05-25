@@ -9,6 +9,7 @@ public class UserRole
     {
         UserRoleText = null!;
         CompanyUsers = new HashSet<CompanyUser>();
+        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
         UserRoleDescriptions = new HashSet<UserRoleDescription>();
     }
 
@@ -30,5 +31,6 @@ public class UserRole
     // Navigation properties
     public virtual IamClient? IamClient { get; set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
     public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
 }
