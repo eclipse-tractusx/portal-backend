@@ -98,11 +98,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId));
 
-        [HttpPut]
-        [Authorize(Roles = "approve_new_partner")]
-        [Route("application/{applicationId}/approveRequest")]
-        public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
-             _logic.ApprovePartnerRequest(applicationId);
+       
 
 
     }
