@@ -1,4 +1,4 @@
-﻿namespace CatenaX.NetworkServices.Registration.Service.Custodian.Models
+namespace CatenaX.NetworkServices.Administration.Service.Custodian.Models
 {
     public class AuthResponse
     {
