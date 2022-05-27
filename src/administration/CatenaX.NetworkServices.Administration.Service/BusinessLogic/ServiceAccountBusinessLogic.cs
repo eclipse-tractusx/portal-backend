@@ -36,7 +36,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var companyId = await _portalDBAccess.GetCompanyIdForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
-        if (companyId == null)
+        if (companyId == default)
         {
             throw new ArgumentException($"user {iamAdminId} is not associated with any company","iamAdminId");
         }

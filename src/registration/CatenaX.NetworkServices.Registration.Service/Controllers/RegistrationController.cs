@@ -1,5 +1,5 @@
 ﻿using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
