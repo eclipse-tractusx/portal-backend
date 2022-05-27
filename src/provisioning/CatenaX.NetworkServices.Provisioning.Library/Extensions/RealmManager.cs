@@ -20,6 +20,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         }
 
         private Realm CloneRealm(Realm realm) =>
-            JsonSerializer.Deserialize<Realm>(JsonSerializer.Serialize(realm));
+            JsonSerializer.Deserialize<Realm>(JsonSerializer.Serialize(realm))!;
     }
 }

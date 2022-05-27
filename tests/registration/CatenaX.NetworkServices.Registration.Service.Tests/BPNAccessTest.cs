@@ -2,7 +2,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
-using CatenaX.NetworkServices.Registration.Service.CustomException;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using FakeItEasy;
 using System;
 using System.Linq;
@@ -20,14 +20,14 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
 
         public BPNAccessTest()
         {
-            _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true});
+            _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         }
 
         private void ConfigureHttpClientFactoryFixture(HttpResponseMessage httpResponseMessage)
         {
             var messageHandler = A.Fake<HttpMessageHandler>();
             A.CallTo(messageHandler) // mock protected method
-                .Where(x => x.Method.Name == "SendAsync") 
+                .Where(x => x.Method.Name == "SendAsync")
                 .WithReturnType<Task<HttpResponseMessage>>()
                 .Returns(httpResponseMessage);
             var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
