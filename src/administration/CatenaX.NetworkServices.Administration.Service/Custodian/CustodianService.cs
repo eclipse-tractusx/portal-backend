@@ -1,19 +1,11 @@
 using CatenaX.NetworkServices.Administration.Service.Custodian.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Org.BouncyCastle.Bcpg;
-
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Administration.Service.Custodian
 {
