@@ -7,7 +7,6 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
-using CatenaX.NetworkServices.Registration.Service.Custodian;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.Options;
@@ -23,18 +22,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IRegistrationDBAccess _dbAccess;
         private readonly IMailingService _mailingService;
         private readonly IBPNAccess _bpnAccess;
-        private readonly ICustodianService _custodianService;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, ICustodianService custodianService, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger)
+        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
             _mailingService = mailingService;
             _bpnAccess = bpnAccess;
-            _custodianService = custodianService;
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
@@ -83,9 +80,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
-
-        public Task CreateCustodianWalletAsync(WalletInformation information) =>
-            _custodianService.CreateWallet(information.bpn, information.name);
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
         {
@@ -206,7 +200,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     userCreationInfo.userName ?? userCreationInfo.eMail,
                     userCreationInfo.eMail,
                     applicationData.CompanyName
-                ) {
+                )
+                {
                     FirstName = userCreationInfo.firstName,
                     LastName = userCreationInfo.lastName,
                     Password = password
@@ -222,13 +217,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             var companyUser = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
 
-            foreach(var role in roles)
+            foreach (var role in roles)
             {
                 _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
             }
-            
+
             _portalDBAccess.CreateIamUser(companyUser, centralUserId);
             _portalDBAccess.CreateInvitation(applicationId, companyUser);
+
+            var modified = await _portalDBAccess.SaveAsync().ConfigureAwait(false);
 
             var inviteTemplateName = "invite";
             if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
@@ -248,7 +245,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
 
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return modified;
         }
 
         public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
