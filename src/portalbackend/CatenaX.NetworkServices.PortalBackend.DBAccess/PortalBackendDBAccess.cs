@@ -622,25 +622,25 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
                     && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser => iamUser.CompanyUser)
-                .Select(companyUser => new RegistrationData(
-                    companyUser.Company!.Id,
-                    companyUser.Company!.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                    companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname)))
+                .Select(iamUser => iamUser.CompanyUser.Company)
+                .Select(company => new RegistrationData(
+                    company.Id,
+                    company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                    company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))))
                 {
-                    Name = companyUser.Company!.Name,
-                    City = companyUser.Company.Address!.City ?? "",
-                    Streetname = companyUser.Company.Address.Streetname ?? "",
-                    CountryAlpha2Code = companyUser.Company.Address.CountryAlpha2Code ?? "",
-                    Bpn = companyUser.Company!.Bpn,
-                    Shortname = companyUser.Company.Shortname,
-                    Region = companyUser.Company.Address.Region,
-                    Streetadditional = companyUser.Company.Address.Streetadditional,
-                    Streetnumber = companyUser.Company.Address.Streetnumber,
-                    Zipcode = companyUser.Company.Address.Zipcode,
-                    CountryDe = companyUser.Company.Address.Country!.CountryNameDe,
-                    TaxId = companyUser.Company.TaxId,
-                    AgreementConsentStatuses = companyUser.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                    Name = company.Name,
+                    City = company.Address!.City ?? "",
+                    Streetname = company.Address.Streetname ?? "",
+                    CountryAlpha2Code = company.Address.CountryAlpha2Code ?? "",
+                    Bpn = company.Bpn,
+                    Shortname = company.Shortname,
+                    Region = company.Address.Region,
+                    Streetadditional = company.Address.Streetadditional,
+                    Streetnumber = company.Address.Streetnumber,
+                    Zipcode = company.Address.Zipcode,
+                    CountryDe = company.Address.Country!.CountryNameDe,
+                    TaxId = company.TaxId,
+                    AgreementConsentStatuses = company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                                                     .Select(consent => new AgreementConsentStatusForRegistrationData(
                                                             consent.AgreementId, consent.ConsentStatusId))
 
