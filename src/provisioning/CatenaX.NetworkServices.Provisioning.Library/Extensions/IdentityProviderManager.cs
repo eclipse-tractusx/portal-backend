@@ -198,6 +198,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         }
 
         private IdentityProvider CloneIdentityProvider(IdentityProvider identityProvider) =>
-            JsonSerializer.Deserialize<IdentityProvider>(JsonSerializer.Serialize(identityProvider));
+            JsonSerializer.Deserialize<IdentityProvider>(JsonSerializer.Serialize(identityProvider))!;
     }
 }
