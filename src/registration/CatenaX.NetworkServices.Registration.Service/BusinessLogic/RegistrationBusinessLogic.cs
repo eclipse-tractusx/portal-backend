@@ -387,9 +387,13 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 );
             }
         }
-
-        //TODO: Need to implement storage for document upload
+        
+              //TODO: Need to implement storage for document upload
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
             _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
+
+        public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId,string iamUserId) =>
+         await _portalDBAccess.GetRegistrationDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+        
     }
 }

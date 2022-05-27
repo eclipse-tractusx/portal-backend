@@ -188,5 +188,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Route("application/{applicationId}/invitedusers")]
         public IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
+
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("application/{applicationId}/registrationData")]
+        public Task<RegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
+           this.WithIamUserId(iamUserId => _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));
     }
 }
