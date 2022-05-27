@@ -32,6 +32,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             (
                 this._repository.GetAllCompanyConnectorsForIamUser(iamUserId).CountAsync(),
                 this._repository.GetAllCompanyConnectorsForIamUser(iamUserId)
+                    .OrderByDescending(connector => connector.Name)
                     .Skip(skip)
                     .Take(take)
                     .Select(c => 
