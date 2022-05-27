@@ -332,11 +332,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 try
                 {
-                    await _provisioningManager.AddBpnAttributetoUserAsync(user.userId, user.bpns).ConfigureAwait(false);
+                    await _provisioningManager.AddBpnAttributetoUserAsync(user.UserId, user.BusinessPartnerNumbers).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error while adding BPN attribute to {user.userId}");
+                    _logger.LogError(e, $"Error while adding BPN attribute to {user.UserId}");
                 }
             }
             return true;
@@ -353,7 +353,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
                 var mailParameters = new Dictionary<string, string>
                 {
-                    { "userName", user.UserName },
+                    { "userName", user.UserName ?? user.EmailId},
                     { "companyName", user.CompanyName },
                     { "url", $"{_settings.Portal.BasePortalAddress}"},
                 };
