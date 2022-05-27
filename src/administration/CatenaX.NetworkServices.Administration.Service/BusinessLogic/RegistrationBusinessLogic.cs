@@ -7,6 +7,7 @@ using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -85,18 +86,20 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         await foreach (var user in _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            if (String.IsNullOrWhiteSpace(user.EmailId))
+            var userName = String.Join(" ", new [] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
+
+            if (String.IsNullOrWhiteSpace(user.Email))
             {
-                throw new ArgumentException($"user {user.UserName} has no assigned email");
+                throw new ArgumentException($"user {userName} has no assigned email");
             }
 
             var mailParameters = new Dictionary<string, string>
                 {
-                    { "userName", user.UserName },
+                    { "userName", !String.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
                     { "companyName", user.CompanyName }
                 };
 
-            await _mailingService.SendMails(user.EmailId, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
         }
         return true;
     }

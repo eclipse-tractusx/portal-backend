@@ -8,7 +8,6 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.Administration.Service.Custodian;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 
@@ -22,15 +21,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
-        private readonly ICustodianService _custodianService;
         public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
             ILogger<UserBusinessLogic> logger,
-            IOptions<UserSettings> settings,
-            ICustodianService custodianService)
+            IOptions<UserSettings> settings)
         {
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;
@@ -38,7 +35,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
-            _custodianService = custodianService;
         }
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
@@ -304,27 +300,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<bool> AddBpnAttributeAtRegistrationApprovalAsync(Guid companyId)
-        {
-            var bpn = await _portalDBAccess.GetBpnUntrackedAsync(companyId).ConfigureAwait(false);
-            if (String.IsNullOrWhiteSpace(bpn))
-            {
-                throw new NotFoundException($"company {companyId} does not have a bpn");
-            }
-            await foreach (var userEntityId in _portalDBAccess.GetIamUsersUntrackedAsync(companyId).ConfigureAwait(false))
-            {
-                try
-                {
-                    await _provisioningManager.AddBpnAttributetoUserAsync(userEntityId, Enumerable.Repeat(bpn, 1));
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, $"Error while adding BPN attribute to {userEntityId}");
-                }
-            }
-            return true;
-        }
-
         public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpatewithBpn)
         {
             if (usersToUdpatewithBpn == null)
@@ -341,27 +316,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 {
                     _logger.LogError(e, $"Error while adding BPN attribute to {user.UserId}");
                 }
-            }
-            return true;
-        }
-
-        public async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
-        {
-            await foreach (var user in _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
-            {
-                if (String.IsNullOrWhiteSpace(user.EmailId))
-                {
-                    throw new ArgumentException($"user {user.UserName} has no assigned email");
-                }
-
-                var mailParameters = new Dictionary<string, string>
-                {
-                    { "userName", user.UserName ?? user.EmailId},
-                    { "companyName", user.CompanyName },
-                    { "url", $"{_settings.Portal.BasePortalAddress}"},
-                };
-
-                await _mailingService.SendMails(user.EmailId, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
             }
             return true;
         }
@@ -410,6 +364,5 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
-        
     }
 }
