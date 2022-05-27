@@ -75,31 +75,15 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             this.WithIamUserId(adminUserId => _logic.DeleteUsersAsync(usersToDelete, adminUserId));
 
         [HttpPut]
-        [Authorize(Roles = "approve_new_partner")]
-        [Route("company/{companyId}/bpnAtRegistrationApproval")]
-        public Task BpnAttributeAddingAtRegistrationApproval([FromRoute] Guid companyId) =>
-            _logic.AddBpnAttributeAtRegistrationApprovalAsync(companyId);
-
-        [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("bpn")]
         public Task BpnAttributeAdding([FromBody] IEnumerable<UserUpdateBpn> usersToAddBpn) =>
             _logic.AddBpnAttributeAsync(usersToAddBpn);
-
-        [HttpPost]
-        [Authorize(Roles = "approve_new_partner")]
-        [Route("application/{applicationId}/welcomeEmail")]
-        public Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
-             _logic.PostRegistrationWelcomeEmailAsync(applicationId);
 
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("users/{companyUserId}/resetpassword")]
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecutePasswordReset(companyUserId, adminUserId));
-
-       
-
-
     }
 }
