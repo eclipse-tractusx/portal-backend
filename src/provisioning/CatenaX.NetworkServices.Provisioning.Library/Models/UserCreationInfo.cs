@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-namespace CatenaX.NetworkServices.Provisioning.Library;
+
+namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+
 public class UserCreationInfo
 {
     public UserCreationInfo(string? userName, string email, string? firstName, string? lastName, IEnumerable<string> roles, string? message)
