@@ -225,6 +225,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _portalDBAccess.CreateIamUser(companyUser, centralUserId);
             _portalDBAccess.CreateInvitation(applicationId, companyUser);
 
+            var modified = await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+
             var inviteTemplateName = "invite";
             if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
             {
@@ -243,7 +245,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
 
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return modified;
         }
 
         public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)

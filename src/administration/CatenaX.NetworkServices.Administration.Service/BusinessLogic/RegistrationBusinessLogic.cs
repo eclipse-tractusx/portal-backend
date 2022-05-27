@@ -1,13 +1,12 @@
+using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Administration.Service.Custodian;
-using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Provisioning.Library;
 using Microsoft.Extensions.Options;
-using System.Text;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 

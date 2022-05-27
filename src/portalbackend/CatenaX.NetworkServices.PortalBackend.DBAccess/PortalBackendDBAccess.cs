@@ -195,7 +195,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             DocumentTypeId = document.DocumentTypeId,
                         })))
                     {
-                        Email = application.Invitations.Select(invitation => invitation.CompanyUser!.Email).FirstOrDefault(),
+                        Email = application.Invitations
+                            .Select(invitation => invitation.CompanyUser)
+                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                && companyUser.Email != null)
+                            .Select(companyUser => companyUser!.Email)
+                            .FirstOrDefault(),
                         BusinessPartnerNumber = application.Company.Bpn
                     })
                     .AsAsyncEnumerable());
@@ -513,11 +518,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .Where(application => application.Id == applicationId)
                 .SelectMany(application =>
-                    application.Company!.CompanyUsers.Select(user => new WelcomeEmailData(
-                        user.Firstname,
-                        user.Lastname,
-                        user.Email,
-                        user.Company!.Name)))
+                    application.Company!.CompanyUsers
+                        .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                        .Select(companyUser => new WelcomeEmailData(
+                            companyUser.Firstname,
+                            companyUser.Lastname,
+                            companyUser.Email,
+                            companyUser.Company!.Name)))
                 .AsAsyncEnumerable();
 
         public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId) =>
@@ -537,9 +544,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.Invitations
                 .AsNoTracking()
                 .Where(invitation => invitation.CompanyApplicationId == applicationId)
-                .Select(invitation => new CompanyInvitedUser(
-                    invitation.CompanyUserId,
-                    invitation.CompanyUser!.IamUser!.UserEntityId))
+                .Select(invitation => invitation.CompanyUser)
+                .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                .Select(companyUser => new CompanyInvitedUser(
+                    companyUser!.Id,
+                    companyUser.IamUser!.UserEntityId))
                 .AsAsyncEnumerable();
 
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
