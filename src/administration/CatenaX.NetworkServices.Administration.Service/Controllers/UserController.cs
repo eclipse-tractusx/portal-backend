@@ -1,7 +1,7 @@
 ﻿using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -75,22 +75,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             this.WithIamUserId(adminUserId => _logic.DeleteUsersAsync(usersToDelete, adminUserId));
 
         [HttpPut]
-        [Authorize(Roles = "approve_new_partner")]
-        [Route("company/{companyId}/bpnAtRegistrationApproval")]
-        public Task BpnAttributeAddingAtRegistrationApproval([FromRoute] Guid companyId) =>
-            _logic.AddBpnAttributeAtRegistrationApprovalAsync(companyId);
-
-        [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("bpn")]
         public Task BpnAttributeAdding([FromBody] IEnumerable<UserUpdateBpn> usersToAddBpn) =>
             _logic.AddBpnAttributeAsync(usersToAddBpn);
-
-        [HttpPost]
-        [Authorize(Roles = "approve_new_partner")]
-        [Route("application/{applicationId}/welcomeEmail")]
-        public Task<bool> PostRegistrationWelcomeEmailAsync([FromRoute] Guid applicationId) =>
-             _logic.PostRegistrationWelcomeEmailAsync(applicationId);
 
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]

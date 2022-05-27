@@ -1,11 +1,10 @@
 ﻿using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.CustomException;
 using CatenaX.NetworkServices.Registration.Service.Model;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,23 +36,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             try
             {
                 return Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1]).ConfigureAwait(false));
-            }
-            catch (ServiceException e)
-            {
-                var content = new { message = e.Message };
-                return new ContentResult { StatusCode = (int)e.StatusCode, Content = JsonConvert.SerializeObject(content), ContentType = "application/json" };
-            }
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "submit_registration")]
-        [Route("custodianWallet")]
-        public async Task<IActionResult> CreateWallet([FromBody] WalletInformation walletToCreate)
-        {
-            try
-            {
-                await _registrationBusinessLogic.CreateCustodianWalletAsync(walletToCreate).ConfigureAwait(false);
-                return Ok();
             }
             catch (ServiceException e)
             {

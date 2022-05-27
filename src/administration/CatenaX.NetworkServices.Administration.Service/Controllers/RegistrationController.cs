@@ -29,4 +29,10 @@ public class RegistrationController : ControllerBase
     [Route("applications")]
     public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size) =>
         _logic.GetCompanyApplicationDetailsAsync(page, size);
+
+    [HttpPut]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/approveRequest")]
+    public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
+            _logic.ApprovePartnerRequest(applicationId);
 }
