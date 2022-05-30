@@ -1,5 +1,6 @@
 using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
@@ -44,6 +45,7 @@ builder.Services.AddControllers()
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
+    c.OperationFilter<SwaggerFileOperationFilter>();
 });
 
 builder.Services.AddAuthentication(x =>
