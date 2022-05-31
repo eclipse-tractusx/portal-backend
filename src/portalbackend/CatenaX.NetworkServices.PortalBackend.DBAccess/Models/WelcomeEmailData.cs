@@ -1,18 +1,17 @@
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+public class WelcomeEmailData
 {
-    public class WelcomeEmailData
+    public WelcomeEmailData(string? firstName, string? lastName, string? email, string companyName)
     {
-        public WelcomeEmailData(string? userName, string? emailId, string companyName)
-        {
-            UserName = userName;
-            EmailId = emailId;
-            CompanyName= companyName;
-        }
-
-        public string? UserName { get; set; }
-        public string? EmailId { get; set; }
-        public string CompanyName { get; set; }
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        CompanyName= companyName;
     }
+
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? Email { get; set; }
+    public string CompanyName { get; set; }
 }

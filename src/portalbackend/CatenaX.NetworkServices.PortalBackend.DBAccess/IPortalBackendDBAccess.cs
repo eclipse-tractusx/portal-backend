@@ -22,7 +22,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
         Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
         CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description);
-        IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId);        
+        IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId);
         IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
         Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take);
         Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
@@ -48,17 +48,19 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IamServiceAccount RemoveIamServiceAccount(IamServiceAccount iamServiceAccount);
         IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
         IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
-        IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string,IEnumerable<string>> clientRoles);
+        IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
         IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId);
-        Task<IdpUser?> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId);
+        Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
+        IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<CompanyServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId);
         Task<CompanyServiceAccount?> GetOwnCompanyServiceAccountWithIamServiceAccountAsync(Guid serviceAccountId, string adminUserId);
         Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string iamAdminId);
         Task<Pagination.Source<CompanyServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId);
         Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
+        Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
         Task<int> SaveAsync();
     }
 }

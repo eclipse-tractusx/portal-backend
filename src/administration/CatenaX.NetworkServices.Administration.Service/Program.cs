@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
@@ -6,6 +7,7 @@ using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
@@ -20,7 +22,6 @@ using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -99,6 +100,8 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
+
+builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
 builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()

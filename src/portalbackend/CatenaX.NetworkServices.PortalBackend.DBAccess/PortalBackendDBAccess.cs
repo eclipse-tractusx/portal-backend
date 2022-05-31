@@ -195,7 +195,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             DocumentTypeId = document.DocumentTypeId,
                         })))
                     {
-                        Email = application.Invitations.Select(invitation => invitation.CompanyUser!.Email).FirstOrDefault(),
+                        Email = application.Invitations
+                            .Select(invitation => invitation.CompanyUser)
+                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                && companyUser.Email != null)
+                            .Select(companyUser => companyUser!.Email)
+                            .FirstOrDefault(),
                         BusinessPartnerNumber = application.Company.Bpn
                     })
                     .AsAsyncEnumerable());
@@ -508,29 +513,21 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .AsAsyncEnumerable();
 
-        public async IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId)
-        {
-            await foreach (var userData in _dbContext.CompanyApplications
+        public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId) =>
+            _dbContext.CompanyApplications
                 .AsNoTracking()
                 .Where(application => application.Id == applicationId)
-                .Select(application => application.Company)
-                .SelectMany(company => company!.CompanyUsers.Select(user => new
-                {
-                    FirstName = user.Firstname,
-                    LastName = user.Lastname,
-                    Email = user.Email,
-                    CompanyName = user.Company!.Name
+                .SelectMany(application =>
+                    application.Company!.CompanyUsers
+                        .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                        .Select(companyUser => new WelcomeEmailData(
+                            companyUser.Firstname,
+                            companyUser.Lastname,
+                            companyUser.Email,
+                            companyUser.Company!.Name)))
+                .AsAsyncEnumerable();
 
-                })).AsAsyncEnumerable())
-            {
-                yield return new WelcomeEmailData(
-                userData.FirstName + " " + userData.LastName,
-                userData.Email,
-                userData.CompanyName);
-            }
-        }
-
-        public Task<IdpUser?> GetIdpCategoryIdByUserId(Guid companyUserId, string adminUserId) =>
+        public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId) =>
             _dbContext.CompanyUsers.AsNoTracking()
                 .Where(companyUser => companyUser.Id == companyUserId
                     && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
@@ -542,6 +539,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                         .SingleOrDefault()
                 }).SingleOrDefaultAsync();
+
+        public IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId) =>
+            _dbContext.Invitations
+                .AsNoTracking()
+                .Where(invitation => invitation.CompanyApplicationId == applicationId)
+                .Select(invitation => invitation.CompanyUser)
+                .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                .Select(companyUser => new CompanyInvitedUser(
+                    companyUser!.Id,
+                    companyUser.IamUser!.UserEntityId))
+                .AsAsyncEnumerable();
 
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
             _dbContext.IamUsers
@@ -620,6 +628,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.Invitations
             .Where(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId)
             .SingleOrDefaultAsync();
+        public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
+            _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId
+                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+                .Include(companyApplication => companyApplication.Company)
+                .SingleOrDefaultAsync();
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();

@@ -1,14 +1,20 @@
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Administration.Service.Models
+namespace CatenaX.NetworkServices.Administration.Service.Models;
+
+public class WelcomeData
 {
-    public class WelcomeData
+    public WelcomeData(string userName, string email, string companyName)
     {
-        [JsonPropertyName("userName")]
-        public string userName { get; set; }
-        [JsonPropertyName("email")]
-        public string email { get; set; }
-        [JsonPropertyName("companyName")]
-        public string companyName { get; set; }
+        UserName = userName;
+        Email = email;
+        CompanyName = companyName;
     }
+
+    [JsonPropertyName("userName")]
+    public string UserName { get; set; }
+    [JsonPropertyName("email")]
+    public string Email { get; set; }
+    [JsonPropertyName("companyName")]
+    public string CompanyName { get; set; }
 }
