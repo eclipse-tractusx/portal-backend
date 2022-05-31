@@ -634,9 +634,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(company => new RegistrationData(
                     company.Id,
                     company.Name,
-                    company.Address!.City ?? "",
-                    company.Address.Streetname ?? "",
-                    company.Address.CountryAlpha2Code ?? "",
+                    company.Address!.City,
+                    company.Address!.Streetname,
+                    company.Address!.CountryAlpha2Code,
                     company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
                     company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
                     company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)

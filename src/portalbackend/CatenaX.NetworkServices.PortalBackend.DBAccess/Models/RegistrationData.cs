@@ -8,14 +8,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class RegistrationData
     {
-        public RegistrationData(Guid companyId,string name,string city,string streetName,string countryAlpha2Code, IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<RegistrationDocumentNames> documents,IEnumerable<AgreementConsentStatusForRegistrationData> agreementConsentStatuses)
+        public RegistrationData(Guid companyId, string name, string city, string streetName, string countryAlpha2Code, IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<RegistrationDocumentNames> documents, IEnumerable<AgreementConsentStatusForRegistrationData> agreementConsentStatuses)
         {
-            CompanyId=companyId;
+            CompanyId = companyId;
             Name = name;
             City = city;
             Streetname = streetName;
             CountryAlpha2Code = countryAlpha2Code;
-            CompanyRoleIds=companyRoleIds;
+            CompanyRoleIds = companyRoleIds;
             Documents = documents;
             AgreementConsentStatuses = agreementConsentStatuses;
         }
