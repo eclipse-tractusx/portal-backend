@@ -58,6 +58,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyServiceAccount?> GetOwnCompanyServiceAccountWithIamServiceAccountAsync(Guid serviceAccountId, string adminUserId);
         Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string iamAdminId);
         Task<Pagination.Source<CompanyServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId);
+        Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
         Task<int> SaveAsync();
     }
 }

@@ -616,6 +616,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             serviceAccount.Name))))
                 .SingleOrDefaultAsync();
 
+        public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
+            _dbContext.Invitations
+            .Where(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId)
+            .SingleOrDefaultAsync();
+
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
     }

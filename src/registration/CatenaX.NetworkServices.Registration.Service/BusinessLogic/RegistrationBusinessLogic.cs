@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
 using System.Text;
+using System.Net;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -391,5 +392,21 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         //TODO: Need to implement storage for document upload
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
             _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
+
+        public async Task<int> SetInvitationStatusAsync(string iamUserId)
+        {
+            var invitationData = await _portalDBAccess.GetInvitationStatusAsync(iamUserId).ConfigureAwait(false);
+            
+                if (invitationData.InvitationStatusId == InvitationStatusId.CREATED)
+                {
+                    invitationData.InvitationStatusId = InvitationStatusId.PENDING;
+                }
+                else
+                {
+                   return (int)HttpStatusCode.AlreadyReported;
+                }
+            
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
     }
 }
