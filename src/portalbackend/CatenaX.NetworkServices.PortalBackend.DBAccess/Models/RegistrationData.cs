@@ -8,19 +8,16 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class RegistrationData
     {
-        public RegistrationData(){
-            Name = null!;
-            City = null!;
-            Streetname = null!;
-            CountryAlpha2Code = null!;
-            CompanyRoleIds = default!;
-            AgreementConsentStatuses = default!;
-        }
-        public RegistrationData(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<RegistrationDocumentNames> documents)
+        public RegistrationData(Guid companyId,string name,string city,string streetName,string countryAlpha2Code, IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<RegistrationDocumentNames> documents,IEnumerable<AgreementConsentStatusForRegistrationData> agreementConsentStatuses)
         {
             CompanyId=companyId;
+            Name = name;
+            City = city;
+            Streetname = streetName;
+            CountryAlpha2Code = countryAlpha2Code;
             CompanyRoleIds=companyRoleIds;
             Documents = documents;
+            AgreementConsentStatuses = agreementConsentStatuses;
         }
 
         [JsonPropertyName("companyId")]
