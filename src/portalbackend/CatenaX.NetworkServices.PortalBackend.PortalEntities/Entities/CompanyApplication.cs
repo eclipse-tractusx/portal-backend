@@ -28,6 +28,6 @@ public class CompanyApplication
 
     // Navigation properties
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
-    public virtual Company? Company { get; private set; }
+    public virtual Company? Company { get;  set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
 }

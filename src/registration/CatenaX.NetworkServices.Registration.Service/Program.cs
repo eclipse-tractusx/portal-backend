@@ -1,5 +1,6 @@
 using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
@@ -7,7 +8,6 @@ using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.Custodian;
 using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
@@ -21,7 +21,6 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Text.Json.Serialization;
 
 var VERSION = "v2";
@@ -38,53 +37,58 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 }
 
 builder.Services.AddControllers()
-                .AddJsonOptions(options => {
+                .AddJsonOptions(options =>
+                {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-builder.Services.AddSwaggerGen(c => {
-                    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-                });
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
+    c.OperationFilter<SwaggerFileOperationFilter>();
+});
 
-builder.Services.AddAuthentication(x => {
-                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(options => {
-                    builder.Configuration.Bind("JwtBearerOptions", options);
-                    if (!options.RequireHttpsMetadata)
-                    {
-                        options.BackchannelHttpHandler = new HttpClientHandler
-                        {
-                            ServerCertificateCustomValidationCallback = (a, b, c, d) => true
-                        };
-                    }
-                });
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    builder.Configuration.Bind("JwtBearerOptions", options);
+    if (!options.RequireHttpsMetadata)
+    {
+        options.BackchannelHttpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (a, b, c, d) => true
+        };
+    }
+});
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
-                .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions",options));
+                .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions", options));
 
-builder.Services.AddTransient<IAuthorizationHandler,ClaimRequestPathHandler>()
-                .AddAuthorization(option => {
+builder.Services.AddTransient<IAuthorizationHandler, ClaimRequestPathHandler>()
+                .AddAuthorization(option =>
+                {
                     option.AddPolicy("CheckTenant", policy =>
                     {
-                        policy.AddRequirements(new ClaimRequestPathRequirement("tenant","tenant"));
+                        policy.AddRequirements(new ClaimRequestPathRequirement("tenant", "tenant"));
                     });
                 })
-                .AddTransient<IHttpContextAccessor,HttpContextAccessor>();
+                .AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IRegistrationDBAccess, RegistrationDBAccess>();
 
-builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
-
 builder.Services.AddTransient<IBPNAccess, BPNAccess>();
-builder.Services.AddHttpClient("bpn", c => {
-                    c.BaseAddress = new Uri($"{ builder.Configuration.GetValue<string>("BPN_Address")}");
-                });
+builder.Services.AddHttpClient("bpn", c =>
+{
+    c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");
+});
 
 builder.Services.AddTransient<IMailingService, MailingService>()
                 .AddTransient<ISendMail, SendMail>()
@@ -116,9 +120,10 @@ if (app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configurati
 }
 if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configuration.GetValue<bool>("SwaggerEnabled"))
 {
-    app.UseSwagger( c => c.RouteTemplate = "/api/registration/swagger/{documentName}/swagger.{json|yaml}");
-    app.UseSwaggerUI(c => {
-        c.SwaggerEndpoint(string.Format("/api/registration/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
+    app.UseSwagger(c => c.RouteTemplate = "/api/registration/swagger/{documentName}/swagger.{json|yaml}");
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint(string.Format("/api/registration/swagger/{0}/swagger.json", VERSION), string.Format("{0} {1}", TAG, VERSION));
         c.RoutePrefix = "api/registration/swagger";
     });
 }

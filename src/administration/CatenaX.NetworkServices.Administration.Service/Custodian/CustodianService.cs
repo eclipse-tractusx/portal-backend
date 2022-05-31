@@ -1,21 +1,13 @@
-﻿using CatenaX.NetworkServices.Registration.Service.Custodian.Models;
-using CatenaX.NetworkServices.Registration.Service.CustomException;
+using CatenaX.NetworkServices.Administration.Service.Custodian.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Org.BouncyCastle.Bcpg;
-
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace CatenaX.NetworkServices.Registration.Service.Custodian
+namespace CatenaX.NetworkServices.Administration.Service.Custodian
 {
     public class CustodianService : ICustodianService
     {
@@ -24,7 +16,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Custodian
         private readonly HttpClient _custodianAuthHttpClient;
         private readonly ILogger<CustodianService> _logger;
 
-        public CustodianService(ILogger<CustodianService> logger,IHttpClientFactory httpFactory, IOptions<CustodianSettings> settings)
+        public CustodianService(ILogger<CustodianService> logger, IHttpClientFactory httpFactory, IOptions<CustodianSettings> settings)
         {
             _settings = settings.Value;
             _custodianHttpClient = httpFactory.CreateClient("custodian");

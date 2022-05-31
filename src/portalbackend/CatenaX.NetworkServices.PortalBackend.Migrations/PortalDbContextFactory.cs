@@ -10,7 +10,7 @@ internal class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbCont
     public PortalDbContext CreateDbContext(string[] args)
     {
         var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
+            .AddJsonFile("secrets/appsettings.json", true) // Only used in k8s deployment
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();

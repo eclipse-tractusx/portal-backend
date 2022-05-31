@@ -12,7 +12,7 @@ Example: `dotnet ef migrations add AddNameToCustomerTable`
 To apply one or multiple migrations to a database, there are multiple options available.
 First, make sure you have the proper connection string set either in appsettings or user secrets. The user credentials need to have permissions to change the schema.
 Afterwards choose one of the following:
-- `dotnet ef migrations bundle` to create `efbundle.exe` which then needs to be executed
+- `dotnet ef migrations bundle [-r linux-x64]` to create `efbundle.exe` which then needs to be executed
 - `dotnet ef database update`
 - Execute the project's program
 
