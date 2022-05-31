@@ -624,7 +624,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             serviceAccount.Name))))
                 .SingleOrDefaultAsync();
                 
-         public Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId) =>
+         public Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()
                 .Where(iamUser =>
