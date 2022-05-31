@@ -10,7 +10,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers;
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating connectors for companies.
 /// </summary>
-[Route("api/[controller]")]
+[Route("api/administration/[controller]")]
 [ApiController]
 public class ConnectorsController : ControllerBase
 {
