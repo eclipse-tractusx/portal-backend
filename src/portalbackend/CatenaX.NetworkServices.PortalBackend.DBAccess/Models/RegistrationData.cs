@@ -8,13 +8,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class RegistrationData
     {
-        public RegistrationData(Guid companyId, string name, string city, string streetName, string countryAlpha2Code, IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<RegistrationDocumentNames> documents, IEnumerable<AgreementConsentStatusForRegistrationData> agreementConsentStatuses)
+        public RegistrationData(Guid companyId, string name, IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<RegistrationDocumentNames> documents, IEnumerable<AgreementConsentStatusForRegistrationData> agreementConsentStatuses)
         {
             CompanyId = companyId;
             Name = name;
-            City = city;
-            Streetname = streetName;
-            CountryAlpha2Code = countryAlpha2Code;
             CompanyRoleIds = companyRoleIds;
             Documents = documents;
             AgreementConsentStatuses = agreementConsentStatuses;
@@ -33,7 +30,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public string? Shortname { get; set; }
 
         [JsonPropertyName("city")]
-        public string City { get; set; }
+        public string? City { get; set; }
 
         [JsonPropertyName("region")]
         public string? Region { get; set; }
@@ -42,7 +39,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public string? Streetadditional { get; set; }
 
         [JsonPropertyName("streetName")]
-        public string Streetname { get; set; }
+        public string? Streetname { get; set; }
 
         [JsonPropertyName("streetNumber")]
         public string? Streetnumber { get; set; }
@@ -51,7 +48,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public decimal? Zipcode { get; set; }
 
         [JsonPropertyName("countryAlpha2Code")]
-        public string CountryAlpha2Code { get; set; }
+        public string? CountryAlpha2Code { get; set; }
 
         [JsonPropertyName("countryDe")]
         public string? CountryDe { get; set; }

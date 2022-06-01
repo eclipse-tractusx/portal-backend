@@ -175,6 +175,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/registrationData")]
         public Task<RegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
-           this.WithIamUserId(iamUserId => _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));
+           this.WithIamUserId(iamUserId => 
+                _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));
     }
 }
