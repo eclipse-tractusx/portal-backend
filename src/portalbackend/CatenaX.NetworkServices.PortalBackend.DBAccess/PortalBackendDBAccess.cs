@@ -641,8 +641,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                                                            consent.AgreementId, consent.ConsentStatusId)))
                {
                    City = company.Address!.City,
-                   Streetname = company.Address!.Streetname,
-                   CountryAlpha2Code = company.Address!.CountryAlpha2Code,
+                   Streetname = company.Address.Streetname,
+                   CountryAlpha2Code = company.Address.CountryAlpha2Code,
                    Bpn = company.Bpn,
                    Shortname = company.Shortname,
                    Region = company.Address.Region,
