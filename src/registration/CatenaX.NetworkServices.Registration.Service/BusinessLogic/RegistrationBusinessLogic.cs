@@ -385,8 +385,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 );
             }
         }
-
-        //TODO: Need to implement storage for document upload
+        
+              //TODO: Need to implement storage for document upload
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
             _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
 
@@ -405,5 +405,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
+
+        public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
+        {
+            var registrationData = await _portalDBAccess.GetRegistrationDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (registrationData == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+            }
+            return registrationData;
+        }
+
     }
 }
