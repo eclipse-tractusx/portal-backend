@@ -292,11 +292,30 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 ))
                 .SingleOrDefaultAsync();
 
-        public Task<OwnCompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId) =>
+        public Task<CompanyUserDetails?> GetCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId) =>
+            _dbContext.CompanyUsers
+                .AsNoTracking()
+                .Where(companyUser => companyUser.Id == companyUserId
+                    && companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                    && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                .Select(companyUser => new CompanyUserDetails(
+                    companyUser.Id,
+                    companyUser.DateCreated,
+                    companyUser.Company!.Name,
+                    companyUser.CompanyUserStatusId)
+                    {
+                        FirstName = companyUser.Firstname,
+                        LastName = companyUser.Lastname,
+                        Email = companyUser.Email,
+                        BusinessPartnerNumber = companyUser.Company.Bpn
+                    })
+                .SingleOrDefaultAsync();
+
+        public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId) =>
             _dbContext.CompanyUsers
                 .AsNoTracking()
                 .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-                .Select(companyUser => new OwnCompanyUserDetails(
+                .Select(companyUser => new CompanyUserDetails(
                     companyUser.Id,
                     companyUser.DateCreated,
                     companyUser.Company!.Name,
@@ -333,7 +352,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyUser => companyUser.IamUser)
                 .AsAsyncEnumerable();
 
-        public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsUntrackedAsync(
+        public IAsyncEnumerable<CompanyUserData> GetCompanyUserDetailsUntrackedAsync(
             string adminUserId,
             Guid? companyUserId = null,
             string? userEntityId = null,
@@ -352,8 +371,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     && lastName != null ? companyUser.Lastname == lastName : true
                     && email != null ? companyUser.Email == email : true
                     && status.HasValue ? companyUser.CompanyUserStatusId == status : true)
-                .Select(companyUser => new CompanyUserDetails(
-                    companyUser.IamUser!.UserEntityId,
+                .Select(companyUser => new CompanyUserData(
                     companyUser.Id,
                     companyUser.CompanyUserStatusId)
                 {
