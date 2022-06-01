@@ -12,4 +12,15 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public Guid DocumentId { get;}
         public string DocumentName { get;}
     }
+
+    public class RegistrationDocumentNames
+    {
+        public RegistrationDocumentNames(string documentName)
+        {
+            DocumentName = documentName;
+        }
+    
+        public string DocumentName { get; set;}
+    }
+    
 }
