@@ -112,10 +112,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of user {iamAdminId}");
         }
-        if (serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.INACTIVE)
-        {
-            throw new ArgumentException($"serviceAccount {serviceAccountId} is already INACTIVE");
-        }
         serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
         if (serviceAccount.IamServiceAccount != null)
         {
