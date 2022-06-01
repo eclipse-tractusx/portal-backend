@@ -31,10 +31,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyNameBpnIdpAlias?> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId);
         Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
         Task<CompanyUserWithIdpData?> GetCompanyUserWithIdpAsync(string iamUserId);
-        Task<OwnCompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId);
+        Task<CompanyUserDetails?> GetCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
+        Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId);
         Task<CompanyUserWithIdpData?> GetCompanyUserWithCompanyIdpAsync(string iamUserId);
         IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUser);
-        IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsUntrackedAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? companyUserStatusId = null);
+        IAsyncEnumerable<CompanyUserData> GetCompanyUserDetailsUntrackedAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? companyUserStatusId = null);
         Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
         Task<CompanyApplication?> GetCompanyApplicationAsync(Guid applicationId);
         Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
