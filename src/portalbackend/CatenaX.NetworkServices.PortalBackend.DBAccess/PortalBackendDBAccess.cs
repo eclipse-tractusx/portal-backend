@@ -623,36 +623,35 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             serviceAccount.IamServiceAccount!.ClientClientId,
                             serviceAccount.Name))))
                 .SingleOrDefaultAsync();
-                
-         public Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser =>
-                    iamUser.UserEntityId == iamUserId
-                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser => iamUser.CompanyUser!.Company)
-                .Select(company => new RegistrationData(
-                    company.Id,
-                    company.Name,
-                    company.Address!.City,
-                    company.Address!.Streetname,
-                    company.Address!.CountryAlpha2Code,
-                    company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                    company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
-                    company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
-                                                    .Select(consent => new AgreementConsentStatusForRegistrationData(
-                                                            consent.AgreementId, consent.ConsentStatusId)))
-                {
-                    
-                    Bpn = company.Bpn,
-                    Shortname = company.Shortname,
-                    Region = company.Address.Region,
-                    Streetadditional = company.Address.Streetadditional,
-                    Streetnumber = company.Address.Streetnumber,
-                    Zipcode = company.Address.Zipcode,
-                    CountryDe = company.Address.Country!.CountryNameDe,
-                    TaxId = company.TaxId
-                }).SingleOrDefaultAsync();
+
+        public Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId) =>
+           _dbContext.IamUsers
+               .AsNoTracking()
+               .Where(iamUser =>
+                   iamUser.UserEntityId == iamUserId
+                   && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+               .Select(iamUser => iamUser.CompanyUser!.Company)
+               .Select(company => new RegistrationData(
+                   company!.Id,
+                   company.Name,
+                   company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
+                   company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                                                   .Select(consent => new AgreementConsentStatusForRegistrationData(
+                                                           consent.AgreementId, consent.ConsentStatusId)))
+               {
+                   City = company.Address!.City,
+                   Streetname = company.Address!.Streetname,
+                   CountryAlpha2Code = company.Address!.CountryAlpha2Code,
+                   Bpn = company.Bpn,
+                   Shortname = company.Shortname,
+                   Region = company.Address.Region,
+                   Streetadditional = company.Address.Streetadditional,
+                   Streetnumber = company.Address.Streetnumber,
+                   Zipcode = company.Address.Zipcode,
+                   CountryDe = company.Address.Country!.CountryNameDe,
+                   TaxId = company.TaxId
+               }).SingleOrDefaultAsync();
 
         public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
             _dbContext.CompanyApplications.Where(companyApplication =>
