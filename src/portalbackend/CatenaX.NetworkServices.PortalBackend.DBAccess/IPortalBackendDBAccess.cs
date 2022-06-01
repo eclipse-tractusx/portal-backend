@@ -60,6 +60,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string iamAdminId);
         Task<Pagination.Source<CompanyServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId);
         Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
+        Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
         Task<int> SaveAsync();
     }
