@@ -36,7 +36,7 @@ public class Company
     public DateTimeOffset DateCreated { get; private set; }
 
     [MaxLength(20)]
-    public string? Bpn { get; set; }
+    public string? BusinessPartnerNumber { get; set; }
 
     [MaxLength(20)]
     public string? TaxId { get; set; }
@@ -55,6 +55,7 @@ public class Company
     public Guid? AddressId { get; set; }
 
     // Navigation properties
+    public virtual BusinessPartner? BusinessPartner { get; set; }
     public virtual Address? Address { get; set; }
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual ICollection<App> ProvidedApps { get; private set; }

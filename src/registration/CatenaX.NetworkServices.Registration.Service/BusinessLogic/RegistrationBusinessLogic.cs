@@ -125,12 +125,31 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressBusinessPartnerAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
             if (company == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
             }
-            company.Bpn = companyWithAddress.Bpn;
+            if (String.IsNullOrWhiteSpace(companyWithAddress.BusinessPartnerNumber))
+            {
+                if (company.BusinessPartner != null)
+                {
+                    _portalDBAccess.RemoveBusinessPartner(company.BusinessPartner);
+                    company.BusinessPartner = null;
+                }
+            }
+            else
+            {
+                if (company.BusinessPartner == null)
+                {
+                    company.BusinessPartner = _portalDBAccess.CreateBusinessPartner(companyWithAddress.BusinessPartnerNumber);
+                }
+                else if (company.BusinessPartnerNumber != companyWithAddress.BusinessPartnerNumber)
+                {
+                    _portalDBAccess.RemoveBusinessPartner(company.BusinessPartner);
+                    company.BusinessPartner = _portalDBAccess.CreateBusinessPartner(companyWithAddress.BusinessPartnerNumber);
+                }
+            }
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
             company.TaxId = companyWithAddress.TaxId;
@@ -391,7 +410,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
         {
-            var registrationData = await _portalDBAccess.GetRegistrationDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var registrationData = await _portalDBAccess.GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (registrationData == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");

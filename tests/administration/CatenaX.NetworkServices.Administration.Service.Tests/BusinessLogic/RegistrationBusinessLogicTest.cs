@@ -48,8 +48,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             Guid companyUserId = new Guid("857b93b1-8fcb-4141-81b0-ae81950d489e");
             Guid companyUserRoleId = new Guid("607818be-4978-41f4-bf63-fa8d2de51154");
             Guid centralUserId = new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f");
+
+            //recursive relationship: Company relates to BusinessPartner relates to ParentBusinessPartner relates to Company
+            _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+                .ForEach(b => _fixture.Behaviors.Remove(b));
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());            
+
             var company = _fixture.Build<Company>()
-                .With(u => u.Bpn, "CAXLSHAREDIDPZZ")
+                .With(u => u.BusinessPartnerNumber, "CAXLSHAREDIDPZZ")
                 .With(u => u.Name, "Shared Idp Test")
                 .Create();
             var companyApplication = _fixture.Build<CompanyApplication>()
@@ -91,8 +97,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             A.CallTo(() => _portalDBAccess.GetInvitedUsersByApplicationIdUntrackedAsync(id)).MustHaveHappened(1, Times.OrMore);
             A.CallTo(() => _portalDBAccess.SaveAsync()).MustHaveHappened(1, Times.OrMore);
             A.CallTo(() => _custodianService.CreateWallet("CAXLSHAREDIDPZZ", "Shared Idp Test")).MustHaveHappened(1, Times.OrMore);
-            Assert.NotNull(result);
             Assert.IsType<bool>(result);
+            Assert.True(result);
         }
     }
 }

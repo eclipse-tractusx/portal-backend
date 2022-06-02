@@ -91,7 +91,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         FirstName = user.firstName,
                         LastName = user.lastName,
                         Password = password,
-                        BusinessPartnerNumber = companyIdpData.Bpn
+                        BusinessPartnerNumber = companyIdpData.BusinessPartnerNumber
                     }).ConfigureAwait(false);
 
                     var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
@@ -234,7 +234,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
                     Email = companyUser.Email,
-                    BusinessPartnerNumber = companyUser.Company.Bpn
+                    BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
                 };
         }
 

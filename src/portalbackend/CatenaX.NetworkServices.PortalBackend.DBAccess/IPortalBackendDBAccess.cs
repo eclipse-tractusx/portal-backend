@@ -10,6 +10,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<string?> GetBpnUntrackedAsync(Guid companyId);
         IAsyncEnumerable<string> GetIamUsersUntrackedAsync(Guid companyId);
         Company CreateCompany(string companyName);
+        BusinessPartner CreateBusinessPartner(string businessPartnerNumber);
         CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
         CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);
         Invitation CreateInvitation(Guid applicationId, CompanyUser user);
@@ -26,8 +27,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
         Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take);
         Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
-        Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
-        Task<CompanyNameIdBpnIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId, string iamUserId);
+        Task<Company?> GetCompanyWithAdressBusinessPartnerAsync(Guid companyApplicationId, Guid companyId);
+        Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId, string iamUserId);
         Task<CompanyNameBpnIdpAlias?> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId);
         Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
         Task<CompanyUserWithIdpData?> GetCompanyUserWithIdpAsync(string iamUserId);
@@ -42,6 +43,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
         Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
+        BusinessPartner RemoveBusinessPartner(BusinessPartner businessPartner);
         CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
         CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);
         IamUser RemoveIamUser(IamUser iamUser);
@@ -59,7 +61,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<CompanyServiceAccount?> GetOwnCompanyServiceAccountWithIamServiceAccountAsync(Guid serviceAccountId, string adminUserId);
         Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string iamAdminId);
         Task<Pagination.Source<CompanyServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId);
-        Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
+        Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
         Task<int> SaveAsync();
     }
