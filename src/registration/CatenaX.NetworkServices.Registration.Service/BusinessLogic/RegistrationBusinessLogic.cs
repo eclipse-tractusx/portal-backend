@@ -393,16 +393,21 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public async Task<int> SetInvitationStatusAsync(string iamUserId)
         {
             var invitationData = await _portalDBAccess.GetInvitationStatusAsync(iamUserId).ConfigureAwait(false);
+          
+            if (invitationData == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not associated with invitation");
+            }
             
-                if (invitationData.InvitationStatusId == InvitationStatusId.CREATED)
-                {
-                    invitationData.InvitationStatusId = InvitationStatusId.PENDING;
-                }
-                else
-                {
-                   return (int)HttpStatusCode.AlreadyReported;
-                }
-            
+            if (invitationData.InvitationStatusId == InvitationStatusId.CREATED)
+            {
+                invitationData.InvitationStatusId = InvitationStatusId.PENDING;
+            }
+            else
+            {
+                return (int)HttpStatusCode.AlreadyReported;
+            }
+
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
