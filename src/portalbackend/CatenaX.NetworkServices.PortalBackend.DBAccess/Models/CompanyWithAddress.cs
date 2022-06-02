@@ -25,7 +25,7 @@ public class CompanyWithAddress
     public Guid CompanyId { get; set; }
 
     [JsonPropertyName("bpn")]
-    public string? Bpn { get; set; }
+    public string? BusinessPartnerNumber { get; set; }
 
     [JsonPropertyName("name")]
     public string Name { get; set; }

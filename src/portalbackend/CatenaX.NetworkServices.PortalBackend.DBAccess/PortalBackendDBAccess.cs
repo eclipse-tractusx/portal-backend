@@ -21,7 +21,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext.Companies
                 .AsNoTracking()
                 .Where(company => company.Id == companyId)
-                .Select(company => company.Bpn)
+                .Select(company => company.BusinessPartnerNumber)
                 .SingleOrDefaultAsync();
 
         public IAsyncEnumerable<string> GetIamUsersUntrackedAsync(Guid companyId) =>
@@ -37,6 +37,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Guid.NewGuid(),
                     companyName,
                     CompanyStatusId.PENDING,
+                    DateTimeOffset.UtcNow)).Entity;
+
+        public BusinessPartner CreateBusinessPartner(string businessPartnerNumber) =>
+            _dbContext.BusinessPartners.Add(
+                new BusinessPartner(
+                    businessPartnerNumber,
                     DateTimeOffset.UtcNow)).Entity;
 
         public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
@@ -201,7 +207,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
-                        BusinessPartnerNumber = application.Company.Bpn
+                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber
                     })
                     .AsAsyncEnumerable());
 
@@ -216,7 +222,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         companyApplication.Company.Address.Streetname ?? "",
                         companyApplication.Company.Address.CountryAlpha2Code ?? "")
                     {
-                        Bpn = companyApplication.Company!.Bpn,
+                        BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
                         Shortname = companyApplication.Company.Shortname,
                         Region = companyApplication.Company.Address.Region,
                         Streetadditional = companyApplication.Company.Address.Streetadditional,
@@ -228,24 +234,24 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .SingleOrDefaultAsync();
 
-        public Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
+        public Task<Company?> GetCompanyWithAdressBusinessPartnerAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
                 .Include(company => company!.Address)
+                .Include(company => company!.BusinessPartner)
                 .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
                 .SingleOrDefaultAsync();
 
-        public Task<CompanyNameIdBpnIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
+        public Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()
                 .Where(iamUser =>
                     iamUser.UserEntityId == iamUserId
                     && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
                 .Select(iamUser => iamUser.CompanyUser!.Company)
-                .Select(company => new CompanyNameIdBpnIdpAlias(
+                .Select(company => new CompanyNameIdIdpAlias(
                         company!.Name,
                         company.Id)
                 {
-                    Bpn = company.Bpn,
                     IdpAlias = company.IdentityProviders
                             .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                             .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
@@ -262,7 +268,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     company!.Id,
                     company.Name)
                 {
-                    Bpn = company!.Bpn,
+                    BusinessPartnerNumber = company!.BusinessPartnerNumber,
                     IdpAlias = company!.IdentityProviders
                         .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                         .SingleOrDefault()!.IamIdentityProvider!.IamIdpAlias,
@@ -305,7 +311,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         FirstName = companyUser.Firstname,
                         LastName = companyUser.Lastname,
                         Email = companyUser.Email,
-                        BusinessPartnerNumber = companyUser.Company.Bpn
+                        BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
                     })
                 .SingleOrDefaultAsync();
 
@@ -459,6 +465,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     agreement.Id,
                     agreement.Name))
                 .AsAsyncEnumerable();
+
+        public BusinessPartner RemoveBusinessPartner(BusinessPartner businessPartner) =>
+            _dbContext.Remove(businessPartner).Entity;
 
         public CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole) =>
             _dbContext.Remove(companyAssignedRole).Entity;
@@ -624,7 +633,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                             serviceAccount.Name))))
                 .SingleOrDefaultAsync();
 
-        public Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId) =>
+        public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
            _dbContext.IamUsers
                .AsNoTracking()
                .Where(iamUser =>
@@ -643,7 +652,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                    City = company.Address!.City,
                    Streetname = company.Address.Streetname,
                    CountryAlpha2Code = company.Address.CountryAlpha2Code,
-                   Bpn = company.Bpn,
+                   BusinessPartnerNumber = company.BusinessPartnerNumber,
                    Shortname = company.Shortname,
                    Region = company.Address.Region,
                    Streetadditional = company.Address.Streetadditional,
