@@ -10,7 +10,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<string?> GetBpnUntrackedAsync(Guid companyId);
         IAsyncEnumerable<string> GetIamUsersUntrackedAsync(Guid companyId);
         Company CreateCompany(string companyName);
-        BusinessPartner CreateBusinessPartner(string businessPartnerNumber);
         CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
         CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);
         Invitation CreateInvitation(Guid applicationId, CompanyUser user);
@@ -18,7 +17,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IdentityProvider CreateSharedIdentityProvider(Company company);
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
         IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
-        Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code);
+        Address CreateAddress(string city, string streetname, string countryAlpha2Code);
         Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null);
         CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
         Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
@@ -43,7 +42,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
         Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
-        BusinessPartner RemoveBusinessPartner(BusinessPartner businessPartner);
         CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole);
         CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);
         IamUser RemoveIamUser(IamUser iamUser);

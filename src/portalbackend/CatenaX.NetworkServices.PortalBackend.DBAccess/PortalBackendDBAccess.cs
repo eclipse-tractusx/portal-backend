@@ -39,11 +39,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     CompanyStatusId.PENDING,
                     DateTimeOffset.UtcNow)).Entity;
 
-        public BusinessPartner CreateBusinessPartner(string businessPartnerNumber) =>
-            _dbContext.BusinessPartners.Add(
-                new BusinessPartner(
-                    businessPartnerNumber)).Entity;
-
         public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
             _dbContext.CompanyApplications.Add(
                 new CompanyApplication(
@@ -103,13 +98,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     iamUserEntityId,
                     user.Id)).Entity;
 
-        public Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code) =>
+        public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
             _dbContext.Addresses.Add(
                 new Address(
                     Guid.NewGuid(),
                     city,
                     streetname,
-                    zipcode,
                     countryAlpha2Code,
                     DateTimeOffset.UtcNow
                 )).Entity;
@@ -236,7 +230,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public Task<Company?> GetCompanyWithAdressBusinessPartnerAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
                 .Include(company => company!.Address)
-                .Include(company => company!.BusinessPartner)
                 .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
                 .SingleOrDefaultAsync();
 
@@ -464,9 +457,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     agreement.Id,
                     agreement.Name))
                 .AsAsyncEnumerable();
-
-        public BusinessPartner RemoveBusinessPartner(BusinessPartner businessPartner) =>
-            _dbContext.Remove(businessPartner).Entity;
 
         public CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole) =>
             _dbContext.Remove(companyAssignedRole).Entity;

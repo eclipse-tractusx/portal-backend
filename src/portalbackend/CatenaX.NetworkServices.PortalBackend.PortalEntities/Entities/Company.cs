@@ -45,9 +45,6 @@ public class Company
     public string Name { get; set; }
 
     [MaxLength(255)]
-    public string? Parent { get; set; }
-
-    [MaxLength(255)]
     public string? Shortname { get; set; }
 
     public CompanyStatusId CompanyStatusId { get; set; }
@@ -55,7 +52,6 @@ public class Company
     public Guid? AddressId { get; set; }
 
     // Navigation properties
-    public virtual BusinessPartner? BusinessPartner { get; set; }
     public virtual Address? Address { get; set; }
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual ICollection<App> ProvidedApps { get; private set; }

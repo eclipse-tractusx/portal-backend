@@ -72,9 +72,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("streetnumber");
 
-                    b.Property<decimal>("Zipcode")
-                        .HasPrecision(19, 2)
-                        .HasColumnType("numeric(19,2)")
+                    b.Property<string>("Zipcode")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
                         .HasColumnName("zipcode");
 
                     b.HasKey("Id")
@@ -502,27 +502,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.ToTable("app_tags", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.BusinessPartner", b =>
-                {
-                    b.Property<string>("BusinessPartnerNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("business_partner_number");
-
-                    b.Property<string>("ParentBusinessPartnerNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("parent_business_partner_number");
-
-                    b.HasKey("BusinessPartnerNumber")
-                        .HasName("pk_business_partners");
-
-                    b.HasIndex("ParentBusinessPartnerNumber")
-                        .HasDatabaseName("ix_business_partners_parent_business_partner_number");
-
-                    b.ToTable("business_partners", "portal");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Property<Guid>("Id")
@@ -553,11 +532,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
-                    b.Property<string>("Parent")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("parent");
-
                     b.Property<string>("Shortname")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -573,10 +547,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("AddressId")
                         .HasDatabaseName("ix_companies_address_id");
-
-                    b.HasIndex("BusinessPartnerNumber")
-                        .IsUnique()
-                        .HasDatabaseName("ix_companies_business_partner_number");
 
                     b.HasIndex("CompanyStatusId")
                         .HasDatabaseName("ix_companies_company_status_id");
@@ -1048,20 +1018,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedBusinessPartner", b =>
                 {
+                    b.Property<Guid>("CompanyUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_user_id");
+
                     b.Property<string>("BusinessPartnerNumber")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("business_partner_number");
 
-                    b.Property<Guid>("CompanyUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_user_id");
-
-                    b.HasKey("BusinessPartnerNumber", "CompanyUserId")
+                    b.HasKey("CompanyUserId", "BusinessPartnerNumber")
                         .HasName("pk_company_user_assigned_business_partners");
-
-                    b.HasIndex("CompanyUserId")
-                        .HasDatabaseName("ix_company_user_assigned_business_partners_company_user_id");
 
                     b.ToTable("company_user_assigned_business_partners", "portal");
                 });
@@ -3854,27 +3821,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("App");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.BusinessPartner", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.BusinessPartner", "ParentBusinessPartner")
-                        .WithMany("ChildBusinessPartners")
-                        .HasForeignKey("ParentBusinessPartnerNumber")
-                        .HasConstraintName("fk_business_partners_business_partners_parent_business_partner");
-
-                    b.Navigation("ParentBusinessPartner");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", "Address")
                         .WithMany("Companies")
                         .HasForeignKey("AddressId")
                         .HasConstraintName("fk_companies_addresses_address_id");
-
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.BusinessPartner", "BusinessPartner")
-                        .WithOne("Company")
-                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "BusinessPartnerNumber")
-                        .HasConstraintName("fk_companies_business_partners_business_partner_number");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyStatus", "CompanyStatus")
                         .WithMany("Companies")
@@ -3884,8 +3836,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasConstraintName("fk_companies_company_statuses_company_status_id");
 
                     b.Navigation("Address");
-
-                    b.Navigation("BusinessPartner");
 
                     b.Navigation("CompanyStatus");
                 });
@@ -4087,19 +4037,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedBusinessPartner", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.BusinessPartner", "BusinessPartner")
-                        .WithMany()
-                        .HasForeignKey("BusinessPartnerNumber")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_user_assigned_business_partners_business_partners_b");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
-                        .WithMany()
+                        .WithMany("CompanyUserAssignedBusinessPartners")
                         .HasForeignKey("CompanyUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_user_assigned_business_partners_company_users_compa");
-
-                    b.Navigation("BusinessPartner");
 
                     b.Navigation("CompanyUser");
                 });
@@ -4366,13 +4309,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Apps");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.BusinessPartner", b =>
-                {
-                    b.Navigation("ChildBusinessPartners");
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Navigation("Agreements");
@@ -4430,6 +4366,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
+                    b.Navigation("CompanyUserAssignedBusinessPartners");
+
                     b.Navigation("CompanyUserAssignedRoles");
 
                     b.Navigation("Consents");

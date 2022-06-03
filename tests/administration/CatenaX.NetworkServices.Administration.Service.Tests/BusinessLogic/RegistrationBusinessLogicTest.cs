@@ -49,11 +49,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             Guid companyUserRoleId = new Guid("607818be-4978-41f4-bf63-fa8d2de51154");
             Guid centralUserId = new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f");
 
-            //recursive relationship: Company relates to BusinessPartner relates to ParentBusinessPartner relates to Company
-            _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-                .ForEach(b => _fixture.Behaviors.Remove(b));
-            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());            
-
             var company = _fixture.Build<Company>()
                 .With(u => u.BusinessPartnerNumber, "CAXLSHAREDIDPZZ")
                 .With(u => u.Name, "Shared Idp Test")

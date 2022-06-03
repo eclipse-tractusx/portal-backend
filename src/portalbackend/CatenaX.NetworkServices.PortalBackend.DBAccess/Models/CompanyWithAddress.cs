@@ -49,7 +49,7 @@ public class CompanyWithAddress
     public string? Streetnumber { get; set; }
 
     [JsonPropertyName("zipCode")]
-    public decimal? Zipcode { get; set; }
+    public string? Zipcode { get; set; }
 
     [JsonPropertyName("countryAlpha2Code")]
     public string CountryAlpha2Code { get; set; }
