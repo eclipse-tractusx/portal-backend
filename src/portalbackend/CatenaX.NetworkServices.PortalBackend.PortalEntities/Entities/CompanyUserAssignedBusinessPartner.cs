@@ -4,18 +4,17 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class CompanyUserAssignedBusinessPartner
 {
-    public CompanyUserAssignedBusinessPartner(string businessPartnerNumber, Guid companyUserId)
+    public CompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
     {
-        BusinessPartnerNumber = businessPartnerNumber;
         CompanyUserId = companyUserId;
+        BusinessPartnerNumber = businessPartnerNumber;
     }
+
+    public Guid CompanyUserId;
 
     [MaxLength(20)]
     public string BusinessPartnerNumber;
 
-    public Guid CompanyUserId;
-
     // Navigation properties
-    public virtual BusinessPartner? BusinessPartner { get; set; }
     public virtual CompanyUser? CompanyUser { get; set; }
 }

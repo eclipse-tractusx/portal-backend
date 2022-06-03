@@ -30,7 +30,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppLicense> AppLicenses { get; set; } = default!;
     public virtual DbSet<AppStatus> AppStatuses { get; set; } = default!;
     public virtual DbSet<AppTag> AppTags { get; set; } = default!;
-    public virtual DbSet<BusinessPartner> BusinessPartners { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -266,23 +265,8 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<BusinessPartner>( entity =>
-        {
-            entity.HasKey(e => e.BusinessPartnerNumber);
-
-            entity.HasOne(d => d.ParentBusinessPartner)
-                .WithMany(p => p.ChildBusinessPartners)
-                .HasForeignKey(d => d.ParentBusinessPartnerNumber)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
-
         modelBuilder.Entity<Company>(entity =>
         {
-            entity.HasOne(d => d.BusinessPartner)
-                .WithOne(p => p.Company)
-                .HasForeignKey<Company>(d => d.BusinessPartnerNumber)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
             entity.HasMany(p => p.CompanyRoles)
                 .WithMany(p => p.Companies)
                 .UsingEntity<CompanyAssignedRole>(
@@ -466,25 +450,12 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyUserAssignedRoles)
                 .WithOne(d => d.CompanyUser!);
 
-            entity.HasMany(d => d.BusinessPartners)
-                .WithMany(p => p.CompanyUsers)
-                .UsingEntity<CompanyUserAssignedBusinessPartner>(
-                    j => j
-                        .HasOne(d => d.BusinessPartner)
-                        .WithMany()
-                        .HasForeignKey(d => d.BusinessPartnerNumber)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.CompanyUser)
-                        .WithMany()
-                        .HasForeignKey(d => d.CompanyUserId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.BusinessPartnerNumber, e.CompanyUserId });
-                    }
-                );
+            entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
+                .WithOne(d => d.CompanyUser);
         });
+
+        modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
+            .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 
         modelBuilder.Entity<UserRoleDescription>().HasKey(e => new { e.UserRoleId, e.LanguageShortName });
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
@@ -13,13 +12,12 @@ public class Address
         Companies = new HashSet<Company>();
     }
 
-    public Address(Guid id, string city, string streetname, decimal zipcode, string countryAlpha2Code, DateTimeOffset dateCreated) : this()
+    public Address(Guid id, string city, string streetname, string countryAlpha2Code, DateTimeOffset dateCreated) : this()
     {
         Id = id;
         DateCreated = dateCreated;
         City = city;
         Streetname = streetname;
-        Zipcode = zipcode;
         CountryAlpha2Code = countryAlpha2Code;
     }
 
@@ -44,8 +42,8 @@ public class Address
     [MaxLength(255)]
     public string? Streetnumber { get; set; }
 
-    [Precision(19,2)]
-    public decimal Zipcode { get; set; }
+    [MaxLength(12)]
+    public string? Zipcode { get; set; }
 
     [StringLength(2, MinimumLength = 2)]
     public string CountryAlpha2Code { get; set; }
