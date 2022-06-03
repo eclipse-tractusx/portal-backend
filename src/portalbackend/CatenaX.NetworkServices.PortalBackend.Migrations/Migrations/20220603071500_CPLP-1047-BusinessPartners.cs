@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -20,7 +21,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     business_partner_number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     parent_business_partner_number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true)
                 },
                 constraints: table =>
@@ -34,7 +34,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalColumn: "business_partner_number");
                 });
 
-            migrationBuilder.Sql("INSERT INTO portal.business_partners (business_partner_number, date_created) SELECT DISTINCT business_partner_number, date_created FROM portal.companies;");
+            migrationBuilder.Sql("INSERT INTO portal.business_partners (business_partner_number) SELECT DISTINCT business_partner_number FROM portal.companies;");
 
             migrationBuilder.CreateTable(
                 name: "company_user_assigned_business_partners",

@@ -11,16 +11,13 @@ public class BusinessPartner
         CompanyUsers = new HashSet<CompanyUser>();
     }
 
-    public BusinessPartner(string businessPartnerNumber, DateTimeOffset dateCreated) : this()
+    public BusinessPartner(string businessPartnerNumber) : this()
     {
         BusinessPartnerNumber = businessPartnerNumber;
-        DateCreated = dateCreated;
     }
 
     [MaxLength(20)]
     public string BusinessPartnerNumber { get; set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
 
     [MaxLength(20)]
     public string? ParentBusinessPartnerNumber { get; set; }
