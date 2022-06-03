@@ -227,7 +227,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .AsNoTracking()
                 .SingleOrDefaultAsync();
 
-        public Task<Company?> GetCompanyWithAdressBusinessPartnerAsync(Guid companyApplicationId, Guid companyId) =>
+        public Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
                 .Include(company => company!.Address)
                 .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
