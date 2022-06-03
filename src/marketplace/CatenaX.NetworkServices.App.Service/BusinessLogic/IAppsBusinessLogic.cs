@@ -60,6 +60,14 @@ public interface IAppsBusinessLogic
     public Task AddCompanyAppSubscriptionAsync(Guid appId, string userId);
 
     /// <summary>
+    /// Activates a pending app subscription for an app provided by the current user's company.
+    /// </summary>
+    /// <param name="appId">ID of the pending app to be activated.</param>
+    /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
+    /// <param name="userId">IAM ID of the user requesting the activation.</param>
+    public Task ActivateCompanyAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId);
+
+    /// <summary>
     /// Creates an application and returns its generated ID.
     /// </summary>
     /// <param name="appInputModel">Input model for app creation.</param>

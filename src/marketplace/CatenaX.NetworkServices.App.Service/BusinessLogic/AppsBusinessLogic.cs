@@ -194,13 +194,41 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING));
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING});
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
         {
-            throw new ArgumentException($"Parameters are invalid or app is already subscribed to.");
+            throw new ArgumentException("Parameters are invalid or app is already subscribed to.");
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task ActivateCompanyAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId)
+    {
+        var isExistingApp = await this.context.Apps.AnyAsync(a => a.Id == appId).ConfigureAwait(false); 
+        if(!isExistingApp)
+        {
+            throw new ArgumentException("App with provided ID does not exist.");
+        }
+
+        var companyId = await this.GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
+
+        var isMemberOfCompanyProvidingApp = await this.context.Companies.AsNoTracking()
+            .Where(c => c.Id == companyId)
+            .SelectMany(c => c.ProvidedApps.Select(a => a.Id)).ContainsAsync(appId).ConfigureAwait(false);
+        if(!isMemberOfCompanyProvidingApp)
+        {
+            throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
+        }
+
+        var subscription = await this.context.CompanyAssignedApps.FindAsync(companyId, appId).ConfigureAwait(false);
+        if (subscription is null || subscription.AppSubscriptionStatusId != PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING)
+        {
+            throw new ArgumentException("No pending subscription for provided parameters existing.");
+        }
+        subscription.AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.ACTIVE;
+        await this.context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
