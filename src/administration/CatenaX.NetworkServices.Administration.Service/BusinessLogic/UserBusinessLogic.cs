@@ -147,7 +147,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
         }
 
-        public IAsyncEnumerable<CompanyUserDetails> GetCompanyUserDetailsAsync(
+        public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
             string adminUserId,
             Guid? companyUserId = null,
             string? userEntityId = null,
@@ -184,7 +184,17 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return _provisioningManager.GetClientRolesAsync(clientId);
         }
 
-        public async Task<OwnCompanyUserDetails> GetOwnCompanyUserDetails(string iamUserId)
+        public async Task<CompanyUserDetails> GetOwnCompanyUserDetails(Guid companyUserId, string adminUserId)
+        {
+            var details = await _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(companyUserId, adminUserId).ConfigureAwait(false);
+            if (details == null)
+            {
+                throw new NotFoundException($"no company-user data found for user {companyUserId} in company of {adminUserId}");
+            }
+            return details;
+        }
+
+        public async Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId)
         {
             var details = await _portalDBAccess.GetOwnCompanyUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
             if (details == null)
@@ -194,7 +204,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return details;
         }
 
-        public async Task<OwnCompanyUserDetails> UpdateOwnCompanyUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId)
+        public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId)
         {
             var userData = await _portalDBAccess.GetCompanyUserWithCompanyIdpAsync(iamUserId).ConfigureAwait(false);
             if (userData == null)
@@ -225,7 +235,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             companyUser.Lastname = ownCompanyUserEditableDetails.LastName;
             companyUser.Email = ownCompanyUserEditableDetails.Email;
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-            return new OwnCompanyUserDetails(
+            return new CompanyUserDetails(
                 companyUser.Id,
                 companyUser.DateCreated,
                 companyUser.Company!.Name,
@@ -238,7 +248,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 };
         }
 
-        public async Task<int> DeleteUserAsync(Guid companyUserId, string iamUserId)
+        public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
         {
             var userData = await _portalDBAccess.GetCompanyUserWithIdpAsync(iamUserId).ConfigureAwait(false);
             if (userData == null)
@@ -256,7 +266,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return -1;
         }
 
-        public async IAsyncEnumerable<Guid> DeleteUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
+        public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
         {
             var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
             if (iamIdpAlias == null)
@@ -346,7 +356,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
-        public async Task<bool> ExecutePasswordReset(Guid companyUserId, string adminUserId)
+        public async Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId)
         {
             var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserIdAsync(companyUserId, adminUserId).ConfigureAwait(false);
             if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
