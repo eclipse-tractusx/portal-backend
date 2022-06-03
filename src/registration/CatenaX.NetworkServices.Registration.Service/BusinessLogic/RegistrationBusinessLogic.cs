@@ -121,7 +121,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressBusinessPartnerAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
+            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
             if (company == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
