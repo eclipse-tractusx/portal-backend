@@ -2,8 +2,8 @@ using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
@@ -16,20 +16,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         {
             _dbContext = dbContext;
         }
-
-        public Task<string?> GetBpnUntrackedAsync(Guid companyId) =>
-            _dbContext.Companies
-                .AsNoTracking()
-                .Where(company => company.Id == companyId)
-                .Select(company => company.Bpn)
-                .SingleOrDefaultAsync();
-
-        public IAsyncEnumerable<string> GetIamUsersUntrackedAsync(Guid companyId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser => iamUser.CompanyUser!.CompanyId == companyId)
-                .Select(iamUser => iamUser.UserEntityId)
-                .AsAsyncEnumerable();
 
         public Company CreateCompany(string companyName) =>
             _dbContext.Companies.Add(
@@ -130,24 +116,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyId,
                     companyRoleId
                 )).Entity;
-
-        public CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description) =>
-            _dbContext.CompanyServiceAccounts.Add(
-                new CompanyServiceAccount(
-                    Guid.NewGuid(),
-                    companyId,
-                    companyServiceAccountStatusId,
-                    name,
-                    description,
-                    DateTimeOffset.UtcNow)).Entity;
-
-        public IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId) =>
-            _dbContext.IamServiceAccounts.Add(
-                new IamServiceAccount(
-                    clientId,
-                    clientClientId,
-                    userEntityId,
-                    companyServiceAccountId)).Entity;
 
         public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
             _dbContext.Documents.Add(
@@ -381,15 +349,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 })
                 .AsAsyncEnumerable();
 
-        public Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser =>
-                    iamUser.UserEntityId == iamUserId)
-                .Select(iamUser =>
-                    iamUser.CompanyUser!.Company!.Id)
-                .SingleOrDefaultAsync();
-
         public Task<CompanyApplication?> GetCompanyApplicationAsync(Guid applicationId) =>
             _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
@@ -487,9 +446,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IamUser RemoveIamUser(IamUser iamUser) =>
             _dbContext.Remove(iamUser).Entity;
 
-        public IamServiceAccount RemoveIamServiceAccount(IamServiceAccount iamServiceAccount) =>
-            _dbContext.Remove(iamServiceAccount).Entity;
-
         public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
         {
             foreach (var clientRole in clientRoles)
@@ -582,65 +538,35 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         document!.Documentname))
                 .AsAsyncEnumerable();
         
-        public Task<CompanyServiceAccountWithClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
-            _dbContext.CompanyServiceAccounts
-                .Where(serviceAccount =>
-                    serviceAccount.Id == serviceAccountId
-                    && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                    && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Select( serviceAccount =>
-                    new CompanyServiceAccountWithClientId(
-                        serviceAccount,
-                        serviceAccount.IamServiceAccount!.ClientId,
-                        serviceAccount.IamServiceAccount.ClientClientId
-                    )
-                )
-                .SingleOrDefaultAsync();
 
-        public Task<CompanyServiceAccount?> GetOwnCompanyServiceAccountWithIamServiceAccountAsync(Guid serviceAccountId, string adminUserId) =>
-            _dbContext.CompanyServiceAccounts
-                .Where(serviceAccount =>
-                    serviceAccount.Id == serviceAccountId
-                    && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                    && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Include(serviceAccount => serviceAccount.IamServiceAccount)
-                .SingleOrDefaultAsync();
-
-        public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string adminUserId) =>
-            _dbContext.CompanyServiceAccounts
-                .AsNoTracking()
-                .Where(serviceAccount =>
-                    serviceAccount.Id == serviceAccountId
-                    && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                    && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Select(serviceAccount => new CompanyServiceAccountDetailedData(
-                        serviceAccount.Id,
-                        serviceAccount.IamServiceAccount!.ClientId,
-                        serviceAccount.IamServiceAccount.ClientClientId,
-                        serviceAccount.IamServiceAccount.UserEntityId,
-                        serviceAccount.Name,
-                        serviceAccount.Description))
-                .SingleOrDefaultAsync();
-
-        public Task<Pagination.Source<CompanyServiceAccountData>?> GetOwnCompanyServiceAccountDetailsUntracked(int skip, int take, string adminUserId) =>
-            _dbContext.Companies
-                .AsNoTracking()
-                .Where(company =>
-                    company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Select(company => new Pagination.Source<CompanyServiceAccountData>(
-                    company.CompanyServiceAccounts
-                        .Where(serviceAccount => serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
-                        .Count(),
-                    company.CompanyServiceAccounts
-                        .Where(serviceAccount => serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
-                        .OrderBy(serviceAccount => serviceAccount.Name)
-                        .Skip(skip)
-                        .Take(take)
-                        .Select(serviceAccount => new CompanyServiceAccountData(
-                            serviceAccount.Id,
-                            serviceAccount.IamServiceAccount!.ClientClientId,
-                            serviceAccount.Name))))
-                .SingleOrDefaultAsync();
+        public Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId) =>
+           _dbContext.IamUsers
+               .AsNoTracking()
+               .Where(iamUser =>
+                   iamUser.UserEntityId == iamUserId
+                   && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+               .Select(iamUser => iamUser.CompanyUser!.Company)
+               .Select(company => new RegistrationData(
+                   company!.Id,
+                   company.Name,
+                   company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
+                   company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                                                   .Select(consent => new AgreementConsentStatusForRegistrationData(
+                                                           consent.AgreementId, consent.ConsentStatusId)))
+               {
+                   City = company.Address!.City,
+                   Streetname = company.Address.Streetname,
+                   CountryAlpha2Code = company.Address.CountryAlpha2Code,
+                   Bpn = company.Bpn,
+                   Shortname = company.Shortname,
+                   Region = company.Address.Region,
+                   Streetadditional = company.Address.Streetadditional,
+                   Streetnumber = company.Address.Streetnumber,
+                   Zipcode = company.Address.Zipcode,
+                   CountryDe = company.Address.Country!.CountryNameDe,
+                   TaxId = company.TaxId
+               }).SingleOrDefaultAsync();
 
         public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
             _dbContext.CompanyApplications.Where(companyApplication =>
