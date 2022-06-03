@@ -49,13 +49,12 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
         if (userRoleDatas.Count() != serviceAccountCreationInfos.UserRoleIds.Count())
         {
-            var missingRoleId = serviceAccountCreationInfos.UserRoleIds
-                .Where(userRoleId => userRoleDatas.All(userRoleData => userRoleData.UserRoleId != userRoleId))
-                .FirstOrDefault();
-
-            if (missingRoleId != null)
+            var missingRoleIds = serviceAccountCreationInfos.UserRoleIds
+                .Where(userRoleId => userRoleDatas.All(userRoleData => userRoleData.UserRoleId != userRoleId));
+            
+            if (missingRoleIds.Count() > 0)
             {
-                throw new ArgumentException($"{missingRoleId} is not a valid UserRoleId", "roleIds");
+                throw new ArgumentException($"{missingRoleIds.First()} is not a valid UserRoleId", "roleIds");
             }
         }
 
