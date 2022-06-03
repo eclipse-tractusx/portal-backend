@@ -273,7 +273,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         FirstName = companyUser.Firstname,
                         LastName = companyUser.Lastname,
                         Email = companyUser.Email,
-                        BusinessPartnerNumber = companyUser.Company.Bpn
+                        BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
                     })
                 .SingleOrDefaultAsync();
 
