@@ -2,7 +2,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public class CompanyServiceAccountDetailedData
 {
-    public CompanyServiceAccountDetailedData(Guid serviceAccountId, string clientId, string clientClientId, string userEntityId, string name, string description)
+    public CompanyServiceAccountDetailedData(Guid serviceAccountId, string clientId, string clientClientId, string userEntityId, string name, string description, IEnumerable<UserRoleData> userRoleDatas)
     {
         ServiceAccountId = serviceAccountId;
         ClientId = clientId;
@@ -10,6 +10,7 @@ public class CompanyServiceAccountDetailedData
         UserEntityId = userEntityId;
         Name = name;
         Description = description;
+        UserRoleDatas = userRoleDatas;
     }
 
     public Guid ServiceAccountId { get; set; }
@@ -23,4 +24,6 @@ public class CompanyServiceAccountDetailedData
     public string Name { get; set; }
 
     public string Description { get; set; }
+
+    public IEnumerable<UserRoleData> UserRoleDatas { get; set; }
 }

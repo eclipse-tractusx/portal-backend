@@ -101,6 +101,8 @@ builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
 
+builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
+
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
 builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
