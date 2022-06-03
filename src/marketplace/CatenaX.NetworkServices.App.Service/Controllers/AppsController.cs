@@ -139,7 +139,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
-    [Authorize(Roles = "view_apps")]
+    [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public Task AddCompanyAppSubscriptionAsync([FromRoute] Guid appId) =>
