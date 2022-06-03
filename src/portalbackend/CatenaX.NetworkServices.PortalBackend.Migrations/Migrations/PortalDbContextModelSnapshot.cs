@@ -509,10 +509,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("business_partner_number");
 
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
                     b.Property<string>("ParentBusinessPartnerNumber")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")

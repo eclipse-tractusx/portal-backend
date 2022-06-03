@@ -42,8 +42,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public BusinessPartner CreateBusinessPartner(string businessPartnerNumber) =>
             _dbContext.BusinessPartners.Add(
                 new BusinessPartner(
-                    businessPartnerNumber,
-                    DateTimeOffset.UtcNow)).Entity;
+                    businessPartnerNumber)).Entity;
 
         public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
             _dbContext.CompanyApplications.Add(

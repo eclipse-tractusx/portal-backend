@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220602134932_CPLP-1047-BusinessPartners")]
+    [Migration("20220603071500_CPLP-1047-BusinessPartners")]
     partial class CPLP1047BusinessPartners
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -510,10 +510,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("business_partner_number");
-
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
 
                     b.Property<string>("ParentBusinessPartnerNumber")
                         .HasMaxLength(20)
