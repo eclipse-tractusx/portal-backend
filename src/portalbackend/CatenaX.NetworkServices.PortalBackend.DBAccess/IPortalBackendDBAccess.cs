@@ -15,7 +15,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IdentityProvider CreateSharedIdentityProvider(Company company);
         IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
         IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
-        Address CreateAddress(string city, string streetname, decimal zipcode, string countryAlpha2Code);
+        Address CreateAddress(string city, string streetname, string countryAlpha2Code);
         Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null);
         CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
         Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
@@ -23,7 +23,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take);
         Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
         Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
-        Task<CompanyNameIdBpnIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId, string iamUserId);
+        Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid companyApplicationId, string iamUserId);
         Task<CompanyNameBpnIdpAlias?> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId);
         Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
         Task<CompanyUserWithIdpData?> GetCompanyUserWithIdpAsync(string iamUserId);
@@ -50,7 +50,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
         IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
-        Task<RegistrationData?> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
+        Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
         Task<int> SaveAsync();
     }
