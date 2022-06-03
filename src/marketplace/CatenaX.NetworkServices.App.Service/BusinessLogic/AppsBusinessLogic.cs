@@ -194,7 +194,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId));
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING));
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
