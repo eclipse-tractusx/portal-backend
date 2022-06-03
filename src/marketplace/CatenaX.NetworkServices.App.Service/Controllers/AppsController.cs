@@ -135,7 +135,7 @@ public class AppsController : ControllerBase
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
     /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
-    /// <response code="200">Favourite app was successfully subscribed to.</response>
+    /// <response code="200">App was successfully subscribed to.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
@@ -144,4 +144,20 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public Task AddCompanyAppSubscriptionAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(userId => this.appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId));
+
+    /// <summary>
+    /// Activates a pending app subscription for an app provided by the current user's company.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to activate subscription for.</param>
+    /// <param name="companyId" example="74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2">ID of the company to activate subscription for.</param>
+    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/supscription/company/74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2/activate</remarks>
+    /// <response code="200">App subscription was successfully activated.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    [HttpPut]
+    [Route("{appId}/subscription/company/{companyId}/activate")]
+    [Authorize(Roles = "activate_subscription")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public Task ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId) =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.ActivateCompanyAppSubscriptionAsync(appId, companyId, userId));
 }
