@@ -54,7 +54,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", "applicationId");
         }
-        if (companyApplication.Company!.Bpn == null)
+        if (companyApplication.Company!.BusinessPartnerNumber == null)
         {
             throw new ArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is null", "bpn");
         }
@@ -63,7 +63,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await foreach (var item in _portalDBAccess.GetInvitedUsersByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
         {
             await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
-            await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(companyApplication.Company.Bpn, 1));
+            await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(companyApplication.Company.BusinessPartnerNumber, 1));
             foreach (var userRoleId in userRoleIds)
             {
                 _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, userRoleId);
@@ -75,7 +75,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await _portalDBAccess.SaveAsync().ConfigureAwait(false);
 
-        await _custodianService.CreateWallet(companyApplication.Company.Bpn, companyApplication.Company.Name).ConfigureAwait(false);
+        await _custodianService.CreateWallet(companyApplication.Company.BusinessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
         return true;

@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
@@ -21,7 +18,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public Guid CompanyId { get; set; }
 
         [JsonPropertyName("bpn")]
-        public string? Bpn { get; set; }
+        public string? BusinessPartnerNumber { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
@@ -45,7 +42,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public string? Streetnumber { get; set; }
 
         [JsonPropertyName("zipCode")]
-        public decimal? Zipcode { get; set; }
+        public string? Zipcode { get; set; }
 
         [JsonPropertyName("countryAlpha2Code")]
         public string? CountryAlpha2Code { get; set; }

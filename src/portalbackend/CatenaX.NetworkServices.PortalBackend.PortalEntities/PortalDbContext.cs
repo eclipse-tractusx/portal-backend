@@ -45,6 +45,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
+    public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
@@ -448,7 +449,13 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)
                 .WithOne(d => d.CompanyUser!);
+
+            entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
+                .WithOne(d => d.CompanyUser);
         });
+
+        modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
+            .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 
         modelBuilder.Entity<UserRoleDescription>().HasKey(e => new { e.UserRoleId, e.LanguageShortName });
 
