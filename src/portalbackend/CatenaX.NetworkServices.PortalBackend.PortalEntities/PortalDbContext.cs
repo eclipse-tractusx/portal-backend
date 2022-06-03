@@ -34,6 +34,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
     public virtual DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; } = default!;
+    public virtual DbSet<AppSubscriptionStatus> AppSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
@@ -151,6 +152,12 @@ public class PortalDbContext : DbContext
                     j =>
                     {
                         j.HasKey(e => new { e.CompanyId, e.AppId });
+                        j.HasOne(e => e.AppSubscriptionStatus)
+                            .WithMany(e => e.AppSubscriptions)
+                            .HasForeignKey(e => e.AppSubscriptionStatusId)
+                            .OnDelete(DeleteBehavior.ClientSetNull);
+                        j.Property(e => e.AppSubscriptionStatusId)
+                            .HasDefaultValue(AppSubscriptionStatusId.PENDING);
                     }
                 );
 
@@ -617,5 +624,12 @@ public class PortalDbContext : DbContext
         });
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
+
+        modelBuilder.Entity<AppSubscriptionStatus>()
+            .HasData(
+                Enum.GetValues(typeof(AppSubscriptionStatusId))
+                    .Cast<AppSubscriptionStatusId>()
+                    .Select(e => new AppSubscriptionStatus(e))
+            );
     }
 }
