@@ -25,7 +25,7 @@ public class CompanyWithAddress
     public Guid CompanyId { get; set; }
 
     [JsonPropertyName("bpn")]
-    public string? Bpn { get; set; }
+    public string? BusinessPartnerNumber { get; set; }
 
     [JsonPropertyName("name")]
     public string Name { get; set; }
@@ -49,7 +49,7 @@ public class CompanyWithAddress
     public string? Streetnumber { get; set; }
 
     [JsonPropertyName("zipCode")]
-    public decimal? Zipcode { get; set; }
+    public string? Zipcode { get; set; }
 
     [JsonPropertyName("countryAlpha2Code")]
     public string CountryAlpha2Code { get; set; }

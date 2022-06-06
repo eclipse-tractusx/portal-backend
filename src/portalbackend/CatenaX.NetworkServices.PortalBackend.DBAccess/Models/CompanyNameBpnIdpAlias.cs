@@ -10,6 +10,6 @@ public class CompanyNameBpnIdpAlias
 
     public Guid CompanyId { get; }
     public string CompanyName { get; }
-    public string? Bpn  { get; set; }
+    public string? BusinessPartnerNumber  { get; set; }
     public string? IdpAlias { get; set; }
 }
