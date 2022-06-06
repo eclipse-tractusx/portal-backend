@@ -40,7 +40,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 }
             )).ConfigureAwait(false)).All(x => x))
             {
-                throw new Exception($"failed to assing client-roles {clientRoleNames} to central user {centralUserId}");
+                throw new Exception($"failed to assign client-roles {clientRoleNames} to central user {centralUserId}");
             }
         }
     }
