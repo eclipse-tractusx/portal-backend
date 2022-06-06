@@ -405,7 +405,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             else
             {
-                return (int)HttpStatusCode.AlreadyReported;
+                throw new ArgumentException($"invitation status is no longer in status 'CREATED'");
             }
 
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
