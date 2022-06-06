@@ -4,12 +4,8 @@ using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using FakeItEasy;
-using System;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace CatenaX.NetworkServices.Registration.Service.Tests
@@ -52,7 +48,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
 
             var result = await sut.FetchBusinessPartner("testpbn", "token");
             Assert.Equal(resultSet.bpn, result.First().bpn);
-            Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization.Parameter);
+            Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
 
         [Fact]
@@ -64,7 +60,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Tests
             var sut = _fixture.Create<BPNAccess>();
 
             await Assert.ThrowsAsync<ServiceException>(async () => await sut.FetchBusinessPartner("testpbn", "token"));
-            Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization.Parameter);
+            Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
     }
 }

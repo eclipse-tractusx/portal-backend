@@ -36,16 +36,13 @@ public class Company
     public DateTimeOffset DateCreated { get; private set; }
 
     [MaxLength(20)]
-    public string? Bpn { get; set; }
+    public string? BusinessPartnerNumber { get; set; }
 
     [MaxLength(20)]
     public string? TaxId { get; set; }
 
     [MaxLength(255)]
     public string Name { get; set; }
-
-    [MaxLength(255)]
-    public string? Parent { get; set; }
 
     [MaxLength(255)]
     public string? Shortname { get; set; }
