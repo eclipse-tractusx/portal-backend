@@ -13,7 +13,6 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
 using System.Text;
-using System.Net;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -388,20 +387,18 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public async Task<int> SetInvitationStatusAsync(string iamUserId)
         {
             var invitationData = await _portalDBAccess.GetInvitationStatusAsync(iamUserId).ConfigureAwait(false);
-          
+
             if (invitationData == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not associated with invitation");
             }
-            
-            if (invitationData.InvitationStatusId == InvitationStatusId.CREATED)
-            {
-                invitationData.InvitationStatusId = InvitationStatusId.PENDING;
-            }
-            else
+
+            if (invitationData.InvitationStatusId != InvitationStatusId.CREATED)
             {
                 throw new ArgumentException($"invitation status is no longer in status 'CREATED'");
             }
+
+            invitationData.InvitationStatusId = InvitationStatusId.PENDING;
 
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
@@ -415,6 +412,5 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return registrationData;
         }
-
     }
 }
