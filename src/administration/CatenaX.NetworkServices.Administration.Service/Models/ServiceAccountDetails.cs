@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
 
@@ -5,13 +6,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Models;
 
 public class ServiceAccountDetails
 {
-    public ServiceAccountDetails(Guid serviceAccountId, string clientId, string name, string description, IamClientAuthMethod iamClientAuthMethod)
+    public ServiceAccountDetails(Guid serviceAccountId, string clientId, string name, string description, IamClientAuthMethod iamClientAuthMethod, IEnumerable<UserRoleData> userRoleDatas)
     {
         ServiceAccountId = serviceAccountId;
         ClientId = clientId;
         Name = name;
         Description = description;
         IamClientAuthMethod = iamClientAuthMethod;
+        UserRoleDatas = userRoleDatas;
     }
 
     [JsonPropertyName("serviceAccountId")]
@@ -31,4 +33,7 @@ public class ServiceAccountDetails
 
     [JsonPropertyName("secret")]
     public string? Secret { get; set; }
+
+    [JsonPropertyName("roles")]
+    public IEnumerable<UserRoleData> UserRoleDatas { get; set; }
 }

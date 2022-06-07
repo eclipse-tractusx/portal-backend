@@ -35,8 +35,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
 
             //Assert
             A.CallTo(() => _logic.ApprovePartnerRequest(id)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(result);
             Assert.IsType<bool>(result);
+            Assert.True(result);
         }
 
         [Fact]
@@ -51,8 +51,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
 
             //Assert
             A.CallTo(() => _logic.ApprovePartnerRequest(Guid.Empty)).MustHaveHappenedOnceExactly();
-            Assert.Equal(false, result);
             Assert.IsType<bool>(result);
+            Assert.False(result);
         }
     }
 }

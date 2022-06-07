@@ -3,6 +3,7 @@ using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220603124915_CPLP-1047-CompanyUser-BusinessPartners")]
+    partial class CPLP1047CompanyUserBusinessPartners
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -485,41 +487,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_app_subscription_statuses");
-
-                    b.ToTable("app_subscription_statuses", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "PENDING"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "ACTIVE"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "INACTIVE"
-                        });
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppTag", b =>
                 {
                     b.Property<Guid>("AppId")
@@ -699,20 +666,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("app_id");
 
-                    b.Property<int>("AppSubscriptionStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1)
-                        .HasColumnName("app_subscription_status_id");
-
                     b.HasKey("CompanyId", "AppId")
                         .HasName("pk_company_assigned_apps");
 
                     b.HasIndex("AppId")
                         .HasDatabaseName("ix_company_assigned_apps_app_id");
-
-                    b.HasIndex("AppSubscriptionStatusId")
-                        .HasDatabaseName("ix_company_assigned_apps_app_subscription_status_id");
 
                     b.ToTable("company_assigned_apps", "portal");
                 });
@@ -3912,12 +3870,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_company_assigned_apps_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionStatus", "AppSubscriptionStatus")
-                        .WithMany("AppSubscriptions")
-                        .HasForeignKey("AppSubscriptionStatusId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_assigned_apps_app_subscription_statuses_app_subscri");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
@@ -3925,8 +3877,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasConstraintName("fk_company_assigned_apps_companies_company_id");
 
                     b.Navigation("App");
-
-                    b.Navigation("AppSubscriptionStatus");
 
                     b.Navigation("Company");
                 });
@@ -4359,11 +4309,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppStatus", b =>
                 {
                     b.Navigation("Apps");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionStatus", b =>
-                {
-                    b.Navigation("AppSubscriptions");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
