@@ -269,12 +269,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyUser.DateCreated,
                     companyUser.Company!.Name,
                     companyUser.CompanyUserStatusId)
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email,
-                        BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
-                    })
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email,
+                    BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
+                })
                 .SingleOrDefaultAsync();
 
         public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId) =>
@@ -286,12 +286,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyUser.DateCreated,
                     companyUser.Company!.Name,
                     companyUser.CompanyUserStatusId)
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email,
-                        BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
-                    })
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email,
+                    BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
+                })
                 .SingleOrDefaultAsync();
 
         public Task<CompanyUserWithIdpData?> GetCompanyUserWithCompanyIdpAsync(string iamUserId) =>
@@ -535,7 +535,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         document!.Id,
                         document!.Documentname))
                 .AsAsyncEnumerable();
-        
+
 
         public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
            _dbContext.IamUsers
@@ -573,6 +573,26 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
+        public Task<CompanyIamUser> GetIdpUserById(Guid companyUserId, string adminUserId) =>
+            _dbContext.CompanyUsers.AsNoTracking()
+                .Where(companyUser => companyUser.Id == companyUserId
+                    && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                .Select(companyUser => new CompanyIamUser
+                {
+                    TargetIamUserId = companyUser.IamUser!.UserEntityId,
+                    TargetCompanyUserId = companyUser.IamUser!.CompanyUserId,
+                    IdpName = companyUser.Company!.IdentityProviders
+                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                        .SingleOrDefault()
+                }).SingleOrDefaultAsync();
+
+       public Task<string> GetAppAssignedRolesClientId(Guid appId) =>
+            _dbContext.AppAssignedClients.AsNoTracking()
+                .Where(appClient => appClient.AppId == appId)
+                .Select(appClient => appClient.IamClient!.ClientClientId)
+                .SingleOrDefaultAsync();
+
+       
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
     }
