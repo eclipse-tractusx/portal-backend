@@ -72,9 +72,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
+        try
+        {
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
 
-        await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-
+        }
         await _custodianService.CreateWallet(companyApplication.Company.BusinessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
@@ -85,7 +90,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         await foreach (var user in _portalDBAccess.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            var userName = String.Join(" ", new [] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
+            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
 
             if (String.IsNullOrWhiteSpace(user.Email))
             {
