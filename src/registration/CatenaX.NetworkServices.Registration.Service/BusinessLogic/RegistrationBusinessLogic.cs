@@ -118,10 +118,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("Streetname must not be empty");
             }
-            if (!companyWithAddress.Zipcode.HasValue)
-            {
-                throw new ArgumentNullException("Zipcode must not be null");
-            }
             if (companyWithAddress.CountryAlpha2Code.Length != 2)
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
@@ -131,7 +127,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
             }
-            company.Bpn = companyWithAddress.Bpn;
+            company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
             company.TaxId = companyWithAddress.TaxId;
@@ -140,7 +136,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 company.Address = _portalDBAccess.CreateAddress(
                         companyWithAddress.City,
                         companyWithAddress.Streetname,
-                        companyWithAddress.Zipcode.Value,
                         companyWithAddress.CountryAlpha2Code
                     );
             }
@@ -148,9 +143,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 company.Address.City = companyWithAddress.City;
                 company.Address.Streetname = companyWithAddress.Streetname;
-                company.Address.Zipcode = companyWithAddress.Zipcode.Value;
                 company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
             }
+            company.Address.Zipcode = companyWithAddress.Zipcode;
             company.Address.Region = companyWithAddress.Region;
             company.Address.Streetadditional = companyWithAddress.Streetadditional;
             company.Address.Streetnumber = companyWithAddress.Streetnumber;
@@ -413,7 +408,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
         {
-            var registrationData = await _portalDBAccess.GetRegistrationDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var registrationData = await _portalDBAccess.GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (registrationData == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
