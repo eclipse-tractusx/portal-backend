@@ -85,7 +85,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("ownUser/{companyUserId}")]
         public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
- 
+
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("bpn")]
@@ -98,5 +98,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("users/{companyUserId}/resetpassword")]
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
+
+        [HttpPost]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("users/{appId}/userrole")]
+        public Task<bool> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
+            this.WithIamUserId(adminUserId => _logic.AddUserRole(appId, userRoleInfo, adminUserId));
     }
 }
