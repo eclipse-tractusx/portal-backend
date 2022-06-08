@@ -1,5 +1,7 @@
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -28,11 +30,18 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
     public CompanyUserAssignedBusinessPartner RemoveCompanyUserAssignedBusinessPartner(CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner) =>
         _dbContext.Remove(companyUserAssignedBusinessPartner).Entity;
 
-    public IAsyncEnumerable<CompanyUserAssignedBusinessPartner> GetOwnCompanyUserAssignedBusinessPartnersAsync(Guid companyUserId, string adminUserId) =>
+    public CompanyUserAssignedBusinessPartner RemoveCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
+        _dbContext.Remove(CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber)).Entity;
+
+    public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId) =>
         _dbContext.IamUsers
+            .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == adminUserId)
             .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyUsers)
             .Where(companyUser => companyUser.Id == companyUserId)
-            .SelectMany(companyUser => companyUser.CompanyUserAssignedBusinessPartners)
-            .ToAsyncEnumerable();
+            .Select(companyUser => new CompanyUserBusinessPartners(
+                companyUser.IamUser!.UserEntityId,
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber)
+            ))
+            .SingleOrDefaultAsync();
 }

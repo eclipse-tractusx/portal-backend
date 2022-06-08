@@ -198,20 +198,28 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return details;
         }
 
-        public async Task<int> UpdateOwnCompanyUsersBpnsAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, string adminUserId)
+        public async Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, string adminUserId)
         {
-            var repository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-            var assignedPartners = await repository.GetOwnCompanyUserAssignedBusinessPartnersAsync(companyUserId, adminUserId).ToListAsync().ConfigureAwait(false);
-            foreach (var assignedPartnerToRemove in assignedPartners.Where(assignedPartner => !businessPartnerNumbers.Contains(assignedPartner.BusinessPartnerNumber)))
+            if (businessPartnerNumbers.Any(businessPartnerNumber => businessPartnerNumber.Length > 20))
             {
-                repository.RemoveCompanyUserAssignedBusinessPartner(assignedPartnerToRemove);
+                throw new ArgumentException("businessPartnerNumbers must not exceed 20 characters");
             }
-            foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(assignedPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber)))
+            var repository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+            var user = await repository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(companyUserId, adminUserId).ConfigureAwait(false);
+            if (user == null || user.UserEntityId == null)
+            {
+                throw new NotFoundException($"user {companyUserId} not found in company of {adminUserId}");
+            }
+            await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
+            foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(user.AssignedBusinessPartnerNumbers))
             {
                 repository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerToAdd);
             }
             return await _portalRepositories.SaveAsync();
         }
+
+        public Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId) =>
+            AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, Enumerable.Repeat(businessPartnerNumber, 1), adminUserId);
 
         public async Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId)
         {
@@ -329,6 +337,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return false;
         }
 
+        [Obsolete]
         public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpatewithBpn)
         {
             if (usersToUdpatewithBpn == null)

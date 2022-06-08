@@ -53,11 +53,17 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetails(companyUserId, iamUserId));
 
-        [HttpPut]
+        [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers")]
-        public Task<int> UpdateOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers) =>
-            this.WithIamUserId(iamUserId => _logic.UpdateOwnCompanyUsersBpnsAsync(companyUserId, businessPartnerNumbers, iamUserId));
+        public Task<int> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers) =>
+            this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers, iamUserId));
+
+        [HttpPut]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
+        public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
+            this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, iamUserId));
 
         [HttpDelete]
         [Authorize(Roles = "delete_user_account")]
@@ -92,6 +98,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
  
+        [Obsolete]
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("bpn")]
