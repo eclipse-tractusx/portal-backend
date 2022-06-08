@@ -26,4 +26,19 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
     public Task DeleteConnectorAsync(Guid connectorId);
+
+    /// <summary>
+    /// Begins a persistence layer transaction.
+    /// </summary>
+    public Task BeginTransactionAsync();
+
+    /// <summary>
+    /// Commits a persistence layer transaction.
+    /// </summary>
+    public Task CommitTransactionAsync();
+
+    /// <summary>
+    /// Rolls back a persistence layer transaction.
+    /// </summary>
+    public Task RollbackTransactionAsync();
 }
