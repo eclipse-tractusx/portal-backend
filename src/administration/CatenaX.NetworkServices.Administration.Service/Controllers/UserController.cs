@@ -67,9 +67,9 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 
         [HttpGet]
         [Authorize(Roles = "view_client_roles")]
-        [Route("client/{clientId}/roles")]
-        public Task<IEnumerable<string>> ReturnRoles([FromRoute] string clientId) =>
-            _logic.GetAppRolesAsync(clientId);
+        [Route("app/{applicationId}/roles")]
+        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid applicationId,string? languageShortName = null) =>
+            _logic.GetClientRolesAsync(applicationId,languageShortName);
 
         [HttpGet]
         [Route("ownUser")]
