@@ -5,7 +5,7 @@ name: "Trivy"
 
 on:
   push:
-    branches: [main, master]
+    branches: [ feature/CPLP-975-scans]
   # pull_request:
   # The branches below must be a subset of the branches above
   # branches: [ main, master ]
@@ -113,7 +113,7 @@ jobs:
         with:
           sarif_file: "trivy-results3.sarif"
 
-  analyze-product-portal-backend-useradministration-service:
+  analyze-product-portal-backend-administration-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -134,7 +134,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "ghcr.io/catenax-ng/product-portal-backend_useradministration-service:latest"
+          image-ref: "ghcr.io/catenax-ng/product-portal-backend_administration-service:latest"
           format: "sarif"
           output: "trivy-results4.sarif"
           exit-code: "1"
