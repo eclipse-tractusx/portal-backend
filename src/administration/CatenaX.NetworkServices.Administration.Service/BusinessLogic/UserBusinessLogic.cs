@@ -175,13 +175,27 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 status);
         }
 
-        public Task<IEnumerable<string>> GetAppRolesAsync(string? clientId)
+        public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid applicationId, string? languageShortName = null)
         {
-            if (String.IsNullOrWhiteSpace(clientId))
+
+            var application = await _portalDBAccess.GetApplicationAssignedToClientsAsync(applicationId).ConfigureAwait(false);
+            if (application.Equals(Guid.Empty))
             {
-                throw new ArgumentNullException("clientId must not be empty");
+                throw new NotFoundException($"application {applicationId} is not found");
             }
-            return _provisioningManager.GetClientRolesAsync(clientId);
+
+            if (languageShortName != null)
+            {
+                var language = await _portalDBAccess.GetLanguageAsync(languageShortName);
+                if (language == null)
+                {
+                    throw new NotFoundException($"language {languageShortName} does not exist");
+                }
+            }
+            await foreach (var roles in _portalDBAccess.GetClientRolesAsync(applicationId, languageShortName).ConfigureAwait(false))
+            {
+                yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
+            }
         }
 
         public async Task<CompanyUserDetails> GetOwnCompanyUserDetails(Guid companyUserId, string adminUserId)

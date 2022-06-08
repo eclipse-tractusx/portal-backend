@@ -52,6 +52,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
+        IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid applicationId,string? languageShortName = null);
+        Task<string?> GetLanguageAsync(string LanguageShortName);
+        Task<Guid> GetApplicationAssignedToClientsAsync(Guid applicationId);
         Task<int> SaveAsync();
     }
 }
