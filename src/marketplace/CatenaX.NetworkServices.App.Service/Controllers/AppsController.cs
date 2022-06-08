@@ -131,6 +131,36 @@ public class AppsController : ControllerBase
         this.WithIamUserId(userId => this.appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId));
 
     /// <summary>
+    /// Retrieves subscription statuses of subscribed apps of the currently logged in user's company.
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/subscribed/subscription-status</remarks>
+    /// <response code="200">Returns list of applicable app subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("subscribed/subscription-status")]
+    [Authorize(Roles = "view_subscription")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AppSubscriptionStatusViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
+    public Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));
+
+    /// <summary>
+    /// Retrieves subscription statuses of provided apps of the currently logged in user's company.
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/provided/subscription-status</remarks>
+    /// <response code="200">Returns list of applicable app subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("provided/subscription-status")]
+    [Authorize(Roles = "view_app_subscription")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
+    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync() =>
+        this.WithIamUserId(userId => this.appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(userId));
+
+    /// <summary>
     /// Adds an app to current user's company's subscriptions.
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
