@@ -1,3 +1,4 @@
+using System.Collections;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class CompanyIamUser
@@ -5,5 +6,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
         public string? TargetIamUserId { get; set; }
         public Guid TargetCompanyUserId { get; set; }
         public string? IdpName { get; set; }
+        public IEnumerable<Guid> RoleIds { get; set; }
     }
 }
