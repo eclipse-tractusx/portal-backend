@@ -3,6 +3,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -18,6 +19,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IProvisioningManager _provisioningManager;
         private readonly IProvisioningDBAccess _provisioningDBAccess;
         private readonly IPortalBackendDBAccess _portalDBAccess;
+        private readonly IPortalRepositories _portalRepositories;
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
@@ -25,6 +27,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
+            IPortalRepositories portalRepositories,
             IMailingService mailingService,
             ILogger<UserBusinessLogic> logger,
             IOptions<UserSettings> settings)
@@ -32,6 +35,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;
             _portalDBAccess = portalDBAccess;
+            _portalRepositories = portalRepositories;
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
@@ -192,6 +196,21 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new NotFoundException($"no company-user data found for user {companyUserId} in company of {adminUserId}");
             }
             return details;
+        }
+
+        public async Task<int> UpdateOwnCompanyUsersBpnsAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, string adminUserId)
+        {
+            var repository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+            var assignedPartners = await repository.GetOwnCompanyUserAssignedBusinessPartnersAsync(companyUserId, adminUserId).ToListAsync().ConfigureAwait(false);
+            foreach (var assignedPartnerToRemove in assignedPartners.Where(assignedPartner => !businessPartnerNumbers.Contains(assignedPartner.BusinessPartnerNumber)))
+            {
+                repository.RemoveCompanyUserAssignedBusinessPartner(assignedPartnerToRemove);
+            }
+            foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(assignedPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber)))
+            {
+                repository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerToAdd);
+            }
+            return await _portalRepositories.SaveAsync();
         }
 
         public async Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId)

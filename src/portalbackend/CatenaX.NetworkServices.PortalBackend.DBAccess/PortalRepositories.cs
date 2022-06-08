@@ -28,6 +28,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new UserRolesRepository(_dbContext));
         }
+        else if (repositoryType == typeof(IUserBusinessPartnerRepository))
+        {
+            return To<RepositoryType>(new UserBusinessPartnerRepository(_dbContext));
+        }
         else if (repositoryType == typeof(IServiceAccountsRepository))
         {
             return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
