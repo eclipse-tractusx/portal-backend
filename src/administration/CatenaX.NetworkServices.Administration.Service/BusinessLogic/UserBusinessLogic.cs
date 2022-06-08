@@ -378,41 +378,41 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async Task<bool> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
             var result = await _portalDBAccess.GetIdpUserById(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
-            if (result != null && !string.IsNullOrWhiteSpace(result.IdpName))
+            if (string.IsNullOrWhiteSpace(result.IdpName))
             {
-                if (!string.IsNullOrWhiteSpace(result.TargetIamUserId) && result.TargetIamUserId == userRoleInfo.UserEntityId && result.TargetCompanyUserId == userRoleInfo.CompanyUserId)
-                {
-                    var iamClientId = await _portalDBAccess.GetAppAssignedRolesClientId(appId).ConfigureAwait(false);
-                    var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
-                    var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
+            }
+            if (string.IsNullOrWhiteSpace(result.TargetIamUserId))
+            {
+                throw new NotFoundException($"User {userRoleInfo.UserEntityId} not found");
+            }
+
+            var iamClientId = await _portalDBAccess.GetAppAssignedRolesClientId(appId).ConfigureAwait(false);
+            var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
+            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
                             { iamClientId, roles }
                         };
-
-                    var companyRoleIds = await _portalDBAccess.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
-
-                    if (roles.Count() > 0)
-                    {
-                        await _provisioningManager.AssignClientRolesToCentralUserAsync(userRoleInfo.UserEntityId, clientRoleNames).ConfigureAwait(false);
-                    }
-                    foreach (var role in companyRoleIds)
-                    {
-                        _portalDBAccess.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
-                    }
-                    try
-                    {
-                        await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
-
-                    return true;
-                }
-                throw new NotFoundException($"UserIds {userRoleInfo.UserEntityId} are not matching");
+            var companyRoleIds = await _portalDBAccess.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
+            if (roles.Count() > 0)
+            {
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(userRoleInfo.UserEntityId, clientRoleNames).ConfigureAwait(false);
             }
-            throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
+
+            if (companyRoleIds.Count() == 0)
+            {
+                throw new NotFoundException($"User role not existing");
+            }
+            foreach (var role in companyRoleIds)
+            {
+                if (!result.RoleIds.Contains(role))
+                {
+                    _portalDBAccess.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
+                }
+
+            }
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return true;
         }
     }
 }
