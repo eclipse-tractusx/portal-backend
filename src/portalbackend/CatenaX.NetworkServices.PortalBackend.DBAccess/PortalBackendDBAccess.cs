@@ -515,16 +515,15 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId)
         =>
             _dbContext.Invitations
-            .AsNoTracking()
-            .Where(invitation => invitation.CompanyApplicationId == applicationId)
-            .Select(invitation => invitation.CompanyUser)
-            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
-            .Select(companyUser => new CompanyInvitedUser(
-                companyUser!.Id,
-                companyUser.IamUser!.UserEntityId,
-                companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)
-                ))
-            .AsAsyncEnumerable();
+                .AsNoTracking()
+                .Where(invitation => invitation.CompanyApplicationId == applicationId)
+                .Select(invitation => invitation.CompanyUser)
+                .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                .Select(companyUser => new CompanyInvitedUser(
+                    companyUser!.Id,
+                    companyUser.IamUser!.UserEntityId,
+                    companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
+                .AsAsyncEnumerable();
 
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
             _dbContext.IamUsers
@@ -539,6 +538,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         document!.Documentname))
                 .AsAsyncEnumerable();
 
+        public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
+            _dbContext.Invitations
+            .Where(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId)
+            .SingleOrDefaultAsync();
 
         public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
            _dbContext.IamUsers
