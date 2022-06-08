@@ -53,6 +53,20 @@ public interface IAppsBusinessLogic
     public Task RemoveFavouriteAppForUserAsync(Guid appId, string userId);
 
     /// <summary>
+    /// Retrieves subscription statuses of subscribed apps of the provided user's company.
+    /// </summary>
+    /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <returns>Async enumberable of user's company's subscribed apps' statuses.</returns>
+    public Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
+
+    /// <summary>
+    /// Retrieves subscription statuses of provided apps of the provided user's company.
+    /// </summary>
+    /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
+    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId);
+
+    /// <summary>
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
