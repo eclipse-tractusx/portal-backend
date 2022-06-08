@@ -24,6 +24,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<bool> SubmitRegistrationAsync(string userEmail);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
+        Task<int> SetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
     }
 }

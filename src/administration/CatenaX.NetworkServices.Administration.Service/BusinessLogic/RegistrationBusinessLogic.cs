@@ -70,15 +70,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, userRoleId);
                 }
-
             }
         }
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
-
         await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-
         await _custodianService.CreateWallet(companyApplication.Company.BusinessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
