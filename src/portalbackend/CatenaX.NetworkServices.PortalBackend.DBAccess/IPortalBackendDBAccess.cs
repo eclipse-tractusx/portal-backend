@@ -50,6 +50,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
         IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
+        Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
         IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid applicationId,string? languageShortName = null);
