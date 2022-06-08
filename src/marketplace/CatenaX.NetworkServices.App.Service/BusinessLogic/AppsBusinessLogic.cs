@@ -189,6 +189,35 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
+    public async Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId)
+    {
+        var companyId = await GetCompanyIdByIamUserIdAsync(iamUserId);
+        return context.CompanyAssignedApps.AsNoTracking()
+            .Where(s => s.CompanyId == companyId)
+            .Select(s => new AppSubscriptionStatusViewModel { AppId = s.AppId, AppSubscriptionStatus = s.AppSubscriptionStatusId})
+            .ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId)
+    {
+        var companyId = await GetCompanyIdByIamUserIdAsync(iamUserId);
+        return context.CompanyAssignedApps.AsNoTracking()
+            .Where(s => s.App!.ProviderCompanyId == companyId)
+            .GroupBy(s => s.AppId)
+            .Select(g => new AppCompanySubscriptionStatusViewModel
+            {
+                AppId = g.Key,
+                CompanySubscriptionStatuses = g.Select(s => new CompanySubscriptionStatusViewModel 
+                { 
+                    CompanyId = s.CompanyId,
+                    AppSubscriptionStatus = s.AppSubscriptionStatusId
+                }).ToList()
+            })
+            .ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc/>
     public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
     {
         try
