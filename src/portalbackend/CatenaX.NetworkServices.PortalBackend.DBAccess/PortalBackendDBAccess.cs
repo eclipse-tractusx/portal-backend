@@ -536,7 +536,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         document!.Id,
                         document!.Documentname))
                 .AsAsyncEnumerable();
-        
+
+        public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
+            _dbContext.Invitations
+            .Where(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId)
+            .SingleOrDefaultAsync();
 
         public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
            _dbContext.IamUsers
