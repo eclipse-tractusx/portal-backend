@@ -18,6 +18,12 @@ public class ConnectorsRepository : IConnectorsRepository
         this._context = portalDbContext;
     }
 
+    ~ConnectorsRepository()
+    {
+        _context.Database.CurrentTransaction?.Rollback();
+        _context.Database.CurrentTransaction?.Dispose();
+    }
+
     /// <inheritdoc/>
     public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId)
     {
@@ -54,6 +60,33 @@ public class ConnectorsRepository : IConnectorsRepository
         catch (DbUpdateConcurrencyException)
         {
             throw new ArgumentException("Connector with provided ID does not exist.", nameof(connectorId));
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task BeginTransactionAsync()
+    {
+        if(_context.Database.CurrentTransaction is null)
+        {
+            await _context.Database.BeginTransactionAsync();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task CommitTransactionAsync()
+    {
+        if (_context.Database.CurrentTransaction is not null)
+        {
+            await _context.Database.CurrentTransaction.CommitAsync();
+        }
+    }
+    
+    /// <inheritdoc/>
+    public async Task RollbackTransactionAsync()
+    {
+        if (_context.Database.CurrentTransaction is not null)
+        {
+            await _context.Database.CurrentTransaction.RollbackAsync();
         }
     }
 }
