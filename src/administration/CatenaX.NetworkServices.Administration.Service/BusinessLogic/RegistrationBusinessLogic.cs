@@ -66,20 +66,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(companyApplication.Company.BusinessPartnerNumber, 1));
             foreach (var userRoleId in userRoleIds)
             {
-                _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, userRoleId);
+                if (!item.RoleIds.Contains(userRoleId))
+                {
+                    _portalDBAccess.CreateCompanyUserAssignedRole(item.CompanyUserId, userRoleId);
+                }
             }
         }
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
-        try
-        {
-            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(companyApplication.Company.BusinessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 

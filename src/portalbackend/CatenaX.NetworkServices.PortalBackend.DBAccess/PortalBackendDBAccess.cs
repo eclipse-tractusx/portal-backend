@@ -520,7 +520,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
                 .Select(companyUser => new CompanyInvitedUser(
                     companyUser!.Id,
-                    companyUser.IamUser!.UserEntityId))
+                    companyUser.IamUser!.UserEntityId,
+                    companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
                 .AsAsyncEnumerable();
 
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
