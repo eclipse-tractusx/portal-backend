@@ -375,7 +375,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public async Task<bool> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+        public async Task<string> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
             var result = await _portalDBAccess.GetIdpUserById(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(result.IdpName))
@@ -403,16 +403,18 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new NotFoundException($"User role not existing");
             }
+            string message = string.Empty;
             foreach (var role in companyRoleIds)
             {
                 if (!result.RoleIds.Contains(role))
                 {
                     _portalDBAccess.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
+                    message = "user role added";
                 }
 
             }
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
-            return true;
+            return string.IsNullOrWhiteSpace(message) ? "user role already added" : message;
         }
     }
 }
