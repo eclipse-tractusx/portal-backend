@@ -1,7 +1,9 @@
 ﻿using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
@@ -14,14 +16,20 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private const string ERROR_STRING = "ERROR";
     private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext context;
+    private readonly ICompanyAssignedAppsRepository companyAssignedAppsRepository;
+    private readonly IAppRepository appRepository;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="context">Database context dependency.</param>
-    public AppsBusinessLogic(PortalDbContext context)
+    /// <param name="companyAssignedAppsRepository">Repository to access the CompanyAssignedApps on the persistence layer.</param>
+    /// <param name="appRepository">Repository to access the apps on the persistence layer.</param>
+    public AppsBusinessLogic(PortalDbContext context, ICompanyAssignedAppsRepository companyAssignedAppsRepository, IAppRepository appRepository)
     {
         this.context = context;
+        this.companyAssignedAppsRepository = companyAssignedAppsRepository;
+        this.appRepository = appRepository;
     }
 
     /// <inheritdoc/>
@@ -181,7 +189,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             );
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
-            catch (DbUpdateException)
+        catch (DbUpdateException)
         {
             throw new ArgumentException($"Parameters are invalid or app is already favourited.");
         }
@@ -201,6 +209,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ArgumentException($"Parameters are invalid or app is already subscribed to.");
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task UnsubscribeCompanyAppSubscriptionAsync(Guid appId, string userId)
+    {
+        var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
+        var appExists = await this.appRepository.CheckAppExistsById(appId).ConfigureAwait(false);
+        if (!appExists)
+        {
+            throw new ArgumentException($"Parameters are invalid: app for id '{appId}' does not exist.", nameof(appId));
+        }
+
+        await this.companyAssignedAppsRepository.UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
