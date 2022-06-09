@@ -10,6 +10,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -51,6 +52,9 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                     .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions", options));
+
+builder.Services.AddTransient<IAppRepository, AppRepository>();
+builder.Services.AddTransient<ICompanyAssignedAppsRepository, CompanyAssignedAppsRepository>();
 
 builder.Services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();

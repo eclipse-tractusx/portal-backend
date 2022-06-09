@@ -37,7 +37,7 @@ public class CompanyAssignedApp
     /// <summary>
     /// ID of the app subscription status.
     /// </summary>
-    public AppSubscriptionStatusId AppSubscriptionStatusId { get; private set; }
+    public AppSubscriptionStatusId AppSubscriptionStatusId { get; set; }
 
     // Navigation properties
     /// <summary>
