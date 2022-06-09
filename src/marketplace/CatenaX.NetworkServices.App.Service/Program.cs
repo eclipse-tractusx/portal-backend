@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using System.Text.Json.Serialization;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -25,7 +26,10 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }); ;
 builder.Services.AddSwaggerGen(c => { 
     c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
 
