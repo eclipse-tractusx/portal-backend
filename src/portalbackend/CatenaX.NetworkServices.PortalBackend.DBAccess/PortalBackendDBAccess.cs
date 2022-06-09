@@ -578,6 +578,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
+        public async Task<bool> IsUserAlreadyExist(string iamUserId) =>
+          await  _dbContext.IamUsers
+                .AsNoTracking()
+                .AnyAsync(iamUser => iamUser.UserEntityId == iamUserId);
+
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
     }
