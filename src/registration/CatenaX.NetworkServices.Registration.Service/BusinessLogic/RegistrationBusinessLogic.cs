@@ -154,6 +154,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById)
         {
+            var userCheck = await _portalDBAccess.IsUserAlreadyExist(createdById);
+            if (userCheck)
+            {
+                throw new ForbiddenException($"user {createdById} is already exist");
+            }
+
             var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
             if (applicationData == null)
             {
