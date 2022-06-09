@@ -9,7 +9,7 @@ public interface IUserBusinessLogic
 {
     IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string createdByName);
     IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? status = null);
-    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid applicationId,string? languageShortName = null);
+    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId,string? languageShortName = null);
     Task<CompanyUserDetails> GetOwnCompanyUserDetails(Guid companyUserId, string iamUserId);
     Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId);
     Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId);
