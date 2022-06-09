@@ -1,6 +1,8 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -16,12 +18,6 @@ public class ConnectorsRepository : IConnectorsRepository
     public ConnectorsRepository(PortalDbContext portalDbContext)
     {
         this._context = portalDbContext;
-    }
-
-    ~ConnectorsRepository()
-    {
-        _context.Database.CurrentTransaction?.Rollback();
-        _context.Database.CurrentTransaction?.Dispose();
     }
 
     /// <inheritdoc/>
@@ -64,29 +60,8 @@ public class ConnectorsRepository : IConnectorsRepository
     }
 
     /// <inheritdoc/>
-    public async Task BeginTransactionAsync()
+    public Task<IDbContextTransaction> BeginTransactionAsync()
     {
-        if(_context.Database.CurrentTransaction is null)
-        {
-            await _context.Database.BeginTransactionAsync();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task CommitTransactionAsync()
-    {
-        if (_context.Database.CurrentTransaction is not null)
-        {
-            await _context.Database.CurrentTransaction.CommitAsync();
-        }
-    }
-    
-    /// <inheritdoc/>
-    public async Task RollbackTransactionAsync()
-    {
-        if (_context.Database.CurrentTransaction is not null)
-        {
-            await _context.Database.CurrentTransaction.RollbackAsync();
-        }
+        return _context.Database.BeginTransactionAsync();
     }
 }

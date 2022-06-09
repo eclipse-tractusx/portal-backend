@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -30,15 +31,6 @@ public interface IConnectorsRepository
     /// <summary>
     /// Begins a persistence layer transaction.
     /// </summary>
-    public Task BeginTransactionAsync();
-
-    /// <summary>
-    /// Commits a persistence layer transaction.
-    /// </summary>
-    public Task CommitTransactionAsync();
-
-    /// <summary>
-    /// Rolls back a persistence layer transaction.
-    /// </summary>
-    public Task RollbackTransactionAsync();
+    /// <returns>DbContextTransaction for scoping and rolling back requests.</returns>
+    public Task<IDbContextTransaction> BeginTransactionAsync();
 }
