@@ -2,7 +2,7 @@ name: "Checkov"
 
 on:
   push:
-    branches: [main, master]
+    branches: [ main ]
   # pull_request:
   # The branches below must be a subset of the branches above
   # branches: [ main, master ]
@@ -39,6 +39,7 @@ jobs:
           log_level: DEBUG # optional: set log level. Default WARNING
           # config_file: path/this_file
           # baseline: cloudformation/.checkov.baseline # optional: Path to a generated baseline file. Will only report results not in the baseline.
+          skip_check: CKV_DOCKER_2,CKV_K8S_8,CKV_SECRET_6,CKV_K8S_21,CKV_K8S_37,CKV_K8S_28,CKV_K8S_9,CKV_K8S_43,CKV_K8S_15,CKV_K8S_35,CKV_K8S_38,CKV_K8S_22,CKV_K8S_40,CKV_K8S_31 # optional: add low severity checkov rule IDs
 
       - name: Upload Checkov scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
