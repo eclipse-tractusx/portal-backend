@@ -175,13 +175,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 status);
         }
 
-        public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid applicationId, string? languageShortName = null)
+        public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
         {
 
-            var application = await _portalDBAccess.GetApplicationAssignedToClientsAsync(applicationId).ConfigureAwait(false);
+            var application = await _portalDBAccess.GetApplicationAssignedToClientsAsync(appId).ConfigureAwait(false);
             if (application.Equals(Guid.Empty))
             {
-                throw new NotFoundException($"application {applicationId} is not found");
+                throw new NotFoundException($"application {appId} is not found");
             }
 
             if (languageShortName != null)
@@ -192,7 +192,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     throw new NotFoundException($"language {languageShortName} does not exist");
                 }
             }
-            await foreach (var roles in _portalDBAccess.GetClientRolesAsync(applicationId, languageShortName).ConfigureAwait(false))
+            await foreach (var roles in _portalDBAccess.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
             {
                 yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
             }

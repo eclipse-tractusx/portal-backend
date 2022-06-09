@@ -578,9 +578,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
-        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid applicationId, string? languageShortName = null) =>
+        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
            _dbContext.AppAssignedClients
-               .Where(client => client.AppId == applicationId)
+               .Where(client => client.AppId == appId)
                .SelectMany(clients => clients.IamClient!.UserRoles!)
                .Select(roles => new ClientRoles(
                    roles.Id,
@@ -597,10 +597,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
          .Select(language => language.ShortName)
          .SingleOrDefaultAsync();
 
-        public Task<Guid> GetApplicationAssignedToClientsAsync(Guid applicationId) =>
+        public Task<Guid> GetApplicationAssignedToClientsAsync(Guid appId) =>
          _dbContext.AppAssignedClients
          .AsNoTracking()
-         .Where(app => app.AppId == applicationId)
+         .Where(app => app.AppId == appId)
          .Select(app => app.AppId)
          .SingleOrDefaultAsync();
 
