@@ -152,12 +152,16 @@ public class AppsController : ControllerBase
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to unsubscribe from.</param>
     /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/unsubscribe</remarks>
     /// <response code="204">The app was successfully unsubscribed from.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="400">If either the app or app subscription doesn't exist.</response>
+    /// <response code="401">If the user is unauthorized.</response>
+    /// <response code="500">If the database operation failed.</response>
     [HttpPut]
     [Route("{appId}/unsubscribe")]
     [Authorize(Roles = "unsubscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => this.appsBusinessLogic.UnsubscribeCompanyAppSubscriptionAsync(appId, userId));
