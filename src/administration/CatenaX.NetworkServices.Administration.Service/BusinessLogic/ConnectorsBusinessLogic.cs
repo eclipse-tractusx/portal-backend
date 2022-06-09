@@ -61,9 +61,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             StatusId = connectorInputModel.Status
         };
 
-        await _repository.BeginTransactionAsync();
         Connector createdConnector;
         HttpResponseMessage response;
+        using var transaction = await _repository.BeginTransactionAsync();
 
         try
         {
@@ -76,17 +76,15 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
         catch (Exception)
         {
-            await _repository.RollbackTransactionAsync();
             throw;
         }
 
         if (!response.IsSuccessStatusCode)
         {
-            await _repository.RollbackTransactionAsync();
             throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
         }
         
-        await _repository.CommitTransactionAsync();
+        await transaction.CommitAsync();
 
         return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
         {
