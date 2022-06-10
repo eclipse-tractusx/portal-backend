@@ -578,7 +578,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
-        public async Task<bool> IsUserAlreadyExist(string iamUserId) =>
+        public async Task<bool> IsUserExisting(string iamUserId) =>
           await  _dbContext.IamUsers
                 .AsNoTracking()
                 .AnyAsync(iamUser => iamUser.UserEntityId == iamUserId);
