@@ -178,10 +178,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
         {
 
-            var application = await _portalDBAccess.GetApplicationAssignedToClientsAsync(appId).ConfigureAwait(false);
-            if (application.Equals(Guid.Empty))
+            var app = await _portalDBAccess.GetAppAssignedClientsAsync(appId).ConfigureAwait(false);
+            if (app.Equals(Guid.Empty))
             {
-                throw new NotFoundException($"application {appId} is not found");
+                throw new NotFoundException($"app {appId} does not found");
             }
 
             if (languageShortName != null)
