@@ -4,10 +4,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Models;
 
 public class UserUpdateBpn
 {
-    public UserUpdateBpn(string userId, IEnumerable<string> bpns)
+    public UserUpdateBpn(string userId, IEnumerable<string> businessPartnerNumbers)
     {
         UserId = userId;
-        BusinessPartnerNumbers = bpns;
+        BusinessPartnerNumbers = businessPartnerNumbers;
     }
 
     [JsonPropertyName("userId")]
