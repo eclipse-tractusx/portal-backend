@@ -597,7 +597,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
          .Select(language => language.ShortName)
          .SingleOrDefaultAsync();
 
-        public Task<Guid> GetApplicationAssignedToClientsAsync(Guid appId) =>
+        public Task<Guid> GetAppAssignedClientsAsync(Guid appId) =>
          _dbContext.AppAssignedClients
          .AsNoTracking()
          .Where(app => app.AppId == appId)
