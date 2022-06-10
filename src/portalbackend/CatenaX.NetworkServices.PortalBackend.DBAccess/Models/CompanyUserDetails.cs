@@ -5,21 +5,16 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public class CompanyUserDetails
 {
-    public CompanyUserDetails(string iamUserId, Guid companyUserId, CompanyUserStatusId companyUserStatusId)
+    public CompanyUserDetails(Guid companyUserId, DateTimeOffset createdAt, string companyName, CompanyUserStatusId companyUserStatusId)
     {
-        IamUserId = iamUserId;
         CompanyUserId = companyUserId;
+        CreatedAt = createdAt;
+        CompanyName = companyName;
         CompanyUserStatusId = companyUserStatusId;
     }
 
-    [JsonPropertyName("userEntityId")]
-    public string IamUserId { get; set; }
-
     [JsonPropertyName("companyUserId")]
     public Guid CompanyUserId { get; set; }
-
-    [JsonPropertyName("status")]
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; }
@@ -29,4 +24,16 @@ public class CompanyUserDetails
 
     [JsonPropertyName("email")]
     public string? Email { get; set; }
+
+    [JsonPropertyName("bpn")]
+    public string? BusinessPartnerNumber { get; set; }
+
+    [JsonPropertyName("created")]
+    public DateTimeOffset CreatedAt { get; set; }
+
+    [JsonPropertyName("company")]
+    public string CompanyName { get; set; }
+
+    [JsonPropertyName("status")]
+    public CompanyUserStatusId CompanyUserStatusId { get; set; }
 }

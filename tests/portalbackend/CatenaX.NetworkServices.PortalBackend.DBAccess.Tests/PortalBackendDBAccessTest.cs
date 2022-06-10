@@ -7,7 +7,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
     public class PortalBackendDBAccessTest
     {
         private PortalDbContext mockContext;
-        private IPortalBackendDBAccess backendDBAccess;
         public PortalBackendDBAccessTest()
         {
             mockContext = new InMemoryDbContextFactory().GetPortalDbContext();
@@ -51,7 +50,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
                 );
             mockContext.SaveChanges();
 
-            backendDBAccess = new PortalBackendDBAccess(mockContext);
+            var backendDBAccess = new PortalBackendDBAccess(mockContext);
             //Act
             var results = backendDBAccess.GetInvitedUserDetailsUntrackedAsync(id);
 
