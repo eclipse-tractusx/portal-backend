@@ -157,7 +157,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var userCheck = await _portalDBAccess.IsUserAlreadyExist(createdById);
             if (userCheck)
             {
-                throw new ForbiddenException($"user {createdById} is already exist");
+                throw new ForbiddenException($"user {createdById} does already exist");
             }
 
             var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
