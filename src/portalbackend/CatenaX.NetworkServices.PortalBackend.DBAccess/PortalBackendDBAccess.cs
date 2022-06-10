@@ -579,6 +579,10 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
+        public async Task<bool> IsUserExisting(string iamUserId) =>
+          await  _dbContext.IamUsers
+                .AsNoTracking()
+                .AnyAsync(iamUser => iamUser.UserEntityId == iamUserId);
         public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
            _dbContext.AppAssignedClients
                .Where(client => client.AppId == appId)
