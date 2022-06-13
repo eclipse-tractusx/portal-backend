@@ -68,8 +68,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_client_roles")]
         [Route("app/{appId}/roles")]
-        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId,string? languageShortName = null) =>
-            _logic.GetClientRolesAsync(appId,languageShortName);
+        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId, string? languageShortName = null) =>
+            _logic.GetClientRolesAsync(appId, languageShortName);
 
         [HttpGet]
         [Route("ownUser")]
@@ -103,6 +103,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Authorize(Roles = "modify_user_account")]
         [Route("users/{appId}/userrole")]
         public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
-            this.WithIamUserId(adminUserId => _logic.AddUserRole(appId, userRoleInfo, adminUserId));
+            this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
     }
 }

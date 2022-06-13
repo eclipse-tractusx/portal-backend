@@ -4,14 +4,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
+/// Implementation of <see cref="IUserRepository"/> accessing database with EF Core.
 public class UserRepository : IUserRepository
 {
     private readonly PortalDbContext _dbContext;
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="portalDbContext">PortalDb context.</param>
     public UserRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }
+
+
     public Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
@@ -21,7 +28,8 @@ public class UserRepository : IUserRepository
                 iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
-    public Task<CompanyIamUser> GetIdpUserById(Guid companyUserId, string adminUserId) =>
+    /// <inheritdoc/>
+    public Task<CompanyIamUser> GetIdpUserByIdAsync(Guid companyUserId, string adminUserId) =>
            _dbContext.CompanyUsers.AsNoTracking()
                .Where(companyUser => companyUser.Id == companyUserId
                    && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
@@ -35,7 +43,8 @@ public class UserRepository : IUserRepository
                    RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)
                }).SingleOrDefaultAsync();
 
-    public Task<string> GetAppAssignedRolesClientId(Guid appId) =>
+    /// <inheritdoc/>
+    public Task<string> GetAppAssignedRolesClientIdAsync(Guid appId) =>
              _dbContext.AppAssignedClients.AsNoTracking()
                  .Where(appClient => appClient.AppId == appId)
                  .Select(appClient => appClient.IamClient!.ClientClientId)
