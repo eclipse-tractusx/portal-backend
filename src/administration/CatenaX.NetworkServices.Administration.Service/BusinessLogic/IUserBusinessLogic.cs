@@ -4,7 +4,9 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-
+/// <summary>
+/// Business Logic for Handling User Management Operation
+/// </summary>
 public interface IUserBusinessLogic
 {
     IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string createdByName);
@@ -17,5 +19,13 @@ public interface IUserBusinessLogic
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId);
     Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId);
+
+    /// <summary>
+    /// Add Role to User
+    /// </summary>
+    /// <param name="appId">app Id</param>
+    /// <param name="userRoleInfo">User and Role Infformation like Company and UserEntity Id and Role Name</param>
+    /// <param name="adminUserId">Admin User Id</param>
+    /// <returns></returns>
     Task<string> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
 }

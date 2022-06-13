@@ -5,6 +5,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
@@ -13,6 +14,9 @@ using PasswordGenerator;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
+    /// <summary>
+    /// Implementation of <see cref="IUserBusinessLogic"/>.
+    /// </summary>
     public class UserBusinessLogic : IUserBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
@@ -21,13 +25,26 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
+        private readonly IPortalRepositories _portalRepositories;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="provisioningManager">Provisioning Manager</param>
+        /// <param name="provisioningDBAccess">Provisioning DBAccess</param>
+        /// <param name="portalDBAccess">Portal DBAccess</param>
+        /// <param name="mailingService">Mailing Service</param>
+        /// <param name="logger">logger</param>
+        /// <param name="settings">Settings</param>
+        /// <param name="portalRepositories">Portal Repositories</param>
         public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
             ILogger<UserBusinessLogic> logger,
-            IOptions<UserSettings> settings)
+            IOptions<UserSettings> settings,
+            IPortalRepositories portalRepositories)
         {
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;
@@ -35,6 +52,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
+            _portalRepositories = portalRepositories;
         }
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
@@ -375,9 +393,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
+        /// <inheritdoc/>
         public async Task<string> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
-            var result = await _portalDBAccess.GetIdpUserById(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
+            var result = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserById(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
             if (result == null || string.IsNullOrWhiteSpace(result.IdpName))
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
@@ -387,7 +406,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new NotFoundException($"User {userRoleInfo.UserEntityId} not found");
             }
 
-            var iamClientId = await _portalDBAccess.GetAppAssignedRolesClientId(appId).ConfigureAwait(false);
+            var iamClientId = await _portalRepositories.GetInstance<IUserRepository>().GetAppAssignedRolesClientId(appId).ConfigureAwait(false);
             var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
