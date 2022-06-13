@@ -9,6 +9,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 {
     public class PortalBackendDBAccess : IPortalBackendDBAccess
     {
+        private const string DEFAULT_LANGUAGE = "en";
         private readonly PortalDbContext _dbContext;
 
         public PortalBackendDBAccess(PortalDbContext dbContext)
@@ -449,6 +450,44 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                    CountryDe = company.Address.Country!.CountryNameDe,
                    TaxId = company.TaxId
                }).SingleOrDefaultAsync();
+
+        public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
+            _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId
+                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+                .Include(companyApplication => companyApplication.Company)
+                .SingleOrDefaultAsync();
+
+        public Task<bool> IsUserExisting(string iamUserId) =>
+            _dbContext.IamUsers
+                .AsNoTracking()
+                .AnyAsync(iamUser => iamUser.UserEntityId == iamUserId);
+
+        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
+           _dbContext.AppAssignedClients
+               .Where(client => client.AppId == appId)
+               .SelectMany(clients => clients.IamClient!.UserRoles!)
+               .Select(roles => new ClientRoles(
+                   roles.Id,
+                   roles.UserRoleText,
+                   languageShortName == null ?
+                   roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description :
+                   roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+               )).AsAsyncEnumerable();
+
+        public Task<string?> GetLanguageAsync(string LanguageShortName) =>
+            _dbContext.Languages
+                .AsNoTracking()
+                .Where(language => language.ShortName == LanguageShortName)
+                .Select(language => language.ShortName)
+                .SingleOrDefaultAsync();
+
+        public Task<Guid> GetAppAssignedClientsAsync(Guid appId) =>
+            _dbContext.AppAssignedClients
+                .AsNoTracking()
+                .Where(app => app.AppId == appId)
+                .Select(app => app.AppId)
+                .SingleOrDefaultAsync();
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
