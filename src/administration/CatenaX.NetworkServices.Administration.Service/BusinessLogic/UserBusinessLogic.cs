@@ -394,14 +394,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                             { iamClientId, roles }
                         };
             var companyRoleIds = await _portalDBAccess.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
-            if (roles.Count() > 0)
-            {
-                await _provisioningManager.AssignClientRolesToCentralUserAsync(userRoleInfo.UserEntityId, clientRoleNames).ConfigureAwait(false);
-            }
-
             if (companyRoleIds.Count() == 0)
             {
                 throw new NotFoundException($"User role not existing");
+            }
+            if (roles.Count() > 0)
+            {
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(userRoleInfo.UserEntityId, clientRoleNames).ConfigureAwait(false);
             }
             string message = string.Empty;
             foreach (var role in companyRoleIds)
