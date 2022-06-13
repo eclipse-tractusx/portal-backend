@@ -378,11 +378,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async Task<string> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
             var result = await _portalDBAccess.GetIdpUserById(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(result.IdpName))
+            if (result == null || string.IsNullOrWhiteSpace(result.IdpName))
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
             }
-            if (string.IsNullOrWhiteSpace(result.TargetIamUserId))
+            if (string.IsNullOrWhiteSpace(result.TargetIamUserId) || userRoleInfo.UserEntityId != result.TargetIamUserId)
             {
                 throw new NotFoundException($"User {userRoleInfo.UserEntityId} not found");
             }
