@@ -1,11 +1,32 @@
 using System.Collections;
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+/// <summary>
+/// Model for Company and Iam User
+/// </summary>
+public class CompanyIamUser
 {
-    public class CompanyIamUser
-    {
-        public string? TargetIamUserId { get; set; }
-        public Guid TargetCompanyUserId { get; set; }
-        public string? IdpName { get; set; }
-        public IEnumerable<Guid> RoleIds { get; set; }
-    }
+    /// <summary>
+    /// Target IamUser Id
+    /// </summary>
+    /// <value></value>
+    public string? TargetIamUserId { get; set; }
+
+    /// <summary>
+    /// Target CompanyUser Id
+    /// </summary>
+    /// <value></value>
+    public Guid TargetCompanyUserId { get; set; }
+
+    /// <summary>
+    /// Idp Name
+    /// </summary>
+    /// <value></value>
+    public string? IdpName { get; set; }
+
+    /// <summary>
+    /// Role Ids of User
+    /// </summary>
+    /// <value></value>
+    public IEnumerable<Guid> RoleIds { get; set; }
 }
+

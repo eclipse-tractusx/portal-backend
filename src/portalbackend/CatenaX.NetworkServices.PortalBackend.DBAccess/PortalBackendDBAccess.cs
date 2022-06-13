@@ -579,26 +579,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyApplication => companyApplication.Company)
                 .SingleOrDefaultAsync();
 
-        public Task<CompanyIamUser> GetIdpUserById(Guid companyUserId, string adminUserId) =>
-            _dbContext.CompanyUsers.AsNoTracking()
-                .Where(companyUser => companyUser.Id == companyUserId
-                    && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-                .Select(companyUser => new CompanyIamUser
-                {
-                    TargetIamUserId = companyUser.IamUser!.UserEntityId,
-                    TargetCompanyUserId = companyUser.IamUser!.CompanyUserId,
-                    IdpName = companyUser.Company!.IdentityProviders
-                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                        .SingleOrDefault(),
-                    RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)
-                }).SingleOrDefaultAsync();
-
-        public Task<string> GetAppAssignedRolesClientId(Guid appId) =>
-             _dbContext.AppAssignedClients.AsNoTracking()
-                 .Where(appClient => appClient.AppId == appId)
-                 .Select(appClient => appClient.IamClient!.ClientClientId)
-                 .SingleOrDefaultAsync();
-
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
     }

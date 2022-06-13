@@ -53,8 +53,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
-        Task<CompanyIamUser> GetIdpUserById(Guid companyUserId, string adminUserId);
-        Task<string> GetAppAssignedRolesClientId(Guid appId);
         Task<int> SaveAsync();
     }
 }
