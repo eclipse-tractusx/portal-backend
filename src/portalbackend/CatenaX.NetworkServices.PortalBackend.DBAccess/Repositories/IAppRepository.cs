@@ -11,4 +11,11 @@ public interface IAppRepository
     /// <param name="appId">Id of the app.</param>
     /// <returns><c>true</c> if an app exists on the persistence layer with the given id, <c>false</c> if not.</returns>
     public Task<bool> CheckAppExistsById(Guid appId);
+
+    /// <summary>
+    /// Retrieves app provider company details by app id.
+    /// </summary>
+    /// <param name="appId">ID of the app.</param>
+    /// <returns>Tuple of provider company details.</returns>
+    public Task<(string appName, string providerName, string providerContactEmail)> GetAppProviderDetailsAsync(Guid appId);
 }
