@@ -2,6 +2,8 @@ using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
+using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -62,6 +64,12 @@ builder.Services.AddTransient<ICompanyAssignedAppsRepository, CompanyAssignedApp
 
 builder.Services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
+
+builder.Services.AddTransient<IMailingService, MailingService>()
+                .AddTransient<ISendMail, SendMail>()
+                .AddTransient<ITemplateManager, TemplateManager>()
+                .ConfigureTemplateSettings(builder.Configuration.GetSection(TemplateSettings.Position))
+                .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
 
 var app = builder.Build();
 
