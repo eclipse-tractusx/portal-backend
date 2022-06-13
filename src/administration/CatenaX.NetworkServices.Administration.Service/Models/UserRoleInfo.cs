@@ -23,21 +23,18 @@ public class UserRoleInfo
     /// <summary>
     /// CompanyUser Id
     /// </summary>
-    /// <value></value>
     [JsonPropertyName("companyUserId")]
     public Guid CompanyUserId { get; set; }
 
     /// <summary>
     /// UserEntity Id
     /// </summary>
-    /// <value></value>
     [JsonPropertyName("userEntityId")]
     public string UserEntityId { get; set; }
 
     /// <summary>
     /// Role of User
     /// </summary>
-    /// <value></value>
     [JsonPropertyName("roles")]
     public IEnumerable<string> Roles { get; set; }
 }

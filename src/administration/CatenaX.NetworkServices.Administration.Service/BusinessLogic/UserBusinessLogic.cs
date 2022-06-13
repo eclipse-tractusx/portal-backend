@@ -408,9 +408,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         }
 
         /// <inheritdoc/>
-        public async Task<string> AddUserRole(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+        public async Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
-            var result = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserById(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
+            var result = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
             if (result == null || string.IsNullOrWhiteSpace(result.IdpName))
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
@@ -420,7 +420,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new NotFoundException($"User {userRoleInfo.UserEntityId} not found");
             }
 
-            var iamClientId = await _portalRepositories.GetInstance<IUserRepository>().GetAppAssignedRolesClientId(appId).ConfigureAwait(false);
+            var iamClientId = await _portalRepositories.GetInstance<IUserRepository>().GetAppAssignedRolesClientIdAsync(appId).ConfigureAwait(false);
             var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
