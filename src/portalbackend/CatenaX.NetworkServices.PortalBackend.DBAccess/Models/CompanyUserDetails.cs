@@ -5,10 +5,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public class CompanyUserDetails
 {
-    public CompanyUserDetails(Guid companyUserId, DateTimeOffset createdAt, string companyName, CompanyUserStatusId companyUserStatusId)
+    public CompanyUserDetails(Guid companyUserId, DateTimeOffset createdAt, IEnumerable<string> businessPartnerNumbers, string companyName, CompanyUserStatusId companyUserStatusId)
     {
         CompanyUserId = companyUserId;
         CreatedAt = createdAt;
+        BusinessPartnerNumbers = businessPartnerNumbers;
         CompanyName = companyName;
         CompanyUserStatusId = companyUserStatusId;
     }
@@ -26,7 +27,7 @@ public class CompanyUserDetails
     public string? Email { get; set; }
 
     [JsonPropertyName("bpn")]
-    public string? BusinessPartnerNumber { get; set; }
+    public IEnumerable<string> BusinessPartnerNumbers { get; set; }
 
     [JsonPropertyName("created")]
     public DateTimeOffset CreatedAt { get; set; }
