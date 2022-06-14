@@ -49,14 +49,15 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId);
         Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
         IAsyncEnumerable<CompanyInvitedUser> GetInvitedUsersByApplicationIdUntrackedAsync(Guid applicationId);
-        IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
+        IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
         Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
         Task<bool> IsUserExisting(string iamUserId);
-        IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId,string? languageShortName = null);
+        IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
         Task<string?> GetLanguageAsync(string LanguageShortName);
         Task<Guid> GetAppAssignedClientsAsync(Guid appId);
+        IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IDictionary<string, IEnumerable<string>> clientRoles);
         Task<int> SaveAsync();
     }
 }
