@@ -49,6 +49,12 @@ namespace CatenaX.NetworkServices.Mailing.Template.Enums
         /// Email template for welcoming after registration process.
         /// </summary>
         [Path("portal_welcome_email.html")]
-        PortalWelcomeEmail
+        PortalWelcomeEmail,
+
+        /// <summary>
+        /// Email template for decline registration process.
+        /// </summary>
+        [Path("registration_declined.html")]
+        PortalRegistrationDecline
     }
 }

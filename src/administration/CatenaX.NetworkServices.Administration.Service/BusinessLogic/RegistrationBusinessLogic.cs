@@ -103,4 +103,40 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         return true;
     }
+
+    public async Task<bool> DeclinePartnerRequest(Guid applicationId)
+    {
+        var companyApplication = await _portalDBAccess.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
+        if (companyApplication == null)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", "applicationId");
+        }
+        companyApplication.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
+        companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
+        companyApplication.Company!.CompanyStatusId = CompanyStatusId.REJECTED;
+        await PostRegistrationCancelEmailAsync(applicationId).ConfigureAwait(false);
+        return true;
+    }
+
+    private async Task<bool> PostRegistrationCancelEmailAsync(Guid applicationId)
+    {
+        await foreach (var user in _portalDBAccess.GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, _settings.PartnerUserInitialRoles).ConfigureAwait(false))
+        {
+            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
+
+            if (String.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ArgumentException($"user {userName} has no assigned email");
+            }
+
+            var mailParameters = new Dictionary<string, string>
+                {
+                    { "userName", !String.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                    { "companyName", user.CompanyName }
+                };
+
+            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
+        }
+        return true;
+    }
 }

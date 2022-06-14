@@ -270,12 +270,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyUser.DateCreated,
                     companyUser.Company!.Name,
                     companyUser.CompanyUserStatusId)
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email,
-                        BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
-                    })
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email,
+                    BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
+                })
                 .SingleOrDefaultAsync();
 
         public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(string iamUserId) =>
@@ -287,12 +287,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyUser.DateCreated,
                     companyUser.Company!.Name,
                     companyUser.CompanyUserStatusId)
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email,
-                        BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
-                    })
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email,
+                    BusinessPartnerNumber = companyUser.Company.BusinessPartnerNumber
+                })
                 .SingleOrDefaultAsync();
 
         public Task<CompanyUserWithIdpData?> GetCompanyUserWithCompanyIdpAsync(string iamUserId) =>
@@ -580,7 +580,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .SingleOrDefaultAsync();
 
         public async Task<bool> IsUserExisting(string iamUserId) =>
-          await  _dbContext.IamUsers
+          await _dbContext.IamUsers
                 .AsNoTracking()
                 .AnyAsync(iamUser => iamUser.UserEntityId == iamUserId);
         public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
@@ -608,6 +608,34 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
          .Where(app => app.AppId == appId)
          .Select(app => app.AppId)
          .SingleOrDefaultAsync();
+
+        public async IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IDictionary<string, IEnumerable<string>> clientRoles)
+        {
+            foreach (var clientRole in clientRoles)
+            {
+                await foreach (var item in _dbContext.CompanyApplications
+                      .AsNoTracking()
+                      .Where(application => application.Id == applicationId)
+                      .SelectMany(application =>
+                          application.Company!.CompanyUsers
+                              .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText)))
+                              .Select(companyUser => new
+                              {
+                                  FirstName = companyUser.Firstname,
+                                  LastName = companyUser.Lastname,
+                                  Email = companyUser.Email,
+                                  CompanyName = companyUser.Company!.Name
+                              }))
+                      .AsAsyncEnumerable())
+                {
+                    yield return new WelcomeEmailData(
+                    item.FirstName,
+                    item.LastName,
+                    item.Email,
+                    item.CompanyName);
+                }
+            }
+        }
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
