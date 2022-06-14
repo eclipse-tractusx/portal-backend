@@ -154,6 +154,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById)
         {
+            var userExists = await _portalDBAccess.IsUserExisting(createdById);
+            if (userExists)
+            {
+                throw new ForbiddenException($"user {createdById} does already exist");
+            }
+
             var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
             if (applicationData == null)
             {
@@ -384,6 +390,25 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
             _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
 
+        public async Task<int> SetInvitationStatusAsync(string iamUserId)
+        {
+            var invitationData = await _portalDBAccess.GetInvitationStatusAsync(iamUserId).ConfigureAwait(false);
+
+            if (invitationData == null)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not associated with invitation");
+            }
+
+            if (invitationData.InvitationStatusId != InvitationStatusId.CREATED)
+            {
+                throw new ArgumentException($"invitation status is no longer in status 'CREATED'");
+            }
+
+            invitationData.InvitationStatusId = InvitationStatusId.PENDING;
+
+            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+
         public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
         {
             var registrationData = await _portalDBAccess.GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
@@ -393,6 +418,5 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             return registrationData;
         }
-
     }
 }

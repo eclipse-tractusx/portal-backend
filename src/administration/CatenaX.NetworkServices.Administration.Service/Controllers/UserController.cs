@@ -53,6 +53,18 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetails(companyUserId, iamUserId));
 
+        [HttpPost]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("owncompany/users/{companyUserId}/businessPartnerNumbers")]
+        public Task<int> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers) =>
+            this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers, iamUserId));
+
+        [HttpPut]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
+        public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
+            this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, iamUserId));
+
         [HttpDelete]
         [Authorize(Roles = "delete_user_account")]
         [Route("owncompany/users")]
@@ -67,9 +79,9 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 
         [HttpGet]
         [Authorize(Roles = "view_client_roles")]
-        [Route("client/{clientId}/roles")]
-        public Task<IEnumerable<string>> ReturnRoles([FromRoute] string clientId) =>
-            _logic.GetAppRolesAsync(clientId);
+        [Route("app/{appId}/roles")]
+        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId,string? languageShortName = null) =>
+            _logic.GetClientRolesAsync(appId,languageShortName);
 
         [HttpGet]
         [Route("ownUser")]
@@ -86,6 +98,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
  
+        [Obsolete]
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("bpn")]
