@@ -1,16 +1,15 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
-
+﻿using System.Net;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-
 using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
 using CatenaX.NetworkServices.Provisioning.Service.Models;
 
 namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
 {
+    /// <summary>
+    /// The controller provides the possibility to create a client
+    /// </summary>
     [ApiController]
     [Route("api/provisioning")]
     public class ClientController : ControllerBase
@@ -19,15 +18,32 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
         private readonly ILogger<ClientController> _logger;
         private readonly IClientBusinessLogic _logic;
 
+        /// <summary>
+        /// Creates a instance of <see cref="ClientController"/>
+        /// </summary>
+        /// <param name="logger">The logger</param>
+        /// <param name="logic">Client business logic</param>
         public ClientController(ILogger<ClientController> logger, IClientBusinessLogic logic)
         {
             _logger = logger;
             _logic = logic;
         }
 
+        /// <summary>
+        /// Creates a client with the given data
+        /// </summary>
+        /// <param name="clientSetupData">the setup data for the new client</param>
+        /// <returns>Returns the client id of the created client</returns>
+        /// <remarks>Example: Get: /api/provisioning/client/setup</remarks>
+        /// <response code="200">Successfully created the client.</response>
+        /// <response code="401">User is unauthorized.</response>
+        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles="setup_client")]
         [Route("client/setup")]
+        [ProducesResponseType(typeof(IAsyncEnumerable<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateClient([FromBody] ClientSetupData clientSetupData)
         {
             try

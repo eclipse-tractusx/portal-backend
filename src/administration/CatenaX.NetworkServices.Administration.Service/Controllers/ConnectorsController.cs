@@ -33,10 +33,12 @@ public class ConnectorsController : ControllerBase
     /// <returns>Paginated result of connector view models.</returns>
     /// <remarks>Example: GET: /api/connectors</remarks>
     /// <response code="200">Returns a list of all of the current user's company's connectors.</response>
+    /// <response code="401">User is unauthorized.</response>
     [HttpGet]
     [Route("")]
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public Task<Pagination.Response<ConnectorViewModel>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(iamUserId, page, size));
 
@@ -47,10 +49,12 @@ public class ConnectorsController : ControllerBase
     /// <returns>View model of the created connector.</returns>
     /// <remarks>Example: POST: /api/connectors</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
+    /// <response code="401">User is unauthorized.</response>
     [HttpPost]
     [Route("")]
     [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
         CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel));
 
@@ -60,14 +64,15 @@ public class ConnectorsController : ControllerBase
     /// <param name="connectorId">ID of the connector to be deleted.</param>
     /// <remarks>Example: DELETE: /api/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
     /// <response code="204">Empty response on success.</response>
+    /// <response code="401">User is unauthorized.</response>
     [HttpDelete]
     [Route("{connectorId}")]
     [Authorize(Roles = "delete_connectors")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId)
     {
         await _businessLogic.DeleteConnectorAsync(connectorId);
         return NoContent();
     }
-        
 }
