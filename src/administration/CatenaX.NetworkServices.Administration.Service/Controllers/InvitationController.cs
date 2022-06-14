@@ -17,8 +17,15 @@ public class InvitationController : ControllerBase
         _logic = logic;
     }
 
+    /// <summary>
+    /// Executes the invitation
+    /// </summary>
+    /// <param name="InvitationData"></param>
+    /// <returns></returns>
+    /// <response code="401">User is unauthorized.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData InvitationData) =>
         _logic.ExecuteInvitation(InvitationData);
 }

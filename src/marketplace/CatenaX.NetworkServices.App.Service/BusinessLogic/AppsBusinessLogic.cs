@@ -181,7 +181,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             );
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
-            catch (DbUpdateException)
+        catch (DbUpdateException)
         {
             throw new ArgumentException($"Parameters are invalid or app is already favourited.");
         }

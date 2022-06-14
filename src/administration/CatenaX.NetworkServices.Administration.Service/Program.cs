@@ -21,6 +21,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 var VERSION = "v2";
@@ -43,6 +44,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddSwaggerGen(c => {
                     c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
+                    var filePath = Path.Combine(System.AppContext.BaseDirectory, Assembly.GetExecutingAssembly()?.FullName?.Split(',')[0] + ".xml");
+                    c.IncludeXmlComments(filePath);
                 });
 
 builder.Services.AddAuthentication(x => {
