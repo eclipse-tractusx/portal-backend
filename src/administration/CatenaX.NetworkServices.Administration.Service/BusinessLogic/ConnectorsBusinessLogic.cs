@@ -71,6 +71,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             var bpn = (await _companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
             var requestModel = new ConnectorSdFactoryRequestModel(bpn, "DE", "DE", connectorInputModel.ConnectorUrl, "connector", bpn, bpn, "BPNL000000000000");
             response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel);
         }
