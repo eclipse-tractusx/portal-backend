@@ -1,5 +1,6 @@
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -13,6 +14,13 @@ public class UserRolesRepository : IUserRolesRepository
         _dbContext = portalDbContext;
     }
 
+    public CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId) =>
+        _dbContext.CompanyUserAssignedRoles.Add(
+            new CompanyUserAssignedRole(
+                companyUserId,
+                userRoleId
+            )).Entity;
+
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
             .AsNoTracking()
@@ -22,4 +30,20 @@ public class UserRolesRepository : IUserRolesRepository
                 userRole.IamClient!.ClientClientId,
                 userRole.UserRoleText))
             .ToAsyncEnumerable();
+
+    public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
+    {
+        foreach (var clientRole in clientRoles)
+        {
+            await foreach (var userRoleId in _dbContext.UserRoles
+                .AsNoTracking()
+                .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
+                .AsQueryable()
+                .Select(userRole => userRole.Id)
+                .AsAsyncEnumerable().ConfigureAwait(false))
+            {
+                yield return userRoleId;
+            }
+        }
+    }
 }
