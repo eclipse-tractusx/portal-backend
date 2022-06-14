@@ -6,6 +6,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// </summary>
 public interface IUserRepository
 {
+    Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
+    Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
 
     /// <summary>
@@ -22,4 +24,7 @@ public interface IUserRepository
     /// <param name="appId"></param>
     /// <returns>Client Name</returns>
     Task<string> GetAppAssignedRolesClientIdAsync(Guid appId);
+    public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
+    Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
+    Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId);
 }

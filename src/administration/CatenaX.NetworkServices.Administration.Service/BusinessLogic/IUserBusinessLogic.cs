@@ -13,6 +13,8 @@ public interface IUserBusinessLogic
     IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? status = null);
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId,string? languageShortName = null);
     Task<CompanyUserDetails> GetOwnCompanyUserDetails(Guid companyUserId, string iamUserId);
+    Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, string adminUserId);
+    Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
     Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId);
     Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId);
     Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUser);
