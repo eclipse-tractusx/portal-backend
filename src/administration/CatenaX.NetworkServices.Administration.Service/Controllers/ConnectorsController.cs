@@ -68,12 +68,12 @@ public class ConnectorsController : ControllerBase
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the connector to be deleted.</param>
     /// <remarks>Example: DELETE: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
     /// <response code="204">Empty response on success.</response>
-    /// <response code="400">Connector with provided ID does not exist.</response>
+    /// <response code="404">Record not found.</response>
     [HttpDelete]
     [Route("{connectorId}")]
     [Authorize(Roles = "delete_connectors")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId)
     {
         await _businessLogic.DeleteConnectorAsync(connectorId);

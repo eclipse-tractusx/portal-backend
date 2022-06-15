@@ -37,12 +37,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="usersToCreate">the users that should be created</param>
         /// <returns>Returns the emails of the new users</returns>
         /// <remarks>Example: POST: api/administration/user/owncompany/users</remarks>
-        /// <response code="200">Returns the emails of the new users.</response>
-        /// <response code="400">Invalid Role.</response>
+        /// <response code="200">User successfully created and invite email send</response>
+        /// <response code="404">Record not found - either user or role are not existing.</response>
         [HttpPost]
         [Authorize(Roles = "add_user_account")]
         [Route("owncompany/users")]
         [ProducesResponseType(typeof(IAsyncEnumerable<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
             this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
@@ -85,7 +86,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the company user details.</returns>
         /// <remarks>Example: GET: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Returns the company user details.</response>
-        /// <response code="404">No company-user data found</response>
+        /// <response code="404">Record not found. User id not existing.</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users/{companyUserId}")]
@@ -102,7 +103,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: POST: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers</remarks>
         /// <response code="200">The business partner numbers have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
-        /// <response code="404">User not found in company.</response>
+        /// <response code="404">Record was not found. User is either not existing or not connected to the respective company.</response>
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers")]
@@ -152,7 +153,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns></returns>
         /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/resetPassword</remarks>
         /// <response code="200">Returns <c>true</c> if the password was reset, <c>false</c> if it hasn't been reset.</response>
-        /// <response code="400">The password was reset to often</response>
+        /// <response code="400">Maximum amount of password resets reached. Password reset function is locked for the user for a certain time.</response>
         /// <response code="404">Cannot identify companyId or shared idp</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
@@ -186,7 +187,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the company user details.</returns>
         /// <remarks>Example: GET: api/administration/user/ownUser</remarks>
         /// <response code="200">Returns the company user details.</response>
-        /// <response code="404">no company-user data found for user</response>
+        /// <response code="404">User is not existing/found.</response>
         [HttpGet]
         [Route("ownUser")]
         [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
@@ -202,8 +203,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the updated company user details</returns>
         /// <remarks>Example: PUT: api/administration/user/ownUser/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Returns the updated company user details.</response>
-        /// <response code="403">invalid company User Id for user</response>
-        /// <response code="404">no shared realm userid found for the id in realm</response>
+        /// <response code="403">Invalid or not existing user id.</response>
+        /// <response code="404">No shared realm userid found for the id in realm</response>
         [HttpPut]
         [Route("ownUser/{companyUserId}")]
         [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
@@ -219,7 +220,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns></returns>
         /// <remarks>Example: DELETE: api/administration/user/ownUser/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Successfully deleted the user.</response>
-        /// <response code="403">invalid company User Id for user</response>
+        /// <response code="403">Invalid or not existing user id.</response>
         [HttpDelete]
         [Route("ownUser/{companyUserId}")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
@@ -248,7 +249,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="userRoleInfo"></param>
         /// <returns></returns>
         /// <remarks>Example: POST: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
-        /// <response code="200">Successfully added role.</response>
+        /// <response code="200">Role got successfully added to the user account.</response>
         /// <response code="404">User or user role not found.</response>
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]

@@ -91,7 +91,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 if (!companyRoleIds.ContainsKey(role))
                 {
-                    throw new ArgumentException($"invalid Role: {role}");
+                    throw new NotFoundException($"invalid Role: {role}");
                 }
             }
 
