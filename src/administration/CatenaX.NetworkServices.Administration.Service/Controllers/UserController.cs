@@ -178,7 +178,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [ProducesResponseType(typeof(IAsyncEnumerable<ClientRoles>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId, string? languageShortName = null) =>
-            _logic.GetClientRolesAsync(appId,languageShortName);
+            _logic.GetClientRolesAsync(appId, languageShortName);
 
         /// <summary>
         /// Gets the user details for the current user.
@@ -226,7 +226,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
- 
+
         [Obsolete]
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
@@ -240,5 +240,22 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("users/{companyUserId}/resetpassword")]
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
+
+        /// <summary>
+        /// Adds a user role
+        /// </summary>
+        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
+        /// <param name="userRoleInfo"></param>
+        /// <returns></returns>
+        /// <remarks>Example: POST: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+        /// <response code="200">Successfully added role.</response>
+        /// <response code="404">User or user role not found.</response>
+        [HttpPost]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("app/{appId}/roles")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
+            this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
     }
 }
