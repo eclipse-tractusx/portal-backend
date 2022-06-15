@@ -11,6 +11,8 @@ using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.Framework.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -28,13 +30,9 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    }); ;
-builder.Services.AddSwaggerGen(c => { 
-    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
+    });
 
-    var filePath = Path.Combine(System.AppContext.BaseDirectory, Assembly.GetExecutingAssembly()?.FullName?.Split(',')[0] + ".xml");
-    c.IncludeXmlComments(filePath);
-});
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {

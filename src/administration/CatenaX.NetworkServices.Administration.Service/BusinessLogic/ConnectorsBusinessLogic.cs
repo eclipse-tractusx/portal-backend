@@ -19,6 +19,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// Constructor.
     /// </summary>
     /// <param name="connectorsRepository">Connectors repository.</param>
+    /// <param name="options">The connector settings</param>
     public ConnectorsBusinessLogic(IConnectorsRepository connectorsRepository, IOptions<ConnectorsSettings> options)
     {
         this._repository = connectorsRepository;

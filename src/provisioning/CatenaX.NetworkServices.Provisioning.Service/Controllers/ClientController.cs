@@ -12,6 +12,8 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
     /// </summary>
     [ApiController]
     [Route("api/provisioning")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     public class ClientController : ControllerBase
     {
 
@@ -36,13 +38,11 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
         /// <returns>Returns the client id of the created client</returns>
         /// <remarks>Example: Get: /api/provisioning/client/setup</remarks>
         /// <response code="200">Successfully created the client.</response>
-        /// <response code="401">User is unauthorized.</response>
         /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles="setup_client")]
         [Route("client/setup")]
         [ProducesResponseType(typeof(IAsyncEnumerable<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateClient([FromBody] ClientSetupData clientSetupData)
         {

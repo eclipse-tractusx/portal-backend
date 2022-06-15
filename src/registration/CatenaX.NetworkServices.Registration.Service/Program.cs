@@ -43,14 +43,7 @@ builder.Services.AddControllers()
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-    c.OperationFilter<SwaggerFileOperationFilter>();
-
-    var filePath = Path.Combine(System.AppContext.BaseDirectory, Assembly.GetExecutingAssembly()?.FullName?.Split(',')[0] + ".xml");
-    c.IncludeXmlComments(filePath);
-});
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {
