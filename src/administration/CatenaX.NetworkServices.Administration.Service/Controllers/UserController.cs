@@ -114,7 +114,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
-        [Route("{appId}/roles")]
+        [Route("app/{appId}/roles")]
         public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
     }
