@@ -26,7 +26,7 @@ public interface IUserBusinessLogic
     /// Add Role to User
     /// </summary>
     /// <param name="appId">app Id</param>
-    /// <param name="userRoleInfo">User and Role Information like Company and UserEntity Id and Role Name</param>
+    /// <param name="userRoleInfo">User and Role Information like CompanyUser Id and Role Name</param>
     /// <param name="adminUserId">Admin User Id</param>
     /// <returns>messages</returns>
     Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
