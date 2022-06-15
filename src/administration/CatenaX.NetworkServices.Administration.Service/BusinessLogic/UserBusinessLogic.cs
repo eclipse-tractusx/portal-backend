@@ -302,11 +302,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 userData.BusinessPartnerNumbers,
                 companyUser.Company!.Name,
                 companyUser.CompanyUserStatusId)
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            };
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email
+                };
         }
 
         public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
@@ -440,12 +440,12 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
-            var result = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
-            if (result == null || string.IsNullOrWhiteSpace(result.IdpName))
+            var companyUser = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
+            if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
             }
-            if (string.IsNullOrWhiteSpace(result.TargetIamUserId))
+            if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
             {
                 throw new NotFoundException($"User not found");
             }
@@ -462,12 +462,12 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             if (roles.Count() > 0)
             {
-                await _provisioningManager.AssignClientRolesToCentralUserAsync(result.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
             }
             string message = string.Empty;
             foreach (var role in companyRoleIds)
             {
-                if (!result.RoleIds.Contains(role))
+                if (!companyUser.RoleIds.Contains(role))
                 {
                     _portalDBAccess.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
                     message = "user role added";
