@@ -40,7 +40,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
         if (companyId == default)
         {
-            throw new ArgumentException($"user {iamAdminId} is not associated with any company","iamAdminId");
+            throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
         var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountsRepository>();
@@ -54,7 +54,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             
             if (missingRoleIds.Count() > 0)
             {
-                throw new ArgumentException($"{missingRoleIds.First()} is not a valid UserRoleId", "roleIds");
+                throw new NotFoundException($"{missingRoleIds.First()} is not a valid UserRoleId");
             }
         }
 
@@ -234,8 +234,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
         if (result == null)
         {
-            throw new ArgumentException($"user {iamAdminId} is not associated with any company");
+            throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
+
         return result;
     }
 }

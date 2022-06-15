@@ -2,7 +2,7 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -55,7 +55,7 @@ public class ConnectorsRepository : IConnectorsRepository
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ArgumentException("Connector with provided ID does not exist.", nameof(connectorId));
+            throw new NotFoundException("Connector with provided ID does not exist.");
         }
     }
 

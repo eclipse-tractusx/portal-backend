@@ -34,13 +34,8 @@ public class ServiceAccountController : ControllerBase
     /// <returns></returns>
     /// Example: POST: api/administration/serviceaccount/owncompany/serviceaccounts
     /// <response code="201">The service account was created.</response>
-    /// <response code="400">
-    /// Problem could be one of the following: <br />
-    /// - other authenticationType values than SECRET are not supported yet <br />
-    /// - name is empty <br />
-    /// - user is not associated with any company <br />
-    /// - a user role id is not a valid user role id
-    /// </response>
+    /// <response code="400">Missing mandatory input values (e.g. name) or not supported authenticationType selected.</response>
+    /// <response code="404">Record was not found. Possible reason: invalid user role, requester user invalid.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
     [Route("owncompany/serviceaccounts")]
@@ -59,7 +54,7 @@ public class ServiceAccountController : ControllerBase
     /// <returns></returns>
     /// Example: DELETE: api/administration/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000
     /// <response code="200">Successful if the service account was deleted.</response>
-    /// <response code="404">ServiceAccount not found in company of the user.</response>
+    /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_tech_user_management")]
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
@@ -75,7 +70,7 @@ public class ServiceAccountController : ControllerBase
     /// <returns>Returns a list of service account details.</returns>
     /// Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000
     /// <response code="200">Returns a list of service account details.</response>
-    /// <response code="404">ServiceAccount not found in company of the user.</response>
+    /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
     [Route("owncompany/serviceaccounts/{serviceAccountId}", Name="GetServiceAccountDetails")]
@@ -98,7 +93,7 @@ public class ServiceAccountController : ControllerBase
     /// - serviceAccountId from path does not match the one in body <br />
     /// - serviceAccount is already INACTIVE <br />
     /// </response>
-    /// <response code="404">ServiceAccount not found in company of the user.</response>
+    /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpPut]
     [Authorize(Roles = "add_tech_user_management")] // TODO check whether we also want an edit role
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
@@ -116,7 +111,7 @@ public class ServiceAccountController : ControllerBase
     /// <returns>Returns the service account details.</returns>
     /// Example: PUT: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000/resetCredentials
     /// <response code="200">Returns the service account details.</response>
-    /// <response code="404">ServiceAccount not found in company of the user.</response>
+    /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
     [Route("owncompany/serviceaccounts/{serviceAccountId}/resetCredentials")]
@@ -133,12 +128,12 @@ public class ServiceAccountController : ControllerBase
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
-    /// <response code="400">User is not associated with any company.</response>
+    /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
         this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, adminId));
 }

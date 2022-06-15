@@ -35,7 +35,7 @@ public class InvitationController : ControllerBase
     /// Example: POST: api/administration/invitation
     /// </remarks>
     /// <response code="200">Successfully executed the invitation.</response>
-    /// <response code="400">Either the email or the organisation name was empty.</response>
+    /// <response code="400">Missing mandatory input values (e.g. email, organization name, etc.)</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
     [ProducesResponseType(StatusCodes.Status200OK)]
