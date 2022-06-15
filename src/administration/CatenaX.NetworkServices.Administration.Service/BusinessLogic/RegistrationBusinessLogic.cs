@@ -81,7 +81,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             }
             if (!item.BusinessPartnerNumbers.Contains(businessPartnerNumber))
             {
-                userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(item.CompanyUserId,businessPartnerNumber);
+                userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(item.CompanyUserId, businessPartnerNumber);
                 await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
             }
         }
@@ -119,7 +119,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<bool> DeclinePartnerRequest(Guid applicationId)
     {
-        var companyApplication = await _portalDBAccess.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
+        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
         {
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", "applicationId");
@@ -133,7 +133,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<bool> PostRegistrationCancelEmailAsync(Guid applicationId)
     {
-        await foreach (var user in _portalDBAccess.GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, _settings.PartnerUserInitialRoles).ConfigureAwait(false))
+        await foreach (var user in _applicationRepository.GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, _settings.PartnerUserInitialRoles).ConfigureAwait(false))
         {
             var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
 
