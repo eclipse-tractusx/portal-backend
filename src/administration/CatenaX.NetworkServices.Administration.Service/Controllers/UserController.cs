@@ -122,7 +122,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers/CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">The business partner number have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
-        /// <response code="404">User not found in company.</response>
+        /// <response code="404">Record was not found. User is either not existing or not connected to the respective company.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
