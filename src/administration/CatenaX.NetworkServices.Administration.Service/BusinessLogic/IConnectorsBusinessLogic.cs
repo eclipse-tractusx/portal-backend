@@ -18,11 +18,12 @@ public interface IConnectorsBusinessLogic
     public Task<Pagination.Response<ConnectorViewModel>> GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(string iamUserId, int page, int size);
 
     /// <summary>
-    /// Add a connector to persistence layer.
+    /// Add a connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
     /// <returns>View model of created connector.</returns>
-    public Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel);
+    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
+    public Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
