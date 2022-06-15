@@ -68,7 +68,6 @@ public class UserRepository : IUserRepository
                .Select(companyUser => new CompanyIamUser
                {
                    TargetIamUserId = companyUser.IamUser!.UserEntityId,
-                   TargetCompanyUserId = companyUser.IamUser!.CompanyUserId,
                    IdpName = companyUser.Company!.IdentityProviders
                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                        .SingleOrDefault(),

@@ -302,11 +302,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 userData.BusinessPartnerNumbers,
                 companyUser.Company!.Name,
                 companyUser.CompanyUserStatusId)
-                {
-                    FirstName = companyUser.Firstname,
-                    LastName = companyUser.Lastname,
-                    Email = companyUser.Email
-                };
+            {
+                FirstName = companyUser.Firstname,
+                LastName = companyUser.Lastname,
+                Email = companyUser.Email
+            };
         }
 
         public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
@@ -445,11 +445,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
             }
-            if (string.IsNullOrWhiteSpace(result.TargetIamUserId) || userRoleInfo.UserEntityId != result.TargetIamUserId)
+            if (string.IsNullOrWhiteSpace(result.TargetIamUserId))
             {
-                throw new NotFoundException($"User {userRoleInfo.UserEntityId} not found");
+                throw new NotFoundException($"User not found");
             }
-
             var iamClientId = await _portalRepositories.GetInstance<IUserRepository>().GetAppAssignedRolesClientIdAsync(appId).ConfigureAwait(false);
             var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
@@ -463,7 +462,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             if (roles.Count() > 0)
             {
-                await _provisioningManager.AssignClientRolesToCentralUserAsync(userRoleInfo.UserEntityId, clientRoleNames).ConfigureAwait(false);
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(result.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
             }
             string message = string.Empty;
             foreach (var role in companyRoleIds)
