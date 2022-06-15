@@ -12,6 +12,8 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
     /// </summary>
     [ApiController]
     [Route("api/provisioning")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     public class IdentityProviderController : ControllerBase
     {
 
@@ -36,13 +38,11 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
         /// <returns>Returns the name of the created identity provider</returns>
         /// <remarks>Example: Get: /api/provisioning/identityprovider/setup</remarks>
         /// <response code="200">Returns the name of the new identity provider.</response>
-        /// <response code="401">User is unauthorized.</response>
         /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles="setup_idp")]
         [Route("identityprovider/setup")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateIdentityProvider([FromBody] IdentityProviderSetupData identityProviderSetupData)
         {
