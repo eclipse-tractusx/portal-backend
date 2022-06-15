@@ -44,13 +44,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">Returns the company</response>
         /// <response code="400">The requested service responded with the given error.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
         [ProducesResponseType(typeof(List<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization)
         {
             try
@@ -74,13 +72,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
         /// <response code="200">Successfully uploaded the document</response>
         /// <response code="403">The user is not assigned with the CompanyAppication.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
         [Route("application/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/documentType/1/documents")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
             this.WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
@@ -93,13 +89,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
         /// <response code="200">Returns a list of documents</response>
         /// <response code="403">The user is not associated with invitation</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [ProducesResponseType(typeof(IAsyncEnumerable<UploadDocuments> ), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId) =>
            this.WithIamUserId(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId,user));
 
@@ -110,12 +104,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns>Returns OK</returns>
         /// <remarks>Example: Put: /api/registration/idp</remarks>
         /// <response code="200">Successfully set the idp</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPut]
         [Authorize(Roles = "invite_user")]
         [Route("idp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SetIdpAsync([FromBody] SetIdp idpToSet)
         {
             await _registrationBusinessLogic.SetIdpAsync(idpToSet).ConfigureAwait(false);
@@ -128,12 +120,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns>Returns a list of composite names</returns>
         /// <remarks>Example: Get: /api/registration/rolesComposite</remarks>
         /// <response code="200">Returns a list of composite names</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("rolesComposite")]
         [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetClientRolesComposite()
         {
             try
@@ -155,12 +145,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns>Returns a list of company applications</returns>
         /// <remarks>Example: Get: /api/registration/applications</remarks>
         /// <response code="200">Returns a list of company applications</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplication>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
             this.WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
@@ -173,13 +161,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Put: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/status</remarks>
         /// <response code="200">Successfully set the status</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/status")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
             _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status);
 
@@ -191,13 +177,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/status</remarks>
         /// <response code="200">Returns the company application status</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/status")]
         [ProducesResponseType(typeof(CompanyApplicationStatusId), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetApplicationStatusAsync(applicationId);
 
@@ -209,13 +193,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
         /// <response code="200">Returns the company with its address</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetCompanyWithAddressAsync(applicationId);
 
@@ -227,13 +209,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
         /// <response code="200">Successfully set the company with its address</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
             _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
 
@@ -247,14 +227,12 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <response code="200">Successfully invited the user.</response>
         /// <response code="403">Either the user was not found or the user is not assigneable to the given application.</response>
         /// <response code="404">The shared idp was not found  for the CompanyApplication.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles = "invite_user")]
         [Route("application/{applicationId}/inviteNewUser")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfo userCreationInfo) =>
             this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
@@ -268,13 +246,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyRoleAgreementConsents</remarks>
         /// <response code="200">Successfully submitted consent to agreements</response>
         /// <response code="403">Either the user was not found or the user is not assignable to the given application.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
             this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, iamUserId));
@@ -287,13 +263,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyRoleAgreementConsents</remarks>
         /// <response code="200">Return the company role agreement consents</response>
         /// <response code="403">The user is not assignable to the given application.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         [ProducesResponseType(typeof(CompanyRoleAgreementConsents), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<CompanyRoleAgreementConsents> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
             this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId, iamUserId));
@@ -304,12 +278,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns>Returns the Company role agreement data</returns>
         /// <remarks>Example: Get: /api/registration/companyRoleAgreementData</remarks>
         /// <response code="200">Returns the Company role agreement data</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("companyRoleAgreementData")]
         [ProducesResponseType(typeof(CompanyRoleAgreementData), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync() =>
             _registrationBusinessLogic.GetCompanyRoleAgreementDataAsync();
 
@@ -319,12 +291,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns>Returns ok</returns>
         /// <remarks>Example: Post: /api/registration/submitregistration</remarks>
         /// <response code="200">Successfully submitted the registration</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
         [Route("submitregistration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SubmitRegistrationAsync()
         {
             try
@@ -352,12 +322,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/invitedusers</remarks>
         /// <returns>Returns all invited users</returns>
         /// <response code="200">Returns all invited users</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/invitedusers")]
         [ProducesResponseType(typeof(IAsyncEnumerable<InvitedUser>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync([FromRoute] Guid applicationId) =>
             _registrationBusinessLogic.GetInvitedUsersAsync(applicationId);
 
@@ -368,13 +336,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Put: /api/registration/invitation/status</remarks>
         /// <response code="200">Successfully sets the invitation status</response>
         /// <response code="403">The user id is not associated with invitation.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpPut]
         [Authorize(Roles = "view_registration")]
         [Route("invitation/status")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<int> SetInvitationStatusAsync() =>
            this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.SetInvitationStatusAsync(iamUserId));
@@ -387,13 +353,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/registrationData</remarks>
         /// <response code="200">Returns the registration data</response>
         /// <response code="403">The user id is not associated with CompanyApplication.</response>
-        /// <response code="500">Internal server error occured, e.g. a database error.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/registrationData")]
         [ProducesResponseType(typeof(RegistrationData), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
          public Task<RegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
             this.WithIamUserId(iamUserId => 
                 _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));

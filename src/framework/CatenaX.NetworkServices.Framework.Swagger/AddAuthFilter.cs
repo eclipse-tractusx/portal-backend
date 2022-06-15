@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -17,6 +18,7 @@ public class AddAuthFilter : IOperationFilter
 
         if (!authorizeAttributes.Any()) return;
 
+        
         var authorizationDescription = new StringBuilder(" (Authorization required");
         var policies = authorizeAttributes
             .Where(a => !string.IsNullOrEmpty(a.Roles))
@@ -28,7 +30,8 @@ public class AddAuthFilter : IOperationFilter
         {
             authorizationDescription.Append($" - Roles: {string.Join(", ", policies)};");
         }
-
+        
+        operation.Responses.Add(StatusCodes.Status401Unauthorized.ToString(), new OpenApiResponse { Description = "The User is unauthorized" });
         operation.Summary += authorizationDescription.ToString().TrimEnd(';') + ")";
     }
 }
