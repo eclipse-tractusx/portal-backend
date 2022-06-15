@@ -55,6 +55,11 @@ namespace CatenaX.NetworkServices.Mailing.Template.Enums
         /// Email template for decline registration process.
         /// </summary>
         [Path("registration_declined.html")]
-        PortalRegistrationDecline
+        PortalRegistrationDecline,
+        
+        /// Email template for notifying app providers of subscription requests.
+        /// </summary>
+        [Path("appprovider_subscription_request.html")]
+        SubscriptionRequest
     }
 }

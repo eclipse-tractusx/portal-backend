@@ -451,13 +451,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                    TaxId = company.TaxId
                }).SingleOrDefaultAsync();
 
-        public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
-            _dbContext.CompanyApplications.Where(companyApplication =>
-                companyApplication.Id == applicationId
-                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-                .Include(companyApplication => companyApplication.Company)
-                .SingleOrDefaultAsync();
-
         public Task<bool> IsUserExisting(string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()

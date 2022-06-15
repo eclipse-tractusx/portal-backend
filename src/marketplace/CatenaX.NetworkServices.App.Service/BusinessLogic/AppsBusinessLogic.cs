@@ -1,6 +1,7 @@
 ﻿using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -18,6 +19,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly PortalDbContext context;
     private readonly ICompanyAssignedAppsRepository companyAssignedAppsRepository;
     private readonly IAppRepository appRepository;
+    private readonly IMailingService mailingService;
 
     /// <summary>
     /// Constructor.
@@ -25,11 +27,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="context">Database context dependency.</param>
     /// <param name="companyAssignedAppsRepository">Repository to access the CompanyAssignedApps on the persistence layer.</param>
     /// <param name="appRepository">Repository to access the apps on the persistence layer.</param>
-    public AppsBusinessLogic(PortalDbContext context, ICompanyAssignedAppsRepository companyAssignedAppsRepository, IAppRepository appRepository)
+    /// <param name="mailingService">Mail service.</param>
+    public AppsBusinessLogic(PortalDbContext context, ICompanyAssignedAppsRepository companyAssignedAppsRepository, IAppRepository appRepository, IMailingService mailingService)
     {
         this.context = context;
         this.companyAssignedAppsRepository = companyAssignedAppsRepository;
         this.appRepository = appRepository;
+        this.mailingService = mailingService;
     }
 
     /// <inheritdoc/>
@@ -231,13 +235,24 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING});
+
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING});
+
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
         {
             throw new ArgumentException("Parameters are invalid or app is already subscribed to.");
         }
+
+        var appDetails = await appRepository.GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+
+        var mailParams = new Dictionary<string, string>
+            {
+                { "appProviderName", appDetails.providerName},
+                { "appName", appDetails.appName }
+            };
+        await mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

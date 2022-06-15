@@ -11,6 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+   <None Update="EmailTemplates\appprovider_subscription_request.html">
+     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+   </None>
    <None Update="EmailTemplates\portal_welcome_email.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
