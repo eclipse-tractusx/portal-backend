@@ -12,12 +12,6 @@ public class CompanyIamUser
     public string? TargetIamUserId { get; set; }
 
     /// <summary>
-    /// Target CompanyUser Id
-    /// </summary>
-    /// <value></value>
-    public Guid TargetCompanyUserId { get; set; }
-
-    /// <summary>
     /// Idp Name
     /// </summary>
     /// <value></value>
