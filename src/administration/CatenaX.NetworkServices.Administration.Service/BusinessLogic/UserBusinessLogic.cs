@@ -14,6 +14,9 @@ using PasswordGenerator;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
+    /// <summary>
+    /// Implementation of <see cref="IUserBusinessLogic"/>.
+    /// </summary>
     public class UserBusinessLogic : IUserBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
@@ -24,6 +27,17 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="provisioningManager">Provisioning Manager</param>
+        /// <param name="provisioningDBAccess">Provisioning DBAccess</param>
+        /// <param name="portalDBAccess">Portal DBAccess</param>
+        /// <param name="mailingService">Mailing Service</param>
+        /// <param name="logger">logger</param>
+        /// <param name="settings">Settings</param>
+        /// <param name="portalRepositories">Portal Repositories</param>
         public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
@@ -41,6 +55,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
+            _portalRepositories = portalRepositories;
         }
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
@@ -259,7 +274,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             if (userData.CompanyUser.Id != companyUserId)
             {
-                throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");                
+                throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
             }
             var companyUser = userData.CompanyUser;
             var iamIdpAlias = userData.IamIdpAlias;
@@ -268,7 +283,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
             }
-            if (! await _provisioningManager.UpdateSharedRealmUserAsync(
+            if (!await _provisioningManager.UpdateSharedRealmUserAsync(
                 iamIdpAlias,
                 userIdShared,
                 ownCompanyUserEditableDetails.FirstName ?? "",
@@ -303,7 +318,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             if (userData.CompanyUser.Id != companyUserId)
             {
-                throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");                
+                throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
             }
             if (await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false))
             {
@@ -420,6 +435,47 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+        {
+            var companyUser = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
+            if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
+            {
+                throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
+            }
+            if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
+            {
+                throw new NotFoundException($"User not found");
+            }
+            var iamClientId = await _portalRepositories.GetInstance<IUserRepository>().GetAppAssignedRolesClientIdAsync(appId).ConfigureAwait(false);
+            var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
+            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                        {
+                            { iamClientId, roles }
+                        };
+            var companyRoleIds = await _portalDBAccess.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
+            if (companyRoleIds.Count() == 0)
+            {
+                throw new NotFoundException($"User role not existing");
+            }
+            if (roles.Count() > 0)
+            {
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+            }
+            string message = string.Empty;
+            foreach (var role in companyRoleIds)
+            {
+                if (!companyUser.RoleIds.Contains(role))
+                {
+                    _portalDBAccess.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
+                    message = "user role added";
+                }
+
+            }
+            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(message) ? "user role already added" : message;
         }
     }
 }

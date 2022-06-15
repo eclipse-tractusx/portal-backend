@@ -80,8 +80,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_client_roles")]
         [Route("app/{appId}/roles")]
-        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId,string? languageShortName = null) =>
-            _logic.GetClientRolesAsync(appId,languageShortName);
+        public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId, string? languageShortName = null) =>
+            _logic.GetClientRolesAsync(appId, languageShortName);
 
         [HttpGet]
         [Route("ownUser")]
@@ -97,7 +97,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("ownUser/{companyUserId}")]
         public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
- 
+
         [Obsolete]
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
@@ -111,5 +111,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("users/{companyUserId}/resetpassword")]
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
+
+        [HttpPost]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("app/{appId}/roles")]
+        public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
+            this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
     }
 }
