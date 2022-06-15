@@ -11,7 +11,7 @@ public interface IUserBusinessLogic
 {
     IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string createdByName);
     IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, CompanyUserStatusId? status = null);
-    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId,string? languageShortName = null);
+    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
     Task<CompanyUserDetails> GetOwnCompanyUserDetails(Guid companyUserId, string iamUserId);
     Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, string adminUserId);
     Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
@@ -26,8 +26,8 @@ public interface IUserBusinessLogic
     /// Add Role to User
     /// </summary>
     /// <param name="appId">app Id</param>
-    /// <param name="userRoleInfo">User and Role Infformation like Company and UserEntity Id and Role Name</param>
+    /// <param name="userRoleInfo">User and Role Information like Company and UserEntity Id and Role Name</param>
     /// <param name="adminUserId">Admin User Id</param>
-    /// <returns></returns>
+    /// <returns>messages</returns>
     Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
 }
