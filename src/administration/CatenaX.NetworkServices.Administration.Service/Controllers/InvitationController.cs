@@ -1,17 +1,24 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
-
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Administration.Service.Controllers;
 
+/// <summary>
+/// Controller providing actions execute invitation
+/// </summary>
 [ApiController]
 [Route("api/administration/invitation")]
 public class InvitationController : ControllerBase
 {
     private readonly IInvitationBusinessLogic _logic;
 
+    /// <summary>
+    /// Creates a new instance of <see cref="InvitationController"/>
+    /// </summary>
+    /// <param name="logic">The invitation business logic</param>
     public InvitationController(IInvitationBusinessLogic logic)
     {
         _logic = logic;
@@ -20,12 +27,21 @@ public class InvitationController : ControllerBase
     /// <summary>
     /// Executes the invitation
     /// </summary>
-    /// <param name="InvitationData"></param>
+    /// <param name="invitationData"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// Example: POST: api/administration/invitation
+    /// </remarks>
+    /// <response code="200">Successfully executed the invitation.</response>
+    /// <response code="400">Either the email or the organisation name was empty.</response>
     /// <response code="401">User is unauthorized.</response>
+    /// <response code="500">Internal server error occured, e.g. a database error.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public Task ExecuteInvitation([FromBody] CompanyInvitationData InvitationData) =>
-        _logic.ExecuteInvitation(InvitationData);
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
+        _logic.ExecuteInvitation(invitationData);
 }
