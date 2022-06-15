@@ -207,4 +207,22 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => this._appsBusinessLogic.ActivateCompanyAppSubscriptionAsync(appId, companyId, userId));
         return NoContent();
     }
+    
+    /// <summary>
+    /// Unsubscribes an app from the current user's company's subscriptions.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to unsubscribe from.</param>
+    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/unsubscribe</remarks>
+    /// <response code="204">The app was successfully unsubscribed from.</response>
+    /// <response code="400">If either the app or app subscription doesn't exist.</response>
+    [HttpPut]
+    [Route("{appId}/unsubscribe")]
+    [Authorize(Roles = "unsubscribe_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => this._appsBusinessLogic.UnsubscribeCompanyAppSubscriptionAsync(appId, userId));
+        return this.NoContent();
+    }
 }

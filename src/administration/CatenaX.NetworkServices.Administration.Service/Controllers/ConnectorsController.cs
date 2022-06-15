@@ -47,7 +47,7 @@ public class ConnectorsController : ControllerBase
         this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(iamUserId, page, size));
 
     /// <summary>
-    /// Created a new connector with provided parameters from body.
+    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
     /// </summary>
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
     /// <returns>View model of the created connector.</returns>
@@ -60,7 +60,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
-        CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel));
+        CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel, Request.Headers.Authorization.First().Substring("Bearer ".Length)));
 
     /// <summary>
     /// Removes a connector from persistence layer by id.

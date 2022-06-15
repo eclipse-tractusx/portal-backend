@@ -1,9 +1,11 @@
 ﻿using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -13,16 +15,17 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IConnectorsRepository _repository;
+    private readonly ICompanyRepository _companyRepository;
     private readonly ConnectorsSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="connectorsRepository">Connectors repository.</param>
-    /// <param name="options">The connector settings</param>
-    public ConnectorsBusinessLogic(IConnectorsRepository connectorsRepository, IOptions<ConnectorsSettings> options)
+    public ConnectorsBusinessLogic(IConnectorsRepository connectorsRepository, ICompanyRepository companyRepository, IOptions<ConnectorsSettings> options)
     {
         this._repository = connectorsRepository;
+        this._companyRepository = companyRepository;
         this._settings = options.Value;
     }
 
@@ -48,7 +51,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         );
 
     /// <inheritdoc/>
-    public async Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel)
+    public async Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
     {
         var connector = new Connector(Guid.NewGuid(), connectorInputModel.Name, connectorInputModel.Location, connectorInputModel.ConnectorUrl)
         {
@@ -58,7 +61,31 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             StatusId = connectorInputModel.Status
         };
 
-        var createdConnector = await _repository.CreateConnectorAsync(connector).ConfigureAwait(false);
+        Connector createdConnector;
+        HttpResponseMessage response;
+        using var transaction = await _repository.BeginTransactionAsync();
+
+        try
+        {
+            createdConnector = await _repository.CreateConnectorAsync(connector).ConfigureAwait(false);
+            var bpn = (await _companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
+            var requestModel = new ConnectorSdFactoryRequestModel(bpn, "DE", "DE", connectorInputModel.ConnectorUrl, "connector", bpn, bpn, "BPNL000000000000");
+            response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
+        }
+        
+        await transaction.CommitAsync();
 
         return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
         {

@@ -5,7 +5,25 @@
 /// </summary>
 public class ConnectorsSettings
 {
+    public ConnectorsSettings() 
+    {
+        SdFactoryUrl = string.Empty;
+    }
+
+    public ConnectorsSettings(string sdFactoryUrl)
+    {
+        SdFactoryUrl = sdFactoryUrl;
+    }
+
+    /// <summary>
+    /// Maximum amount of entries per page in paginated connector lists.
+    /// </summary>
     public int MaxPageSize { get; set; }
+
+    /// <summary>
+    /// SD Factory endpoint for registering connectors.
+    /// </summary>
+    public string SdFactoryUrl { get; set; }
 }
 
 public static class ConnectorsSettingsExtensions
