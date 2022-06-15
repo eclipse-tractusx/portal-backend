@@ -36,12 +36,10 @@ public class InvitationController : ControllerBase
     /// </remarks>
     /// <response code="200">Successfully executed the invitation.</response>
     /// <response code="400">Either the email or the organisation name was empty.</response>
-    /// <response code="500">Internal server error occured, e.g. a database error.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
         _logic.ExecuteInvitation(invitationData);
 }

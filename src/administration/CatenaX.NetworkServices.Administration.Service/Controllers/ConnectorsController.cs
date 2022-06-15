@@ -39,12 +39,10 @@ public class ConnectorsController : ControllerBase
     /// Example: GET: /api/administration/connectors?page=0&amp;size=15
     /// </remarks>
     /// <response code="200">Returns a list of all of the current user's company's connectors.</response>
-    /// <response code="500">Internal server error occured, e.g. a database error.</response>
     [HttpGet]
     [Route("")]
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorViewModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public Task<Pagination.Response<ConnectorViewModel>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(iamUserId, page, size));
 
@@ -56,13 +54,11 @@ public class ConnectorsController : ControllerBase
     /// <remarks>Example: POST: /api/administration/connectors</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
     /// <response code="400">Provided connector does not respect database constraints.</response>
-    /// <response code="500">Internal server error occured, e.g. a database error.</response>
     [HttpPost]
     [Route("")]
     [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
         CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel));
 
