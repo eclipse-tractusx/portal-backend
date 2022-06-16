@@ -1,5 +1,6 @@
 ﻿using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -10,6 +11,7 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -387,6 +389,33 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
+        }
+
+        public async Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        {
+            var appUser = _portalDBAccess.GetCompanyAppUsersAsync(appId, iamUserId);
+
+            var result = await Pagination.CreateResponseAsync<CompanyAppUserDetails>(
+             page,
+             size,
+             15,
+             (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
+                appUser.CountAsync(),
+                appUser.OrderBy(companyUser => companyUser.Id)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(companyUser => new CompanyAppUserDetails(
+                        companyUser.Id,
+                        companyUser.CompanyUserStatusId,
+                        companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                    {
+                        FirstName = companyUser.Firstname,
+                        LastName = companyUser.Lastname,
+                        Email = companyUser.Email
+                    }).AsAsyncEnumerable()));
+
+            return result;
+
         }
     }
 }

@@ -2,6 +2,7 @@
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
+using CatenaX.NetworkServices.Framework.Models;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -17,4 +18,5 @@ public interface IUserBusinessLogic
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId);
     Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId);
+    Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size);
 }
