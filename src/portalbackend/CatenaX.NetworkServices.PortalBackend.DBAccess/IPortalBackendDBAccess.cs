@@ -57,6 +57,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId,string? languageShortName = null);
         Task<string?> GetLanguageAsync(string LanguageShortName);
         Task<Guid> GetAppAssignedClientsAsync(Guid appId);
+        IQueryable<CompanyUser> GetCompanyAppUsersAsync( Guid appId,string iamUserId);
+        
         Task<int> SaveAsync();
     }
 }
