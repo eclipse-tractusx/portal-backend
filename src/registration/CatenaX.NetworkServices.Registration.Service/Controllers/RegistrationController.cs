@@ -49,12 +49,12 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// </summary>
         /// <param name="applicationId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645"></param>
         /// <param name="documentTypeId" example="1"></param>
-        /// <param name="document"></param>
+        /// <param name="document">The </param>
         /// <returns></returns>
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
         /// <response code="200">Successfully uploaded the document</response>
-        /// <response code="403">The user is not assigned with the CompanyAppication.</response>
-        /// <response code="415">Only PDF files are supported..</response>
+        /// <response code="403">The user is not assigned with the CompanyApplication.</response>
+        /// <response code="415">Only PDF files are supported.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
@@ -64,6 +64,24 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
             this.WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
+        /// <summary>
+        /// Deletes the document with the given id
+        /// </summary>
+        /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+        /// <returns></returns>
+        /// <remarks>Example: Delete: /api/registration/documents/{documentId}</remarks>
+        /// <response code="200">Successfully deleted the document</response>
+        /// <response code="400">Incorrect document state</response>
+        /// <response code="403">The user is not assigned with the Company.</response>
+        /// <response code="404">The document was not found.</response>
+        [HttpDelete]
+        [Authorize(Roles = "delete_documents")]
+        [Route("documents/{documentId}")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => Task.FromResult(true);
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
