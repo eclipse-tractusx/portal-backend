@@ -74,7 +74,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <response code="403">The user is not assigned with the CompanyAppication.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
-        [Route("application/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/documentType/1/documents")]
+        [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
