@@ -69,6 +69,14 @@ public class GeneralHttpErrorHandler
                     (error) => (error.Source, new [] { $"remote service returned status code: {(int)statusCode} {statusCode}", error.Message } ));
                 _logger.LogInformation(error.Message);
             }
+            else if (error is UnsupportedMediaTypeException)
+            {
+                errorResponse = CreateErrorResponse(
+                    HttpStatusCode.UnsupportedMediaType,
+                    error,
+                    null);
+                _logger.LogInformation(error.Message);
+            }
             else
             {
                 errorResponse = CreateErrorResponse(

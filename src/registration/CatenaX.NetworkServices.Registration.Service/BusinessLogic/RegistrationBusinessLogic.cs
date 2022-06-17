@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
 using System.Text;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -24,9 +25,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
+        private readonly IDocumentRepository _documentRepository;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger)
+        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IDocumentRepository documentRepository)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
@@ -35,6 +37,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
+            _documentRepository = documentRepository;
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -53,6 +56,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ArgumentNullException("File name is must not be null");
             }
 
+            // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+            if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
+            }
+
             var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (companyUserId.Equals(Guid.Empty))
             {
@@ -65,17 +74,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 document.CopyTo(ms);
                 var fileBytes = ms.ToArray();
                 var documentContent = Convert.ToBase64String(fileBytes);
-                using (SHA256 hashSHA256 = SHA256.Create())
+                using (var hashSHA256 = SHA256.Create())
                 {
-                    byte[] hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
-                    // hash = Encoding.UTF8.GetString(hashValue);
-                    StringBuilder builder = new StringBuilder();
-                    for (int i = 0; i < hashValue.Length; i++)
+                    var hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
+                    var builder = new StringBuilder();
+                    for (var i = 0; i < hashValue.Length; i++)
                     {
                         builder.Append(hashValue[i].ToString("x2"));
                     }
                     var hash = builder.ToString();
-                    _portalDBAccess.CreateDocument(applicationId, companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    await _documentRepository.CreateDocumentAsync(companyUserId, documentName, documentContent, hash, 0, documentTypeId).ConfigureAwait(false);
                 }
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
