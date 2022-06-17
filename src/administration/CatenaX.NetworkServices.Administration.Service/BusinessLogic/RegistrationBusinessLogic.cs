@@ -95,6 +95,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationByCompanyNameAsync(string companyName, int page, int size)=>
+       Pagination.CreateResponseAsync<CompanyApplicationDetails>(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (skip, take) => _applicationRepository.GetApplicationByCompanyNameUntrackedAsync(companyName, skip, take));
+
     private async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
     {
         await foreach (var user in _applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
