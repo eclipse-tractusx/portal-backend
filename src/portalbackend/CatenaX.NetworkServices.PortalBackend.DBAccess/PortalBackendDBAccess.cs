@@ -482,8 +482,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(app => app.AppId)
                 .SingleOrDefaultAsync();
 
-   
-
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
     }
