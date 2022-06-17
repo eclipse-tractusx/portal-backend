@@ -117,19 +117,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyRoleId
                 )).Entity;
 
-        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
-            _dbContext.Documents.Add(
-                new Document(
-                    Guid.NewGuid(),
-                    hash,
-                    documentName,
-                    DateTimeOffset.UtcNow)
-                {
-                    DocumentOid = documentOId,
-                    DocumentTypeId = documentTypeId,
-                    CompanyUserId = companyUserId
-                }).Entity;
-
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()

@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -82,6 +83,7 @@ builder.Services.AddTransient<IAuthorizationHandler, ClaimRequestPathHandler>()
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
+builder.Services.AddTransient<IDocumentRepository, DocumentRepository>();
 builder.Services.AddTransient<IRegistrationDBAccess, RegistrationDBAccess>();
 
 builder.Services.AddTransient<IBPNAccess, BPNAccess>();
