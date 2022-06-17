@@ -11,6 +11,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
+        
+        /// <summary>
+        /// Deletes the document and the corresponding consent from the persistence layer.
+        /// </summary>
+        /// <param name="documentId">Id of the document that should be deleted</param>
+        /// <param name="iamUserId"></param>
+        /// <returns>Returns <c>true</c> if the document and corresponding consent were deleted successfully. Otherwise a specific error is thrown.</returns>
+        Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId);
+
         Task SetIdpAsync(SetIdp idpToSet);
         IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);

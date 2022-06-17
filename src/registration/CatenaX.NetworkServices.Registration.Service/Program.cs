@@ -84,6 +84,7 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IDocumentRepository, DocumentRepository>();
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IRegistrationDBAccess, RegistrationDBAccess>();
 
 builder.Services.AddTransient<IBPNAccess, BPNAccess>();

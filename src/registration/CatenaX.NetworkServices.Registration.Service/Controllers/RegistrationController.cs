@@ -77,11 +77,12 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpDelete]
         [Authorize(Roles = "delete_documents")]
         [Route("documents/{documentId}")]
-        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => Task.FromResult(true);
+        public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => 
+            this.WithIamUserId(userId => _registrationBusinessLogic.DeleteDocumentAsync(documentId, userId));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]

@@ -11,6 +11,13 @@ public interface IUserRepository
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
 
     /// <summary>
+    /// Gets the company user id for the given iam user id
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the id of the company user if one is found.</returns>
+    Task<Guid?> GetCompanyUserIdForIamUserUntrackedAsync(string iamUserId);
+
+    /// <summary>
     /// Get the IdpName ,UserId and Role Ids by CompanyUser and AdminUser Id
     /// </summary>
     /// <param name="companyUserId"></param>

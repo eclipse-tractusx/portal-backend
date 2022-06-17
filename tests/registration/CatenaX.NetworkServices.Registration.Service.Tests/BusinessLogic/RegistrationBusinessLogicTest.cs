@@ -27,6 +27,7 @@ public class RegistrationBusinessLogicTest
     private readonly IOptions<RegistrationSettings> _settings;
     private readonly IRegistrationBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
+    private readonly IUserRepository _userRepository;
     public RegistrationBusinessLogicTest()
     {
         _fixture = new Fixture();
@@ -37,8 +38,9 @@ public class RegistrationBusinessLogicTest
         _portalDBAccess = A.Fake<IPortalBackendDBAccess>();
         _logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
         _documentRepository = A.Fake<IDocumentRepository>();
+        _userRepository = A.Fake<IUserRepository>();
         _settings = A.Fake<IOptions<RegistrationSettings>>();
-        this._logic = new RegistrationBusinessLogic(_settings, _dbAccess, _mailingService, _bpnAccess, _provisioningManager, _portalDBAccess, _logger, _documentRepository);
+        this._logic = new RegistrationBusinessLogic(_settings, _dbAccess, _mailingService, _bpnAccess, _provisioningManager, _portalDBAccess, _logger, _documentRepository, _userRepository);
     }
 
     [Fact]
