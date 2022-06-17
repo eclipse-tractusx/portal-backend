@@ -59,10 +59,12 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns a list of company user data for the current users company.</returns>
         /// <remarks>Example: GET: api/administration/user/owncompany/users</remarks>
         /// <response code="200">Returns a list of company user data for the current users company.</response>
+        /// <response code="404">Record not found.</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserData>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
             [FromQuery] string? userEntityId = null,
             [FromQuery] Guid? companyUserId = null,
@@ -86,7 +88,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the company user details.</returns>
         /// <remarks>Example: GET: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Returns the company user details.</response>
-        /// <response code="404">Record not found. User id not existing.</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users/{companyUserId}")]
@@ -139,10 +140,12 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns></returns>
         /// <remarks>Example: DELETE: api/administration/user/owncompany/users</remarks>
         /// <response code="200">Users have successfully been deleted.</response>
+        /// <response code="404">Record was not found. User is either not existing or not connected to the respective company.</response>
         [HttpDelete]
         [Authorize(Roles = "delete_user_account")]
         [Route("owncompany/users")]
         [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public IAsyncEnumerable<Guid> DeleteOwnCompanyUsers([FromBody] IEnumerable<Guid> usersToDelete) =>
             this.WithIamUserId(adminUserId => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, adminUserId));
 
@@ -152,9 +155,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user whose password should be reset.</param>
         /// <returns></returns>
         /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/resetPassword</remarks>
-        /// <response code="200">Returns <c>true</c> if the password was reset, <c>false</c> if it hasn't been reset.</response>
+        /// <response code="200">The password was successfully reset.</response>
         /// <response code="400">Maximum amount of password resets reached. Password reset function is locked for the user for a certain time.</response>
         /// <response code="404">Cannot identify companyId or shared idp</response>
+        /// <response code="500">Internal Server Error, e.g. the password reset failed.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/resetPassword")]
