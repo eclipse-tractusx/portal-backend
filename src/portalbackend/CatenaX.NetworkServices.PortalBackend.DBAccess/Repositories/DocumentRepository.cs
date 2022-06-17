@@ -1,6 +1,7 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -33,5 +34,18 @@ public class DocumentRepository : IDocumentRepository
                 CompanyUserId = companyUserId
             });
         return result.Entity;
+    }
+
+    /// <inheritdoc />
+    public async Task<Document?> GetDocumentByIdAsync(Guid documentId) => 
+        await _dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+
+    /// <inheritdoc />
+    public async Task DeleteDocumentAsync(Document document)
+    {
+        var consents = _dbContext.Consents.Where(x => x.DocumentId == document.Id);
+        document.DocumentStatusId = DocumentStatusId.INACTIVE;
+        _dbContext.Consents.RemoveRange(consents);
+        await _dbContext.SaveChangesAsync();
     }
 }
