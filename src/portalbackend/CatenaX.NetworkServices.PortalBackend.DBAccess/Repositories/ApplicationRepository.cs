@@ -103,4 +103,37 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Email,
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
+
+     public Pagination.AsyncSource<CompanyApplicationDetails> GetApplicationByCompanyNameUntrackedAsync(string companyName, int skip, int take) =>
+        new Pagination.AsyncSource<CompanyApplicationDetails>(
+            _dbContext.CompanyApplications
+                .AsNoTracking()
+                .CountAsync(),
+            _dbContext.CompanyApplications
+                .AsNoTracking()
+                .Where(application=>application.Company!.Name.Contains(companyName))
+                .OrderByDescending(application => application.DateCreated)
+                .Skip(0)
+                .Take(take)
+                .Select(application => new CompanyApplicationDetails(
+                    application.Id,
+                    application.ApplicationStatusId,
+                    application.DateCreated,
+                    application.Company!.Name,
+                    application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
+                        document.Documenthash)
+                    {
+                        DocumentTypeId = document.DocumentTypeId,
+                    })))
+                {
+                    Email = application.Invitations
+                        .Select(invitation => invitation.CompanyUser)
+                        .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                            && companyUser.Email != null)
+                        .Select(companyUser => companyUser!.Email)
+                        .FirstOrDefault(),
+                    BusinessPartnerNumber = application.Company.BusinessPartnerNumber
+                })
+                .AsAsyncEnumerable());
+
 }
