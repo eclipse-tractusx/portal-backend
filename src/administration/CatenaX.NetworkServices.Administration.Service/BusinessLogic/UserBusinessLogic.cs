@@ -332,8 +332,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
             if (iamIdpAlias == null)
             {
-                throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
+                throw new NotFoundException($"iamUser {adminUserId} is not a shared idp user");
             }
+
             await foreach (var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
                 var success = false;
