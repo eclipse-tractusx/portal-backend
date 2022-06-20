@@ -32,6 +32,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
         }
+        else if (repositoryType == typeof(IAppUserRepository))
+        {
+            return To<RepositoryType>(new AppUserRepository(_dbContext));
+        }
         else
         {
             throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));
