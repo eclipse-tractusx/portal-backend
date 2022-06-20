@@ -1,7 +1,10 @@
 ﻿using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
@@ -14,14 +17,23 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private const string ERROR_STRING = "ERROR";
     private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext context;
+    private readonly ICompanyAssignedAppsRepository companyAssignedAppsRepository;
+    private readonly IAppRepository appRepository;
+    private readonly IMailingService mailingService;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="context">Database context dependency.</param>
-    public AppsBusinessLogic(PortalDbContext context)
+    /// <param name="companyAssignedAppsRepository">Repository to access the CompanyAssignedApps on the persistence layer.</param>
+    /// <param name="appRepository">Repository to access the apps on the persistence layer.</param>
+    /// <param name="mailingService">Mail service.</param>
+    public AppsBusinessLogic(PortalDbContext context, ICompanyAssignedAppsRepository companyAssignedAppsRepository, IAppRepository appRepository, IMailingService mailingService)
     {
         this.context = context;
+        this.companyAssignedAppsRepository = companyAssignedAppsRepository;
+        this.appRepository = appRepository;
+        this.mailingService = mailingService;
     }
 
     /// <inheritdoc/>
@@ -181,7 +193,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             );
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
-            catch (DbUpdateException)
+        catch (DbUpdateException)
         {
             throw new ArgumentException($"Parameters are invalid or app is already favourited.");
         }
@@ -223,13 +235,24 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING});
+
+            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING});
+
             await this.context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
         {
             throw new ArgumentException("Parameters are invalid or app is already subscribed to.");
         }
+
+        var appDetails = await appRepository.GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+
+        var mailParams = new Dictionary<string, string>
+            {
+                { "appProviderName", appDetails.providerName},
+                { "appName", appDetails.appName }
+            };
+        await mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -258,6 +281,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
         subscription.AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.ACTIVE;
         await this.context.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task UnsubscribeCompanyAppSubscriptionAsync(Guid appId, string userId)
+    {
+        var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
+        var appExists = await this.appRepository.CheckAppExistsById(appId).ConfigureAwait(false);
+        if (!appExists)
+        {
+            throw new ArgumentException($"Parameters are invalid: app for id '{appId}' does not exist.", nameof(appId));
+        }
+
+        await this.companyAssignedAppsRepository.UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
