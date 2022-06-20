@@ -4,6 +4,7 @@ using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -23,11 +24,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
+        private readonly IPortalRepositories _portalRepositories;
         public UserBusinessLogic(
             IProvisioningManager provisioningManager,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IMailingService mailingService,
+            IPortalRepositories portalRepositories,
             ILogger<UserBusinessLogic> logger,
             IOptions<UserSettings> settings)
         {
@@ -35,6 +38,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _provisioningDBAccess = provisioningDBAccess;
             _portalDBAccess = portalDBAccess;
             _mailingService = mailingService;
+            _portalRepositories = portalRepositories;
             _logger = logger;
             _settings = settings.Value;
         }
@@ -393,7 +397,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
-            var appUser = _portalDBAccess.GetCompanyAppUsersAsync(appId, iamUserId);
+            var appUser = _portalRepositories.GetInstance<IAppUserRepository>().GetCompanyAppUsersUntrackedAsync(appId, iamUserId);
 
             var result = await Pagination.CreateResponseAsync<CompanyAppUserDetails>(
              page,

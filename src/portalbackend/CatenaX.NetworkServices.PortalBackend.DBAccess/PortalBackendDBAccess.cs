@@ -608,13 +608,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
          .Where(app => app.AppId == appId)
          .Select(app => app.AppId)
          .SingleOrDefaultAsync();
-         
-        public IQueryable<CompanyUser> GetCompanyAppUsersAsync(Guid appId, string iamUserId) =>
-         _dbContext.CompanyAssignedApps
-                    .Where(app => app.AppId == appId
-                        && app.Company!.CompanyStatusId == CompanyStatusId.ACTIVE
-                        && app.Company!.CompanyUsers!.Any(user => user.IamUser!.UserEntityId == iamUserId))
-                    .SelectMany(app => app.Company!.CompanyUsers);
 
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
