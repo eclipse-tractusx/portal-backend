@@ -1,6 +1,8 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -55,5 +57,11 @@ public class ConnectorsRepository : IConnectorsRepository
         {
             throw new ArgumentException("Connector with provided ID does not exist.", nameof(connectorId));
         }
+    }
+
+    /// <inheritdoc/>
+    public Task<IDbContextTransaction> BeginTransactionAsync()
+    {
+        return _context.Database.BeginTransactionAsync();
     }
 }

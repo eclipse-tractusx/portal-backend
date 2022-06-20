@@ -16,9 +16,21 @@ public class PortalRepositories : IPortalRepositories
     {
         var repositoryType = typeof(RepositoryType);
 
-        if (repositoryType == typeof(IConnectorsRepository))
+        if (repositoryType == typeof(IApplicationRepository))
+        {
+            return To<RepositoryType>(new ApplicationRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(IConnectorsRepository))
         {
             return To<RepositoryType>(new ConnectorsRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(IServiceAccountsRepository))
+        {
+            return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(IUserBusinessPartnerRepository))
+        {
+            return To<RepositoryType>(new UserBusinessPartnerRepository(_dbContext));
         }
         else if (repositoryType == typeof(IUserRepository))
         {
