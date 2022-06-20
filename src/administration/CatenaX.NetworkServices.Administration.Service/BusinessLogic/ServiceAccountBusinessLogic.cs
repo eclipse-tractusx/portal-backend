@@ -213,17 +213,17 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         };
     }
 
-    public async Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId)
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId)
     {
-        var query = _portalRepositories.GetInstance<IServiceAccountsRepository>().GetOwnCompanyServiceAccountsUntracked(iamAdminId);
+        var serviceAccounts = _portalRepositories.GetInstance<IServiceAccountsRepository>().GetOwnCompanyServiceAccountsUntracked(iamAdminId);
 
-        var result = await Pagination.CreateResponseAsync<CompanyServiceAccountData>(
+        return Pagination.CreateResponseAsync<CompanyServiceAccountData>(
             page,
             size,
             15,
             (int skip, int take) => new Pagination.AsyncSource<CompanyServiceAccountData>(
-                query.CountAsync(),
-                query.OrderBy(serviceAccount => serviceAccount.Name)
+                serviceAccounts.CountAsync(),
+                serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name)
                     .Skip(skip)
                     .Take(take)
                     .Select(serviceAccount => new CompanyServiceAccountData(
@@ -231,12 +231,5 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                         serviceAccount.IamServiceAccount!.ClientClientId,
                         serviceAccount.Name))
                     .AsAsyncEnumerable()));
-
-        if (result == null)
-        {
-            throw new NotFoundException($"user {iamAdminId} is not associated with any company");
-        }
-
-        return result;
     }
 }
