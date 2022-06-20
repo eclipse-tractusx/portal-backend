@@ -438,30 +438,28 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public async Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
-            var appUser = _portalRepositories.GetInstance<IAppUserRepository>().GetCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var appUsers = _portalRepositories.GetInstance<IAppUserRepository>().GetCompanyAppUsersUntrackedAsync(appId, iamUserId);
 
-            var result = await Pagination.CreateResponseAsync<CompanyAppUserDetails>(
-             page,
-             size,
-             15,
-             (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
-                appUser.CountAsync(),
-                appUser.OrderBy(companyUser => companyUser.Id)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(companyUser => new CompanyAppUserDetails(
-                        companyUser.Id,
-                        companyUser.CompanyUserStatusId,
-                        companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email
-                    }).AsAsyncEnumerable()));
-
-            return result;
+            return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
+                page,
+                size,
+                15,
+                (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
+                    appUsers.CountAsync(),
+                    appUsers.OrderBy(companyUser => companyUser.Id)
+                        .Skip(skip)
+                        .Take(take)
+                        .Select(companyUser => new CompanyAppUserDetails(
+                            companyUser.Id,
+                            companyUser.CompanyUserStatusId,
+                            companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                        {
+                            FirstName = companyUser.Firstname,
+                            LastName = companyUser.Lastname,
+                            Email = companyUser.Email
+                        }).AsAsyncEnumerable()));
         }
 
         public async Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
