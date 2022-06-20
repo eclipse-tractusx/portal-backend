@@ -54,4 +54,11 @@ public class AppRepository : IAppRepository
 
         return (appName: appDetails.Name!, providerName: appDetails.Provider!, providerContactEmail: appDetails.ContactEmail!);
     }
+
+    /// <inheritdoc/>
+    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
+        _context.AppAssignedClients.AsNoTracking()
+            .Where(appClient => appClient.AppId == appId)
+            .Select(appClient => appClient.IamClient!.ClientClientId)
+            .SingleOrDefaultAsync();
 }
