@@ -126,6 +126,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
             }
+
             company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
@@ -149,6 +150,22 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             company.Address.Streetadditional = companyWithAddress.Streetadditional;
             company.Address.Streetnumber = companyWithAddress.Streetnumber;
             company.CompanyStatusId = CompanyStatusId.PENDING;
+
+            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
+
+            if (application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
+                || application.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
+                || application.ApplicationStatusId == CompanyApplicationStatusId.DECLINED)
+            {
+                throw new ForbiddenException($"Application is already closed");
+            }
+
+            if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
+            {
+                application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+            }
+
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
