@@ -19,4 +19,11 @@ public interface IDocumentRepository
     /// <param name="documentTypeId">Type of the document</param>
     /// <returns>Returns the created document</returns>
     Task<Document> CreateDocumentAsync(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
+
+    /// <summary>
+    /// Gets the document with the given id from the persistence layer.
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>Returns the document</returns>
+    Task<Document?> GetDocumentByIdAsync(Guid documentId);
 }

@@ -26,9 +26,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly IDocumentRepository _documentRepository;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IDocumentRepository documentRepository)
+        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
@@ -37,7 +38,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
-            _documentRepository = documentRepository;
+            _documentRepository = portalRepositories.GetInstance<IDocumentRepository>();
+            _userRepository = portalRepositories.GetInstance<IUserRepository>();
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -87,6 +89,23 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 }
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        }
+
+        public async Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId)
+        {
+            var userId = await _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
+            var document = await _documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
+            if (document is null)
+            {
+                throw new NotFoundException("No document with the given id was found.");
+            }
+
+            if (document.CompanyUserId is not null && document.CompanyUserId != userId)
+            {
+                throw new ForbiddenException("User doesn't have the relevant rights to request for the document");
+            }
+
+            return (document.Documentname, Convert.FromBase64String(document.DocumentContent));
         }
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
