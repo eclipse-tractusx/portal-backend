@@ -20,6 +20,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new ApplicationRepository(_dbContext));
         }
+        else if (repositoryType == typeof(IAppUserRepository))
+        {
+            return To<RepositoryType>(new AppUserRepository(_dbContext));
+        }
         else if (repositoryType == typeof(IConnectorsRepository))
         {
             return To<RepositoryType>(new ConnectorsRepository(_dbContext));
@@ -39,14 +43,6 @@ public class PortalRepositories : IPortalRepositories
         else if (repositoryType == typeof(IUserRolesRepository))
         {
             return To<RepositoryType>(new UserRolesRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IServiceAccountsRepository))
-        {
-            return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IAppUserRepository))
-        {
-            return To<RepositoryType>(new AppUserRepository(_dbContext));
         }
         else
         {

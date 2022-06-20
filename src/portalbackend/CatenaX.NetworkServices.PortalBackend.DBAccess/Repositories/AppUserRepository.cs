@@ -13,11 +13,12 @@ public class AppUserRepository : IAppUserRepository
     {
         _dbContext = portalDbContext;
     }
+
     public IQueryable<CompanyUser> GetCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
-         _dbContext.CompanyAssignedApps
-                    .AsNoTracking()
-                    .Where(app => app.AppId == appId
-                        && app.Company!.CompanyStatusId == CompanyStatusId.ACTIVE
-                        && app.Company!.CompanyUsers!.Any(user => user.IamUser!.UserEntityId == iamUserId))
-                    .SelectMany(app => app.Company!.CompanyUsers);
+        _dbContext.CompanyAssignedApps
+            .AsNoTracking()
+            .Where(app => app.AppId == appId
+                && app.Company!.CompanyStatusId == CompanyStatusId.ACTIVE
+                && app.Company!.CompanyUsers!.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .SelectMany(app => app.Company!.CompanyUsers);
 }
