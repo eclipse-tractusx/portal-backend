@@ -1,5 +1,3 @@
-using System;
-
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
     public class UploadDocuments
@@ -10,6 +8,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
             DocumentName = documentName;
         }
         public Guid DocumentId { get;}
+        
         public string DocumentName { get;}
     }
 

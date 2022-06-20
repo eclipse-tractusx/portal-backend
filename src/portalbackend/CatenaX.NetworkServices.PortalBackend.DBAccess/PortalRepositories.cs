@@ -40,6 +40,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new UserRolesRepository(_dbContext));
         }
+        else if (repositoryType == typeof(IDocumentRepository))
+        {
+            return To<RepositoryType>(new DocumentRepository(_dbContext));
+        }
         else
         {
             throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));

@@ -11,6 +11,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
+        
+        /// <summary>
+        /// Gets the file content from the persistence store for the given user
+        /// </summary>
+        /// <param name="documentId">The Id of the document that should be get</param>
+        /// <param name="iamUserId">The Id of the current user</param>
+        /// <returns></returns>
+        Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId);
+        
         Task SetIdpAsync(SetIdp idpToSet);
         IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);

@@ -1,6 +1,7 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -18,6 +19,7 @@ public class DocumentRepository : IDocumentRepository
         this._dbContext = dbContext;
     }
 
+    /// <inheritdoc />
     public async Task<Document> CreateDocumentAsync(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId)
     {
         var result = await _dbContext.Documents.AddAsync(
@@ -34,4 +36,8 @@ public class DocumentRepository : IDocumentRepository
             });
         return result.Entity;
     }
+
+    /// <inheritdoc />
+    public async Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
+        await this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 }
