@@ -108,10 +108,10 @@ public class ApplicationRepository : IApplicationRepository
     {
         foreach (var clientRole in clientRoles)
         {
-            await foreach (var item in _dbContext.CompanyApplications
-                  .AsNoTracking()
-                  .Where(application => application.Id == applicationId)
-                  .SelectMany(application =>
+             await foreach (var item in _dbContext.CompanyApplications
+                .AsNoTracking()
+                 .Where(application => application.Id == applicationId)
+                 .SelectMany(application =>
                       application.Company!.CompanyUsers
                           .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText)))
                           .Select(companyUser => new
@@ -122,13 +122,13 @@ public class ApplicationRepository : IApplicationRepository
                               CompanyName = companyUser.Company!.Name
                           }))
                   .AsAsyncEnumerable())
-            {
-                yield return new WelcomeEmailData(
-                item.FirstName,
-                item.LastName,
-                item.Email,
-                item.CompanyName);
-            }
+             {
+                 yield return new WelcomeEmailData(
+                     item.FirstName,
+                     item.LastName,
+                     item.Email,
+                     item.CompanyName);
+             }
         }
     }
 }

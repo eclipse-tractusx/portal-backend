@@ -127,6 +127,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.REJECTED;
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await PostRegistrationCancelEmailAsync(applicationId).ConfigureAwait(false);
         return true;
     }
