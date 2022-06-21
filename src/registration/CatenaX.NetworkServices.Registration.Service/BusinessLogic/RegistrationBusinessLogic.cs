@@ -25,7 +25,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
-        private readonly IDocumentRepository _documentRepository;
+        private readonly IPortalRepositories _portalRepositories;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
         public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IPortalRepositories portalRepositories)
@@ -37,7 +37,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
-            _documentRepository = portalRepositories.GetInstance<IDocumentRepository>();
+            _portalRepositories = portalRepositories;
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -62,13 +62,13 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
             }
 
-            var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (companyUserId.Equals(Guid.Empty))
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
-            var documentName = document.FileName;
 
+            var documentName = document.FileName;
             using (var ms = new MemoryStream())
             {
                 document.CopyTo(ms);
@@ -83,10 +83,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                         builder.Append(hashValue[i].ToString("x2"));
                     }
                     var hash = builder.ToString();
-                    _documentRepository.CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
