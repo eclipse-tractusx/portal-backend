@@ -63,6 +63,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalTable: "document_status",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.Sql("UPDATE portal.documents SET document_status_id = 2");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

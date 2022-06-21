@@ -43,13 +43,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> companyUserRoles);
         IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
         Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
-        IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
         Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
         Task<bool> IsUserExisting(string iamUserId);
         IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
         Task<string?> GetLanguageAsync(string LanguageShortName);
-        Task<Guid> GetAppAssignedClientsAsync(Guid appId);
+        Task<Guid> GetAppAssignedClientsAsync(Guid appId);        
         Task<int> SaveAsync();
     }
 }

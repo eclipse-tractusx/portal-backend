@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -18,8 +19,17 @@ public interface IDocumentRepository
     /// <param name="documentOId"></param>
     /// <param name="documentTypeId">Type of the document</param>
     /// <returns>Returns the created document</returns>
-    Task<Document> CreateDocumentAsync(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
+    Document CreateDocument(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
 
+    /// <summary>
+    /// Gets all documents for the given applicationId, documentId and userId
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="documentTypeId">Id of the document type</param>
+    /// <param name="iamUserId">Id of the user</param>
+    /// <returns>A collection of documents</returns>
+    IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
+    
     /// <summary>
     /// Gets the document with the given id from the persistence layer.
     /// </summary>
