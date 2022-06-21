@@ -17,22 +17,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        public Company CreateCompany(string companyName) =>
-            _dbContext.Companies.Add(
-                new Company(
-                    Guid.NewGuid(),
-                    companyName,
-                    CompanyStatusId.PENDING,
-                    DateTimeOffset.UtcNow)).Entity;
-
-        public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
-            _dbContext.CompanyApplications.Add(
-                new CompanyApplication(
-                    Guid.NewGuid(),
-                    company.Id,
-                    companyApplicationStatusId,
-                    DateTimeOffset.UtcNow)).Entity;
-
+        [Obsolete("user IUserRepository instead")]
         public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId) =>
             _dbContext.CompanyUsers.Add(
                 new CompanyUser(
@@ -46,6 +31,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Email = email,
                 }).Entity;
 
+        [Obsolete("user IApplicationRepository instead")]
         public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
             _dbContext.Invitations.Add(
                 new Invitation(
@@ -63,22 +49,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     userRoleId
                 )).Entity;
 
-        public IdentityProvider CreateSharedIdentityProvider(Company company)
-        {
-            var idp = new IdentityProvider(
-                Guid.NewGuid(),
-                IdentityProviderCategoryId.KEYCLOAK_SHARED,
-                DateTimeOffset.UtcNow);
-            idp.Companies.Add(company);
-            return _dbContext.IdentityProviders.Add(idp).Entity;
-        }
-
-        public IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias) =>
-            _dbContext.IamIdentityProviders.Add(
-                new IamIdentityProvider(
-                    idpAlias,
-                    identityProvider.Id)).Entity;
-
+        [Obsolete("user IUserRepository instead")]
         public IamUser CreateIamUser(CompanyUser user, string iamUserEntityId) =>
             _dbContext.IamUsers.Add(
                 new IamUser(
@@ -348,23 +319,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
 
         public IamUser RemoveIamUser(IamUser iamUser) =>
             _dbContext.Remove(iamUser).Entity;
-
-        [Obsolete("use IUserRolesRepository instead")]
-        public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
-        {
-            foreach (var clientRole in clientRoles)
-            {
-                await foreach (var userRoleId in _dbContext.UserRoles
-                    .AsNoTracking()
-                    .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
-                    .AsQueryable()
-                    .Select(userRole => userRole.Id)
-                    .AsAsyncEnumerable().ConfigureAwait(false))
-                {
-                    yield return userRoleId;
-                }
-            }
-        }
 
         public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
             _dbContext.UserRoles
