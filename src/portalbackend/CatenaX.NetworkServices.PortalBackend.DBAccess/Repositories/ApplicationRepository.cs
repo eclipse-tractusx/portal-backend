@@ -16,6 +16,23 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
+    public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
+        _dbContext.CompanyApplications.Add(
+            new CompanyApplication(
+                Guid.NewGuid(),
+                company.Id,
+                companyApplicationStatusId,
+                DateTimeOffset.UtcNow)).Entity;
+
+    public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+        _dbContext.Invitations.Add(
+            new Invitation(
+                Guid.NewGuid(),
+                applicationId,
+                user.Id,
+                InvitationStatusId.CREATED,
+                DateTimeOffset.UtcNow)).Entity;
+
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
         _dbContext.CompanyApplications
             .Where(companyApplication => companyApplication.Id == companyApplicationId)
