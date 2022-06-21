@@ -111,9 +111,9 @@ public class ApplicationRepository : IApplicationRepository
                 .CountAsync(),
             _dbContext.CompanyApplications
                 .AsNoTracking()
-                .Where(application=>application.Company!.Name.Contains(companyName))
+                .Where(application=>application.Company!.Name.StartsWith(companyName))
                 .OrderByDescending(application => application.DateCreated)
-                .Skip(0)
+                .Skip(skip)
                 .Take(take)
                 .Select(application => new CompanyApplicationDetails(
                     application.Id,
