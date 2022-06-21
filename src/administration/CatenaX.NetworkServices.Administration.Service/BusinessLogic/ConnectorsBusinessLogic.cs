@@ -30,13 +30,15 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ConnectorViewModel>> GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(string iamUserId, int page, int size) =>
-        Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
+    public Task<Pagination.Response<ConnectorViewModel>> GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(string iamUserId, int page, int size)
+    {
+        var connectors = _repository.GetAllCompanyConnectorsForIamUser(iamUserId);
+
+        return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
             new Pagination.AsyncSource<ConnectorViewModel>
             (
-                this._repository.GetAllCompanyConnectorsForIamUser(iamUserId).CountAsync(),
-                this._repository.GetAllCompanyConnectorsForIamUser(iamUserId)
-                    .OrderByDescending(connector => connector.Name)
+                connectors.CountAsync(),
+                connectors.OrderByDescending(connector => connector.Name)
                     .Skip(skip)
                     .Take(take)
                     .Select(c => 
@@ -49,6 +51,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                     ).AsAsyncEnumerable()
             )
         );
+    }
 
     /// <inheritdoc/>
     public async Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)

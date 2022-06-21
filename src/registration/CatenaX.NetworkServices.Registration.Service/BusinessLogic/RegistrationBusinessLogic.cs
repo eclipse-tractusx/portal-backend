@@ -399,12 +399,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ForbiddenException($"iamUserId {iamUserId} is not associated with invitation");
             }
 
-            if (invitationData.InvitationStatusId != InvitationStatusId.CREATED)
+            if (invitationData.InvitationStatusId == InvitationStatusId.CREATED
+                || invitationData.InvitationStatusId == InvitationStatusId.PENDING)
             {
-                throw new ArgumentException($"invitation status is no longer in status 'CREATED'");
+                invitationData.InvitationStatusId = InvitationStatusId.ACCEPTED;
             }
-
-            invitationData.InvitationStatusId = InvitationStatusId.PENDING;
 
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
