@@ -19,7 +19,7 @@ public class DocumentRepository : IDocumentRepository
     }
 
     /// <inheritdoc />
-    public Document CreateDocument(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
+    public Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
         _dbContext.Documents.Add(
             new Document(
                 Guid.NewGuid(),

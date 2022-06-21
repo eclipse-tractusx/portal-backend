@@ -14,7 +14,7 @@ public class Document
         Consents = new HashSet<Consent>();
     }
 
-    public Document(Guid id, string documentContent, string documenthash, string documentname, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
+    public Document(Guid id, byte[] documentContent, string documenthash, string documentname, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
     {
         Id = id;
         DocumentContent = documentContent;
@@ -34,7 +34,7 @@ public class Document
     [MaxLength(255)]
     public string Documenthash { get; set; }
 
-    public string DocumentContent { get; set; }
+    public byte[] DocumentContent { get; set; }
 
     [MaxLength(255)]
     public string Documentname { get; set; }

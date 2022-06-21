@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220617072031_CPLP-1103-AddDocumentStatusAndContent")]
-    partial class CPLP1103AddDocumentStatusAndContent
+    [Migration("20220621140937_CPLP-1103-AddDocumentStatusAndContent.cs")]
+    partial class CPLP1103AddDocumentStatusAndContentcs
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -3120,9 +3120,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
-                    b.Property<string>("DocumentContent")
+                    b.Property<byte[]>("DocumentContent")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("bytea")
                         .HasColumnName("document_content");
 
                     b.Property<uint>("DocumentOid")
