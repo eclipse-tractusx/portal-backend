@@ -104,31 +104,20 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
 
-    public async IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IDictionary<string, IEnumerable<string>> clientRoles)
-    {
-        foreach (var clientRole in clientRoles)
-        {
-             await foreach (var item in _dbContext.CompanyApplications
-                .AsNoTracking()
-                 .Where(application => application.Id == applicationId)
-                 .SelectMany(application =>
-                      application.Company!.CompanyUsers
-                          .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText)))
-                          .Select(companyUser => new
-                          {
-                              FirstName = companyUser.Firstname,
-                              LastName = companyUser.Lastname,
-                              Email = companyUser.Email,
-                              CompanyName = companyUser.Company!.Name
-                          }))
-                  .AsAsyncEnumerable())
-             {
-                 yield return new WelcomeEmailData(
-                     item.FirstName,
-                     item.LastName,
-                     item.Email,
-                     item.CompanyName);
-             }
-        }
-    }
+    public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, List<Guid> roleIds) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .SelectMany(application =>
+                application.Company!.CompanyUsers
+                    .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => roleIds.Contains(userRole.Id)))
+                    .Select(companyUser => new WelcomeEmailData(
+                        companyUser.Firstname,
+                        companyUser.Lastname,
+                        companyUser.Email,
+                        companyUser.Company!.Name)))
+            .AsAsyncEnumerable();
+            
+        
+    
 }
