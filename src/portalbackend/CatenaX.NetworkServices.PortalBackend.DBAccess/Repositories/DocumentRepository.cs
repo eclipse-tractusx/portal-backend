@@ -18,20 +18,19 @@ public class DocumentRepository : IDocumentRepository
         this._dbContext = dbContext;
     }
 
-    public async Task<Document> CreateDocumentAsync(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId)
-    {
-        var result = await _dbContext.Documents.AddAsync(
+    /// <inheritdoc />
+    public Document CreateDocument(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
+        _dbContext.Documents.Add(
             new Document(
                 Guid.NewGuid(),
                 documentContent,
                 hash,
                 documentName,
-                DateTimeOffset.UtcNow)
+                DateTimeOffset.UtcNow,
+                DocumentStatusId.PENDING)
             {
                 DocumentOid = documentOId,
                 DocumentTypeId = documentTypeId,
                 CompanyUserId = companyUserId
-            });
-        return result.Entity;
-    }
+            }).Entity;
 }

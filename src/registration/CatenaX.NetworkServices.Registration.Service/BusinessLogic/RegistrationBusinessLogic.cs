@@ -28,7 +28,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IDocumentRepository _documentRepository;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IDocumentRepository documentRepository)
+        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
@@ -37,7 +37,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
-            _documentRepository = documentRepository;
+            _documentRepository = portalRepositories.GetInstance<IDocumentRepository>();
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -83,7 +83,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                         builder.Append(hashValue[i].ToString("x2"));
                     }
                     var hash = builder.ToString();
-                    await _documentRepository.CreateDocumentAsync(companyUserId, documentName, documentContent, hash, 0, documentTypeId).ConfigureAwait(false);
+                    _documentRepository.CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);

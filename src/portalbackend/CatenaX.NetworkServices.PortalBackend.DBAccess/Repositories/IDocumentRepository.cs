@@ -18,5 +18,5 @@ public interface IDocumentRepository
     /// <param name="documentOId"></param>
     /// <param name="documentTypeId">Type of the document</param>
     /// <returns>Returns the created document</returns>
-    Task<Document> CreateDocumentAsync(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
+    Document CreateDocument(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
 }
