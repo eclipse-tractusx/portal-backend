@@ -25,20 +25,18 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
-        private readonly IDocumentRepository _documentRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IPortalRepositories _portalRepositories;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
         public RegistrationBusinessLogic(
-            IOptions<RegistrationSettings> settings,
-            IRegistrationDBAccess registrationDBAccess,
-            IMailingService mailingService,
-            IBPNAccess bpnAccess,
-            IProvisioningManager provisioningManager,
-            IPortalBackendDBAccess portalDBAccess,
-            ILogger<RegistrationBusinessLogic> logger,
-            IDocumentRepository documentRepository,
-            IUserRepository userRepository)
+            IOptions<RegistrationSettings> settings, 
+            IRegistrationDBAccess registrationDBAccess, 
+            IMailingService mailingService, 
+            IBPNAccess bpnAccess, 
+            IProvisioningManager provisioningManager, 
+            IPortalBackendDBAccess portalDBAccess, 
+            ILogger<RegistrationBusinessLogic> logger, 
+            IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
@@ -47,8 +45,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
-            _documentRepository = documentRepository;
-            _userRepository = userRepository;
+            _portalRepositories = portalRepositories;
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -62,6 +59,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
         {
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             if (string.IsNullOrEmpty(document.FileName))
             {
                 throw new ArgumentNullException("File name is must not be null");
@@ -94,7 +92,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                         builder.Append(hashValue[i].ToString("x2"));
                     }
                     var hash = builder.ToString();
-                    await _documentRepository.CreateDocumentAsync(companyUserId, documentName, documentContent, hash, 0, documentTypeId).ConfigureAwait(false);
+                    documentRepository.CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
@@ -103,8 +101,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         /// <inheritdoc />
         public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
         {
-            var companyUserId = await _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
-            var document = await _documentRepository.GetDocumentByIdAsync(documentId);
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
+            var document = await documentRepository.GetDocumentByIdAsync(documentId);
 
             if (document is null)
             {
@@ -121,7 +121,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ArgumentException("Incorrect document status");
             }
 
-            await this._documentRepository.DeleteDocumentAsync(document);
+            await documentRepository.DeleteDocumentAsync(document);
+            await this._portalRepositories.SaveAsync().ConfigureAwait(false);
             return true;
         }
 

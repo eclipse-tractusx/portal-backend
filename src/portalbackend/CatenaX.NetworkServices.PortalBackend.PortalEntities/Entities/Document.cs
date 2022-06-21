@@ -11,11 +11,10 @@ public class Document
         Documenthash = null!;
         Documentname = null!;
         DocumentContent = null!;
-        DocumentStatusId = DocumentStatusId.PENDING;
         Consents = new HashSet<Consent>();
     }
 
-    public Document(Guid id, string documentContent, string documenthash, string documentname, DateTimeOffset dateCreated, DocumentStatusId documentStatusId = DocumentStatusId.PENDING) : this()
+    public Document(Guid id, string documentContent, string documenthash, string documentname, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
     {
         Id = id;
         DocumentContent = documentContent;
