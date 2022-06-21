@@ -75,9 +75,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     document.CopyTo(ms);
                     var hash = BitConverter.ToString(md5.ComputeHash(ms)).Replace("-","").ToLower();
                     var documentContent = ms.GetBuffer();
-                    if (documentContent.Length != document.Length)
+                    if (ms.Length != document.Length || documentContent.Length != document.Length)
                     {
-                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {documentContent.Length}.");
+                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                     }
                     _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                     return await _portalRepositories.SaveAsync().ConfigureAwait(false);
