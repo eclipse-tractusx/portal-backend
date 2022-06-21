@@ -77,7 +77,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     var documentContent = ms.GetBuffer();
                     if (documentContent.Length != document.Length)
                     {
-                        throw new ArgumentException($"unexpected documentContent buffer length: {documentContent.Length}. Expected: {document.Length}");
+                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {documentContent.Length}.");
                     }
                     _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                     return await _portalRepositories.SaveAsync().ConfigureAwait(false);
