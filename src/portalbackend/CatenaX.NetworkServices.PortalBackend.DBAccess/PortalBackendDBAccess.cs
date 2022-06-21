@@ -215,17 +215,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(application => application.Id == applicationId)
                 .SingleOrDefaultAsync();
 
-        public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser =>
-                    iamUser.UserEntityId == iamUserId
-                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser =>
-                    iamUser.CompanyUserId
-                )
-                .SingleOrDefaultAsync();
-
         public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
         {
             return _dbContext.CompanyApplications
