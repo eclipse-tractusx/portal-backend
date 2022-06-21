@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -20,22 +21,33 @@ public class DocumentRepository : IDocumentRepository
     }
 
     /// <inheritdoc />
-    public async Task<Document> CreateDocumentAsync(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId)
-    {
-        var result = await _dbContext.Documents.AddAsync(
+    public Document CreateDocument(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
+        _dbContext.Documents.Add(
             new Document(
                 Guid.NewGuid(),
                 documentContent,
                 hash,
                 documentName,
-                DateTimeOffset.UtcNow)
+                DateTimeOffset.UtcNow,
+                DocumentStatusId.PENDING)
             {
                 DocumentOid = documentOId,
                 DocumentTypeId = documentTypeId,
                 CompanyUserId = companyUserId
-            });
-        return result.Entity;
-    }
+            }).Entity;
+
+    public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser =>
+                iamUser.UserEntityId == iamUserId
+                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId))
+            .Select(document =>
+                new UploadDocuments(
+                    document!.Id,
+                    document!.Documentname))
+            .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public async Task<Document?> GetDocumentByIdAsync(Guid documentId) =>

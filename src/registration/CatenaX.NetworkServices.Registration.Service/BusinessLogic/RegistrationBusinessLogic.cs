@@ -25,8 +25,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
-        private readonly IDocumentRepository _documentRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IPortalRepositories _portalRepositories;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
         public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IPortalRepositories portalRepositories)
@@ -38,8 +37,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
-            _documentRepository = portalRepositories.GetInstance<IDocumentRepository>();
-            _userRepository = portalRepositories.GetInstance<IUserRepository>();
+            _portalRepositories = portalRepositories;
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -85,16 +83,21 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                         builder.Append(hashValue[i].ToString("x2"));
                     }
                     var hash = builder.ToString();
-                    await _documentRepository.CreateDocumentAsync(companyUserId, documentName, documentContent, hash, 0, documentTypeId).ConfigureAwait(false);
+                    
+                    var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+                    documentRepository.CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId)
         {
-            var userId = await _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
-            var document = await _documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+
+            var userId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
+            var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
             if (document is null)
             {
                 throw new NotFoundException("No document with the given id was found.");
@@ -413,9 +416,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
         
-              //TODO: Need to implement storage for document upload
+        //TODO: Need to implement storage for document upload
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
-            _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
+            _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
 
         public async Task<int> SetInvitationStatusAsync(string iamUserId)
         {
