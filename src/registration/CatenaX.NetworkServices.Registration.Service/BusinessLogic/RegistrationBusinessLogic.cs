@@ -69,20 +69,13 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
 
             var documentName = document.FileName;
-            using (var ms = new MemoryStream())
+            using (var md5 = MD5.Create())
             {
-                document.CopyTo(ms);
-                var fileBytes = ms.ToArray();
-                var documentContent = Convert.ToBase64String(fileBytes);
-                using (var hashSHA256 = SHA256.Create())
+                using (var ms = new MemoryStream())
                 {
-                    var hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
-                    var builder = new StringBuilder();
-                    for (var i = 0; i < hashValue.Length; i++)
-                    {
-                        builder.Append(hashValue[i].ToString("x2"));
-                    }
-                    var hash = builder.ToString();
+                    document.CopyTo(ms);
+                    var hash = BitConverter.ToString(md5.ComputeHash(ms)).Replace("-","").ToLower();
+                    var documentContent = ms.ToArray();
                     _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }
             }

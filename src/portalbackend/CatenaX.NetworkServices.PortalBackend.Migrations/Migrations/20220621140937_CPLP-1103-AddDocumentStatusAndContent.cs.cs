@@ -1,20 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1103AddDocumentStatusAndContent : Migration
+    public partial class CPLP1103AddDocumentStatusAndContentcs : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
+            migrationBuilder.AddColumn<byte[]>(
                 name: "document_content",
                 schema: "portal",
                 table: "documents",
-                type: "text",
+                type: "bytea",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: new byte[0]);
 
             migrationBuilder.AddColumn<int>(
                 name: "document_status_id",
@@ -63,8 +64,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalTable: "document_status",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.Sql("UPDATE portal.documents SET document_status_id = 2");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
