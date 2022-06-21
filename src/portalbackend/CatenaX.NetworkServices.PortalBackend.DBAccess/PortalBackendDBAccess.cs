@@ -100,30 +100,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     })
                 .AsAsyncEnumerable();
 
-        [Obsolete("use IApplicationRepository instead")]
-        public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
-            _dbContext.CompanyApplications
-                .Where(companyApplication => companyApplication.Id == companyApplicationId)
-                .Select(
-                    companyApplication => new CompanyWithAddress(
-                        companyApplication.CompanyId,
-                        companyApplication.Company!.Name,
-                        companyApplication.Company.Address!.City ?? "",
-                        companyApplication.Company.Address.Streetname ?? "",
-                        companyApplication.Company.Address.CountryAlpha2Code ?? "")
-                    {
-                        BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
-                        Shortname = companyApplication.Company.Shortname,
-                        Region = companyApplication.Company.Address.Region,
-                        Streetadditional = companyApplication.Company.Address.Streetadditional,
-                        Streetnumber = companyApplication.Company.Address.Streetnumber,
-                        Zipcode = companyApplication.Company.Address.Zipcode,
-                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                        TaxId = companyApplication.Company.TaxId
-                    })
-                .AsNoTracking()
-                .SingleOrDefaultAsync();
-
         public Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
                 .Include(company => company!.Address)
