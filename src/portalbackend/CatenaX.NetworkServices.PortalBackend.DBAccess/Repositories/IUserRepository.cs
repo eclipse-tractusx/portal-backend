@@ -1,3 +1,5 @@
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -6,6 +8,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// </summary>
 public interface IUserRepository
 {
+    CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);
+    IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
@@ -16,14 +20,8 @@ public interface IUserRepository
     /// <param name="companyUserId"></param>
     /// <param name="adminUserId"></param>
     /// <returns>Company and IamUser</returns>
-    Task<CompanyIamUser> GetIdpUserByIdAsync(Guid companyUserId, string adminUserId);
+    Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId);
 
-    /// <summary>
-    /// Get Client Name by App Id
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <returns>Client Name</returns>
-    Task<string> GetAppAssignedRolesClientIdAsync(Guid appId);
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId);
