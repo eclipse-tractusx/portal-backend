@@ -104,7 +104,7 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, List<Guid> roleIds) =>
+    public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
@@ -117,7 +117,4 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Email,
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
-            
-        
-    
 }

@@ -134,8 +134,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<bool> PostRegistrationCancelEmailAsync(Guid applicationId)
     {
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
+
         await foreach (var user in _applicationRepository.GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
         {
             var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
