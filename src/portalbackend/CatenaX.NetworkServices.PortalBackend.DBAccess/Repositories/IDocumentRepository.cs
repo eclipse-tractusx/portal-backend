@@ -18,5 +18,5 @@ public interface IDocumentRepository
     /// <param name="documentOId"></param>
     /// <param name="documentTypeId">Type of the document</param>
     /// <returns>Returns the created document</returns>
-    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId);
+    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, uint documentOId, DocumentTypeId documentTypeId);
 }

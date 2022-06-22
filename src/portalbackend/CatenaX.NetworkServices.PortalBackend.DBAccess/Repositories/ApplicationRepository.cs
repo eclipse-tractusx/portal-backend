@@ -72,7 +72,7 @@ public class ApplicationRepository : IApplicationRepository
                     application.DateCreated,
                     application.Company!.Name,
                     application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                        document.Documenthash)
+                        BitConverter.ToString(document.DocumentHash).Replace("-","").ToLower())
                     {
                         DocumentTypeId = document.DocumentTypeId,
                     })))

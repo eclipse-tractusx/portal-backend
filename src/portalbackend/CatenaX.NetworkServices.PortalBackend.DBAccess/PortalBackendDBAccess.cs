@@ -344,7 +344,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(document =>
                     new UploadDocuments(
                         document!.Id,
-                        document!.Documentname))
+                        document!.DocumentName))
                 .AsAsyncEnumerable();
 
         public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
@@ -363,7 +363,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                    company!.Id,
                    company.Name,
                    company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
+                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
                    company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                                                    .Select(consent => new AgreementConsentStatusForRegistrationData(
                                                            consent.AgreementId, consent.ConsentStatusId)))

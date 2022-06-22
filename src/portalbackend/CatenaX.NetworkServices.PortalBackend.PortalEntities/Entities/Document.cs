@@ -8,18 +8,18 @@ public class Document
 {
     private Document()
     {
-        Documenthash = null!;
-        Documentname = null!;
+        DocumentHash = null!;
+        DocumentName = null!;
         DocumentContent = null!;
         Consents = new HashSet<Consent>();
     }
 
-    public Document(Guid id, byte[] documentContent, string documenthash, string documentname, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
     {
         Id = id;
         DocumentContent = documentContent;
-        Documenthash = documenthash;
-        Documentname = documentname;
+        DocumentHash = documentHash;
+        DocumentName = documentName;
         DateCreated = dateCreated;
         DocumentStatusId = documentStatusId;
     }
@@ -28,16 +28,12 @@ public class Document
 
     public DateTimeOffset DateCreated { get; private set; }
 
-    [Column("document", TypeName = "oid")]
-    public uint DocumentOid { get; set; } // FIXME: What is this good for?
-
-    [MaxLength(255)]
-    public string Documenthash { get; set; }
+    public byte[] DocumentHash { get; set; }
 
     public byte[] DocumentContent { get; set; }
 
     [MaxLength(255)]
-    public string Documentname { get; set; }
+    public string DocumentName { get; set; }
 
     public DocumentTypeId? DocumentTypeId { get; set; }
 
