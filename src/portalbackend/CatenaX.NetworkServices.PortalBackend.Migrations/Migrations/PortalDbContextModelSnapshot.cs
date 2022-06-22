@@ -3123,9 +3123,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("bytea")
                         .HasColumnName("document_content");
 
-                    b.Property<uint>("DocumentOid")
-                        .HasColumnType("oid")
-                        .HasColumnName("document");
+                    b.Property<byte[]>("DocumentHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("document_hash");
+
+                    b.Property<string>("DocumentName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("document_name");
 
                     b.Property<int>("DocumentStatusId")
                         .HasColumnType("integer")
@@ -3134,18 +3141,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Property<int?>("DocumentTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("document_type_id");
-
-                    b.Property<string>("Documenthash")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("documenthash");
-
-                    b.Property<string>("Documentname")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("documentname");
 
                     b.HasKey("Id")
                         .HasName("pk_documents");

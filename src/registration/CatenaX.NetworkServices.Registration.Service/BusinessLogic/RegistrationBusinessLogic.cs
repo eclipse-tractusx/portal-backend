@@ -74,7 +74,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 using (var ms = new MemoryStream())
                 {
                     document.CopyTo(ms);
-                    var hash = BitConverter.ToString(md5.ComputeHash(ms)).Replace("-","").ToLower();
+                    var hash = md5.ComputeHash(ms);
                     var documentContent = ms.ToArray();
                     _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
                 }

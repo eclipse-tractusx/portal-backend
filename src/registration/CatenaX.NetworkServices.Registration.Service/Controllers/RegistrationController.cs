@@ -56,7 +56,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <response code="403">The user is not assigned with the CompanyAppication.</response>
         /// <response code="415">Only PDF files are supported..</response>
         [HttpPost]
-        // [Authorize(Roles = "upload_documents")]
+        [Authorize(Roles = "upload_documents")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
