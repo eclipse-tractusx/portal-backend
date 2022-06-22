@@ -64,26 +64,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
             this.WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
-        /// <summary>
-        /// Deletes the document with the given id
-        /// </summary>
-        /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
-        /// <returns></returns>
-        /// <remarks>Example: Delete: /api/registration/documents/{documentId}</remarks>
-        /// <response code="200">Successfully deleted the document</response>
-        /// <response code="400">Incorrect document state</response>
-        /// <response code="403">The user is not assigned with the Company.</response>
-        /// <response code="404">The document was not found.</response>
-        [HttpDelete]
-        [Authorize(Roles = "delete_documents")]
-        [Route("documents/{documentId}")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => 
-            this.WithIamUserId(userId => _registrationBusinessLogic.DeleteDocumentAsync(documentId, userId));
-
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
