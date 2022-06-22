@@ -74,6 +74,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "documents",
                 column: "document_status_id");
 
+            migrationBuilder.Sql("UPDATE portal.documents SET document_status_id = 2");
+
             migrationBuilder.AddForeignKey(
                 name: "fk_documents_document_status_document_status_id",
                 schema: "portal",
@@ -83,8 +85,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalTable: "document_status",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.Sql("UPDATE portal.documents SET document_status_id = 2");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
