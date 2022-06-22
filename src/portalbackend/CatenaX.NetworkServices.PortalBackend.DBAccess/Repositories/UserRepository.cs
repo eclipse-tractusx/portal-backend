@@ -140,4 +140,15 @@ public class UserRepository : IUserRepository
                     .SingleOrDefault()!
             ))
             .SingleOrDefaultAsync();
+    
+    public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser =>
+                iamUser.UserEntityId == iamUserId
+                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+            .Select(iamUser =>
+                iamUser.CompanyUserId
+            )
+            .SingleOrDefaultAsync();
 }
