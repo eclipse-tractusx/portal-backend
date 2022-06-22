@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220617072031_CPLP-1103-AddDocumentStatusAndContent")]
+    [Migration("20220622143338_CPLP-1103-AddDocumentStatusAndContent")]
     partial class CPLP1103AddDocumentStatusAndContent
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3120,14 +3120,21 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
-                    b.Property<string>("DocumentContent")
+                    b.Property<byte[]>("DocumentContent")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("bytea")
                         .HasColumnName("document_content");
 
-                    b.Property<uint>("DocumentOid")
-                        .HasColumnType("oid")
-                        .HasColumnName("document");
+                    b.Property<byte[]>("DocumentHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("document_hash");
+
+                    b.Property<string>("DocumentName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("document_name");
 
                     b.Property<int>("DocumentStatusId")
                         .HasColumnType("integer")
@@ -3136,18 +3143,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Property<int?>("DocumentTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("document_type_id");
-
-                    b.Property<string>("Documenthash")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("documenthash");
-
-                    b.Property<string>("Documentname")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("documentname");
 
                     b.HasKey("Id")
                         .HasName("pk_documents");

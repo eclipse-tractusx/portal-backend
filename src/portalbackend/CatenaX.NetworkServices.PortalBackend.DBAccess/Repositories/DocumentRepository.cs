@@ -20,7 +20,7 @@ public class DocumentRepository : IDocumentRepository
     }
 
     /// <inheritdoc />
-    public Document CreateDocument(Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
+    public Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, uint documentOId, DocumentTypeId documentTypeId) =>
         _dbContext.Documents.Add(
             new Document(
                 Guid.NewGuid(),
@@ -30,7 +30,6 @@ public class DocumentRepository : IDocumentRepository
                 DateTimeOffset.UtcNow,
                 DocumentStatusId.PENDING)
             {
-                DocumentOid = documentOId,
                 DocumentTypeId = documentTypeId,
                 CompanyUserId = companyUserId
             }).Entity;

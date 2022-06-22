@@ -12,7 +12,6 @@ using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
-using System.Text;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
@@ -59,7 +58,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
         {
-            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             if (string.IsNullOrEmpty(document.FileName))
             {
                 throw new ArgumentNullException("File name is must not be null");
@@ -71,31 +69,28 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
             }
 
-            var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (companyUserId.Equals(Guid.Empty))
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
-            var documentName = document.FileName;
 
-            using (var ms = new MemoryStream())
+            var documentName = document.FileName;
+            using (var md5 = MD5.Create())
             {
-                document.CopyTo(ms);
-                var fileBytes = ms.ToArray();
-                var documentContent = Convert.ToBase64String(fileBytes);
-                using (var hashSHA256 = SHA256.Create())
+                using (var ms = new MemoryStream((int)document.Length))
                 {
-                    var hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
-                    var builder = new StringBuilder();
-                    for (var i = 0; i < hashValue.Length; i++)
+                    document.CopyTo(ms);
+                    var hash = md5.ComputeHash(ms);
+                    var documentContent = ms.GetBuffer();
+                    if (ms.Length != document.Length || documentContent.Length != document.Length)
                     {
-                        builder.Append(hashValue[i].ToString("x2"));
+                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                     }
-                    var hash = builder.ToString();
-                    documentRepository.CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    return await _portalRepositories.SaveAsync().ConfigureAwait(false);
                 }
             }
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
@@ -112,7 +107,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
         {
-            var result = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+            var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
             if (result == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
