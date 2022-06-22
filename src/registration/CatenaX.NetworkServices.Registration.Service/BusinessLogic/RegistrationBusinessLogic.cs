@@ -12,7 +12,6 @@ using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
-using System.Text;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
@@ -71,15 +70,19 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var documentName = document.FileName;
             using (var md5 = MD5.Create())
             {
-                using (var ms = new MemoryStream())
+                using (var ms = new MemoryStream((int)document.Length))
                 {
                     document.CopyTo(ms);
                     var hash = md5.ComputeHash(ms);
-                    var documentContent = ms.ToArray();
+                    var documentContent = ms.GetBuffer();
+                    if (ms.Length != document.Length || documentContent.Length != document.Length)
+                    {
+                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+                    }
                     _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    return await _portalRepositories.SaveAsync().ConfigureAwait(false);
                 }
             }
-            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
@@ -96,7 +99,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
         {
-            var result = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+            var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
             if (result == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
