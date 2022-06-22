@@ -8,9 +8,16 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 public interface ICompanyRepository
 {
     /// <summary>
+    /// Creates new company entity from persistence layer.
+    /// </summary>
+    /// <param name="companyName">Name of the company to create the new entity for.</param>
+    /// <returns>Created company entity.</returns>
+    Company CreateCompany(string companyName);
+
+    /// <summary>
     /// Retrieves company entity from persistence layer.
     /// </summary>
     /// <param name="companyId">Id of the company to retrieve.</param>
     /// <returns>Requested company entity or null if it does not exist.</returns>
-    public ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
+    ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
 }
