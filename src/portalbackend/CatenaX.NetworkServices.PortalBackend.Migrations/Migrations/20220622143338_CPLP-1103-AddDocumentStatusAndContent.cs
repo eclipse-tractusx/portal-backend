@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1103AddDocumentStatusAndContentcs : Migration
+    public partial class CPLP1103AddDocumentStatusAndContent : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -33,6 +33,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "document_hash",
                 schema: "portal",
                 table: "documents",
+                type: "bytea",
+                oldNullable: true,
                 nullable: false);
 
             migrationBuilder.DropColumn(
@@ -97,6 +99,20 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalTable: "document_status",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "document_content",
+                schema: "portal",
+                table: "documents",
+                oldDefaultValue: new byte[0],
+                defaultValue: null);
+
+            migrationBuilder.AlterColumn<int>(
+                name: "document_status_id",
+                schema: "portal",
+                table: "documents",
+                oldDefaultValue: 0,
+                defaultValue: null);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -135,7 +151,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "documenthash",
                 schema: "portal",
                 table: "documents",
-                type: "text",
+                type: "character varying(255)",
+                maxLength: 255,
                 nullable: true);
 
             migrationBuilder.Sql("UPDATE portal.documents SET documenthash = encode(document_hash, 'hex')");
@@ -144,6 +161,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "documenthash",
                 schema: "portal",
                 table: "documents",
+                oldNullable: true,
                 nullable: false);
 
             migrationBuilder.DropColumn(

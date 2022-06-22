@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220622060220_CPLP-1103-AddDocumentStatusAndContent.cs")]
-    partial class CPLP1103AddDocumentStatusAndContentcs
+    [Migration("20220622143338_CPLP-1103-AddDocumentStatusAndContent")]
+    partial class CPLP1103AddDocumentStatusAndContent
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
