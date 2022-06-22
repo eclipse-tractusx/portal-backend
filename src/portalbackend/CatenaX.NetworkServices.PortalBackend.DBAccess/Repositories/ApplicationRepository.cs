@@ -16,6 +16,23 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
+    public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
+        _dbContext.CompanyApplications.Add(
+            new CompanyApplication(
+                Guid.NewGuid(),
+                company.Id,
+                companyApplicationStatusId,
+                DateTimeOffset.UtcNow)).Entity;
+
+    public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+        _dbContext.Invitations.Add(
+            new Invitation(
+                Guid.NewGuid(),
+                applicationId,
+                user.Id,
+                InvitationStatusId.CREATED,
+                DateTimeOffset.UtcNow)).Entity;
+
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
         _dbContext.CompanyApplications
             .Where(companyApplication => companyApplication.Id == companyApplicationId)
@@ -55,7 +72,7 @@ public class ApplicationRepository : IApplicationRepository
                     application.DateCreated,
                     application.Company!.Name,
                     application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                        document.Documenthash)
+                        Convert.ToHexString(document.DocumentHash).ToLower())
                     {
                         DocumentTypeId = document.DocumentTypeId,
                     })))
@@ -97,6 +114,20 @@ public class ApplicationRepository : IApplicationRepository
             .SelectMany(application =>
                 application.Company!.CompanyUsers
                     .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
+                    .Select(companyUser => new WelcomeEmailData(
+                        companyUser.Firstname,
+                        companyUser.Lastname,
+                        companyUser.Email,
+                        companyUser.Company!.Name)))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .SelectMany(application =>
+                application.Company!.CompanyUsers
+                    .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => roleIds.Contains(userRole.Id)))
                     .Select(companyUser => new WelcomeEmailData(
                         companyUser.Firstname,
                         companyUser.Lastname,
