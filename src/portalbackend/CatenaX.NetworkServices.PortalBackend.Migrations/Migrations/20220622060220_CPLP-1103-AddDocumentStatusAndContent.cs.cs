@@ -20,13 +20,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "documents",
                 newName: "document_name");
 
-            migrationBuilder.RenameColumn(
-                name: "documenthash",
+            migrationBuilder.AddColumn<byte[]>(
+                name: "document_hash",
                 schema: "portal",
                 table: "documents",
-                newName: "document_hash");
+                type: "bytea",
+                nullable: true);
 
-            migrationBuilder.Sql("ALTER TABLE portal.documents ALTER COLUMN document_hash TYPE bytea USING document_hash::TEXT::BYTEA");
+            migrationBuilder.Sql("UPDATE portal.documents SET document_hash = decode(documenthash, 'hex')");
+
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "document_hash",
+                schema: "portal",
+                table: "documents",
+                nullable: false);
+
+            migrationBuilder.DropColumn(
+                name: "documenthash",
+                schema: "portal",
+                table: "documents");
 
             migrationBuilder.AddColumn<byte[]>(
                 name: "document_content",
@@ -119,21 +131,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "documents",
                 newName: "documentname");
 
-            migrationBuilder.RenameColumn(
-                name: "document_hash",
+            migrationBuilder.AddColumn<string>(
+                name: "documenthash",
                 schema: "portal",
                 table: "documents",
-                newName: "documenthash");
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.Sql("UPDATE portal.documents SET documenthash = encode(document_hash, 'hex')");
 
             migrationBuilder.AlterColumn<string>(
                 name: "documenthash",
                 schema: "portal",
                 table: "documents",
-                type: "character varying(255)",
-                maxLength: 255,
-                nullable: false,
-                oldClrType: typeof(byte[]),
-                oldType: "bytea");
+                nullable: false);
+
+            migrationBuilder.DropColumn(
+                name: "document_hash",
+                schema: "portal",
+                table: "documents");
 
             migrationBuilder.AddColumn<uint>(
                 name: "document",
