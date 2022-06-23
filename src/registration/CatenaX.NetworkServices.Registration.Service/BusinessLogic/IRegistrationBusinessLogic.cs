@@ -12,9 +12,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
         Task SetIdpAsync(SetIdp idpToSet);
-        IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId);
+        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress);
+        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById);
         Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
         Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
