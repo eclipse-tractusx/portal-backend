@@ -23,7 +23,18 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(CompanyWithAddress), (int)HttpStatusCode.OK)]
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
         _logic.GetCompanyWithAddressAsync(applicationId);
-
+    
+    /// <summary>
+    /// Fet Application Detail by Company Name or Status
+    /// </summary>
+    /// <param name="page">page index start from 0</param>
+    /// <param name="size">size to get number of records</param>
+    /// <param name="companyName">search by company name</param>
+    /// <returns>Company Application Details</returns>
+    /// <remarks>Example: GET: api/administration/registration/applications?companyName=Car&page=0&size=4</remarks>
+    /// <remarks>Example: GET: api/administration/registration/applications?page=0&size=4</remarks>
+    /// <response code="200">Result as a Company Application Details</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
