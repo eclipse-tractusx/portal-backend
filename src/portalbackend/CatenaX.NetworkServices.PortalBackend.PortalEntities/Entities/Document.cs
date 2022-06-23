@@ -8,38 +8,42 @@ public class Document
 {
     private Document()
     {
-        Documenthash = null!;
-        Documentname = null!;
+        DocumentHash = null!;
+        DocumentName = null!;
+        DocumentContent = null!;
         Consents = new HashSet<Consent>();
     }
 
-    public Document(Guid id, string documentHash, string documentname, DateTimeOffset dateCreated) : this()
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
     {
         Id = id;
-        Documenthash = documentHash;
-        Documentname = documentname;
+        DocumentContent = documentContent;
+        DocumentHash = documentHash;
+        DocumentName = documentName;
         DateCreated = dateCreated;
+        DocumentStatusId = documentStatusId;
     }
 
     public Guid Id { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }
 
-    [Column("document", TypeName = "oid")]
-    public uint DocumentOid { get; set; } // FIXME: What is this good for?
+    public byte[] DocumentHash { get; set; }
+
+    public byte[] DocumentContent { get; set; }
 
     [MaxLength(255)]
-    public string Documenthash { get; set; }
-
-    [MaxLength(255)]
-    public string Documentname { get; set; }
+    public string DocumentName { get; set; }
 
     public DocumentTypeId? DocumentTypeId { get; set; }
+
+    public DocumentStatusId DocumentStatusId { get; set; }
 
     public Guid? CompanyUserId { get; set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }
     public virtual DocumentType? DocumentType { get; set; }
+    public virtual DocumentStatus? DocumentStatus { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
 }
