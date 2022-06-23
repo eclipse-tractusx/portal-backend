@@ -27,8 +27,8 @@ public class RegistrationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size) =>
-        _logic.GetCompanyApplicationDetailsAsync(page, size);
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size, [FromQuery]string? companyName = null) =>
+        _logic.GetCompanyApplicationDetailsAsync(page, size, companyName);
 
     [HttpPut]
     [Authorize(Roles = "approve_new_partner")]
@@ -36,9 +36,4 @@ public class RegistrationController : ControllerBase
     public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
             _logic.ApprovePartnerRequest(applicationId);
 
-    [HttpGet]
-    [Authorize(Roles = "view_submitted_applications")]
-    [Route("applications/{companyName}")]
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationByCompanyNameAsync([FromRoute]string companyName, [FromQuery]int page, [FromQuery]int size) =>
-        _logic.GetApplicationByCompanyNameAsync(companyName, page, size);
 }

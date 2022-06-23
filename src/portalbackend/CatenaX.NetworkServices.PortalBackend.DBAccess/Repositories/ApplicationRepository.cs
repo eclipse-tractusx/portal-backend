@@ -56,36 +56,11 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-    public Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take) =>
-        new Pagination.AsyncSource<CompanyApplicationDetails>(
-            _dbContext.CompanyApplications
-                .AsNoTracking()
-                .CountAsync(),
-            _dbContext.CompanyApplications
-                .AsNoTracking()
-                .OrderByDescending(application => application.DateCreated)
-                .Skip(skip)
-                .Take(take)
-                .Select(application => new CompanyApplicationDetails(
-                    application.Id,
-                    application.ApplicationStatusId,
-                    application.DateCreated,
-                    application.Company!.Name,
-                    application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                        document.Documenthash)
-                    {
-                        DocumentTypeId = document.DocumentTypeId,
-                    })))
-                {
-                    Email = application.Invitations
-                        .Select(invitation => invitation.CompanyUser)
-                        .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                            && companyUser.Email != null)
-                        .Select(companyUser => companyUser!.Email)
-                        .FirstOrDefault(),
-                    BusinessPartnerNumber = application.Company.BusinessPartnerNumber
-                })
-                .AsAsyncEnumerable());
+    public IQueryable<CompanyApplication> GetCompanyApplicationDetailsUntrackedAsync(string? companyName = null) =>
+        _dbContext.Companies
+               .AsNoTracking()
+               .Where(company => (companyName != null && companyName.Length >= 3) ? company!.Name.StartsWith(companyName) : true)
+               .SelectMany(company => company.CompanyApplications);
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
@@ -120,11 +95,5 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Email,
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
-
-    public IQueryable<CompanyApplication> GetApplicationByCompanyNameUntrackedAsync(string? companyName=null) =>
-           _dbContext.Companies
-               .AsNoTracking()
-               .Where(company =>(companyName!=null && companyName.Length>=3)? company!.Name.StartsWith(companyName):true)
-               .SelectMany(company=>company.CompanyApplications);
 
 }
