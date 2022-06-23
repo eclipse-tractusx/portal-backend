@@ -27,7 +27,7 @@ public class RegistrationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size) =>
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery] int page, [FromQuery] int size) =>
         _logic.GetCompanyApplicationDetailsAsync(page, size);
 
     [HttpPut]
@@ -35,4 +35,20 @@ public class RegistrationController : ControllerBase
     [Route("application/{applicationId}/approveRequest")]
     public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
             _logic.ApprovePartnerRequest(applicationId);
+
+    /// <summary>
+    /// Decline the Partner Registration Request
+    /// </summary>
+    /// <param name="applicationId" example="31404026-64ee-4023-a122-3c7fc40e57b1">Company Application Id for which request will be declined</param>
+    /// <returns>Result as a boolean</returns>
+    /// <remarks>Example: PUT: api/administration/registration/application/31404026-64ee-4023-a122-3c7fc40e57b1/declineRequest</remarks>
+    /// <response code="200">Result as a boolean</response>
+    /// <response code="400">Company Application Not in Submitted State or Username has no assigned emailid.</response>
+    [HttpPut]
+    [Authorize(Roles = "decline_new_partner")]
+    [Route("application/{applicationId}/declineRequest")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    public Task<bool> DeclinePartnerRequest([FromRoute] Guid applicationId) =>
+            _logic.DeclinePartnerRequest(applicationId);
 }

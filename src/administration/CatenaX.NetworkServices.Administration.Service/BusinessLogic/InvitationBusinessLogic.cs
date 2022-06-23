@@ -1,6 +1,7 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -11,7 +12,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
     public class InvitationBusinessLogic : IInvitationBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
-        private readonly IPortalBackendDBAccess _portalDBAccess;
+        private readonly IPortalRepositories _portalRepositories;
         private readonly IMailingService _mailingService;
         private readonly InvitationSettings _settings;
         private readonly ILogger<InvitationBusinessLogic> _logger;
@@ -19,13 +20,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public InvitationBusinessLogic(
             IProvisioningManager provisioningManager,
             IPortalBackendDBAccess portalDBAccess,
+            IPortalRepositories portalRepositories,
             IMailingService mailingService,
             IOptions<InvitationSettings> configuration,
             ILogger<InvitationBusinessLogic> logger
             )
         {
             _provisioningManager = provisioningManager;
-            _portalDBAccess = portalDBAccess;
+            _portalRepositories = portalRepositories;
             _mailingService = mailingService;
             _settings = configuration.Value;
             _logger = logger;
@@ -58,19 +60,24 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId,_settings.InvitedUserInitialRoles).ConfigureAwait(false);
 
-            var company = _portalDBAccess.CreateCompany(invitationData.organisationName);
-            var application = _portalDBAccess.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
-            var companyUser = _portalDBAccess.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.ACTIVE);
-            await foreach(var userRoleId in _portalDBAccess.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ConfigureAwait(false))
-            {
-                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
-            }
-            _portalDBAccess.CreateInvitation(application.Id, companyUser);
-            var identityprovider = _portalDBAccess.CreateSharedIdentityProvider(company);
-            _portalDBAccess.CreateIamIdentityProvider(identityprovider, idpName);
-            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
-            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
+            var application = applicationRepository.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
+            var companyUser = userRepository.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.ACTIVE);
+            await foreach(var userRoleId in userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ConfigureAwait(false))
+            {
+                userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
+            }
+            applicationRepository.CreateInvitation(application.Id, companyUser);
+            var identityprovider = identityProviderRepository.CreateSharedIdentityProvider(company);
+            identityProviderRepository.CreateIamIdentityProvider(identityprovider, idpName);
+            userRepository.CreateIamUser(companyUser, centralUserId);
+
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
             var mailParameters = new Dictionary<string, string>
             {

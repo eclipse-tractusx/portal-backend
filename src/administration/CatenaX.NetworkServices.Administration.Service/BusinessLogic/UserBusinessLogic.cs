@@ -1,5 +1,6 @@
 ﻿using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -11,6 +12,7 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -55,7 +57,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
-            _portalRepositories = portalRepositories;
         }
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
@@ -302,11 +303,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 userData.BusinessPartnerNumbers,
                 companyUser.Company!.Name,
                 companyUser.CompanyUserStatusId)
-                {
-                    FirstName = companyUser.Firstname,
-                    LastName = companyUser.Lastname,
-                    Email = companyUser.Email
-                };
+            {
+                FirstName = companyUser.Firstname,
+                LastName = companyUser.Lastname,
+                Email = companyUser.Email
+            };
         }
 
         public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
@@ -437,10 +438,33 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        /// <inheritdoc/>
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        {
+            var appUsers = _portalRepositories.GetInstance<IAppUserRepository>().GetCompanyAppUsersUntrackedAsync(appId, iamUserId);
+
+            return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
+                page,
+                size,
+                15,
+                (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
+                    appUsers.CountAsync(),
+                    appUsers.OrderBy(companyUser => companyUser.Id)
+                        .Skip(skip)
+                        .Take(take)
+                        .Select(companyUser => new CompanyAppUserDetails(
+                            companyUser.Id,
+                            companyUser.CompanyUserStatusId,
+                            companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                        {
+                            FirstName = companyUser.Firstname,
+                            LastName = companyUser.Lastname,
+                            Email = companyUser.Email
+                        }).AsAsyncEnumerable()));
+        }
+
         public async Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
-            var companyUser = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
+            var companyUser = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
             if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
@@ -449,13 +473,18 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new NotFoundException($"User not found");
             }
-            var iamClientId = await _portalRepositories.GetInstance<IUserRepository>().GetAppAssignedRolesClientIdAsync(appId).ConfigureAwait(false);
+            var iamClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(iamClientId))
+            {
+                throw new NotFoundException($"appId {appId} not found");
+            }
             var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
                             { iamClientId, roles }
                         };
-            var companyRoleIds = await _portalDBAccess.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
+            var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            var companyRoleIds = await userRoleRepository.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
             if (companyRoleIds.Count() == 0)
             {
                 throw new NotFoundException($"User role not existing");
@@ -469,13 +498,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 if (!companyUser.RoleIds.Contains(role))
                 {
-                    _portalDBAccess.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
+                    userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
                     message = "user role added";
                 }
 
             }
-            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return string.IsNullOrWhiteSpace(message) ? "user role already added" : message;
         }
     }
 }
+

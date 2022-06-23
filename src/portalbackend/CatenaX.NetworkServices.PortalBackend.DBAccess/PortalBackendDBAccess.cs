@@ -17,22 +17,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        public Company CreateCompany(string companyName) =>
-            _dbContext.Companies.Add(
-                new Company(
-                    Guid.NewGuid(),
-                    companyName,
-                    CompanyStatusId.PENDING,
-                    DateTimeOffset.UtcNow)).Entity;
-
-        public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
-            _dbContext.CompanyApplications.Add(
-                new CompanyApplication(
-                    Guid.NewGuid(),
-                    company.Id,
-                    companyApplicationStatusId,
-                    DateTimeOffset.UtcNow)).Entity;
-
+        [Obsolete("user IUserRepository instead")]
         public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId) =>
             _dbContext.CompanyUsers.Add(
                 new CompanyUser(
@@ -46,6 +31,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     Email = email,
                 }).Entity;
 
+        [Obsolete("user IApplicationRepository instead")]
         public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
             _dbContext.Invitations.Add(
                 new Invitation(
@@ -63,22 +49,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     userRoleId
                 )).Entity;
 
-        public IdentityProvider CreateSharedIdentityProvider(Company company)
-        {
-            var idp = new IdentityProvider(
-                Guid.NewGuid(),
-                IdentityProviderCategoryId.KEYCLOAK_SHARED,
-                DateTimeOffset.UtcNow);
-            idp.Companies.Add(company);
-            return _dbContext.IdentityProviders.Add(idp).Entity;
-        }
-
-        public IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias) =>
-            _dbContext.IamIdentityProviders.Add(
-                new IamIdentityProvider(
-                    idpAlias,
-                    identityProvider.Id)).Entity;
-
+        [Obsolete("user IUserRepository instead")]
         public IamUser CreateIamUser(CompanyUser user, string iamUserEntityId) =>
             _dbContext.IamUsers.Add(
                 new IamUser(
@@ -117,19 +88,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyRoleId
                 )).Entity;
 
-        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
-            _dbContext.Documents.Add(
-                new Document(
-                    Guid.NewGuid(),
-                    hash,
-                    documentName,
-                    DateTimeOffset.UtcNow)
-                {
-                    DocumentOid = documentOId,
-                    DocumentTypeId = documentTypeId,
-                    CompanyUserId = companyUserId
-                }).Entity;
-
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()
@@ -141,30 +99,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         ApplicationStatus = companyApplication.ApplicationStatusId
                     })
                 .AsAsyncEnumerable();
-
-        [Obsolete("use IApplicationRepository instead")]
-        public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
-            _dbContext.CompanyApplications
-                .Where(companyApplication => companyApplication.Id == companyApplicationId)
-                .Select(
-                    companyApplication => new CompanyWithAddress(
-                        companyApplication.CompanyId,
-                        companyApplication.Company!.Name,
-                        companyApplication.Company.Address!.City ?? "",
-                        companyApplication.Company.Address.Streetname ?? "",
-                        companyApplication.Company.Address.CountryAlpha2Code ?? "")
-                    {
-                        BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
-                        Shortname = companyApplication.Company.Shortname,
-                        Region = companyApplication.Company.Address.Region,
-                        Streetadditional = companyApplication.Company.Address.Streetadditional,
-                        Streetnumber = companyApplication.Company.Address.Streetnumber,
-                        Zipcode = companyApplication.Company.Address.Zipcode,
-                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                        TaxId = companyApplication.Company.TaxId
-                    })
-                .AsNoTracking()
-                .SingleOrDefaultAsync();
 
         public Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
@@ -257,17 +191,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Where(application => application.Id == applicationId)
                 .SingleOrDefaultAsync();
 
-        public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser =>
-                    iamUser.UserEntityId == iamUserId
-                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser =>
-                    iamUser.CompanyUserId
-                )
-                .SingleOrDefaultAsync();
-
         public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
         {
             return _dbContext.CompanyApplications
@@ -349,23 +272,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public IamUser RemoveIamUser(IamUser iamUser) =>
             _dbContext.Remove(iamUser).Entity;
 
-        [Obsolete("use IUserRolesRepository instead")]
-        public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
-        {
-            foreach (var clientRole in clientRoles)
-            {
-                await foreach (var userRoleId in _dbContext.UserRoles
-                    .AsNoTracking()
-                    .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
-                    .AsQueryable()
-                    .Select(userRole => userRole.Id)
-                    .AsAsyncEnumerable().ConfigureAwait(false))
-                {
-                    yield return userRoleId;
-                }
-            }
-        }
-
         public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
             _dbContext.UserRoles
                 .AsNoTracking()
@@ -414,7 +320,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(document =>
                     new UploadDocuments(
                         document!.Id,
-                        document!.Documentname))
+                        document!.DocumentName))
                 .AsAsyncEnumerable();
 
         public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
@@ -433,7 +339,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                    company!.Id,
                    company.Name,
                    company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
+                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
                    company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                                                    .Select(consent => new AgreementConsentStatusForRegistrationData(
                                                            consent.AgreementId, consent.ConsentStatusId)))
