@@ -8,4 +8,5 @@ public interface IRegistrationBusinessLogic
     Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId);
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
     Task<bool> ApprovePartnerRequest(Guid applicationId);
+    Task<bool> DeclinePartnerRequest(Guid applicationId);
 }

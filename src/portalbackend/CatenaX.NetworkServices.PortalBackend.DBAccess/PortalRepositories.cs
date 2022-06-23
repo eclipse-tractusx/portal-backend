@@ -40,6 +40,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new ConnectorsRepository(_dbContext));
         }
+        else if (repositoryType == typeof(IDocumentRepository))
+        {
+            return To<RepositoryType>(new DocumentRepository(_dbContext));
+        }
         else if (repositoryType == typeof(IIdentityProviderRepository))
         {
             return To<RepositoryType>(new IdentityProviderRepository(_dbContext));
