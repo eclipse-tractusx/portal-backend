@@ -264,7 +264,36 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            application.ApplicationStatusId = status;
+
+            switch (status)
+            {
+
+                case CompanyApplicationStatusId.CREATED:
+                    application.ApplicationStatusId = CompanyApplicationStatusId.ADD_COMPANY_DATA;
+                    break;
+
+                case CompanyApplicationStatusId.ADD_COMPANY_DATA:
+                    application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+                    break;
+
+                case CompanyApplicationStatusId.INVITE_USER:
+                    application.ApplicationStatusId = CompanyApplicationStatusId.SELECT_COMPANY_ROLE;
+                    break;
+
+                case CompanyApplicationStatusId.SELECT_COMPANY_ROLE:
+                    application.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
+                    break;
+
+                case CompanyApplicationStatusId.UPLOAD_DOCUMENTS:
+                    application.ApplicationStatusId = CompanyApplicationStatusId.VERIFY;
+                    break;
+
+                case CompanyApplicationStatusId.VERIFY:
+                    application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                    break;
+
+            }
+
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
