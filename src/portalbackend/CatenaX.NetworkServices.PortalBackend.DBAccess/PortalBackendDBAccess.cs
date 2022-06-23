@@ -482,6 +482,12 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(app => app.AppId)
                 .SingleOrDefaultAsync();
 
+        public Task<string> GetCompanyUserEmailAsync(string iamUserId) =>
+            _dbContext.CompanyUsers
+                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                .Select(companyUser => companyUser.Email)
+                .SingleOrDefaultAsync();
+
         public Task<int> SaveAsync() =>
             _dbContext.SaveChangesAsync();
     }
