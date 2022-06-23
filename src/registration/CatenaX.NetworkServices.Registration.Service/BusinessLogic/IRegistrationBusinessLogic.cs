@@ -21,7 +21,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId);
         Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
-        Task<bool> SubmitRegistrationAsync(string userEmail);
+        Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);

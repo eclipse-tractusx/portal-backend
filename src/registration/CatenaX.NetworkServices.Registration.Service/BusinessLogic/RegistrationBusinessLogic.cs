@@ -151,20 +151,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             company.Address.Streetnumber = companyWithAddress.Streetnumber;
             company.CompanyStatusId = CompanyStatusId.PENDING;
 
-            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
-
-            if (application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
-                || application.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
-                || application.ApplicationStatusId == CompanyApplicationStatusId.DECLINED)
-            {
-                throw new ForbiddenException($"Application is already closed");
-            }
-
-            if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
-                || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
-            {
-                application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
-            }
+            await UpdateApplicationSatus(applicationId, "CompanyWithAddress");
 
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
@@ -358,6 +345,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
             }
 
+             await UpdateApplicationSatus(applicationId,"CompanyRoleAgreementConsents");
+
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
@@ -379,12 +368,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             );
         }
 
-        public async Task<bool> SubmitRegistrationAsync(string userEmail)
+        public async Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId)
         {
+            var userEmail = await _portalDBAccess.GetCompanyUserEmailAsync(iamUserId).ConfigureAwait(false);
             var mailParameters = new Dictionary<string, string>
             {
                 { "url", $"{_settings.BasePortalAddress}"},
             };
+
+            await UpdateApplicationSatus(applicationId,"SubmitRegistration");
 
             await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
             return true;
@@ -433,6 +425,50 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
             return registrationData;
+        }
+
+        public async Task<bool> UpdateApplicationSatus(Guid applicationId, string type)
+        {
+            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
+
+            if (application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
+                                     || application.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
+                                     || application.ApplicationStatusId == CompanyApplicationStatusId.DECLINED)
+            {
+                throw new ForbiddenException($"Application is already closed");
+            }
+
+            if (type == "CompanyWithAddress")
+            {
+                if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
+                {
+                    application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+                }
+            }
+            else if (type == "CompanyRoleAgreementConsents")
+            {
+                if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.INVITE_USER
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
+                {
+                    application.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
+                }
+            }
+            else if (type == "SubmitRegistration")
+            {
+
+                if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.INVITE_USER
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE
+                    || application.ApplicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
+                {
+                    throw new ForbiddenException($"Application status is not fitting to the pre-requisite");
+                }
+            }
+            return true;
         }
     }
 }

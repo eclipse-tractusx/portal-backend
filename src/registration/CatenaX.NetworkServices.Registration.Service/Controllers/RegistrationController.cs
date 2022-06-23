@@ -144,26 +144,11 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
-        [Route("submitregistration")]
-        public async Task<IActionResult> SubmitRegistrationAsync()
-        {
-            try
-            {
-                var userEmail = User.Claims.SingleOrDefault(x => x.Type == "email").Value as string;
+        [Route("application/{applicationId}/submitRegistration")]
+        public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, iamUserId));
 
-                if (await _registrationBusinessLogic.SubmitRegistrationAsync(userEmail).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
