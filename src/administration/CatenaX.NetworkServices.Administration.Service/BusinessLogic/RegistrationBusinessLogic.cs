@@ -44,12 +44,38 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return companyWithAddress;
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size) =>
-        Pagination.CreateResponseAsync<CompanyApplicationDetails>(
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
+    {
+        var appCompanyDetails = _applicationRepository.GetCompanyApplicationDetailsUntrackedAsync(companyName);
+        return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
             page,
             size,
-            _settings.ApplicationsMaxPageSize,
-            (skip, take) => _applicationRepository.GetCompanyApplicationDetailsUntrackedAsync(skip, take));
+            15,
+            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
+                appCompanyDetails.CountAsync(),
+                appCompanyDetails.OrderByDescending(application => application.DateCreated)
+                        .Skip(skip)
+                        .Take(take)
+                        .Select(application => new CompanyApplicationDetails(
+                            application.Id,
+                            application.ApplicationStatusId,
+                            application.DateCreated,
+                            application.Company!.Name,
+                            application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
+                                document.Documenthash)
+                            {
+                                DocumentTypeId = document.DocumentTypeId,
+                            })))
+                        {
+                            Email = application.Invitations
+                                .Select(invitation => invitation.CompanyUser)
+                                .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                    && companyUser.Email != null)
+                                .Select(companyUser => companyUser!.Email)
+                                .FirstOrDefault(),
+                            BusinessPartnerNumber = application.Company.BusinessPartnerNumber
+                        }).AsAsyncEnumerable()));
+    }
 
     public async Task<bool> ApprovePartnerRequest(Guid applicationId)
     {
@@ -94,39 +120,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
         return true;
-    }
-
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationByCompanyNameAsync(string companyName, int page, int size)
-    {
-       var appCompanyDetails = _applicationRepository.GetApplicationByCompanyNameUntrackedAsync(companyName);
-       return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
-            page,
-            size,
-            15,
-            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
-                appCompanyDetails.CountAsync(),
-                appCompanyDetails.OrderByDescending(application => application.DateCreated)
-                        .Skip(skip)
-                        .Take(take)
-                        .Select(application => new CompanyApplicationDetails(
-                            application.Id,
-                            application.ApplicationStatusId,
-                            application.DateCreated,
-                            application.Company!.Name,
-                            application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                                document.Documenthash)
-                            {
-                                DocumentTypeId = document.DocumentTypeId,
-                            })))
-                        {
-                            Email = application.Invitations
-                                .Select(invitation => invitation.CompanyUser)
-                                .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                                    && companyUser.Email != null)
-                                .Select(companyUser => companyUser!.Email)
-                                .FirstOrDefault(),
-                            BusinessPartnerNumber = application.Company.BusinessPartnerNumber
-                        }).AsAsyncEnumerable()));
     }
 
     private async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
