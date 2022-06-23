@@ -96,4 +96,17 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
 
+    public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .SelectMany(application =>
+                application.Company!.CompanyUsers
+                    .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => roleIds.Contains(userRole.Id)))
+                    .Select(companyUser => new WelcomeEmailData(
+                        companyUser.Firstname,
+                        companyUser.Lastname,
+                        companyUser.Email,
+                        companyUser.Company!.Name)))
+            .AsAsyncEnumerable();
 }

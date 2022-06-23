@@ -44,6 +44,9 @@
     <None Update="EmailTemplates\cx_admin_invitation.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+	 <None Update="EmailTemplates\registration_declined.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

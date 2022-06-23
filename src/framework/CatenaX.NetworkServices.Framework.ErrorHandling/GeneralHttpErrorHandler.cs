@@ -16,6 +16,7 @@ public class GeneralHttpErrorHandler
         { HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.") },
         { HttpStatusCode.NotFound, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4", "Cannot find representation of target resource.") },
         { HttpStatusCode.Forbidden, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3", "Access to requested resource is not permitted.") },
+        { HttpStatusCode.UnsupportedMediaType, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.13", "The server cannot process this type of content") },
         { HttpStatusCode.BadGateway, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.3", "Error accessing external resource.") },
         { HttpStatusCode.ServiceUnavailable, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4", "Service is currently unavailable.") },
         { HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.") }
@@ -67,6 +68,14 @@ public class GeneralHttpErrorHandler
                     HttpStatusCode.BadGateway,
                     error,
                     (error) => (error.Source, new [] { $"remote service returned status code: {(int)statusCode} {statusCode}", error.Message } ));
+                _logger.LogInformation(error.Message);
+            }
+            else if (error is UnsupportedMediaTypeException)
+            {
+                errorResponse = CreateErrorResponse(
+                    HttpStatusCode.UnsupportedMediaType,
+                    error,
+                    null);
                 _logger.LogInformation(error.Message);
             }
             else

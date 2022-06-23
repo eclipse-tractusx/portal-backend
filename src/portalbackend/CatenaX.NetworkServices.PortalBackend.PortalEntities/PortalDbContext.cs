@@ -60,6 +60,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
+    public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
     public virtual DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
     public virtual DbSet<IamServiceAccount> IamServiceAccounts { get; set; } = default!;
@@ -519,6 +520,13 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(DocumentTypeId))
                     .Cast<DocumentTypeId>()
                     .Select(e => new DocumentType(e))
+            );
+
+        modelBuilder.Entity<DocumentStatus>()
+            .HasData(
+                Enum.GetValues(typeof(DocumentStatusId))
+                    .Cast<DocumentStatusId>()
+                    .Select(e => new DocumentStatus(e))
             );
 
         modelBuilder.Entity<IamClient>().HasIndex(e => e.ClientClientId).IsUnique();

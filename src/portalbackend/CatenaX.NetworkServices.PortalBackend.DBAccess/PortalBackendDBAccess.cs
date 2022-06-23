@@ -88,19 +88,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                     companyRoleId
                 )).Entity;
 
-        public Document CreateDocument(Guid applicationId, Guid companyUserId, string documentName, string documentContent, string hash, uint documentOId, DocumentTypeId documentTypeId) =>
-            _dbContext.Documents.Add(
-                new Document(
-                    Guid.NewGuid(),
-                    hash,
-                    documentName,
-                    DateTimeOffset.UtcNow)
-                {
-                    DocumentOid = documentOId,
-                    DocumentTypeId = documentTypeId,
-                    CompanyUserId = companyUserId
-                }).Entity;
-
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()
@@ -112,30 +99,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         ApplicationStatus = companyApplication.ApplicationStatusId
                     })
                 .AsAsyncEnumerable();
-
-        [Obsolete("use IApplicationRepository instead")]
-        public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
-            _dbContext.CompanyApplications
-                .Where(companyApplication => companyApplication.Id == companyApplicationId)
-                .Select(
-                    companyApplication => new CompanyWithAddress(
-                        companyApplication.CompanyId,
-                        companyApplication.Company!.Name,
-                        companyApplication.Company.Address!.City ?? "",
-                        companyApplication.Company.Address.Streetname ?? "",
-                        companyApplication.Company.Address.CountryAlpha2Code ?? "")
-                    {
-                        BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
-                        Shortname = companyApplication.Company.Shortname,
-                        Region = companyApplication.Company.Address.Region,
-                        Streetadditional = companyApplication.Company.Address.Streetadditional,
-                        Streetnumber = companyApplication.Company.Address.Streetnumber,
-                        Zipcode = companyApplication.Company.Address.Zipcode,
-                        CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                        TaxId = companyApplication.Company.TaxId
-                    })
-                .AsNoTracking()
-                .SingleOrDefaultAsync();
 
         public Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
             _dbContext.Companies
@@ -226,17 +189,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
         public Task<CompanyApplication?> GetCompanyApplicationAsync(Guid applicationId) =>
             _dbContext.CompanyApplications
                 .Where(application => application.Id == applicationId)
-                .SingleOrDefaultAsync();
-
-        public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser =>
-                    iamUser.UserEntityId == iamUserId
-                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .Select(iamUser =>
-                    iamUser.CompanyUserId
-                )
                 .SingleOrDefaultAsync();
 
         public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
@@ -368,7 +320,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Select(document =>
                     new UploadDocuments(
                         document!.Id,
-                        document!.Documentname))
+                        document!.DocumentName))
                 .AsAsyncEnumerable();
 
         public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
@@ -387,7 +339,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                    company!.Id,
                    company.Name,
                    company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.Documentname))),
+                   company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
                    company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                                                    .Select(consent => new AgreementConsentStatusForRegistrationData(
                                                            consent.AgreementId, consent.ConsentStatusId)))
