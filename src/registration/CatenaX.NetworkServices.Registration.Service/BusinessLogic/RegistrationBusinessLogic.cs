@@ -155,7 +155,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             company.Address.Streetnumber = companyWithAddress.Streetnumber;
             company.CompanyStatusId = CompanyStatusId.PENDING;
 
-            await UpdateApplicationSatus(applicationId, "CompanyWithAddress");
+            await UpdateApplicationStatus(applicationId, "CompanyWithAddress");
 
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
@@ -349,7 +349,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
             }
 
-             await UpdateApplicationSatus(applicationId,"CompanyRoleAgreementConsents");
+             await UpdateApplicationStatus(applicationId,"CompanyRoleAgreementConsents");
 
             return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
@@ -380,7 +380,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await UpdateApplicationSatus(applicationId,"SubmitRegistration");
+            await UpdateApplicationStatus(applicationId,"SubmitRegistration");
 
             await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
             return true;
@@ -431,7 +431,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return registrationData;
         }
 
-        public async Task<bool> UpdateApplicationSatus(Guid applicationId, string type)
+        public async Task<bool> UpdateApplicationStatus(Guid applicationId, string type)
         {
             var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
 
