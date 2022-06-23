@@ -34,10 +34,10 @@ public class RegistrationController : ControllerBase
     /// <remarks>Example: GET: api/administration/registration/applications?companyName=Car&page=0&size=4</remarks>
     /// <remarks>Example: GET: api/administration/registration/applications?page=0&size=4</remarks>
     /// <response code="200">Result as a Company Application Details</response>
-    /// <response code="500">Internal Server Error</response>
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
+    [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationDetails>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size, [FromQuery]string? companyName = null) =>
         _logic.GetCompanyApplicationDetailsAsync(page, size, companyName);
 
