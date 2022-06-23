@@ -3,7 +3,7 @@
     "CatenaX.NetworkServices.Maintenance.App": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNETCORE_ENVIRONMENT": "Development"
+        "DOTNET_ENVIRONMENT": "Development"
       }
     }
   }

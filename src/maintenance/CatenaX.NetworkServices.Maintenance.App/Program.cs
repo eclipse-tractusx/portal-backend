@@ -4,34 +4,32 @@ using System.Reflection;
 using CatenaX.NetworkServices.Maintenance.App;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-
-var environmentName = Environment.GetEnvironmentVariable("DOTNETCORE_ENVIRONMENT");
-// Build a config object, using env vars and JSON providers.
-var configBuilder = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json")
-    .AddJsonFile($"appsettings.{environmentName}.json", true, true)
-    .AddEnvironmentVariables()
-    .AddUserSecrets(Assembly.GetExecutingAssembly());
-
-if (environmentName == "Kubernetes")
-{
-    var provider = new PhysicalFileProvider("/app/secrets");
-    configBuilder.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
-}
-
-var configuration = configBuilder.Build();
 
 var host = Host.CreateDefaultBuilder(args)
-    .Build();
-var services = new ServiceCollection();
-services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(configuration.GetConnectionString("PortalDb")));
-ServiceProvider serviceProvider = services.BuildServiceProvider();
+    .UseSystemd()
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddDbContext<PortalDbContext>(o =>
+            o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
+        services.AddHostedService<BatchDeleteService>();
+    })
+    .ConfigureHostConfiguration(cfg =>
+    {
+        // Read configuration for configuring logger.
+        var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
 
-BatchDeleteService.BatchDeleteDocuments(serviceProvider.GetRequiredService<PortalDbContext>(), configuration.GetValue<int>("DeleteIntervalInDays"));
+        cfg.SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile($"appsettings.{environmentName}.json", true, true)
+            .AddEnvironmentVariables()
+            .AddUserSecrets(Assembly.GetExecutingAssembly());
+
+        // Build a config object, using env vars and JSON providers.
+        if (environmentName != "Kubernetes") return;
+
+        var provider = new PhysicalFileProvider("/app/secrets");
+        cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
+    }).Build();
 
 host.RunAsync();
