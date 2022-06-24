@@ -101,20 +101,20 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
-        public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
+        public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
             this.WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/status")]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
-            _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status);
+            this.WithIamUserId(user => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, user));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/status")]
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
-            _registrationBusinessLogic.GetApplicationStatusAsync(applicationId);
+            this.WithIamUserId(user => _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId, user));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
@@ -126,7 +126,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
-            _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "invite_user")]
@@ -136,7 +137,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
         [HttpPost]
-        [Authorize(Roles = "submit_registration")]
+        [Authorize(Roles = "sign_consent")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
             this.WithIamUserId(iamUserId =>
@@ -157,26 +158,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
-        [Route("submitregistration")]
-        public async Task<IActionResult> SubmitRegistrationAsync()
-        {
-            try
-            {
-                var userEmail = User.Claims.SingleOrDefault(x => x.Type == "email").Value as string;
-
-                if (await _registrationBusinessLogic.SubmitRegistrationAsync(userEmail).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        [Route("application/{applicationId}/submitRegistration")]
+        public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, iamUserId));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
