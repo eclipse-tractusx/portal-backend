@@ -20,7 +20,7 @@ public class DocumentRepository : IDocumentRepository
     }
 
     /// <inheritdoc />
-    public Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, uint documentOId, DocumentTypeId documentTypeId) =>
+    public Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId) =>
         _dbContext.Documents.Add(
             new Document(
                 Guid.NewGuid(),
@@ -35,15 +35,20 @@ public class DocumentRepository : IDocumentRepository
             }).Entity;
 
     /// <inheritdoc />
-    public async Task<Document?> GetDocumentByIdAsync(Guid documentId) => 
-        await _dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+    public Task<Document?> GetDocumentByIdAsync(Guid documentId) => 
+        _dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
-    public async Task DeleteDocumentAsync(Document document)
+    public Task<Tuple<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid? CompanyUserId)>?>
+        GetDetailsForIdAsync(Guid documentId) =>
+        _dbContext.Documents
+            .Where(x => x.Id == documentId)
+            .Select(x => new Tuple<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid? CompanyUserId)>(new (x.Id, x.DocumentStatusId, x.CompanyUserId)))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachToDatabase(Document document)
     {
-        var consents = _dbContext.Consents.Where(x => x.DocumentId == document.Id);
-        document.DocumentStatusId = DocumentStatusId.INACTIVE;
-        _dbContext.Consents.RemoveRange(consents);
-        await _dbContext.SaveChangesAsync();
+        _dbContext.Documents.Attach(document);
     }
 }

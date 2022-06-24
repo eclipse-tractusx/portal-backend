@@ -87,7 +87,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     {
                         throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                     }
-                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
                     return await _portalRepositories.SaveAsync().ConfigureAwait(false);
                 }
             }

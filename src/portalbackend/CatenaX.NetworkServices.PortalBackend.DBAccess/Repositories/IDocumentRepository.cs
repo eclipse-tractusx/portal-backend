@@ -15,10 +15,9 @@ public interface IDocumentRepository
     /// <param name="documentName">The documents name</param>
     /// <param name="documentContent">The document itself</param>
     /// <param name="hash">Hash of the document</param>
-    /// <param name="documentOId"></param>
     /// <param name="documentTypeId">Type of the document</param>
     /// <returns>Returns the created document</returns>
-    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, uint documentOId, DocumentTypeId documentTypeId);
+    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId);
 
     /// <summary>
     /// Gets the document by the given id from the persistence layer.
@@ -27,9 +26,12 @@ public interface IDocumentRepository
     /// <returns>The document or null if no document is found</returns>
     Task<Document?> GetDocumentByIdAsync(Guid documentId);
 
+    Task<Tuple<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid? CompanyUserId)>?> GetDetailsForIdAsync(
+        Guid documentId);
+
     /// <summary>
-    /// Sets the document state to "INACTIVE" and deletes the corresponding consent from the persistence layer. 
+    /// Attaches the document to the database
     /// </summary>
-    /// <param name="document">The document that should be "deleted".</param>
-    Task DeleteDocumentAsync(Document document);
+    /// <param name="document">the document that should be attached to the database</param>
+    void AttachToDatabase(Document document);
 }
