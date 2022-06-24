@@ -46,7 +46,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
     {
-        var appCompanyDetails = _applicationRepository.GetCompanyApplicationDetailsUntrackedAsync(companyName);
+        var appCompanyDetails = _applicationRepository.GetCompanyApplicationDetailsUntrackedAsync(companyName?.Length >= 3 ? companyName : null);
         return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
             page,
             size,
@@ -61,11 +61,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationStatusId,
                         application.DateCreated,
                         application.Company!.Name,
-                        application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                            document.DocumentHash)
-                        {
-                            DocumentTypeId = document.DocumentTypeId,
-                        })))
+                        application.Invitations.SelectMany(invitation =>
+                            invitation.CompanyUser!.Documents.Select(document =>
+                                new DocumentDetails(document.DocumentHash)
+                                {
+                                    DocumentTypeId = document.DocumentTypeId,
+                                })))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)

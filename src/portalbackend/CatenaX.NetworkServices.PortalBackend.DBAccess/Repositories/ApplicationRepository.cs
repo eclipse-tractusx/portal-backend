@@ -59,7 +59,7 @@ public class ApplicationRepository : IApplicationRepository
     public IQueryable<CompanyApplication> GetCompanyApplicationDetailsUntrackedAsync(string? companyName = null) =>
         _dbContext.Companies
             .AsNoTracking()
-            .Where(company => (companyName != null && companyName.Length >= 3) ? company!.Name.StartsWith(companyName) : true)
+            .Where(company => companyName != null ? EF.Functions.ILike(company!.Name, $"{companyName}%") : true)
             .SelectMany(company => company.CompanyApplications);
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
