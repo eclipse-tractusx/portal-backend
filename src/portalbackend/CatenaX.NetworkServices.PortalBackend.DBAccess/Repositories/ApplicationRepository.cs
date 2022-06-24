@@ -33,14 +33,32 @@ public class ApplicationRepository : IApplicationRepository
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public Task<CompanyApplicationUserData?> GetCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
+    public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId)
+            .Select(application => new CompanyApplicationUserData(application)
+            {
+                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+            })
+            .SingleOrDefaultAsync();
+    public Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .Select(application => new CompanyApplicationStatusUserData(application.ApplicationStatusId)
+            {
+                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+            })
+            .SingleOrDefaultAsync();
+
+    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications
             .Where(application => application.Id == applicationId)
             .Select(application => new {
                 Application = application, 
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
             })
-            .Select(data => new CompanyApplicationUserData(data.Application)
+            .Select(data => new CompanyApplicationUserEmailData(data.Application)
             {
                 CompanyUserId = data.CompanyUser!.Id,
                 Email = data.CompanyUser!.Email
