@@ -24,9 +24,8 @@ public interface IUserRepository
     /// <returns>Company and IamUser</returns>
     Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId);
 
-    public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
+    Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId);
-    
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
 }
