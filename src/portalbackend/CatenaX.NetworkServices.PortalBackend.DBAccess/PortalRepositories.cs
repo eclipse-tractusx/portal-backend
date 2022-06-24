@@ -36,6 +36,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new CompanyRepository(_dbContext));
         }
+        else if (repositoryType == typeof(ICompanyRolesRepository))
+        {
+            return To<RepositoryType>(new CompanyRolesRepository(_dbContext));
+        }
         else if (repositoryType == typeof(IConnectorsRepository))
         {
             return To<RepositoryType>(new ConnectorsRepository(_dbContext));
