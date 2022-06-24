@@ -9,7 +9,9 @@ public interface IApplicationRepository
 {
     CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
     Invitation CreateInvitation(Guid applicationId, CompanyUser user);
-    Task<CompanyApplicationUserData?> GetCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
+    Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
+    Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId);
+    Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId);
     Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId);
     Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId);
     Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId);

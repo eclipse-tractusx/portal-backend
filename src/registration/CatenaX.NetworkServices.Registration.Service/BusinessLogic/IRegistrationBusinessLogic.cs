@@ -16,8 +16,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
         Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById);
-        Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
-        Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
+        Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId);
+        Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId);
         Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId);
         Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
