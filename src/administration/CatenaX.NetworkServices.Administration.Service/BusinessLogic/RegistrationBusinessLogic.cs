@@ -46,14 +46,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
     {
-        var appCompanyDetails = _applicationRepository.GetCompanyApplicationDetailsUntrackedAsync(companyName?.Length >= 3 ? companyName : null);
+        var applications = _applicationRepository.GetCompanyApplicationsFilteredQuery(companyName?.Length >= 3 ? companyName : null);
         return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
             (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
-                appCompanyDetails.CountAsync(),
-                appCompanyDetails.OrderByDescending(application => application.DateCreated)
+                applications.CountAsync(),
+                applications.OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new CompanyApplicationDetails(

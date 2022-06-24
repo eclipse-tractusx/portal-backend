@@ -87,7 +87,7 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-    public IQueryable<CompanyApplication> GetCompanyApplicationDetailsUntrackedAsync(string? companyName = null) =>
+    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null) =>
         _dbContext.Companies
             .AsNoTracking()
             .Where(company => companyName != null ? EF.Functions.ILike(company!.Name, $"{companyName}%") : true)
