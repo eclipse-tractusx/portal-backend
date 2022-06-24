@@ -273,59 +273,92 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return modified;
         }
 
-        [Obsolete("make use of UpdateApplicationStatus instead")]
-        public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
+        public async Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId)
         {
             if (status == 0)
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
-            if (application == null)
+            var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationUserDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (applicationUserData == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-
-            switch (status)
+            if (applicationUserData.CompanyUserId == default)
             {
+                throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
+            }
 
+            var application = applicationUserData.CompanyApplication;
+
+            switch (application.ApplicationStatusId)
+            {
                 case CompanyApplicationStatusId.CREATED:
-                    application.ApplicationStatusId = CompanyApplicationStatusId.ADD_COMPANY_DATA;
+                    if (status != CompanyApplicationStatusId.ADD_COMPANY_DATA)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.ADD_COMPANY_DATA}");
+                    }
+                    application.ApplicationStatusId = status;
                     break;
 
                 case CompanyApplicationStatusId.ADD_COMPANY_DATA:
-                    application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+                    if (status != CompanyApplicationStatusId.INVITE_USER)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.INVITE_USER}");
+                    }
+                    application.ApplicationStatusId = status;
                     break;
 
                 case CompanyApplicationStatusId.INVITE_USER:
-                    application.ApplicationStatusId = CompanyApplicationStatusId.SELECT_COMPANY_ROLE;
+                    if (status != CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SELECT_COMPANY_ROLE}");
+                    }
+                    application.ApplicationStatusId = status;
                     break;
 
                 case CompanyApplicationStatusId.SELECT_COMPANY_ROLE:
-                    application.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
+                    if (status != CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.UPLOAD_DOCUMENTS}");
+                    }
+                    application.ApplicationStatusId = status;
                     break;
 
                 case CompanyApplicationStatusId.UPLOAD_DOCUMENTS:
-                    application.ApplicationStatusId = CompanyApplicationStatusId.VERIFY;
+                    if (status != CompanyApplicationStatusId.VERIFY)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.VERIFY}");
+                    }
+                    application.ApplicationStatusId = status;
                     break;
 
                 case CompanyApplicationStatusId.VERIFY:
-                    application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                    if (status != CompanyApplicationStatusId.SUBMITTED)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SUBMITTED}");
+                    }
+                    application.ApplicationStatusId = status;
                     break;
-
+                default:
+                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}");
             }
 
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
+        public async Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId)
         {
-            var result = (CompanyApplicationStatusId?)await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
-            if (!result.HasValue)
+            var applicationStatusUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationStatusUserDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (applicationStatusUserData == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            return result.Value;
+            if (applicationStatusUserData.CompanyUserId == default)
+            {
+                throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
+            }
+            return applicationStatusUserData.CompanyApplicationStatusId;
         }
 
         public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId)
@@ -428,7 +461,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId)
         {
-            var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationUserDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationUserEmailDataAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (applicationUserData == null)
             {
                 throw new NotFoundException($"application {applicationId} does not exist");
