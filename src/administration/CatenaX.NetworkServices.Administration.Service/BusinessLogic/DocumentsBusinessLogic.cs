@@ -1,6 +1,7 @@
 ﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
@@ -26,27 +27,38 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
-        var document = await documentRepository.GetDocumentByIdAsync(documentId);
+        var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var details = await documentRepository.GetDetailsForIdAsync(documentId).ConfigureAwait(false);
 
-        if (document is null)
+        if (details is null)
         {
             throw new NotFoundException("Document is not existing");
         }
 
-        if (document.CompanyUserId != companyUserId)
+        if (details.Item1.CompanyUserId != companyUserId)
         {
             throw new ForbiddenException("User is not allowed to delete this document");
         }
 
-        if (document.DocumentStatusId != DocumentStatusId.PENDING)
+        if (details.Item1.DocumentStatusId != DocumentStatusId.PENDING)
         {
             throw new ArgumentException("Incorrect document status");
         }
 
-        await documentRepository.DeleteDocumentAsync(document);
+        var document = new Document(details.Item1.DocumentId);
+        documentRepository.AttachToDatabase(document);
+        document.DocumentStatusId = DocumentStatusId.INACTIVE;
+
+        var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
+        var consentIds = consentRepository.GetConsentIdsForDocumentId(document.Id);
+        var consents = await consentIds.Select(x => new Consent(x)).ToArrayAsync();
+        consentRepository.AttachToDatabase(consents);
+        foreach (var consent in consents)
+        {
+            consent.ConsentStatusId = ConsentStatusId.INACTIVE;
+        }
+
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
     }
-
 }
