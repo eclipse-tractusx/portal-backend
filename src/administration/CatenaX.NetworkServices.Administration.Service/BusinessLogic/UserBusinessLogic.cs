@@ -187,14 +187,24 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
             }
-            return _portalDBAccess.GetCompanyUserDetailsUntrackedAsync(
+            return _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
                 adminUserId,
                 companyUserId,
                 userEntityId,
                 firstName,
                 lastName,
                 email,
-                status);
+                status)
+                .AsNoTracking()
+                .Select(companyUser => new CompanyUserData(
+                    companyUser.Id,
+                    companyUser.CompanyUserStatusId)
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email
+                })
+                .AsAsyncEnumerable();
         }
 
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
