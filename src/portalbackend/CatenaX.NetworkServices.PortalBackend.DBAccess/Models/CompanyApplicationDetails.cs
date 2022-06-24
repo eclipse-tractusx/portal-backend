@@ -32,7 +32,7 @@ public class CompanyApplicationDetails
 
 public class DocumentDetails
 {
-    public DocumentDetails(string documentHash)
+    public DocumentDetails(byte[] documentHash)
     {
         DocumentHash = documentHash;
     }
@@ -40,5 +40,5 @@ public class DocumentDetails
     [JsonPropertyName("documentType")]
     public DocumentTypeId? DocumentTypeId { get; set; }
     [JsonPropertyName("documentHash")]
-    public string DocumentHash { get; set; }
+    public byte[] DocumentHash { get; set; }
 }
