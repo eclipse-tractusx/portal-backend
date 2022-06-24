@@ -33,6 +33,20 @@ public class ApplicationRepository : IApplicationRepository
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public Task<CompanyApplicationUserData?> GetCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId)
+            .Select(application => new {
+                Application = application, 
+                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
+            })
+            .Select(data => new CompanyApplicationUserData(data.Application)
+            {
+                CompanyUserId = data.CompanyUser!.Id,
+                Email = data.CompanyUser!.Email
+            })
+            .SingleOrDefaultAsync();
+
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
         _dbContext.CompanyApplications
             .Where(companyApplication => companyApplication.Id == companyApplicationId)
@@ -54,6 +68,28 @@ public class ApplicationRepository : IApplicationRepository
                     TaxId = companyApplication.Company.TaxId
                 })
             .AsNoTracking()
+            .SingleOrDefaultAsync();
+
+    public Task<Company?> GetCompanyWithAdressAsync(Guid companyApplicationId, Guid companyId) =>
+        _dbContext.Companies
+            .Include(company => company!.Address)
+            .Where(company => company.Id == companyId && company.CompanyApplications.Any(application => application.Id == companyApplicationId))
+            .SingleOrDefaultAsync();
+
+    public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId
+                && application.CompanyId == companyId)
+            .Include(application => application.Company)
+            .Include(application => application.Company!.Address)
+            .Select(application => new CompanyApplicationWithCompanyAddressUserData(
+                application)
+            {
+                CompanyUserId = application.Company!.CompanyUsers
+                    .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                    .Select(companyUser => companyUser.Id)
+                    .SingleOrDefault()
+            })
             .SingleOrDefaultAsync();
 
     public Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take) =>
