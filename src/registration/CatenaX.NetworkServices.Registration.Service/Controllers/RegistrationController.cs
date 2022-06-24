@@ -102,7 +102,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
-        public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
+        public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
             this.WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         [HttpPut]
@@ -127,7 +127,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
-            _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "invite_user")]
@@ -158,26 +159,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
-        [Route("submitregistration")]
-        public async Task<IActionResult> SubmitRegistrationAsync()
-        {
-            try
-            {
-                var userEmail = User.Claims.SingleOrDefault(x => x.Type == "email").Value as string;
-
-                if (await _registrationBusinessLogic.SubmitRegistrationAsync(userEmail).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        [Route("application/{applicationId}/submitRegistration")]
+        public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, iamUserId));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
