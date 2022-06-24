@@ -46,4 +46,15 @@ public class UserRolesRepository : IUserRolesRepository
             }
         }
     }
+
+    public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(userRole => userRole.IamClient!.ClientClientId == clientClientId && userRoles.Contains(userRole.UserRoleText))
+            .AsQueryable()
+            .Select(userRole => new UserRoleWithId(
+                userRole.UserRoleText,
+                userRole.Id
+            ))
+            .AsAsyncEnumerable();
 }
