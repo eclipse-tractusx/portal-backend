@@ -86,32 +86,25 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
 
-        public async Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId)
+        public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
         {
-            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
 
-            var userId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-            var documentUserId = await documentRepository.GetDocumentsCompanyUserByDocumentIdAsync(documentId).ConfigureAwait(false);
-            if (documentUserId is null)
+            var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, iamUserId).ConfigureAwait(false);
+            if (documentDetails.DocumentId == default)
             {
-                throw new NotFoundException("No document with the given id was found.");
+                throw new NotFoundException($"document {documentId} does not exist.");
             }
 
-            if (documentUserId != userId)
+            if (!documentDetails.IsSameUser)
             {
-                throw new ForbiddenException("User doesn't have the relevant rights to request for the document");
+                throw new ForbiddenException($"user {iamUserId} is not permitted to access document {documentId}.");
             }
 
             var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
             if (document is null)
             {
-                throw new NotFoundException("No document with the given id was found.");
-            }
-
-            if (document.CompanyUserId is not null && document.CompanyUserId != userId)
-            {
-                throw new ForbiddenException("User doesn't have the relevant rights to request for the document");
+                throw new NotFoundException($"document {documentId} does not exist.");
             }
 
             return (document.DocumentName, document.DocumentContent);
