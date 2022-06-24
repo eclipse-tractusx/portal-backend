@@ -137,7 +137,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
         [HttpPost]
-        [Authorize(Roles = "submit_registration")]
+        [Authorize(Roles = "sign_consent")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
             this.WithIamUserId(iamUserId =>
