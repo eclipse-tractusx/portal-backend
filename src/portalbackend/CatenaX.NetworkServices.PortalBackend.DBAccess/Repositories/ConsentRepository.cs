@@ -19,12 +19,5 @@ public class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetConsentIdsForDocumentId(Guid documentId) =>
-        _portalDbContext.Consents
-            .Where(x => x.DocumentId == documentId)
-            .Select(x => x.Id)
-            .AsAsyncEnumerable();
-
-    /// <inheritdoc />
-    public void AttachToDatabase(params Consent[] consents) => _portalDbContext.AttachRange(consents);
+    public void AttachToDatabase(IEnumerable<Consent> consents) => _portalDbContext.AttachRange(consents.ToArray());
 }

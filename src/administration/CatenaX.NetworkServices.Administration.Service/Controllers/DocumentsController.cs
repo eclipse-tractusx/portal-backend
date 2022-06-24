@@ -45,5 +45,4 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => 
         this.WithIamUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
-
 }
