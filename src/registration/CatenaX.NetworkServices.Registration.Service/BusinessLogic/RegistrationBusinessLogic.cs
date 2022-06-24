@@ -158,13 +158,22 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById)
         {
-            var userExists = await _portalDBAccess.IsUserExisting(createdById);
-            if (userExists)
+            if (String.IsNullOrEmpty(userCreationInfo.eMail))
             {
-                throw new ForbiddenException($"user {createdById} does already exist");
+                throw new ArgumentNullException($"email must not be empty");
             }
 
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+
+            if (await userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, createdById))
+            {
+                throw new ArgumentException($"user with email {userCreationInfo.eMail} does already exist");
+            }
+
+            var applicationData = await companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
             if (applicationData == null)
             {
                 throw new ForbiddenException($"user {createdById} is not associated with application {applicationId}");
@@ -180,7 +189,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     .Where(role => !String.IsNullOrWhiteSpace(role))
                     .Distinct();
 
-            var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
+            var companyRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
                 clientId,
                 roles
                 )
@@ -220,17 +229,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 };
                 await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
             }
-            var companyUser = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
 
             foreach (var role in roles)
             {
-                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+                userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
             }
 
-            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
-            _portalDBAccess.CreateInvitation(applicationId, companyUser);
+            userRepository.CreateIamUser(companyUser, centralUserId);
+            applicationRepository.CreateInvitation(applicationId, companyUser);
 
-            var modified = await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            var modified = await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
             var inviteTemplateName = "invite";
             if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
