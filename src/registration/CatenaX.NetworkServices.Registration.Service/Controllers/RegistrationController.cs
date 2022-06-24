@@ -109,13 +109,13 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/status")]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
-            _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status);
+            this.WithIamUserId(user => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, user));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/status")]
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
-            _registrationBusinessLogic.GetApplicationStatusAsync(applicationId);
+            this.WithIamUserId(user => _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId, user));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
