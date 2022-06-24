@@ -28,6 +28,6 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             throw new NotFoundException("No document with the given id was found.");
         }
 
-        return (document.Documentname, Convert.FromBase64String(document.DocumentContent));
+        return (document.DocumentName, document.DocumentContent);
     }
 }

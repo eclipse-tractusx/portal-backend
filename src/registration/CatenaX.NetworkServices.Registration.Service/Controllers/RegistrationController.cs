@@ -74,7 +74,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <response code="403">User does not have the relevant rights to request for the document.</response>
         /// <response code="404">No document with the given id was found.</response>
         [HttpGet]
-        [Authorize(Roles = "get_documents")]
+        // [Authorize(Roles = "get_documents")]
         [Route("documents/{documentId}")]
         [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]

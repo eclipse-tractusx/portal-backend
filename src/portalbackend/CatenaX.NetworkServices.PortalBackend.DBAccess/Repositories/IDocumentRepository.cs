@@ -36,4 +36,11 @@ public interface IDocumentRepository
     /// <param name="documentId">Id of the document</param>
     /// <returns>Returns the document</returns>
     Task<Document?> GetDocumentByIdAsync(Guid documentId);
+
+    /// <summary>
+    /// Gets the documents userid by the document id
+    /// </summary>
+    /// <param name="documentId">id of the document the user id should be selected for</param>
+    /// <returns>Returns the user id if a document is found for the given id, otherwise null</returns>
+    Task<Guid?> GetDocumentsCompanyUserByDocumentIdAsync(Guid documentId);
 }

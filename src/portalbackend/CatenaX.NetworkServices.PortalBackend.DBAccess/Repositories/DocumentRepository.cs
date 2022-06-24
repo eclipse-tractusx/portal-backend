@@ -49,6 +49,13 @@ public class DocumentRepository : IDocumentRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public async Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
-        await this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+    public Task<Guid?> GetDocumentsCompanyUserByDocumentIdAsync(Guid documentId) =>
+        this._dbContext.Documents
+            .Where(x => x.Id == documentId)
+            .Select(x => x.CompanyUserId)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
+        this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 }

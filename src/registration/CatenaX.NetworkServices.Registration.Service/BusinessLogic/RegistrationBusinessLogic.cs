@@ -91,6 +91,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
 
             var userId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+            var documentUserId = await documentRepository.GetDocumentsCompanyUserByDocumentIdAsync(documentId).ConfigureAwait(false);
+            if (documentUserId is null)
+            {
+                throw new NotFoundException("No document with the given id was found.");
+            }
+
+            if (documentUserId != userId)
+            {
+                throw new ForbiddenException("User doesn't have the relevant rights to request for the document");
+            }
+
             var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
             if (document is null)
             {
@@ -102,7 +113,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ForbiddenException("User doesn't have the relevant rights to request for the document");
             }
 
-            return (document.DocumentName, Convert.FromBase64String(document.DocumentContent));
+            return (document.DocumentName, document.DocumentContent);
         }
 
         public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
