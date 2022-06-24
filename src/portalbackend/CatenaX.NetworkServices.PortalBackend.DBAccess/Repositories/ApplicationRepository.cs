@@ -58,9 +58,9 @@ public class ApplicationRepository : IApplicationRepository
 
     public IQueryable<CompanyApplication> GetCompanyApplicationDetailsUntrackedAsync(string? companyName = null) =>
         _dbContext.Companies
-               .AsNoTracking()
-               .Where(company => (companyName != null && companyName.Length >= 3) ? company!.Name.StartsWith(companyName) : true)
-               .SelectMany(company => company.CompanyApplications);
+            .AsNoTracking()
+            .Where(company => (companyName != null && companyName.Length >= 3) ? company!.Name.StartsWith(companyName) : true)
+            .SelectMany(company => company.CompanyApplications);
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
