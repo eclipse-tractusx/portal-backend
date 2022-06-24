@@ -15,6 +15,7 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
+    Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     /// <summary>
     /// Retrieves company entity from persistence layer.
     /// </summary>

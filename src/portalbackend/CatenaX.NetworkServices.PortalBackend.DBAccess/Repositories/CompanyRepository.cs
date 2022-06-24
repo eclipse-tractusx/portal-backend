@@ -29,6 +29,16 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
+        _context.Addresses.Add(
+            new Address(
+                Guid.NewGuid(),
+                city,
+                streetname,
+                countryAlpha2Code,
+                DateTimeOffset.UtcNow
+            )).Entity;
+
     /// <inheritdoc/>
     public ValueTask<Company?> GetCompanyByIdAsync(Guid companyId) =>
         _context.Companies.FindAsync(companyId);
