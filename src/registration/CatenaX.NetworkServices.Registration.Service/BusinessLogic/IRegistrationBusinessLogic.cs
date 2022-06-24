@@ -21,16 +21,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId);
         
         Task SetIdpAsync(SetIdp idpToSet);
-        IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId);
+        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress);
+        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById);
-        Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
-        Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
+        Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId);
+        Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId);
         Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId);
         Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
-        Task<bool> SubmitRegistrationAsync(string userEmail);
+        Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
