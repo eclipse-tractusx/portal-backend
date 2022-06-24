@@ -26,33 +26,30 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var details = await documentRepository.GetDetailsForIdAsync(documentId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
 
-        if (details is null)
+        if (details.DocumentId == default)
         {
             throw new NotFoundException("Document is not existing");
         }
 
-        if (details.Item1.CompanyUserId != companyUserId)
+        if (!details.IsSameUser)
         {
             throw new ForbiddenException("User is not allowed to delete this document");
         }
 
-        if (details.Item1.DocumentStatusId != DocumentStatusId.PENDING)
+        if (details.DocumentStatusId != DocumentStatusId.PENDING)
         {
             throw new ArgumentException("Incorrect document status");
         }
 
-        var document = new Document(details.Item1.DocumentId);
+        var document = new Document(details.DocumentId);
         documentRepository.AttachToDatabase(document);
         document.DocumentStatusId = DocumentStatusId.INACTIVE;
 
-        var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
-        var consentIds = consentRepository.GetConsentIdsForDocumentId(document.Id);
-        var consents = await consentIds.Select(x => new Consent(x)).ToArrayAsync();
-        consentRepository.AttachToDatabase(consents);
+        var consents = details.ConsentIds.Select(x => new Consent(x));
+        _portalRepositories.GetInstance<IConsentRepository>().AttachToDatabase(consents);
+
         foreach (var consent in consents)
         {
             consent.ConsentStatusId = ConsentStatusId.INACTIVE;

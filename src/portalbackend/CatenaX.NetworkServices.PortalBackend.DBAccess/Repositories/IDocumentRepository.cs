@@ -19,15 +19,7 @@ public interface IDocumentRepository
     /// <returns>Returns the created document</returns>
     Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId);
 
-    /// <summary>
-    /// Gets the document by the given id from the persistence layer.
-    /// </summary>
-    /// <param name="documentId">Id of the document</param>
-    /// <returns>The document or null if no document is found</returns>
-    Task<Document?> GetDocumentByIdAsync(Guid documentId);
-
-    Task<Tuple<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid? CompanyUserId)>?> GetDetailsForIdAsync(
-        Guid documentId);
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId);
 
     /// <summary>
     /// Attaches the document to the database

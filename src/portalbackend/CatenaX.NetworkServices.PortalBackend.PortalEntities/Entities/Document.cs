@@ -18,8 +18,7 @@ public class Document
     /// Please only use when attaching the Document to the database
     /// </summary>
     /// <param name="id"></param>
-    public Document(Guid id) 
-        : this()
+    public Document(Guid id) : this()
     {
         Id = id;
     }

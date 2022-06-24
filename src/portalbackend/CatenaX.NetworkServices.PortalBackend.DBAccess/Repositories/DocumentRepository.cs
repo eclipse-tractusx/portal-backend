@@ -35,15 +35,15 @@ public class DocumentRepository : IDocumentRepository
             }).Entity;
 
     /// <inheritdoc />
-    public Task<Document?> GetDocumentByIdAsync(Guid documentId) => 
-        _dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
-
-    /// <inheritdoc />
-    public Task<Tuple<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid? CompanyUserId)>?>
-        GetDetailsForIdAsync(Guid documentId) =>
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId) =>
         _dbContext.Documents
+            .AsNoTracking()
             .Where(x => x.Id == documentId)
-            .Select(x => new Tuple<(Guid DocumentId, DocumentStatusId DocumentStatusId, Guid? CompanyUserId)>(new (x.Id, x.DocumentStatusId, x.CompanyUserId)))
+            .Select(document => ((Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser))
+                new (document.Id,
+                    document.DocumentStatusId,
+                    document.Consents.Select(consent => consent.Id),
+                    document.CompanyUser!.IamUser!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
