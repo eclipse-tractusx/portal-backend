@@ -36,11 +36,9 @@ public class DocumentsController : ControllerBase
     [Route("{documentId}")]
     [Authorize(Roles = "view_documents")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-    public async Task<ActionResult> GetCompanyConnectorsForCurrentUserAsync([FromQuery] Guid documentId)
+    public async Task<ActionResult> GetDocumentContentFileAsync([FromQuery] Guid documentId)
     {
-        var (fileName, content) = await this.WithIamUserId(adminId => _businessLogic.GetDocumentAsync(documentId, adminId));
+        var (fileName, content) = await this.WithIamUserId(adminId => _businessLogic.GetDocumentAsync(documentId, adminId)).ConfigureAwait(false);
         return File(content, "application/pdf", fileName);
     }
-        
-
 }

@@ -105,16 +105,6 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc/>
-    public async Task<Guid?> GetCompanyUserIdForIamUserUntrackedAsync(string iamUserId) =>
-        await _dbContext.IamUsers
-            .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId)
-            .Select(iamUser =>
-                iamUser.CompanyUser!.Id)
-            .SingleOrDefaultAsync();
-
-    /// <inheritdoc/>
     public Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId

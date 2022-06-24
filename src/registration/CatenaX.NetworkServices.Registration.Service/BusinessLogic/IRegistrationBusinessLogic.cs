@@ -18,7 +18,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         /// <param name="documentId">The Id of the document that should be get</param>
         /// <param name="iamUserId">The Id of the current user</param>
         /// <returns></returns>
-        Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId);
+        Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId);
         
         Task SetIdpAsync(SetIdp idpToSet);
         IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);

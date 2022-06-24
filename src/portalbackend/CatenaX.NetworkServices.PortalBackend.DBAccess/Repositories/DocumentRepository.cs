@@ -49,10 +49,10 @@ public class DocumentRepository : IDocumentRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<Guid?> GetDocumentsCompanyUserByDocumentIdAsync(Guid documentId) =>
+    public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
-            .Select(x => x.CompanyUserId)
+            .Select(x => ((Guid DocumentId, bool IsSameUser))new (x.Id, x.CompanyUser!.IamUser!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

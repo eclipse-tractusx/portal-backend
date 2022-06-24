@@ -79,9 +79,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetDocumentAsync([FromRoute] Guid documentId)
+        public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
         {
-            var (fileName, content) = await this.WithIamUserId(user => _registrationBusinessLogic.GetDocumentAsync(documentId, user));
+            var (fileName, content) = await this.WithIamUserId(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user));
             return File(content, "application/pdf", fileName);
         }
         
