@@ -18,4 +18,11 @@ public interface IAppRepository
     /// <param name="appId">ID of the app.</param>
     /// <returns>Tuple of provider company details.</returns>
     public Task<(string appName, string providerName, string providerContactEmail)> GetAppProviderDetailsAsync(Guid appId);
+
+    /// <summary>
+    /// Get Client Name by App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <returns>Client Name</returns>
+    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId);
 }

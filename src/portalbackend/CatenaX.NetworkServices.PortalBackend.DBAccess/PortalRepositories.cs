@@ -16,7 +16,11 @@ public class PortalRepositories : IPortalRepositories
     {
         var repositoryType = typeof(RepositoryType);
 
-        if (repositoryType == typeof(IApplicationRepository))
+        if (repositoryType == typeof(IAppRepository))
+        {
+            return To<RepositoryType>(new AppRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(IApplicationRepository))
         {
             return To<RepositoryType>(new ApplicationRepository(_dbContext));
         }
@@ -24,9 +28,29 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new AppUserRepository(_dbContext));
         }
+          else if (repositoryType == typeof(ICompanyAssignedAppsRepository))
+        {
+            return To<RepositoryType>(new CompanyAssignedAppsRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(ICompanyRepository))
+        {
+            return To<RepositoryType>(new CompanyRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(ICompanyRolesRepository))
+        {
+            return To<RepositoryType>(new CompanyRolesRepository(_dbContext));
+        }
         else if (repositoryType == typeof(IConnectorsRepository))
         {
             return To<RepositoryType>(new ConnectorsRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(IDocumentRepository))
+        {
+            return To<RepositoryType>(new DocumentRepository(_dbContext));
+        }
+        else if (repositoryType == typeof(IIdentityProviderRepository))
+        {
+            return To<RepositoryType>(new IdentityProviderRepository(_dbContext));
         }
         else if (repositoryType == typeof(IServiceAccountsRepository))
         {

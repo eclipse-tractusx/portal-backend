@@ -96,6 +96,7 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
+builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 

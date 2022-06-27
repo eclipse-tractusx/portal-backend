@@ -11,17 +11,26 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
         Task<IEnumerable<string>> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
+        
+        /// <summary>
+        /// Gets the file content from the persistence store for the given user
+        /// </summary>
+        /// <param name="documentId">The Id of the document that should be get</param>
+        /// <param name="iamUserId">The Id of the current user</param>
+        /// <returns></returns>
+        Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId);
+        
         Task SetIdpAsync(SetIdp idpToSet);
-        IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId);
+        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress);
+        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById);
-        Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status);
-        Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId);
+        Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId);
+        Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId);
         Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId);
         Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
-        Task<bool> SubmitRegistrationAsync(string userEmail);
+        Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
