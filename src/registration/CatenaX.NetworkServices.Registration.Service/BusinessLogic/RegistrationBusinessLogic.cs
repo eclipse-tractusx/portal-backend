@@ -28,7 +28,15 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IPortalRepositories _portalRepositories;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IPortalRepositories portalRepositories)
+        public RegistrationBusinessLogic(
+            IOptions<RegistrationSettings> settings, 
+            IRegistrationDBAccess registrationDBAccess, 
+            IMailingService mailingService, 
+            IBPNAccess bpnAccess, 
+            IProvisioningManager provisioningManager, 
+            IPortalBackendDBAccess portalDBAccess, 
+            ILogger<RegistrationBusinessLogic> logger, 
+            IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
@@ -80,7 +88,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     {
                         throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                     }
-                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
                     return await _portalRepositories.SaveAsync().ConfigureAwait(false);
                 }
             }

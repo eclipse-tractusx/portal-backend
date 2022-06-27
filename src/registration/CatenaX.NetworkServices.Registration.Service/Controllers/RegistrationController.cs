@@ -71,7 +71,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns></returns>
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
         /// <response code="200">Successfully uploaded the document</response>
-        /// <response code="403">The user is not assigned with the CompanyAppication.</response>
+        /// <response code="403">The user is not assigned with the CompanyApplication.</response>
         /// <response code="415">Only PDF files are supported.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
