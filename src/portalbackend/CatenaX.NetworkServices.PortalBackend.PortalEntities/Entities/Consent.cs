@@ -7,6 +7,15 @@ public class Consent
 {
     private Consent() {}
 
+    /// <summary>
+    /// Please only use when attaching the Consent to the database
+    /// </summary>
+    /// <param name="id"></param>
+    public Consent(Guid id)
+    {
+        Id = id;
+    }
+
     public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
     {
         Id = id;
