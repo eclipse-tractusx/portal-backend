@@ -23,12 +23,23 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(CompanyWithAddress), (int)HttpStatusCode.OK)]
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
         _logic.GetCompanyWithAddressAsync(applicationId);
-
+    
+    /// <summary>
+    /// Fet Application Detail by Company Name or Status
+    /// </summary>
+    /// <param name="page">page index start from 0</param>
+    /// <param name="size">size to get number of records</param>
+    /// <param name="companyName">search by company name</param>
+    /// <returns>Company Application Details</returns>
+    /// <remarks>Example: GET: api/administration/registration/applications?companyName=Car&page=0&size=4</remarks>
+    /// <remarks>Example: GET: api/administration/registration/applications?page=0&size=4</remarks>
+    /// <response code="200">Result as a Company Application Details</response>
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery] int page, [FromQuery] int size) =>
-        _logic.GetCompanyApplicationDetailsAsync(page, size);
+    [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationDetails>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size, [FromQuery]string? companyName = null) =>
+        _logic.GetCompanyApplicationDetailsAsync(page, size, companyName);
 
     [HttpPut]
     [Authorize(Roles = "approve_new_partner")]
