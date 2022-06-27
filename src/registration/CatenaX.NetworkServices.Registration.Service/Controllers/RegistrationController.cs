@@ -49,7 +49,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// </summary>
         /// <param name="applicationId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645"></param>
         /// <param name="documentTypeId" example="1"></param>
-        /// <param name="document">The </param>
+        /// <param name="document"></param>
         /// <returns></returns>
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
         /// <response code="200">Successfully uploaded the document</response>
@@ -64,6 +64,27 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
             this.WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
+        /// <summary>
+        /// Gets a specific document by its id
+        /// </summary>
+        /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+        /// <returns></returns>
+        /// <remarks>Example: Post: /api/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+        /// <response code="200">Successfully uploaded the document</response>
+        /// <response code="403">User does not have the relevant rights to request for the document.</response>
+        /// <response code="404">No document with the given id was found.</response>
+        [HttpGet]
+        [Authorize(Roles = "get_documents")]
+        [Route("documents/{documentId}")]
+        [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
+        {
+            var (fileName, content) = await this.WithIamUserId(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user));
+            return File(content, "application/pdf", fileName);
+        }
+        
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]

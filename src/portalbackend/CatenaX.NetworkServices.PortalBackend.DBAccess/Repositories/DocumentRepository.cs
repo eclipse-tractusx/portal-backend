@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -51,4 +52,28 @@ public class DocumentRepository : IDocumentRepository
     {
         _dbContext.Documents.Attach(document);
     }
+
+    public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser =>
+                iamUser.UserEntityId == iamUserId
+                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId))
+            .Select(document =>
+                new UploadDocuments(
+                    document!.Id,
+                    document!.DocumentName))
+            .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId) =>
+        this._dbContext.Documents
+            .Where(x => x.Id == documentId)
+            .Select(x => ((Guid DocumentId, bool IsSameUser))new (x.Id, x.CompanyUser!.IamUser!.UserEntityId == iamUserId))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
+        this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 }
