@@ -8,6 +8,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -43,12 +44,40 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return companyWithAddress;
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size) =>
-        Pagination.CreateResponseAsync<CompanyApplicationDetails>(
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
+    {
+        var applications = _applicationRepository.GetCompanyApplicationsFilteredQuery(companyName?.Length >= 3 ? companyName : null);
+        return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            (skip, take) => _applicationRepository.GetCompanyApplicationDetailsUntrackedAsync(skip, take));
+            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
+                applications.CountAsync(),
+                applications.OrderByDescending(application => application.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new CompanyApplicationDetails(
+                        application.Id,
+                        application.ApplicationStatusId,
+                        application.DateCreated,
+                        application.Company!.Name,
+                        application.Invitations.SelectMany(invitation =>
+                            invitation.CompanyUser!.Documents.Select(document =>
+                                new DocumentDetails(document.DocumentHash)
+                                {
+                                    DocumentTypeId = document.DocumentTypeId,
+                                })))
+                    {
+                        Email = application.Invitations
+                            .Select(invitation => invitation.CompanyUser)
+                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                && companyUser.Email != null)
+                            .Select(companyUser => companyUser!.Email)
+                            .FirstOrDefault(),
+                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber
+                    })
+                    .AsAsyncEnumerable()));
+    }
 
     public async Task<bool> ApprovePartnerRequest(Guid applicationId)
     {

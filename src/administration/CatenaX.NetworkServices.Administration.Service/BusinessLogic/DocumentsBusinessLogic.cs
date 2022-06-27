@@ -7,21 +7,33 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Repository for writing documents on persistence layer.
+/// Business logic for document handling
 /// </summary>
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
 
     /// <summary>
-    /// Creates a new instance of <see cref="DocumentsBusinessLogic"/>
+    /// Creates a new instance <see cref="DocumentsBusinessLogic"/>
     /// </summary>
-    /// <param name="portalRepositories">Portal repositories</param>
     public DocumentsBusinessLogic(IPortalRepositories portalRepositories)
     {
+    
         _portalRepositories = portalRepositories;
     }
 
+    /// <inheritdoc />
+    public async Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId)
+    {
+        var document = await this._portalRepositories.GetInstance<IDocumentRepository>().GetDocumentByIdAsync(documentId).ConfigureAwait(false);
+        if (document is null)
+        {
+            throw new NotFoundException("No document with the given id was found.");
+        }
+
+        return (document.DocumentName, document.DocumentContent);
+    }
+    
     /// <inheritdoc />
     public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
     {
