@@ -2,6 +2,7 @@
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -12,7 +13,7 @@ using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
-using System.Text;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 {
@@ -24,9 +25,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalBackendDBAccess _portalDBAccess;
+        private readonly IPortalRepositories _portalRepositories;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
-        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger)
+        public RegistrationBusinessLogic(IOptions<RegistrationSettings> settings, IRegistrationDBAccess registrationDBAccess, IMailingService mailingService, IBPNAccess bpnAccess, IProvisioningManager provisioningManager, IPortalBackendDBAccess portalDBAccess, ILogger<RegistrationBusinessLogic> logger, IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
             _dbAccess = registrationDBAccess;
@@ -35,6 +37,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _provisioningManager = provisioningManager;
             _portalDBAccess = portalDBAccess;
             _logger = logger;
+            _portalRepositories = portalRepositories;
         }
 
         public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
@@ -53,39 +56,65 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ArgumentNullException("File name is must not be null");
             }
 
-            var companyUserId = await _portalDBAccess.GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
-            if (companyUserId.Equals(Guid.Empty))
+            // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+            if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
+            }
+
+            var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (companyUserId == default)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
-            var documentName = document.FileName;
 
-            using (var ms = new MemoryStream())
+            var documentName = document.FileName;
+            using (var md5 = MD5.Create())
             {
-                document.CopyTo(ms);
-                var fileBytes = ms.ToArray();
-                var documentContent = Convert.ToBase64String(fileBytes);
-                using (SHA256 hashSHA256 = SHA256.Create())
+                using (var ms = new MemoryStream((int)document.Length))
                 {
-                    byte[] hashValue = hashSHA256.ComputeHash(Encoding.UTF8.GetBytes(documentContent));
-                    // hash = Encoding.UTF8.GetString(hashValue);
-                    StringBuilder builder = new StringBuilder();
-                    for (int i = 0; i < hashValue.Length; i++)
+                    document.CopyTo(ms);
+                    var hash = md5.ComputeHash(ms);
+                    var documentContent = ms.GetBuffer();
+                    if (ms.Length != document.Length || documentContent.Length != document.Length)
                     {
-                        builder.Append(hashValue[i].ToString("x2"));
+                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                     }
-                    var hash = builder.ToString();
-                    _portalDBAccess.CreateDocument(applicationId, companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, 0, documentTypeId);
+                    return await _portalRepositories.SaveAsync().ConfigureAwait(false);
                 }
             }
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        public async IAsyncEnumerable<CompanyApplication> GetAllApplicationsForUserWithStatus(string userId)
+        public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
+        {
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+
+            var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, iamUserId).ConfigureAwait(false);
+            if (documentDetails.DocumentId == default)
+            {
+                throw new NotFoundException($"document {documentId} does not exist.");
+            }
+
+            if (!documentDetails.IsSameUser)
+            {
+                throw new ForbiddenException($"user {iamUserId} is not permitted to access document {documentId}.");
+            }
+
+            var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
+            if (document is null)
+            {
+                throw new NotFoundException($"document {documentId} does not exist.");
+            }
+
+            return (document.DocumentName, document.DocumentContent);
+        }
+
+        public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId)
         {
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
-                yield return new CompanyApplication
+                yield return new CompanyApplicationData
                 {
                     ApplicationId = applicationWithStatus.ApplicationId,
                     ApplicationStatus = applicationWithStatus.ApplicationStatus
@@ -95,7 +124,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
         {
-            var result = await _portalDBAccess.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+            var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
             if (result == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
@@ -103,7 +132,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return result;
         }
 
-        public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress)
+        public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
         {
             if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
             {
@@ -121,18 +150,25 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("CountryAlpha2Code must be 2 chars");
             }
-            var company = await _portalDBAccess.GetCompanyWithAdressAsync(applicationId, companyWithAddress.CompanyId).ConfigureAwait(false);
-            if (company == null)
+            var companyApplicationData = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyWithAddress.CompanyId, iamUserId).ConfigureAwait(false);
+            if (companyApplicationData == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
             }
+            if (companyApplicationData.CompanyUserId == default)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+            }
+
+            var company = companyApplicationData.CompanyApplication.Company!;
+
             company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
             company.Name = companyWithAddress.Name;
             company.Shortname = companyWithAddress.Shortname;
             company.TaxId = companyWithAddress.TaxId;
             if (company.Address == null)
             {
-                company.Address = _portalDBAccess.CreateAddress(
+                company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
                         companyWithAddress.City,
                         companyWithAddress.Streetname,
                         companyWithAddress.CountryAlpha2Code
@@ -149,18 +185,30 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             company.Address.Streetadditional = companyWithAddress.Streetadditional;
             company.Address.Streetnumber = companyWithAddress.Streetnumber;
             company.CompanyStatusId = CompanyStatusId.PENDING;
-            await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+
+            UpdateApplicationStatus(companyApplicationData.CompanyApplication, UpdateApplicationSteps.CompanyWithAddress);
+
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById)
         {
-            var userExists = await _portalDBAccess.IsUserExisting(createdById);
-            if (userExists)
+            if (String.IsNullOrEmpty(userCreationInfo.eMail))
             {
-                throw new ForbiddenException($"user {createdById} does already exist");
+                throw new ArgumentNullException($"email must not be empty");
             }
 
-            var applicationData = await _portalDBAccess.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+
+            if (await userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, createdById))
+            {
+                throw new ArgumentException($"user with email {userCreationInfo.eMail} does already exist");
+            }
+
+            var applicationData = await companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
             if (applicationData == null)
             {
                 throw new ForbiddenException($"user {createdById} is not associated with application {applicationId}");
@@ -176,7 +224,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     .Where(role => !String.IsNullOrWhiteSpace(role))
                     .Distinct();
 
-            var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
+            var companyRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
                 clientId,
                 roles
                 )
@@ -216,17 +264,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 };
                 await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
             }
-            var companyUser = _portalDBAccess.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
 
             foreach (var role in roles)
             {
-                _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+                userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
             }
 
-            _portalDBAccess.CreateIamUser(companyUser, centralUserId);
-            _portalDBAccess.CreateInvitation(applicationId, companyUser);
+            userRepository.CreateIamUser(companyUser, centralUserId);
+            applicationRepository.CreateInvitation(applicationId, companyUser);
 
-            var modified = await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            var modified = await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
             var inviteTemplateName = "invite";
             if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
@@ -249,29 +297,92 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return modified;
         }
 
-        public async Task<int> SetApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status)
+        public async Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId)
         {
             if (status == 0)
             {
                 throw new ArgumentNullException("status must not be null");
             }
-            var application = await _portalDBAccess.GetCompanyApplicationAsync(applicationId).ConfigureAwait(false);
-            if (application == null)
+            var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationUserDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (applicationUserData == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            application.ApplicationStatusId = status;
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            if (applicationUserData.CompanyUserId == default)
+            {
+                throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
+            }
+
+            var application = applicationUserData.CompanyApplication;
+
+            switch (application.ApplicationStatusId)
+            {
+                case CompanyApplicationStatusId.CREATED:
+                    if (status != CompanyApplicationStatusId.ADD_COMPANY_DATA)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.ADD_COMPANY_DATA}");
+                    }
+                    application.ApplicationStatusId = status;
+                    break;
+
+                case CompanyApplicationStatusId.ADD_COMPANY_DATA:
+                    if (status != CompanyApplicationStatusId.INVITE_USER)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.INVITE_USER}");
+                    }
+                    application.ApplicationStatusId = status;
+                    break;
+
+                case CompanyApplicationStatusId.INVITE_USER:
+                    if (status != CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SELECT_COMPANY_ROLE}");
+                    }
+                    application.ApplicationStatusId = status;
+                    break;
+
+                case CompanyApplicationStatusId.SELECT_COMPANY_ROLE:
+                    if (status != CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.UPLOAD_DOCUMENTS}");
+                    }
+                    application.ApplicationStatusId = status;
+                    break;
+
+                case CompanyApplicationStatusId.UPLOAD_DOCUMENTS:
+                    if (status != CompanyApplicationStatusId.VERIFY)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.VERIFY}");
+                    }
+                    application.ApplicationStatusId = status;
+                    break;
+
+                case CompanyApplicationStatusId.VERIFY:
+                    if (status != CompanyApplicationStatusId.SUBMITTED)
+                    {
+                        throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SUBMITTED}");
+                    }
+                    application.ApplicationStatusId = status;
+                    break;
+                default:
+                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}");
+            }
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
-        public async Task<CompanyApplicationStatusId> GetApplicationStatusAsync(Guid applicationId)
+        public async Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId)
         {
-            var result = (CompanyApplicationStatusId?)await _portalDBAccess.GetApplicationStatusUntrackedAsync(applicationId).ConfigureAwait(false);
-            if (!result.HasValue)
+            var applicationStatusUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationStatusUserDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (applicationStatusUserData == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            return result.Value;
+            if (applicationStatusUserData.CompanyUserId == default)
+            {
+                throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
+            }
+            return applicationStatusUserData.CompanyApplicationStatusId;
         }
 
         public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId)
@@ -279,20 +390,27 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var companyRoleIdsToSet = roleAgreementConsentStatuses.CompanyRoleIds;
             var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
 
-            var companyRoleAgreementConsentData = await _portalDBAccess.GetCompanyRoleAgreementConsentDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
+
+            var companyRoleAgreementConsentData = await companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, iamUserId).ConfigureAwait(false);
 
             if (companyRoleAgreementConsentData == null)
+            {
+                throw new NotFoundException($"application {applicationId} does not exist");
+            }
+            if (companyRoleAgreementConsentData.CompanyUserId == default)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
 
             var companyUserId = companyRoleAgreementConsentData.CompanyUserId;
             var companyId = companyRoleAgreementConsentData.CompanyId;
+            var application = companyRoleAgreementConsentData.CompanyApplication;
             var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
             var activeConsents = companyRoleAgreementConsentData.Consents;
 
             var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId, IEnumerable<Guid>>();
-            await foreach (var companyRoleAgreement in _portalDBAccess.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
+            await foreach (var companyRoleAgreement in companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
             {
                 companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId] = companyRoleAgreement.AgreementIds;
             }
@@ -312,7 +430,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 .Where(companyAssignedRole =>
                     !companyRoleIdsToSet.Contains(companyAssignedRole.CompanyRoleId)))
             {
-                _portalDBAccess.RemoveCompanyAssignedRole(companyAssignedRoleToRemove);
+                companyRolesRepository.RemoveCompanyAssignedRole(companyAssignedRoleToRemove);
             }
 
             foreach (var companyRoleIdToAdd in companyRoleIdsToSet
@@ -320,7 +438,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     !companyAssignedRoles.Any(companyAssignedRole =>
                         companyAssignedRole.CompanyRoleId == companyRoleId)))
             {
-                _portalDBAccess.CreateCompanyAssignedRole(companyId, companyRoleIdToAdd);
+                companyRolesRepository.CreateCompanyAssignedRole(companyId, companyRoleIdToAdd);
             }
 
             foreach (var consentToRemove in activeConsents
@@ -338,15 +456,17 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     && !activeConsents.Any(activeConsent =>
                         activeConsent.AgreementId == agreementConsent.AgreementId)))
             {
-                _portalDBAccess.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+                companyRolesRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
             }
 
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            UpdateApplicationStatus(application, UpdateApplicationSteps.CompanyRoleAgreementConsents);
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, string iamUserId)
         {
-            var result = await _portalDBAccess.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var result = await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (result == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
@@ -356,20 +476,42 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync()
         {
+            var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
             return new CompanyRoleAgreementData(
-                (await _portalDBAccess.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
-                (await _portalDBAccess.GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
+                (await companyRolesRepository.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
+                (await companyRolesRepository.GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
             );
         }
 
-        public async Task<bool> SubmitRegistrationAsync(string userEmail)
+        public async Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId)
         {
+            var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationUserEmailDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+            if (applicationUserData == null)
+            {
+                throw new NotFoundException($"application {applicationId} does not exist");
+            }
+            if (applicationUserData.CompanyUserId == default)
+            {
+                throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+            }
+
+            UpdateApplicationStatus(applicationUserData.CompanyApplication, UpdateApplicationSteps.SubmitRegistration);
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
             var mailParameters = new Dictionary<string, string>
             {
                 { "url", $"{_settings.BasePortalAddress}"},
             };
 
-            await _mailingService.SendMails(userEmail, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            if (applicationUserData.Email != null)
+            {
+                await _mailingService.SendMails(applicationUserData.Email, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            }
+            else
+            {
+                _logger.LogInformation($"user {iamUserId} has no email-address");
+            }
+
             return true;
         }
 
@@ -386,9 +528,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
         
-              //TODO: Need to implement storage for document upload
+        //TODO: Need to implement storage for document upload
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
-            _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
+            _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
 
         public async Task<int> SetInvitationStatusAsync(string iamUserId)
         {
@@ -416,6 +558,56 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
             return registrationData;
+        }
+
+        private void UpdateApplicationStatus(CompanyApplication application, UpdateApplicationSteps type)
+        {
+            if (application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
+                || application.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
+                || application.ApplicationStatusId == CompanyApplicationStatusId.DECLINED)
+            {
+                throw new ForbiddenException($"Application is already closed");
+            }
+
+            switch(type)
+            {
+                case UpdateApplicationSteps.CompanyWithAddress:
+                {
+                    if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
+                    {
+                        application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+                    }
+                    break;
+                }
+                case UpdateApplicationSteps.CompanyRoleAgreementConsents:
+                {
+                    if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.INVITE_USER
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
+                    {
+                        application.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
+                    }
+                    break;
+                }
+                case UpdateApplicationSteps.SubmitRegistration:
+                {
+                    if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.INVITE_USER
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE
+                        || application.ApplicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
+                    {
+                        throw new ForbiddenException($"Application status is not fitting to the pre-requisite");
+                    }
+                    else
+                    {
+                        application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                    }
+                    break;
+                }
+            }
         }
     }
 }

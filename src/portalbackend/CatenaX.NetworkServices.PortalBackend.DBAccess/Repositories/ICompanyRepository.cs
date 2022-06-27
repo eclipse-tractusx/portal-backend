@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -8,9 +9,19 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 public interface ICompanyRepository
 {
     /// <summary>
+    /// Creates new company entity from persistence layer.
+    /// </summary>
+    /// <param name="companyName">Name of the company to create the new entity for.</param>
+    /// <returns>Created company entity.</returns>
+    Company CreateCompany(string companyName);
+
+    Address CreateAddress(string city, string streetname, string countryAlpha2Code);
+    /// <summary>
     /// Retrieves company entity from persistence layer.
     /// </summary>
     /// <param name="companyId">Id of the company to retrieve.</param>
     /// <returns>Requested company entity or null if it does not exist.</returns>
-    public ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
+    ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
+
+    Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 }
