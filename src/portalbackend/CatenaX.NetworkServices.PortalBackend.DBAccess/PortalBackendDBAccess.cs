@@ -150,19 +150,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         .SingleOrDefault()
                 }).SingleOrDefaultAsync();
 
-        public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser =>
-                    iamUser.UserEntityId == iamUserId
-                    && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-                .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId))
-                .Select(document =>
-                    new UploadDocuments(
-                        document!.Id,
-                        document!.DocumentName))
-                .AsAsyncEnumerable();
-
         public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
             _dbContext.Invitations
             .Where(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId)

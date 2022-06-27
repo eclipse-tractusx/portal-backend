@@ -86,6 +86,30 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
 
+        public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
+        {
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+
+            var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, iamUserId).ConfigureAwait(false);
+            if (documentDetails.DocumentId == default)
+            {
+                throw new NotFoundException($"document {documentId} does not exist.");
+            }
+
+            if (!documentDetails.IsSameUser)
+            {
+                throw new ForbiddenException($"user {iamUserId} is not permitted to access document {documentId}.");
+            }
+
+            var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(false);
+            if (document is null)
+            {
+                throw new NotFoundException($"document {documentId} does not exist.");
+            }
+
+            return (document.DocumentName, document.DocumentContent);
+        }
+
         public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId)
         {
             await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
@@ -504,9 +528,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
         }
         
-              //TODO: Need to implement storage for document upload
+        //TODO: Need to implement storage for document upload
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
-            _portalDBAccess.GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
+            _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId,documentTypeId,iamUserId);
 
         public async Task<int> SetInvitationStatusAsync(string iamUserId)
         {
