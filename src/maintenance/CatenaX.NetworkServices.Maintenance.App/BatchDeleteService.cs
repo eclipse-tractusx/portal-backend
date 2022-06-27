@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.Maintenance.App;
@@ -31,19 +32,15 @@ public class BatchDeleteService : BackgroundService
         using var scope = _serviceScopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
             
-        using var transaction = dbContext.Database.BeginTransaction();
         try
         {
-            _logger.LogInformation("Cleaning up consents...");
-            dbContext.Database.ExecuteSqlRaw($"DELETE FROM portal.consents WHERE document_id IN (SELECT id FROM portal.documents where date_created < now() - interval '{_days} days' and (document_status_id = 1 or document_status_id = 3))");
-            _logger.LogInformation("Cleaning up documents...");
-            dbContext.Database.ExecuteSqlRaw($"DELETE FROM portal.documents where date_created < now() - interval '{_days} days' and (document_status_id = 1 or document_status_id = 3)");
-            transaction.Commit();
+            _logger.LogInformation($"Cleaning up documents and consents older {_days} days...");
+            var dbQuery = string.Format("WITH documentids AS (DELETE FROM portal.documents WHERE date_created < now() - interval '{0} days' and (document_status_id = {1} or document_status_id = {2}) RETURNING id) DELETE FROM portal.consents WHERE document_id in (SELECT id from documentids);", _days, (int) DocumentStatusId.PENDING, (int) DocumentStatusId.INACTIVE);
+            dbContext.Database.ExecuteSqlRaw(dbQuery);
             _logger.LogInformation($"Documents older than {_days} days and depending consents successfully cleaned up.");
         }
         catch (Exception ex)
         {
-            transaction.Rollback();
             _logger.LogError($"Database clean up failed with error: {ex.Message}");
         }
 
