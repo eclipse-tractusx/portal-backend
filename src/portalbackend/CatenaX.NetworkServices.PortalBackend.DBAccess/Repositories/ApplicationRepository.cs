@@ -1,4 +1,3 @@
-using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -33,6 +32,38 @@ public class ApplicationRepository : IApplicationRepository
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId)
+            .Select(application => new CompanyApplicationUserData(application)
+            {
+                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+            })
+            .SingleOrDefaultAsync();
+    public Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .Select(application => new CompanyApplicationStatusUserData(application.ApplicationStatusId)
+            {
+                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+            })
+            .SingleOrDefaultAsync();
+
+    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId)
+            .Select(application => new {
+                Application = application, 
+                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
+            })
+            .Select(data => new CompanyApplicationUserEmailData(data.Application)
+            {
+                CompanyUserId = data.CompanyUser!.Id,
+                Email = data.CompanyUser!.Email
+            })
+            .SingleOrDefaultAsync();
+
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
         _dbContext.CompanyApplications
             .Where(companyApplication => companyApplication.Id == companyApplicationId)
@@ -56,36 +87,27 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-    public Pagination.AsyncSource<CompanyApplicationDetails> GetCompanyApplicationDetailsUntrackedAsync(int skip, int take) =>
-        new Pagination.AsyncSource<CompanyApplicationDetails>(
-            _dbContext.CompanyApplications
-                .AsNoTracking()
-                .CountAsync(),
-            _dbContext.CompanyApplications
-                .AsNoTracking()
-                .OrderByDescending(application => application.DateCreated)
-                .Skip(skip)
-                .Take(take)
-                .Select(application => new CompanyApplicationDetails(
-                    application.Id,
-                    application.ApplicationStatusId,
-                    application.DateCreated,
-                    application.Company!.Name,
-                    application.Invitations.SelectMany(invitation => invitation.CompanyUser!.Documents.Select(document => new DocumentDetails(
-                        Convert.ToHexString(document.DocumentHash).ToLower())
-                    {
-                        DocumentTypeId = document.DocumentTypeId,
-                    })))
-                {
-                    Email = application.Invitations
-                        .Select(invitation => invitation.CompanyUser)
-                        .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                            && companyUser.Email != null)
-                        .Select(companyUser => companyUser!.Email)
-                        .FirstOrDefault(),
-                    BusinessPartnerNumber = application.Company.BusinessPartnerNumber
-                })
-                .AsAsyncEnumerable());
+    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null) =>
+        _dbContext.Companies
+            .AsNoTracking()
+            .Where(company => companyName != null ? EF.Functions.ILike(company!.Name, $"{companyName}%") : true)
+            .SelectMany(company => company.CompanyApplications);
+
+    public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId
+                && application.CompanyId == companyId)
+            .Include(application => application.Company)
+            .Include(application => application.Company!.Address)
+            .Select(application => new CompanyApplicationWithCompanyAddressUserData(
+                application)
+            {
+                CompanyUserId = application.Company!.CompanyUsers
+                    .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                    .Select(companyUser => companyUser.Id)
+                    .SingleOrDefault()
+            })
+            .SingleOrDefaultAsync();
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>

@@ -6,7 +6,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 public interface IRegistrationBusinessLogic
 {
     Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId);
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size);
+    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
     Task<bool> ApprovePartnerRequest(Guid applicationId);
     Task<bool> DeclinePartnerRequest(Guid applicationId);
 }

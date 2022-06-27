@@ -54,7 +54,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents</remarks>
         /// <response code="200">Successfully uploaded the document</response>
         /// <response code="403">The user is not assigned with the CompanyAppication.</response>
-        /// <response code="415">Only PDF files are supported..</response>
+        /// <response code="415">Only PDF files are supported.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
@@ -64,6 +64,27 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document) =>
             this.WithIamUserId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user));
 
+        /// <summary>
+        /// Gets a specific document by its id
+        /// </summary>
+        /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+        /// <returns></returns>
+        /// <remarks>Example: Post: /api/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+        /// <response code="200">Successfully uploaded the document</response>
+        /// <response code="403">User does not have the relevant rights to request for the document.</response>
+        /// <response code="404">No document with the given id was found.</response>
+        [HttpGet]
+        [Authorize(Roles = "get_documents")]
+        [Route("documents/{documentId}")]
+        [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
+        {
+            var (fileName, content) = await this.WithIamUserId(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user));
+            return File(content, "application/pdf", fileName);
+        }
+        
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
@@ -102,20 +123,20 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
-        public IAsyncEnumerable<CompanyApplication> GetApplicationsWithStatusAsync() =>
+        public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
             this.WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/status")]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
-            _registrationBusinessLogic.SetApplicationStatusAsync(applicationId, status);
+            this.WithIamUserId(user => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, user));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/status")]
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
-            _registrationBusinessLogic.GetApplicationStatusAsync(applicationId);
+            this.WithIamUserId(user => _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId, user));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
@@ -127,7 +148,8 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
-            _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress);
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress, iamUserId));
 
         [HttpPost]
         [Authorize(Roles = "invite_user")]
@@ -137,7 +159,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
         [HttpPost]
-        [Authorize(Roles = "submit_registration")]
+        [Authorize(Roles = "sign_consent")]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
             this.WithIamUserId(iamUserId =>
@@ -158,26 +180,10 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
 
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
-        [Route("submitregistration")]
-        public async Task<IActionResult> SubmitRegistrationAsync()
-        {
-            try
-            {
-                var userEmail = User.Claims.SingleOrDefault(x => x.Type == "email").Value as string;
-
-                if (await _registrationBusinessLogic.SubmitRegistrationAsync(userEmail).ConfigureAwait(false))
-                {
-                    return Ok();
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
+        [Route("application/{applicationId}/submitRegistration")]
+        public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, iamUserId));
 
         [HttpGet]
         [Authorize(Roles = "view_registration")]
