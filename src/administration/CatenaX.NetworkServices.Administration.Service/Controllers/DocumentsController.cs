@@ -1,4 +1,5 @@
 ﻿using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,10 @@ public class DocumentsController : ControllerBase
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="connectorsBusinessLogic">Connectors business logic.</param>
-    public DocumentsController(IDocumentsBusinessLogic connectorsBusinessLogic)
+    /// <param name="documentsBusinessLogic">documents business logic.</param>
+    public DocumentsController(IDocumentsBusinessLogic documentsBusinessLogic)
     {
-        _businessLogic = connectorsBusinessLogic;
+        _businessLogic = documentsBusinessLogic;
     }
 
     /// <summary>
@@ -41,4 +42,24 @@ public class DocumentsController : ControllerBase
         var (fileName, content) = await this.WithIamUserId(adminId => _businessLogic.GetDocumentAsync(documentId, adminId)).ConfigureAwait(false);
         return File(content, "application/pdf", fileName);
     }
+
+    /// <summary>
+    /// Deletes the document with the given id
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+    /// <returns></returns>
+    /// <remarks>Example: Delete: /api/registration/documents/{documentId}</remarks>
+    /// <response code="200">Successfully deleted the document</response>
+    /// <response code="400">Incorrect document state</response>
+    /// <response code="403">The user is not assigned with the Company.</response>
+    /// <response code="404">The document was not found.</response>
+    [HttpDelete]
+    [Authorize(Roles = "delete_documents")]
+    [Route("{documentId}")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => 
+        this.WithIamUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
 }

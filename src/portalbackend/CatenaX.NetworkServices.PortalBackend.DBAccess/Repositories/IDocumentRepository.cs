@@ -16,10 +16,24 @@ public interface IDocumentRepository
     /// <param name="documentName">The documents name</param>
     /// <param name="documentContent">The document itself</param>
     /// <param name="hash">Hash of the document</param>
-    /// <param name="documentOId"></param>
     /// <param name="documentTypeId">Type of the document</param>
     /// <returns>Returns the created document</returns>
-    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, uint documentOId, DocumentTypeId documentTypeId);
+    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId);
+
+    /// <summary>
+    /// Attaches the document to the database
+    /// </summary>
+    /// <param name="document">the document that should be attached to the database</param>
+    void AttachToDatabase(Document document);
+
+    /// <summary>
+    /// Gets the document with the given id from the persistence layer.
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>Returns the document</returns>
+    Task<Document?> GetDocumentByIdAsync(Guid documentId);
+    
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId);
 
     /// <summary>
     /// Gets all documents for the given applicationId, documentId and userId
@@ -37,10 +51,4 @@ public interface IDocumentRepository
     /// <returns>Returns the user id if a document is found for the given id, otherwise null</returns>
     Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
 
-    /// <summary>
-    /// Gets the document with the given id from the persistence layer.
-    /// </summary>
-    /// <param name="documentId">Id of the document</param>
-    /// <returns>Returns the document</returns>
-    Task<Document?> GetDocumentByIdAsync(Guid documentId);
 }
