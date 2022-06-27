@@ -100,7 +100,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await foreach (var item in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
+            try
+            {
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
+            }
+            catch(NotFoundException nfe)
+            {
+                throw new Exception("invalid configuration, configured roles do not exist in keycloak", nfe);
+            }
+
             foreach (var userRoleId in userRoleIds)
             {
                 if (!item.RoleIds.Contains(userRoleId))
