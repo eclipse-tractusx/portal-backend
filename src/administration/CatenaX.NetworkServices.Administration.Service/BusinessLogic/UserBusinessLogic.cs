@@ -61,12 +61,19 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
         {
-            var companyIdpData = await _portalDBAccess.GetCompanyNameIdpAliasUntrackedAsync(createdById);
-            if (companyIdpData == null)
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+
+            var (companyId, companyName, businessPartnerNumber, idpAlias) = await userRepository.GetCompanyNameIdpAliasUntrackedAsync(createdById);
+            if (companyId == default)
             {
                 throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
             }
-            if (companyIdpData.IdpAlias == null)
+            if (companyName == null)
+            {
+                throw new Exception($"assertion failed: companyName of company {companyId} should never be null here");
+            }
+            if (idpAlias == null)
             {
                 throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
             }
@@ -78,7 +85,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     .Where(role => !String.IsNullOrWhiteSpace(role))
                     .Distinct();
 
-            var companyRoleIds = await _portalDBAccess.GetUserRoleWithIdsUntrackedAsync(
+            var companyRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
                 clientId,
                 roles
                 )
@@ -104,16 +111,16 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 try
                 {
                     var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(companyIdpData.IdpAlias, new UserProfile(
+                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpAlias, new UserProfile(
                         user.userName ?? user.eMail,
                         user.eMail,
-                        companyIdpData.CompanyName
+                        companyName
                     )
                     {
                         FirstName = user.firstName,
                         LastName = user.lastName,
                         Password = password,
-                        BusinessPartnerNumber = companyIdpData.BusinessPartnerNumber
+                        BusinessPartnerNumber = businessPartnerNumber
                     }).ConfigureAwait(false);
 
                     var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
@@ -126,14 +133,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
                     }
 
-                    var companyUser = _portalDBAccess.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyIdpData.CompanyId, CompanyUserStatusId.ACTIVE);
+                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
 
                     foreach (var role in validRoles)
                     {
-                        _portalDBAccess.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+                        userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
                     }
 
-                    _portalDBAccess.CreateIamUser(companyUser, centralUserId);
+                    userRepository.CreateIamUser(companyUser, centralUserId);
 
                     var inviteTemplateName = "PortalTemplate";
                     if (!string.IsNullOrWhiteSpace(user.Message))
@@ -144,7 +151,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     var mailParameters = new Dictionary<string, string>
                     {
                         { "password", password },
-                        { "companyname", companyIdpData.CompanyName },
+                        { "companyname", companyName },
                         { "message", user.Message ?? "" },
                         { "nameCreatedBy", createdById },
                         { "url", _settings.Portal.BasePortalAddress },
@@ -160,7 +167,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     _logger.LogError(e, $"Error while creating user {user.userName ?? user.eMail}");
                 }
 
-                await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
                 if (success)
                 {
@@ -486,7 +493,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var iamClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(iamClientId))
             {
-                throw new NotFoundException($"appId {appId} not found");
+                throw new ArgumentException(nameof(appId), $"invalid appId {appId}");
             }
             var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
@@ -495,13 +502,20 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         };
             var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
             var companyRoleIds = await userRoleRepository.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
-            if (companyRoleIds.Count() == 0)
+            if (companyRoleIds.Count() != roles.Count())
             {
-                throw new NotFoundException($"User role not existing");
+                throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",",roles)}]");
             }
             if (roles.Count() > 0)
             {
-                await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+                try
+                {
+                    await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+                }
+                catch(NotFoundException nfe)
+                {
+                    throw new Exception($"inconsistend data: client {iamClientId} or roles [{String.Join(",",roles)}] do not exist in keycloak", nfe);
+                }
             }
             string message = string.Empty;
             foreach (var role in companyRoleIds)

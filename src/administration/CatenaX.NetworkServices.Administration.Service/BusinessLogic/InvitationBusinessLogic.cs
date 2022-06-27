@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -19,7 +20,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public InvitationBusinessLogic(
             IProvisioningManager provisioningManager,
-            IPortalBackendDBAccess portalDBAccess,
             IPortalRepositories portalRepositories,
             IMailingService mailingService,
             IOptions<InvitationSettings> configuration,
@@ -58,7 +58,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 Password = password
             }).ConfigureAwait(false);
 
-            await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId,_settings.InvitedUserInitialRoles).ConfigureAwait(false);
+            try
+            {
+                await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, _settings.InvitedUserInitialRoles).ConfigureAwait(false);
+            }
+            catch(NotFoundException nfe)
+            {
+                throw new Exception("invalid configuration, configured roles do not exist in keycloak", nfe);
+            }
 
             var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
             var userRepository = _portalRepositories.GetInstance<IUserRepository>();

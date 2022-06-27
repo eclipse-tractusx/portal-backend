@@ -270,7 +270,14 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 {
                     { _settings.KeyCloakClientID, roles }
                 };
-                await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
+                try
+                {
+                    await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
+                }
+                catch(NotFoundException nfe)
+                {
+                    throw new Exception($"inconsistent data, client {_settings.KeyCloakClientID} or roles [{String.Join(",",roles)}] do not exist in keycloak", nfe);
+                }
             }
             var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
 

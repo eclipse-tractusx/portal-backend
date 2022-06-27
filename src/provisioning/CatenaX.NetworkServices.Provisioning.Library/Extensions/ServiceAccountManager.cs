@@ -11,15 +11,15 @@ public partial class ProvisioningManager
 
     public async Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config)
     {
-        var internalClientId = await CreateCentralServiceAccountClient(clientId, config.Name, config.IamClientAuthMethod);
-        var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        if (serviceAccountUser == null)
-        {
-            throw new Exception($"error retrieving service account user for newly created service-account-client {internalClientId}");
-        }
-        await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles).ConfigureAwait(false);
         try
         {
+            var internalClientId = await CreateCentralServiceAccountClient(clientId, config.Name, config.IamClientAuthMethod);
+            var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+            if (serviceAccountUser == null) //TODO this check might be obsolete, verify NotFoundException not being thrown.
+            {
+                throw new Exception($"error retrieving service account user for newly created service-account-client {internalClientId}");
+            }
+            await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles).ConfigureAwait(false);
             return new ServiceAccountData(
                 internalClientId,
                 serviceAccountUser.Id,

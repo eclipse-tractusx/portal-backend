@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Keycloak.Net.Models.Roles;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
@@ -8,10 +9,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         {
             var count = roleNames.Count();
             var client = await GetCentralClientViewableAsync(clientName).ConfigureAwait(false);
-            if (client == null)
-            {
-                throw new Exception($"failed to retrieve central client {clientName}");
-            }
             switch (count)
             {
                 case 0:
@@ -19,10 +16,12 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 case 1:
                     return (client.Id, Enumerable.Repeat<Role>(await _CentralIdp.GetRoleByNameAsync(_Settings.CentralRealm, client.Id, roleNames.Single()).ConfigureAwait(false), 1));
                 default:
+                    var roles = (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, client.Id).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name));
+                    if (roles.Count() != count)
                     {
-                        return (client.Id, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, client.Id).ConfigureAwait(false))
-                            .Where(x => roleNames.Contains(x.Name)));
+                        throw new NotFoundException($"invalid roles for client {clientName}: [{String.Join(",",roleNames.Except(roles.Select(role => role.Name)))}]");
                     }
+                    return (client.Id, roles);
             }
         }
 
