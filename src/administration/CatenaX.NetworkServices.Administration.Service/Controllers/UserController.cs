@@ -39,12 +39,12 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the emails of the new users</returns>
         /// <remarks>Example: POST: api/administration/user/owncompany/users</remarks>
         /// <response code="200">User successfully created and invite email send</response>
-        /// <response code="404">Record not found - either user or role are not existing.</response>
+        /// <response code="400">Invalid role.</response>
         [HttpPost]
         [Authorize(Roles = "add_user_account")]
         [Route("owncompany/users")]
         [ProducesResponseType(typeof(IAsyncEnumerable<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
             this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
@@ -60,12 +60,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns a list of company user data for the current users company.</returns>
         /// <remarks>Example: GET: api/administration/user/owncompany/users</remarks>
         /// <response code="200">Returns a list of company user data for the current users company.</response>
-        /// <response code="404">Record not found.</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserData>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
             [FromQuery] string? userEntityId = null,
             [FromQuery] Guid? companyUserId = null,
@@ -105,7 +103,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: POST: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers</remarks>
         /// <response code="200">The business partner numbers have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
-        /// <response code="404">Record was not found. User is either not existing or not connected to the respective company.</response>
+        /// <response code="404">User is either not existing.</response>
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers")]
@@ -124,7 +122,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers/CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">The business partner number have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
-        /// <response code="404">Record was not found. User is either not existing or not connected to the respective company.</response>
+        /// <response code="404">User is not existing.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
@@ -177,11 +175,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the client roles for the given app.</returns>
         /// <remarks>Example: GET: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/resetPassword</remarks>
         /// <response code="200">Returns the client roles.</response>
-        /// <response code="404">Either the app was not found or the language does not exist.</response>
+        /// <response code="400">The language does not exist.</response>
+        /// <response code="404">The app was not found.</response>
         [HttpGet]
         [Authorize(Roles = "view_client_roles")]
         [Route("app/{appId}/roles")]
         [ProducesResponseType(typeof(IAsyncEnumerable<ClientRoles>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId, string? languageShortName = null) =>
             _logic.GetClientRolesAsync(appId, languageShortName);
@@ -264,9 +264,19 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
 
+        /// <summary>
+        /// Gets the company app user
+        /// </summary>
+        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
+        /// <param name="page" example="0">Index of the page</param>
+        /// <param name="size" example="15">Intended size of the results per page</param>
+        /// <returns></returns>
+        /// <remarks>Example: GET: owncompany/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/users</remarks>
+        /// <response code="200">Returns the user details as pagination.</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/apps/{appid}/users")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
             this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
     }

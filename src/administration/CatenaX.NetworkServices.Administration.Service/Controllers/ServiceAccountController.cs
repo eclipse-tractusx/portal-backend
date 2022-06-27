@@ -41,6 +41,7 @@ public class ServiceAccountController : ControllerBase
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
     {
         var serviceAccountDetails = await this.WithIamUserId(createdByName => _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo, createdByName).ConfigureAwait(false));
@@ -128,12 +129,10 @@ public class ServiceAccountController : ControllerBase
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
-    /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
         this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, adminId));
 }
