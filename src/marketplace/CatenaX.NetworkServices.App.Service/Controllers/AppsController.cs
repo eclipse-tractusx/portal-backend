@@ -48,12 +48,10 @@ public class AppsController : ControllerBase
     /// <returns>Collection of BusinessAppViewModels user has been assigned active roles in.</returns>
     /// <remarks>Example: GET: /api/apps/business</remarks>
     /// <response code="200">Returns the list of the user's business apps.</response>
-    /// <response code="400">If sub claim is empty/invalid.</response>
     [HttpGet]
     [Route("business")]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppViewModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<BusinessAppViewModel> GetAllBusinessAppsForCurrentUserAsync() =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
 
@@ -65,12 +63,10 @@ public class AppsController : ControllerBase
     /// <returns>AppDetailsViewModel for requested application.</returns>
     /// <remarks>Example: GET: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="200">Returns the requested app details.</response>
-    /// <response code="400">If sub claim is empty/invalid.</response>
     [HttpGet]
     [Route("{appId}")]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<AppDetailsViewModel> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
         this.WithIamUserId(userId => this._appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
@@ -94,12 +90,10 @@ public class AppsController : ControllerBase
     /// <returns>Collection of IDs of favourite apps.</returns>
     /// <remarks>Example: GET: /api/apps/favourites</remarks>
     /// <response code="200">Returns the list of favourite apps of current user.</response>
-    /// <response code="400">If sub claim is empty/invalid.</response>
     [HttpGet]
     [Route("favourites")]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForCurrentUserAsync() =>
         this.WithIamUserId(userId => this._appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
 
@@ -120,7 +114,6 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => this._appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId));
         return NoContent();
     }
-        
 
     /// <summary>
     /// Removes an app from current user's favourites.
@@ -146,13 +139,10 @@ public class AppsController : ControllerBase
     /// </summary>
     /// <remarks>Example: GET: /api/apps/subscribed/subscription-status</remarks>
     /// <response code="200">Returns list of applicable app subscription statuses.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
     [Authorize(Roles = "view_subscription")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AppSubscriptionStatusViewModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
     public Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => this._appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));
 
@@ -161,13 +151,10 @@ public class AppsController : ControllerBase
     /// </summary>
     /// <remarks>Example: GET: /api/apps/provided/subscription-status</remarks>
     /// <response code="200">Returns list of applicable app subscription statuses.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("provided/subscription-status")]
     [Authorize(Roles = "view_app_subscription")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
     public Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => this._appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(userId));
 
@@ -197,11 +184,13 @@ public class AppsController : ControllerBase
     /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/supscription/company/74BA5AEF-1CC7-495F-ABAA-CF87840FA6E2/activate</remarks>
     /// <response code="204">App subscription was successfully activated.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
     [HttpPut]
     [Route("{appId}/subscription/company/{companyId}/activate")]
     [Authorize(Roles = "activate_subscription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId) 
     {
         await this.WithIamUserId(userId => this._appsBusinessLogic.ActivateCompanyAppSubscriptionAsync(appId, companyId, userId));
@@ -214,12 +203,12 @@ public class AppsController : ControllerBase
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to unsubscribe from.</param>
     /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/unsubscribe</remarks>
     /// <response code="204">The app was successfully unsubscribed from.</response>
-    /// <response code="400">If either the app or app subscription doesn't exist.</response>
+    /// <response code="404">App does not exist.</response>
     [HttpPut]
     [Route("{appId}/unsubscribe")]
     [Authorize(Roles = "unsubscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => this._appsBusinessLogic.UnsubscribeCompanyAppSubscriptionAsync(appId, userId));

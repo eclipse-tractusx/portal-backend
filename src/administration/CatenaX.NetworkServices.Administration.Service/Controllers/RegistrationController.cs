@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -30,10 +31,14 @@ public class RegistrationController : ControllerBase
     /// <returns>the company with its address</returns>
     /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress
     /// <response code="200">Returns the company with its address.</response>
+    /// <response code="400">No applicationId was set.</response>
+    /// <response code="404">No company found for applicationId.</response>
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("application/{applicationId}/companyDetailsWithAddress")]
     [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
         _logic.GetCompanyWithAddressAsync(applicationId);
     

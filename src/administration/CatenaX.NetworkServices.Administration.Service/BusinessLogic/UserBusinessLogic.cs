@@ -92,7 +92,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 if (!companyRoleIds.ContainsKey(role))
                 {
-                    throw new NotFoundException($"invalid Role: {role}");
+                    throw new ArgumentException($"invalid Role: {role}");
                 }
             }
 
@@ -221,7 +221,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 var language = await _portalDBAccess.GetLanguageAsync(languageShortName);
                 if (language == null)
                 {
-                    throw new NotFoundException($"language {languageShortName} does not exist");
+                    throw new ArgumentException($"language {languageShortName} does not exist");
                 }
             }
             await foreach (var roles in _portalDBAccess.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))

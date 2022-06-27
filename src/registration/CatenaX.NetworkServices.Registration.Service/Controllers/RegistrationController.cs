@@ -8,8 +8,6 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using Newtonsoft.Json;
-
 using System.Net;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 
@@ -43,24 +41,14 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns>Returns a List with one company</returns>
         /// <remarks>Example: Get: /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">Returns the company</response>
-        /// <response code="400">The requested service responded with the given error.</response>
+        /// <response code="503">The requested service responded with the given error.</response>
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
         [ProducesResponseType(typeof(List<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization)
-        {
-            try
-            {
-                return Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1]).ConfigureAwait(false));
-            }
-            catch (ServiceException e)
-            {
-                var content = new { message = e.Message };
-                return new ContentResult { StatusCode = (int)e.StatusCode, Content = JsonConvert.SerializeObject(content), ContentType = "application/json" };
-            }
-        }
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization) => 
+            Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1]).ConfigureAwait(false));
 
         /// <summary>
         /// Uploads a document
@@ -94,6 +82,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "get_documents")]
         [Route("documents/{documentId}")]
+        [Produces("application/pdf", "application/json")]
         [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -231,11 +220,13 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <param name="companyWithAddress">The company with its address</param>
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
         /// <response code="200">Successfully set the company with its address</response>
+        /// <response code="400">A request parameter was incorrect.</response>
         /// <response code="404">CompanyApplication was not found for the given id.</response>
         [HttpPost]
         [Authorize(Roles = "add_company_data")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
             this.WithIamUserId(iamUserId =>
@@ -249,12 +240,14 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <returns></returns>
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/inviteNewUser</remarks>
         /// <response code="200">Successfully invited the user.</response>
+        /// <response code="400">The user with the given email does already exist.</response>
         /// <response code="403">Either the user was not found or the user is not assigneable to the given application.</response>
         /// <response code="404">The shared idp was not found  for the CompanyApplication.</response>
         [HttpPost]
         [Authorize(Roles = "invite_user")]
         [Route("application/{applicationId}/inviteNewUser")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfo userCreationInfo) =>

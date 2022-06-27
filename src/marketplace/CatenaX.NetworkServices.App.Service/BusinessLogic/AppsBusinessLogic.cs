@@ -1,5 +1,6 @@
 ﻿using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
@@ -261,7 +262,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var isExistingApp = await this.context.Apps.AnyAsync(a => a.Id == appId).ConfigureAwait(false); 
         if(!isExistingApp)
         {
-            throw new ArgumentException("App with provided ID does not exist.");
+            throw new NotFoundException($"App {appId} does not exist.");
         }
 
         var companyId = await this.GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
@@ -290,7 +291,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var appExists = await this.appRepository.CheckAppExistsById(appId).ConfigureAwait(false);
         if (!appExists)
         {
-            throw new ArgumentException($"Parameters are invalid: app for id '{appId}' does not exist.", nameof(appId));
+            throw new NotFoundException($"App '{appId}' does not exist.");
         }
 
         await this.companyAssignedAppsRepository.UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);

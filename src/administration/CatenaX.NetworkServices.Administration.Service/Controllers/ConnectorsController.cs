@@ -54,11 +54,13 @@ public class ConnectorsController : ControllerBase
     /// <remarks>Example: POST: /api/administration/connectors</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
     /// <response code="400">Provided connector does not respect database constraints.</response>
+    /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
     [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
         CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel, Request.Headers.Authorization.First().Substring("Bearer ".Length)));
 
