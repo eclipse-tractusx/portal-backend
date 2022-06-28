@@ -32,4 +32,4 @@ var host = Host.CreateDefaultBuilder(args)
         cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
     }).Build();
 
-host.RunAsync();
+host.Run();
