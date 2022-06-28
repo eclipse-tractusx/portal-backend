@@ -13,6 +13,7 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -504,31 +505,51 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var companyRoleIds = await userRoleRepository.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
             if (companyRoleIds.Count() != roles.Count())
             {
-                throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",",roles)}]");
+                throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",", roles)}]");
             }
+            StringBuilder message = new StringBuilder();
+            bool isApiCallSuccess = false;
             if (roles.Count() > 0)
             {
+
                 try
                 {
-                    await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+                    var roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+                    isApiCallSuccess = true;
+                    foreach (var item in roles)
+                    {
+                        if (!roleList.Contains(item))
+                        {
+                            message.Append($"Warning- {item} failed to get assigned. Please contact the service team.");
+                        }
+                    }
                 }
-                catch(NotFoundException nfe)
+                catch (NotFoundException nfe)
                 {
-                    throw new Exception($"inconsistend data: client {iamClientId} or roles [{String.Join(",",roles)}] do not exist in keycloak", nfe);
+                    throw new Exception($"inconsistent data: client {iamClientId} or roles [{String.Join(",", roles)}] do not exist in keycloak", nfe);
                 }
+
             }
-            string message = string.Empty;
+            bool isDbCallSuccess = false;
             foreach (var role in companyRoleIds)
             {
                 if (!companyUser.RoleIds.Contains(role))
                 {
                     userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
-                    message = "user role added";
+                    isDbCallSuccess = true;
                 }
 
             }
+            if (isApiCallSuccess && isDbCallSuccess)
+            {
+                message.Append("user role added");
+            }
+            if (isApiCallSuccess && !isDbCallSuccess)
+            {
+                message.Append("user role already added");
+            }
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            return string.IsNullOrWhiteSpace(message) ? "user role already added" : message;
+            return message.ToString();
         }
     }
 }
