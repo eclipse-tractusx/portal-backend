@@ -6,7 +6,7 @@ on:
       - 'src/maintenance/CatenaX.NetworkServices.Maintenance.Service.App/**'
 
     branches:
-      - 'CPLP-1104-batch-delete'
+      - 'feature/CPLP-1104-batch-delete'
   workflow_dispatch:
 
 env:
