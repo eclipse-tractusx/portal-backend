@@ -1,8 +1,6 @@
-﻿using System.Data.SqlClient;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace CatenaX.NetworkServices.Maintenance.App;
 
@@ -46,9 +44,8 @@ public class BatchDeleteService : BackgroundService
             _logger.LogInformation("MyBackgroundService task doing background work.");
             try
             {
-                var days = new NpgsqlParameter("days", $"'{_days} days'");
                 _logger.LogInformation($"Cleaning up documents and consents older {_days} days...");
-                await dbContext.Database.ExecuteSqlInterpolatedAsync($"WITH documentids AS (DELETE FROM portal.documents WHERE date_created < now() - interval {days} AND (document_status_id = {(int)DocumentStatusId.PENDING} OR document_status_id = {(int) DocumentStatusId.INACTIVE}) RETURNING id) DELETE FROM portal.consents WHERE document_id IN (SELECT id FROM documentids);", stoppingToken).ConfigureAwait(false);
+                await dbContext.Database.ExecuteSqlInterpolatedAsync($"WITH documentids AS (DELETE FROM portal.documents WHERE date_created < {DateTimeOffset.UtcNow.AddDays(-_days)} AND (document_status_id = {(int)DocumentStatusId.PENDING} OR document_status_id = {(int) DocumentStatusId.INACTIVE}) RETURNING id) DELETE FROM portal.consents WHERE document_id IN (SELECT id FROM documentids);", stoppingToken).ConfigureAwait(false);
                 _logger.LogInformation($"Documents older than {_days} days and depending consents successfully cleaned up.");
             }
             catch (Exception ex)
