@@ -39,7 +39,6 @@ public class BatchDeleteService : BackgroundService
         using var scope = _serviceScopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
             
-        _logger.LogInformation("MyBackgroundService task doing background work.");
         try
         {
             _logger.LogInformation($"Cleaning up documents and consents older {_days} days...");
@@ -51,6 +50,10 @@ public class BatchDeleteService : BackgroundService
             _logger.LogError($"Database clean up failed with error: {ex.Message}");
         }
 
-        _applicationLifetime.StopApplication();
+        Environment.ExitCode = 1;
+        if (!stoppingToken.IsCancellationRequested)
+        {
+            _applicationLifetime.StopApplication();
+        }
     }
 }
