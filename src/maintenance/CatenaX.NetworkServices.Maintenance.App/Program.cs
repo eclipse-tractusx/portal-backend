@@ -13,10 +13,6 @@ var host = Host.CreateDefaultBuilder(args)
         // Read configuration for configuring logger.
         var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
 
-        cfg.SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .AddEnvironmentVariables();
-
         // Build a config object, using env vars and JSON providers.
         if (environmentName == "Kubernetes")
         {

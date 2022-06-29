@@ -7,6 +7,7 @@ on:
 
     branches:
       - 'main'
+      - 'feature/CPLP-1104-batch-delete'
   workflow_dispatch:
 
 env:
