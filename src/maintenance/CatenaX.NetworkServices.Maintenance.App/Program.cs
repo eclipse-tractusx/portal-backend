@@ -8,28 +8,29 @@ using Microsoft.Extensions.FileProviders;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
-    .ConfigureServices((hostContext, services) =>
-    {
-        services.AddDbContext<PortalDbContext>(o =>
-            o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
-        services.AddHostedService<BatchDeleteService>();
-    })
-    .ConfigureHostConfiguration(cfg =>
+    .ConfigureAppConfiguration(cfg =>
     {
         // Read configuration for configuring logger.
         var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
 
         cfg.SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json")
-            .AddJsonFile($"appsettings.{environmentName}.json", true, true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets(Assembly.GetExecutingAssembly());
+            .AddEnvironmentVariables();
 
         // Build a config object, using env vars and JSON providers.
-        if (environmentName != "Kubernetes") return;
+        if (environmentName == "Kubernetes")
+        {
+            var provider = new PhysicalFileProvider("/app/secrets");
+            cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
+        }
 
-        var provider = new PhysicalFileProvider("/app/secrets");
-        cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
+        cfg.AddUserSecrets(Assembly.GetExecutingAssembly());
+    })
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddDbContext<PortalDbContext>(o =>
+            o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
+        services.AddHostedService<BatchDeleteService>();
     }).Build();
 
 host.Run();
