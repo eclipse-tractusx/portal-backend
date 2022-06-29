@@ -32,21 +32,23 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
-        public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
+        public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
+            [FromQuery] int page, 
+            [FromQuery] int size,
             [FromQuery] string? userEntityId = null,
             [FromQuery] Guid? companyUserId = null,
             [FromQuery] string? firstName = null,
             [FromQuery] string? lastName = null,
-            [FromQuery] string? email = null,
-            [FromQuery] CompanyUserStatusId? status = null) =>
+            [FromQuery] string? email = null) =>
             this.WithIamUserId(adminUserId => _logic.GetOwnCompanyUserDatasAsync(
                 adminUserId,
+                page,
+                size,
                 companyUserId,
                 userEntityId,
                 firstName,
                 lastName,
-                email,
-                status));
+                email));
 
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
