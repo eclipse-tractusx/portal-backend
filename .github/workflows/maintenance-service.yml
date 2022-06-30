@@ -4,11 +4,9 @@ on:
   push:
     paths:
       - 'src/maintenance/CatenaX.NetworkServices.Maintenance.App/**'
-      - '.github/workflows/**'
 
     branches:
       - 'main'
-      - 'feature/CPLP-1104-delete'
   workflow_dispatch:
 
 env:
