@@ -3,7 +3,7 @@ name: Maintenance-Service
 on: 
   push:
     paths:
-      - 'src/maintenance/CatenaX.NetworkServices.Maintenance.Service.App/**'
+      - 'src/maintenance/CatenaX.NetworkServices.Maintenance.App/**'
 
     branches:
       - 'main'
