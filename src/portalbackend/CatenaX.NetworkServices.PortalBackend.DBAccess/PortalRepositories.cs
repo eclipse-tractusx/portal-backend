@@ -20,62 +20,83 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new AppRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IApplicationRepository))
+        if (repositoryType == typeof(IAppAssignedLicensesRepository))
+        {
+            return To<RepositoryType>(new AppAssignedLicensesRepository(_dbContext));
+        }
+        if (repositoryType == typeof(IAppAssignedUseCasesRepository))
+        {
+            return To<RepositoryType>(new AppAssignedUseCasesRepository(_dbContext));
+        }
+        if (repositoryType == typeof(IAppDescriptionsRepository))
+        {
+            return To<RepositoryType>(new AppDescriptionsRepository(_dbContext));
+        }
+        if (repositoryType == typeof(IAppLanguagesRepository))
+        {
+            return To<RepositoryType>(new AppLanguagesRepository(_dbContext));
+        }
+        if (repositoryType == typeof(IAppLicensesRepository))
+        {
+            return To<RepositoryType>(new AppLicensesRepository(_dbContext));
+        }
+        if (repositoryType == typeof(IApplicationRepository))
         {
             return To<RepositoryType>(new ApplicationRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IAppUserRepository))
+        if (repositoryType == typeof(IAppUserRepository))
         {
             return To<RepositoryType>(new AppUserRepository(_dbContext));
         }
-          else if (repositoryType == typeof(ICompanyAssignedAppsRepository))
+        if (repositoryType == typeof(ICompanyAssignedAppsRepository))
         {
             return To<RepositoryType>(new CompanyAssignedAppsRepository(_dbContext));
         }
-        else if (repositoryType == typeof(ICompanyRepository))
+        if (repositoryType == typeof(ICompanyRepository))
         {
             return To<RepositoryType>(new CompanyRepository(_dbContext));
         }
-        else if (repositoryType == typeof(ICompanyRolesRepository))
+        if (repositoryType == typeof(ICompanyRolesRepository))
         {
             return To<RepositoryType>(new CompanyRolesRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IConnectorsRepository))
+        if (repositoryType == typeof(ICompanyUserAssignedAppFavouritesRepository))
+        {
+            return To<RepositoryType>(new CompanyUserAssignedAppFavouritesRepository(_dbContext));
+        }
+        if (repositoryType == typeof(IConnectorsRepository))
         {
             return To<RepositoryType>(new ConnectorsRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IConsentRepository))
+        if (repositoryType == typeof(IConsentRepository))
         {
             return To<RepositoryType>(new ConsentRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IDocumentRepository))
+        if (repositoryType == typeof(IDocumentRepository))
         {
             return To<RepositoryType>(new DocumentRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IIdentityProviderRepository))
+        if (repositoryType == typeof(IIdentityProviderRepository))
         {
             return To<RepositoryType>(new IdentityProviderRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IServiceAccountsRepository))
+        if (repositoryType == typeof(IServiceAccountsRepository))
         {
             return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IUserBusinessPartnerRepository))
+        if (repositoryType == typeof(IUserBusinessPartnerRepository))
         {
             return To<RepositoryType>(new UserBusinessPartnerRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IUserRepository))
+        if (repositoryType == typeof(IUserRepository))
         {
             return To<RepositoryType>(new UserRepository(_dbContext));
         }
-        else if (repositoryType == typeof(IUserRolesRepository))
+        if (repositoryType == typeof(IUserRolesRepository))
         {
             return To<RepositoryType>(new UserRolesRepository(_dbContext));
         }
-        else
-        {
-            throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));
-        }
+        throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));
     }
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();

@@ -1,16 +1,16 @@
-﻿namespace CatenaX.NetworkServices.App.Service.ViewModels;
+﻿namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// View model containing an app id and connected company subscription statuses.
 /// </summary>
-public class AppCompanySubscriptionStatusViewModel
+public class AppCompanySubscriptionStatusData
 {
     /// <summary>
     /// Constructor.
     /// </summary>
-    public AppCompanySubscriptionStatusViewModel()
+    public AppCompanySubscriptionStatusData()
     {
-        CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusViewModel>();
+        CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
     }
 
     /// <summary>
@@ -21,5 +21,5 @@ public class AppCompanySubscriptionStatusViewModel
     /// <summary>
     /// Subscription statuses of subscribing companies.
     /// </summary>
-    public ICollection<CompanySubscriptionStatusViewModel> CompanySubscriptionStatuses { get; set; }
+    public ICollection<CompanySubscriptionStatusData> CompanySubscriptionStatuses { get; set; }
 }

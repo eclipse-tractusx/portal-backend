@@ -1,5 +1,6 @@
 ﻿using CatenaX.NetworkServices.App.Service.InputModels;
-using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -13,14 +14,14 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="languageShortName">Optional two character language specifier for the app description. No description if not provided.</param>
     /// <returns>List of active marketplace apps.</returns>
-    public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null);
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null);
 
     /// <summary>
     /// Get all apps that a user has been assigned roles in.
     /// </summary>
     /// <param name="userId">ID of the user to get available apps for.</param>
     /// <returns>List of available apps for user.</returns>
-    public IAsyncEnumerable<BusinessAppViewModel> GetAllUserUserBusinessAppsAsync(string userId);
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId);
 
     /// <summary>
     /// Get detailed application data for a single app by id.
@@ -29,7 +30,7 @@ public interface IAppsBusinessLogic
     /// <param name="userId">Optional ID of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
     /// <param name="languageShortName">Optional two character language specifier for the localization of the app description. No description if not provided.</param>
     /// <returns>AppDetailsViewModel of the requested application.</returns>
-    public Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null);
+    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null);
 
     /// <summary>
     /// Get IDs of all favourite apps of the user by ID.
@@ -57,14 +58,14 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <returns>Async enumberable of user's company's subscribed apps' statuses.</returns>
-    public Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    public Task<IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
