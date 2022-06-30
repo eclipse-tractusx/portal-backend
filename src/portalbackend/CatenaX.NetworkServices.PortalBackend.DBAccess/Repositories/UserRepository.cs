@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -20,7 +21,8 @@ public class UserRepository : IUserRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId) =>
+    public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
+        CompanyUserStatusId companyUserStatusId) =>
         _dbContext.CompanyUsers.Add(
             new CompanyUser(
                 Guid.NewGuid(),
@@ -47,16 +49,21 @@ public class UserRepository : IUserRepository
         string? lastName = null,
         string? email = null,
         CompanyUserStatusId? status = null) =>
-            _dbContext.CompanyUsers
-                .Where(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
-                .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-                .Where(companyUser =>
-                    userEntityId != null ? companyUser.IamUser!.UserEntityId == userEntityId : true
-                    && companyUserId.HasValue ? companyUser.Id == companyUserId!.Value : true
-                    && firstName != null ? companyUser.Firstname == firstName : true
-                    && lastName != null ? companyUser.Lastname == lastName : true
-                    && email != null ? companyUser.Email == email : true
-                    && status.HasValue ? companyUser.CompanyUserStatusId == status : true);
+        _dbContext.CompanyUsers
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser =>
+                userEntityId != null ? companyUser.IamUser!.UserEntityId == userEntityId :
+                true
+                && companyUserId.HasValue ? companyUser.Id == companyUserId!.Value :
+                true
+                && firstName != null ? companyUser.Firstname == firstName :
+                true
+                && lastName != null ? companyUser.Lastname == lastName :
+                true
+                && email != null ? companyUser.Email == email :
+                true
+                && status.HasValue ? companyUser.CompanyUserStatusId == status : true);
 
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>
         _dbContext.IamUsers
@@ -68,22 +75,25 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId
-                && companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                                  && companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                  && companyUser.Company!.CompanyUsers.Any(companyUser =>
+                                      companyUser.IamUser!.UserEntityId == iamUserId))
             .Select(companyUser => new CompanyUserDetails(
                 companyUser.Id,
                 companyUser.DateCreated,
-                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber),
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                    assignedPartner.BusinessPartnerNumber),
                 companyUser.Company!.Name,
                 companyUser.CompanyUserStatusId)
-                {
-                    FirstName = companyUser.Firstname,
-                    LastName = companyUser.Lastname,
-                    Email = companyUser.Email
-                })
+            {
+                FirstName = companyUser.Firstname,
+                LastName = companyUser.Lastname,
+                Email = companyUser.Email
+            })
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId) =>
+    public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(
+        Guid companyUserId, string adminUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == adminUserId)
@@ -91,7 +101,8 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new CompanyUserBusinessPartners(
                 companyUser.IamUser!.UserEntityId,
-                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber)
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                    assignedPartner.BusinessPartnerNumber)
             ))
             .SingleOrDefaultAsync();
 
@@ -108,14 +119,16 @@ public class UserRepository : IUserRepository
     public Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId
-                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                                  && companyUser.Company!.CompanyUsers.Any(companyUser =>
+                                      companyUser.IamUser!.UserEntityId == adminUserId))
             .Select(companyUser => new CompanyIamUser
             {
                 TargetIamUserId = companyUser.IamUser!.UserEntityId,
                 IdpName = companyUser.Company!.IdentityProviders
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault(),
-                RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)
+                RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
+                    companyUserAssignedRole.UserRoleId)
             }).SingleOrDefaultAsync();
 
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
@@ -125,55 +138,94 @@ public class UserRepository : IUserRepository
             .Select(companyUser => new CompanyUserDetails(
                 companyUser.Id,
                 companyUser.DateCreated,
-                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber),
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                    assignedPartner.BusinessPartnerNumber),
                 companyUser.Company!.Name,
                 companyUser.CompanyUserStatusId)
-                {
-                    FirstName = companyUser.Firstname,
-                    LastName = companyUser.Lastname,
-                    Email = companyUser.Email
-                })
+            {
+                FirstName = companyUser.Firstname,
+                LastName = companyUser.Lastname,
+                Email = companyUser.Email
+            })
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId) =>
-    _dbContext.CompanyUsers
-        .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId
-            && companyUser!.Company!.IdentityProviders
-                .Any(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED))
-        .Include(companyUser => companyUser.Company)
-        .Include(companyUser => companyUser.IamUser)
-        .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
-            companyUser,
-            companyUser.Company!.IdentityProviders.Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                .SingleOrDefault()!,
-            companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner => assignedPartner.BusinessPartnerNumber)
-        ))
-        .SingleOrDefaultAsync();
+        _dbContext.CompanyUsers
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId
+                                  && companyUser!.Company!.IdentityProviders
+                                      .Any(identityProvider =>
+                                          identityProvider.IdentityProviderCategoryId ==
+                                          IdentityProviderCategoryId.KEYCLOAK_SHARED))
+            .Include(companyUser => companyUser.Company)
+            .Include(companyUser => companyUser.IamUser)
+            .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
+                companyUser,
+                companyUser.Company!.IdentityProviders.Where(identityProvider =>
+                        identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    .SingleOrDefault()!,
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                    assignedPartner.BusinessPartnerNumber)
+            ))
+            .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId) =>
         _dbContext.CompanyUsers
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId
-                && companyUser!.Company!.IdentityProviders
-                    .Any(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED))
+                                  && companyUser!.Company!.IdentityProviders
+                                      .Any(identityProvider =>
+                                          identityProvider.IdentityProviderCategoryId ==
+                                          IdentityProviderCategoryId.KEYCLOAK_SHARED))
             .Include(companyUser => companyUser.CompanyUserAssignedRoles)
             .Include(companyUser => companyUser.IamUser)
             .Select(companyUser => new CompanyUserWithIdpData(
                 companyUser,
-                companyUser.Company!.IdentityProviders.Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                companyUser.Company!.IdentityProviders.Where(identityProvider =>
+                        identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()!
             ))
             .SingleOrDefaultAsync();
-    
+
     public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser =>
                 iamUser.UserEntityId == iamUserId
-                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application =>
+                    application.Id == applicationId))
             .Select(iamUser =>
                 iamUser.CompanyUserId
             )
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<Guid> GetCompanyUserIdForIamUserUntrackedAsync(string userId) =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(cu => cu.IamUser!.UserEntityId == userId)
+            .Select(cu => cu.Id)
+            .SingleAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId) =>
+        _dbContext.IamUsers.AsNoTracking()
+            .Where(u => u.UserEntityId == userId) // Id is unique, so single user
+            .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
+            .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId) =>
+        _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+            .SelectMany(u => u.CompanyUser!.Company!.BoughtApps)
+            .Intersect(
+                _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+                    .SelectMany(u => u.CompanyUser!.UserRoles.SelectMany(r => r.IamClient!.Apps))
+            )
+            .Select(app => new BusinessAppData(
+                app.Id,
+                app.Name ?? Constants.ErrorString,
+                app.AppUrl ?? Constants.ErrorString,
+                app.ThumbnailUrl ?? Constants.ErrorString,
+                app.Provider
+            )).AsAsyncEnumerable();
 }

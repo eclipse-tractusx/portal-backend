@@ -17,6 +17,13 @@ public interface IUserRepository
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
 
     /// <summary>
+    /// Gets the CompanyUser Id for the given IamUser Id
+    /// </summary>
+    /// <param name="userId">the iam userid the company user should be searched for.</param>
+    /// <returns>Returns the id of the CompanyUser</returns>
+    Task<Guid> GetCompanyUserIdForIamUserUntrackedAsync(string userId);
+    
+    /// <summary>
     /// Get the IdpName ,UserId and Role Ids by CompanyUser and AdminUser Id
     /// </summary>
     /// <param name="companyUserId"></param>
@@ -28,4 +35,18 @@ public interface IUserRepository
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
+    
+    /// <summary>
+    /// GGets all apps for the give user from the persistence layer.
+    /// </summary>
+    /// <param name="userId">Id of the user which apps should be selected.</param>
+    /// <returns>Returns an IAsyncEnumerable of GUIDs</returns>
+    IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId);
+
+    /// <summary>
+    /// Gets all business app data for the given userId 
+    /// </summary>
+    /// <param name="userId">Id of the user to get the app data for.</param>
+    /// <returns>Returns an IAsyncEnumerable of <see cref="BusinessAppData"/></returns>
+    IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
 }

@@ -60,4 +60,11 @@ public class CompanyRepository : ICompanyRepository
                         .SingleOrDefault()
             })
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public async Task<bool> CheckIsMemberOfCompanyProvidingAppUntrackedAsync(Guid companyId, Guid appId) =>
+        await _context.Companies.AsNoTracking()
+            .Where(c => c.Id == companyId)
+            .SelectMany(c => c.ProvidedApps.Select(a => a.Id))
+            .ContainsAsync(appId);
 }

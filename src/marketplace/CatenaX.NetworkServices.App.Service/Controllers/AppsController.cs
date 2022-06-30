@@ -1,7 +1,8 @@
 ﻿using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using CatenaX.NetworkServices.App.Service.InputModels;
-using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,8 +36,8 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("active")]
     [Authorize(Roles = "view_apps")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AppViewModel>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync([FromQuery] string? lang = null) =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<AppData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync([FromQuery] string? lang = null) =>
         this.appsBusinessLogic.GetAllActiveAppsAsync(lang);
 
     /// <summary>
@@ -49,9 +50,9 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("business")]
     [Authorize(Roles = "view_apps")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public IAsyncEnumerable<BusinessAppViewModel> GetAllBusinessAppsForCurrentUserAsync() =>
+    public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppsForCurrentUserAsync() =>
         this.WithIamUserId(userId => appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
 
     /// <summary>
@@ -66,9 +67,9 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("{appId}")]
     [Authorize(Roles = "view_apps")]
-    [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppDetailsData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public Task<AppDetailsViewModel> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
+    public Task<AppDetailsData> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
         this.WithIamUserId(userId => this.appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>
@@ -146,11 +147,11 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
-    [Authorize(Roles = "view_subscription")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AppSubscriptionStatusViewModel>), StatusCodes.Status200OK)]
+    // [Authorize(Roles = "view_subscription")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
-    public Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
+    public Task<IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => this.appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));
 
     /// <summary>
@@ -161,11 +162,11 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("provided/subscription-status")]
-    [Authorize(Roles = "view_app_subscription")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>), StatusCodes.Status200OK)]
+    // [Authorize(Roles = "view_app_subscription")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
-    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync() =>
+    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => this.appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(userId));
 
     /// <summary>
@@ -177,7 +178,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
-    [Authorize(Roles = "subscribe_apps")]
+    // [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
@@ -197,7 +198,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     [HttpPut]
     [Route("{appId}/subscription/company/{companyId}/activate")]
-    [Authorize(Roles = "activate_subscription")]
+    // [Authorize(Roles = "activate_subscription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId) 
@@ -217,7 +218,7 @@ public class AppsController : ControllerBase
     /// <response code="500">If the database operation failed.</response>
     [HttpPut]
     [Route("{appId}/unsubscribe")]
-    [Authorize(Roles = "unsubscribe_apps")]
+    // [Authorize(Roles = "unsubscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]

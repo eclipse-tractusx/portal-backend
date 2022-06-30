@@ -24,4 +24,12 @@ public interface ICompanyRepository
     ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
 
     Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
+    
+    /// <summary>
+    /// Checks if the given company provides the given app
+    /// </summary>
+    /// <param name="companyId">Id of the company to check</param>
+    /// <param name="appId">Id of the app to check</param>
+    /// <returns>Returns <c>true</c> if the company is providing the application</returns>
+    Task<bool> CheckIsMemberOfCompanyProvidingAppUntrackedAsync(Guid companyId, Guid appId);
 }
