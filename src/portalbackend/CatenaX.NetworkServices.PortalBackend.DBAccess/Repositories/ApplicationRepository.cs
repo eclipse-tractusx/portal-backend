@@ -91,7 +91,10 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext.Companies
             .AsNoTracking()
             .Where(company => companyName != null ? EF.Functions.ILike(company!.Name, $"{companyName}%") : true)
-            .SelectMany(company => company.CompanyApplications);
+            .SelectMany(company => company.CompanyApplications.Where(companyApplication =>
+           companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
+           || companyApplication.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
+           || companyApplication.ApplicationStatusId == CompanyApplicationStatusId.DECLINED));
 
     public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
         _dbContext.CompanyApplications
