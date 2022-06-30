@@ -147,7 +147,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
-    // [Authorize(Roles = "view_subscription")]
+    [Authorize(Roles = "view_subscription")]
     [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
@@ -162,7 +162,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("provided/subscription-status")]
-    // [Authorize(Roles = "view_app_subscription")]
+    [Authorize(Roles = "view_app_subscription")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status502BadGateway)]
@@ -178,7 +178,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
-    // [Authorize(Roles = "subscribe_apps")]
+    [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
@@ -198,7 +198,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     [HttpPut]
     [Route("{appId}/subscription/company/{companyId}/activate")]
-    // [Authorize(Roles = "activate_subscription")]
+    [Authorize(Roles = "activate_subscription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId) 
@@ -218,7 +218,7 @@ public class AppsController : ControllerBase
     /// <response code="500">If the database operation failed.</response>
     [HttpPut]
     [Route("{appId}/unsubscribe")]
-    // [Authorize(Roles = "unsubscribe_apps")]
+    [Authorize(Roles = "unsubscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
