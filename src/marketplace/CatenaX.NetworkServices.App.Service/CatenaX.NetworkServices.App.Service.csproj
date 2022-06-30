@@ -32,8 +32,4 @@
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ViewModels" />
-  </ItemGroup>
-
 </Project>

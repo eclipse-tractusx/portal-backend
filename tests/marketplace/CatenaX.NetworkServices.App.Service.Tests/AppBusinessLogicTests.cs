@@ -1,17 +1,10 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -82,31 +75,6 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             A.CallTo(() => _companyUserAssignedAppFavourites.RemoveFavouriteAppForUser(appId, companyUser.Id)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         }
-
-        //
-        // [Fact]
-        // public async void RemoveFavouriteAppForUser_WithNotExistingApp_ThrowsError()
-        // {
-        //     // Arrange
-        //     var (companyUser, iamUser) = CreateTestUserPair();
-        //
-        //     var appId = _fixture.Create<Guid>();
-        //     A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
-        //         .Returns(companyUser.Id);
-        //     A.CallTo(() => _companyUserAssignedAppFavourites.RemoveFavouriteAppForUser(appId, companyUser.Id))
-        //         .Throws(() => new DbUpdateConcurrencyException());
-        //     A.CallTo(() => _portalRepositories.GetInstance<ICompanyUserAssignedAppFavouritesRepository>()).Returns(_companyUserAssignedAppFavourites);
-        //     A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        //     _fixture.Inject(_portalRepositories);
-        //
-        //     var sut = _fixture.Create<AppsBusinessLogic>();
-        //
-        //     // Act
-        //     await sut.RemoveFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
-        //
-        //     // Assert
-        //     A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        // }
 
         [Fact]
         public async void AddCompanyAppSubscription_ExecutesSuccessfully()
