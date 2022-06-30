@@ -511,24 +511,19 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             bool isApiCallSuccess = false;
             if (roles.Count() > 0)
             {
-
-                try
+                var roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+                isApiCallSuccess = true;
+                foreach (Dictionary<string, IEnumerable<string>> kvp in roleList)
                 {
-                    var roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
-                    isApiCallSuccess = true;
-                    foreach (var item in roles)
+                    KeyValuePair<string, IEnumerable<string>> outputRole = kvp.ElementAt(0);
+                    if (outputRole.Value.Any())
                     {
-                        if (!roleList.Contains(item))
-                        {
-                            message.Append($"Warning- {item} failed to get assigned. Please contact the service team.");
-                        }
+                        isApiCallSuccess = false;
+                        var outputRoles = outputRole.Value.Select(x => x);
+                        var roleName = string.Join(" ", outputRoles.ToArray());
+                        message.Append($"Warning- {roleName} failed to get assigned. Please contact the service team.");
                     }
                 }
-                catch (NotFoundException nfe)
-                {
-                    throw new Exception($"inconsistent data: client {iamClientId} or roles [{String.Join(",", roles)}] do not exist in keycloak", nfe);
-                }
-
             }
             bool isDbCallSuccess = false;
             foreach (var role in companyRoleIds)
