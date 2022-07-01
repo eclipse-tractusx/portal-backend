@@ -480,7 +480,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         }).AsAsyncEnumerable()));
         }
 
-        public async Task<string> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+        public async Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
             var companyUser = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
             if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
@@ -502,49 +502,64 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                             { iamClientId, roles }
                         };
             var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-            var companyRoleIds = await userRoleRepository.GetUserRoleIdsUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
+            var companyRoleIds = await userRoleRepository.GetUserRoleUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
             if (companyRoleIds.Count() != roles.Count())
             {
                 throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",", roles)}]");
             }
-            StringBuilder message = new StringBuilder();
-            bool isApiCallSuccess = false;
+
+            IDictionary<string, IEnumerable<string>>[] roleList = null;
             if (roles.Count() > 0)
             {
-                var roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
-                isApiCallSuccess = true;
-                foreach (Dictionary<string, IEnumerable<string>> kvp in roleList)
+                roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
+            }
+            
+            var success = new List<Message>();
+            var warning = new List<Message>();
+            foreach (Dictionary<string, IEnumerable<string>> kvp in roleList)
+            {
+                KeyValuePair<string, IEnumerable<string>> outputRole = kvp.ElementAt(0);
+                if (outputRole.Value.Any())
                 {
-                    KeyValuePair<string, IEnumerable<string>> outputRole = kvp.ElementAt(0);
-                    if (outputRole.Value.Any())
+                    var outputRoles = outputRole.Value.Select(x => x);
+                    var roleObj = outputRoles.ToArray();
+                    for (int index = 0; index < roleObj.Length; index++)
                     {
-                        isApiCallSuccess = false;
-                        var outputRoles = outputRole.Value.Select(x => x);
-                        var roleName = string.Join(" ", outputRoles.ToArray());
-                        message.Append($"Warning- {roleName} failed to get assigned. Please contact the service team.");
+                        warning.Add(new Message { Name = roleObj[index].ToString(), Info = MessageDetail.ROLE_DOESNT_EXIST });
                     }
                 }
-            }
-            bool isDbCallSuccess = false;
-            foreach (var role in companyRoleIds)
-            {
-                if (!companyUser.RoleIds.Contains(role))
+                foreach (var role in companyRoleIds)
                 {
-                    userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role);
-                    isDbCallSuccess = true;
+                    if (companyRoleIds.Count() >= 1 && !warning.Any() && !companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    {
+                        userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role.CompanyUserRoleId);
+                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ADDED });
+                    }
+                    
+                    if (companyRoleIds.Count() >1 && warning.Any() && !string.IsNullOrWhiteSpace(warning.Where(e => e.Name==role.CompanyUserRoleText).Select(e => e.Name).FirstOrDefault()) && !warning.Where(e => e.Name==role.CompanyUserRoleText).Select(e => e.Name).FirstOrDefault().Contains(role.CompanyUserRoleText) && !companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    {
+                        userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role.CompanyUserRoleId);
+                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ADDED });
+                    }
+                    if (companyRoleIds.Count() >= 1 && !warning.Any() && companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    {
+                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ALREADY_ADDED });
+                    }
+                    if (companyRoleIds.Count() > 1 && warning.Any()  && companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    {
+                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ALREADY_ADDED });
+                    }
+                   
                 }
-
-            }
-            if (isApiCallSuccess && isDbCallSuccess)
-            {
-                message.Append("user role added");
-            }
-            if (isApiCallSuccess && !isDbCallSuccess)
-            {
-                message.Append("user role already added");
             }
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            return message.ToString();
+            var roleMessages = new UserRoleMessage
+            {
+                Success = success.AsEnumerable(),
+                Warning = warning.AsEnumerable()
+            };
+            
+            return roleMessages;
         }
     }
 }
