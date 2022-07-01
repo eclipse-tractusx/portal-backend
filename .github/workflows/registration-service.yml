@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - 'src/registration/CatenaX.NetworkServices.Registration.Service/**'
+      - 'src/docker/**'
 
     branches:
       - 'main'
+      - 'feature/CPLP-1072-container-image'
   workflow_dispatch:
 
 env:
