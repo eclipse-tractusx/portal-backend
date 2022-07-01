@@ -12,5 +12,5 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="ReadStatusId">The notifications status</param>
 /// <param name="AppId">OPTIONAL: The linked app for the notification</param>
 /// <param name="DueDate">OPTIONAL: The notifications due date</param>
-/// <param name="CreatorId">OPTIONAL: Id of the user who created the notification</param>
-public record NotificationCreationData(DateTimeOffset DateCreated, string Title, string Message, NotificationTypeId  NotificationTypeId, NotificationStatusId ReadStatusId, Guid? AppId = null, DateTimeOffset? DueDate = null, Guid? CreatorId = null);
+/// <param name="CreatorUserId">OPTIONAL: Id of the user who created the notification</param>
+public record NotificationCreationData(DateTimeOffset DateCreated, string Title, string Message, NotificationTypeId  NotificationTypeId, NotificationStatusId ReadStatusId, Guid? AppId = null, DateTimeOffset? DueDate = null, Guid? CreatorUserId = null);
