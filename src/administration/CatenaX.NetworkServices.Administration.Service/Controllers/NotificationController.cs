@@ -33,14 +33,12 @@ public class NotificationController : ControllerBase
     /// <param name="data">Contains the information needed to create the notification.</param>
     /// <remarks>Example: POST: /api/administration/notification/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="201">Notification was successfully created.</response>
-    /// <response code="400">UserId not found.</response>
-    /// <response code="404">The NotificationType or NotificationStatus does not exist.</response>
+    /// <response code="400">UserId not found or the NotificationType or NotificationStatus don't exist.</response>
     [HttpPost]
     [Route("{companyUserId}", Name = nameof(CreateNotification))]
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromRoute] Guid companyUserId, [FromBody] NotificationCreationData data)
     {
         var notificationDetailData = await _logic.CreateNotification(data, companyUserId).ConfigureAwait(false);

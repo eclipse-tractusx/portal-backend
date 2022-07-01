@@ -176,4 +176,8 @@ public class UserRepository : IUserRepository
                 iamUser.CompanyUserId
             )
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public async Task<bool> IsUserWithIdExisting(Guid companyUserId) =>
+        await _dbContext.CompanyUsers.AnyAsync(x => x.Id == companyUserId);
 }
