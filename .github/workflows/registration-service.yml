@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'src/registration/CatenaX.NetworkServices.Registration.Service/**'
-      - 'src/docker/**'
+      - 'docker/**'
 
     branches:
       - 'main'
