@@ -56,11 +56,11 @@ public class Notification
 
     public Guid? AppId { get; set; }
     
-    public DateTimeOffset? DueDate { get; private set; }
+    public DateTimeOffset? DueDate { get; set; }
 
     // Navigation properties
-    public virtual App? App { get; set; }
+    public virtual App? App { get; private set; }
     public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual NotificationType? NotificationType { get; set; }
-    public virtual NotificationStatus? ReadStatus { get; set; }
+    public virtual NotificationType? NotificationType { get; private set; }
+    public virtual NotificationStatus? ReadStatus { get; private set; }
 }
