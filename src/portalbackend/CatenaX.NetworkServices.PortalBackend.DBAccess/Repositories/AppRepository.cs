@@ -85,13 +85,16 @@ public class AppRepository : IAppRepository
                     .Select(license => license.Licensetext)
                     .FirstOrDefault()
             }).AsAsyncEnumerable().Select(app => new AppData(
-                app.Id,
                 app.Name ?? Constants.ErrorString,
                 app.ShortDescription ?? Constants.ErrorString,
                 app.VendorCompanyName ?? Constants.ErrorString,
                 app.LicenseText ?? Constants.ErrorString,
-                app.ThumbnailUrl ?? Constants.ErrorString,
-                app.UseCaseNames.Select(name => name).ToList()));
+                app.ThumbnailUrl ?? Constants.ErrorString
+                )
+            {
+                Id = app.Id,
+                UseCases = app.UseCaseNames.Select(name => name).ToList()
+            });
     }
 
     /// <inheritdoc />

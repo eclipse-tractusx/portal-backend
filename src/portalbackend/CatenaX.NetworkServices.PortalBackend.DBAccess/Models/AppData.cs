@@ -3,40 +3,32 @@
 /// <summary>
 /// View model of an application's base data.
 /// </summary>
-public record AppData(Guid Id, string Title, string ShortDescription, string Provider, string Price, string LeadPictureUri, IEnumerable<string> UseCases)
+public class AppData
 {
     /// <summary>
-    /// ID of the app.
+    /// Ctor.
     /// </summary>
-    public Guid Id { get; set; } = Id;
+    /// <param name="title">Title.</param>
+    /// <param name="shortDescription">Short description.</param>
+    /// <param name="provider">Provider.</param>
+    /// <param name="price">Price.</param>
+    /// <param name="leadPictureUri">Lead pircture URI.</param>
+    public AppData(string title, string shortDescription, string provider, string price, string leadPictureUri)
+    {
+        Title = title;
+        ShortDescription = shortDescription;
+        Provider = provider;
+        UseCases = new List<string>();
+        Price = price;
+        LeadPictureUri = leadPictureUri;
+    }
 
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
-    public string Title { get; set; } = Title;
+    public Guid Id { get; init; }
+    public string Title { get; init; }
+    public string ShortDescription { get; init; }
+    public string Provider { get; init; }
+    public string Price { get; init; }
+    public string LeadPictureUri { get; init; }
+    public IEnumerable<string> UseCases { get; init; }
 
-    /// <summary>
-    /// Short description of the app.
-    /// </summary>
-    public string ShortDescription { get; set; } = ShortDescription;
-
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    public string Provider { get; set; } = Provider;
-
-    /// <summary>
-    /// Names of the app's use cases.
-    /// </summary>
-    public IEnumerable<string> UseCases { get; set; } = UseCases;
-
-    /// <summary>
-    /// Pricing information of the app.
-    /// </summary>
-    public string Price { get; set; } = Price;
-
-    /// <summary>
-    /// Uri to app's lead picture.
-    /// </summary>
-    public string LeadPictureUri { get; set; } = LeadPictureUri;
 }
