@@ -1,0 +1,142 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
+{
+    public partial class CPLP1134AddNotification : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "notification_status",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_notification_status", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notification_type",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_notification_type", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notifications",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    message = table.Column<string>(type: "text", nullable: false),
+                    notification_type_id = table.Column<int>(type: "integer", nullable: false),
+                    read_status_id = table.Column<int>(type: "integer", nullable: false),
+                    app_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_notifications", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_notifications_apps_app_id",
+                        column: x => x.app_id,
+                        principalSchema: "portal",
+                        principalTable: "apps",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_notifications_company_users_company_user_id",
+                        column: x => x.company_user_id,
+                        principalSchema: "portal",
+                        principalTable: "company_users",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_notifications_notification_status_read_status_id",
+                        column: x => x.read_status_id,
+                        principalSchema: "portal",
+                        principalTable: "notification_status",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_notifications_notification_type_notification_type_id",
+                        column: x => x.notification_type_id,
+                        principalSchema: "portal",
+                        principalTable: "notification_type",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "notification_status",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "UNREAD" },
+                    { 2, "READ" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "notification_type",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "INFO" },
+                    { 2, "ACTION" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_app_id",
+                schema: "portal",
+                table: "notifications",
+                column: "app_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_company_user_id",
+                schema: "portal",
+                table: "notifications",
+                column: "company_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_notification_type_id",
+                schema: "portal",
+                table: "notifications",
+                column: "notification_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_read_status_id",
+                schema: "portal",
+                table: "notifications",
+                column: "read_status_id");
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "notifications",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "notification_status",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "notification_type",
+                schema: "portal");
+        }
+    }
+}

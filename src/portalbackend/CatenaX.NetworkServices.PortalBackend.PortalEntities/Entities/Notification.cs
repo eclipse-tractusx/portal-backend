@@ -12,7 +12,11 @@ public class Notification
     /// <summary>
     /// Internal constuctor, only needed for EF
     /// </summary>
-    private Notification() {}
+    private Notification()
+    {
+        Title = null!;
+        Message = null!;
+    }
 
     /// <summary>
     /// Creates a new instance of <see cref="Notification"/> and sets the required values.
@@ -24,7 +28,7 @@ public class Notification
     /// <param name="message">A custom notification message</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="readStatusId">id of the notification status</param>
-    public Notification(Guid id, Guid companyUserId, DateTimeOffset dateCreated, string title, string message, NotificationTypeId notificationTypeId, NotificatioStatusId readStatusId)
+    public Notification(Guid id, Guid companyUserId, DateTimeOffset dateCreated, string title, string message, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId)
     {
         Id = id;
         CompanyUserId = companyUserId;
@@ -48,9 +52,14 @@ public class Notification
 
     public NotificationTypeId NotificationTypeId { get; set; }
     
-    public NotificatioStatusId ReadStatusId { get; set; }
+    public NotificationStatusId ReadStatusId { get; set; }
+
+    public Guid? AppId { get; set; }
+    
+    public DateTimeOffset? DueDate { get; private set; }
 
     // Navigation properties
+    public virtual App? App { get; set; }
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual NotificationType? NotificationType { get; set; }
     public virtual NotificationStatus? ReadStatus { get; set; }
