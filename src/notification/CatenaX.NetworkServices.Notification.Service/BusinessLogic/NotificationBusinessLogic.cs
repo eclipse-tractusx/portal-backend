@@ -28,13 +28,13 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         }
 
         var notificationId = Guid.NewGuid();
-        var (dateTimeOffset, title, message, notificationTypeId, notificationStatusId, appId, dueData, creatorId) = creationData;
+        var (dateTimeOffset, title, message, notificationTypeId, notificationStatusId, appId, dueData, creatorUserId) = creationData;
         CheckEnumValues(notificationTypeId, notificationStatusId);
         this._portalRepositories.GetInstance<INotificationRepository>().Add(new PortalBackend.PortalEntities.Entities.Notification(notificationId, companyUserId, dateTimeOffset, title, message, notificationTypeId, notificationStatusId)
         {
             DueDate = dueData,
             AppId = appId,
-            CreatorId = creatorId
+            CreatorUserId = creatorUserId
         });
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return new NotificationDetailData(notificationId, title, message);
