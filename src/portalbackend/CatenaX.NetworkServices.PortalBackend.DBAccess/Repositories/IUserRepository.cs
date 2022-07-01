@@ -28,4 +28,11 @@ public interface IUserRepository
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
+
+    /// <summary>
+    /// Checks whether a user with the given company User Id exists.
+    /// </summary>
+    /// <param name="companyUserId">The id of the company user to check in the persistence layer.</param>
+    /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
+    Task<bool> IsUserWithIdExisting(Guid companyUserId);
 }
