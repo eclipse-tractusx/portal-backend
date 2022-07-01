@@ -70,6 +70,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Invitation> Invitations { get; set; } = default!;
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
+    public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -233,6 +234,11 @@ public class PortalDbContext : DbContext
                     {
                         j.HasKey(e => new { e.AppId, e.UseCaseId });
                     });
+            
+            entity.HasMany(d => d.Notifications)
+                .WithOne(p => p!.App)
+                .HasForeignKey(d => d.AppId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<AppDescription>(entity =>
@@ -630,6 +636,38 @@ public class PortalDbContext : DbContext
 
             entity.HasData(StaticPortalData.Languages);
         });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasOne(d => d.CompanyUser)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.CompanyUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ReadStatus)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.ReadStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasOne(d => d.NotificationType)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.NotificationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NotificationStatus>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationStatusId))
+                    .Cast<NotificationStatusId>()
+                    .Select(e => new NotificationStatus(e))
+            );
+
+        modelBuilder.Entity<NotificationType>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationTypeId))
+                    .Cast<NotificationTypeId>()
+                    .Select(e => new NotificationType(e))
+            );
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
 

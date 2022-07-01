@@ -14,6 +14,7 @@ public class CompanyUser
         UserRoles = new HashSet<UserRole>();
         CompanyUserAssignedRoles = new HashSet<CompanyUserAssignedRole>();
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
+        Notifications = new HashSet<Notification>();
     }
     
     public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) : this()

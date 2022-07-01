@@ -71,4 +71,5 @@ public class App
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     public virtual ICollection<Language> SupportedLanguages { get; private set; }
+    public virtual ICollection<Notification> Notifications { get; set; }
 }

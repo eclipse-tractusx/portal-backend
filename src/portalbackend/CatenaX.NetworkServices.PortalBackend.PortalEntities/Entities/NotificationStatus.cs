@@ -21,7 +21,7 @@ public class NotificationStatus
     /// Creates a new instance of <see cref="NotificationStatus"/> and initializes the id and label 
     /// </summary>
     /// <param name="notificationStatusId">The NotificationStatusId</param>
-    public NotificationStatus(NotificatioStatusId notificationStatusId) : this()
+    public NotificationStatus(NotificationStatusId notificationStatusId) : this()
     {
         Id = notificationStatusId;
         Label = notificationStatusId.ToString();
@@ -30,7 +30,7 @@ public class NotificationStatus
     /// <summary>
     /// Id of the status
     /// </summary>
-    public NotificatioStatusId Id { get; private set; }
+    public NotificationStatusId Id { get; private set; }
 
     /// <summary>
     /// The status as string 
