@@ -23,6 +23,11 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationDetailData> CreateNotification(NotificationCreationData creationData, Guid companyUserId)
     {
+        if (!await _portalRepositories.GetInstance<IUserRepository>().IsUserWithIdExisting(companyUserId))
+        {
+            throw new ArgumentException("User does not exist", nameof(companyUserId));
+        }
+
         var notificationId = Guid.NewGuid();
         var (dateTimeOffset, title, message, notificationTypeId, notificationStatusId, appId, dueData) = creationData;
         CheckEnumValues(notificationTypeId, notificationStatusId);
@@ -49,7 +54,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
         if(!Enum.IsDefined(typeof(NotificationStatusId), notificationStatusId.ToString()))
         {
-            throw new ArgumentException("notificationStatus does not exist.", nameof(notificationTypeId));
+            throw new ArgumentException("notificationStatus does not exist.", nameof(notificationStatusId));
         }
     }
 }
