@@ -7,7 +7,6 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /
 COPY src/ src/
 COPY keycloak/ keycloak/
-RUN dotnet restore "src/registration/CatenaX.NetworkServices.Registration.Service/CatenaX.NetworkServices.Registration.Service.csproj"
 WORKDIR "/src/registration/CatenaX.NetworkServices.Registration.Service"
 RUN dotnet build "CatenaX.NetworkServices.Registration.Service.csproj" -c Release -o /app/build
 
@@ -18,4 +17,3 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Registration.Service.dll"]
-
