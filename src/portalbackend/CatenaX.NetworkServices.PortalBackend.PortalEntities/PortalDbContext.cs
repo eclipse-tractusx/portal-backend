@@ -642,14 +642,14 @@ public class PortalDbContext : DbContext
             entity.Property(x => x.DueDate)
                 .IsRequired(false);
 
-            entity.HasOne(d => d.CompanyUser)
+            entity.HasOne(d => d.Receiver)
                 .WithMany(p => p!.Notifications)
-                .HasForeignKey(d => d.CompanyUserId)
+                .HasForeignKey(d => d.ReceiverUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Creator)
                 .WithMany(p => p!.CreatedNotifications)
-                .HasForeignKey(d => d.CreatorId)
+                .HasForeignKey(d => d.CreatorUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.ReadStatus)
