@@ -516,6 +516,27 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return string.IsNullOrWhiteSpace(message) ? "user role already added" : message;
         }
+    
+        public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string adminUserId)
+        {
+            var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+            var validUsers = await userBusinessPartnerRepository.IsAdminUserAndCompanyUserHavingSameCompanyId(companyUserId, adminUserId);
+            if (!validUsers)
+            {
+                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} does not belongs to same company");
+            }
+
+            var businessPartnerNumberData = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId).ConfigureAwait(false);
+            if (businessPartnerNumberData == null)
+            {
+                throw new NotFoundException($"business partner number for companyUserId {companyUserId} not found");
+            }
+
+            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(businessPartnerNumberData);
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
     }
 }
 
