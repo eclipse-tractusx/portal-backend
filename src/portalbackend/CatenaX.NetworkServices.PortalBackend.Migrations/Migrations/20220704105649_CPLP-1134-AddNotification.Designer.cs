@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220630142309_CPLP-1134-AddNotification")]
+    [Migration("20220704105649_CPLP-1134-AddNotification")]
     partial class CPLP1134AddNotification
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3565,6 +3565,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("company_user_id");
 
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("creator_id");
+
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
@@ -3600,6 +3604,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("CompanyUserId")
                         .HasDatabaseName("ix_notifications_company_user_id");
+
+                    b.HasIndex("CreatorId")
+                        .HasDatabaseName("ix_notifications_creator_id");
 
                     b.HasIndex("NotificationTypeId")
                         .HasDatabaseName("ix_notifications_notification_type_id");
@@ -4479,6 +4486,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_notifications_company_users_company_user_id");
 
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "Creator")
+                        .WithMany("CreatedNotifications")
+                        .HasForeignKey("CreatorId")
+                        .HasConstraintName("fk_notifications_company_users_creator_id");
+
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
                         .WithMany("Notifications")
                         .HasForeignKey("NotificationTypeId")
@@ -4494,6 +4506,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("App");
 
                     b.Navigation("CompanyUser");
+
+                    b.Navigation("Creator");
 
                     b.Navigation("NotificationType");
 
@@ -4637,6 +4651,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("CompanyUserAssignedRoles");
 
                     b.Navigation("Consents");
+
+                    b.Navigation("CreatedNotifications");
 
                     b.Navigation("Documents");
 

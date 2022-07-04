@@ -48,7 +48,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     notification_type_id = table.Column<int>(type: "integer", nullable: false),
                     read_status_id = table.Column<int>(type: "integer", nullable: false),
                     app_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    creator_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -62,6 +63,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     table.ForeignKey(
                         name: "fk_notifications_company_users_company_user_id",
                         column: x => x.company_user_id,
+                        principalSchema: "portal",
+                        principalTable: "company_users",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_notifications_company_users_creator_id",
+                        column: x => x.creator_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
                         principalColumn: "id");
@@ -110,6 +117,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "notifications",
                 column: "company_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_creator_id",
+                schema: "portal",
+                table: "notifications",
+                column: "creator_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_notifications_notification_type_id",
