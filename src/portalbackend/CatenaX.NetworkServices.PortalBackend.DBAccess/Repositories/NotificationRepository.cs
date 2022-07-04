@@ -1,5 +1,8 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -22,4 +25,21 @@ public class NotificationRepository : INotificationRepository
     {
         _dbContext.Add(notification);
     }
+
+    /// <inheritdoc />
+    public async Task<ICollection<NotificationDetailData>> GetAllAsDetailsByUserIdUntrackedAsync(Guid companyUserId, NotificationStatusId? statusId = null, NotificationTypeId? typeId = null) =>
+        await _dbContext.Notifications
+            .Where(x =>
+                x.ReceiverUserId == companyUserId &&
+                statusId.HasValue ?  x.ReadStatusId == statusId.Value : true &&
+                typeId.HasValue ? x.NotificationTypeId == typeId.Value : true)
+            .Select(x => new NotificationDetailData(x.Id, x.Title, x.Message))
+            .ToListAsync();
+
+    /// <inheritdoc />
+    public async Task<NotificationDetailData?> GetByIdAndUserIdUntrackedAsync(Guid notificationId, Guid companyUserId) =>
+        await _dbContext.Notifications
+            .Where(x => x.Id == notificationId && x.ReceiverUserId == companyUserId)
+            .Select(x => new NotificationDetailData(x.Id, x.Title, x.Message))
+            .SingleOrDefaultAsync();
 }

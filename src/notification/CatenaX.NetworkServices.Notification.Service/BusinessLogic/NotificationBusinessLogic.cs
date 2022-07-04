@@ -1,4 +1,5 @@
-﻿using CatenaX.NetworkServices.PortalBackend.DBAccess;
+﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -38,6 +39,44 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         });
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return new NotificationDetailData(notificationId, title, message);
+    }
+
+    /// <inheritdoc />
+    public async Task<ICollection<NotificationDetailData>> GetNotifications(string iamUserId)
+    {
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserIdUntrackedAsync(iamUserId)
+            .ConfigureAwait(false);
+        if (companyUserId == default)
+        {
+            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
+        }
+
+        return await this._portalRepositories.GetInstance<INotificationRepository>()
+            .GetAllAsDetailsByUserIdUntrackedAsync(companyUserId)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<NotificationDetailData> GetNotification(Guid notficationId, string iamUserId)
+    {
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserIdUntrackedAsync(iamUserId)
+            .ConfigureAwait(false);
+        if (companyUserId == default)
+        {
+            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
+        }
+
+        var notificationDetails = await this._portalRepositories.GetInstance<INotificationRepository>()
+            .GetByIdAndUserIdUntrackedAsync(notficationId, companyUserId)
+            .ConfigureAwait(false);
+        if (notificationDetails is null)
+        {
+            throw new NotFoundException("Notification does not exist.");
+        }
+
+        return notificationDetails;
     }
 
     /// <summary>

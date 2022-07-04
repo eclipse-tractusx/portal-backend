@@ -30,6 +30,13 @@ public interface IUserRepository
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
 
     /// <summary>
+    /// Gets the company user id for the given iam user id
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>The Guid of the company user</returns>
+    Task<Guid> GetCompanyUserIdForIamUserIdUntrackedAsync(string iamUserId);
+
+    /// <summary>
     /// Checks whether a user with the given company User Id exists.
     /// </summary>
     /// <param name="companyUserId">The id of the company user to check in the persistence layer.</param>
