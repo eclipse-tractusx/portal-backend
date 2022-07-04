@@ -508,7 +508,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",", roles)}]");
             }
 
-            IDictionary<string, IEnumerable<string>>[] roleList = null;
+            IDictionary<string, IEnumerable<string>> roleList = null;
             if (roles.Count() > 0)
             {
                 roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
@@ -516,40 +516,24 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             
             var success = new List<Message>();
             var warning = new List<Message>();
-            foreach (Dictionary<string, IEnumerable<string>> kvp in roleList)
+            foreach (KeyValuePair<string, IEnumerable<string>> outputRole in roleList)
             {
-                KeyValuePair<string, IEnumerable<string>> outputRole = kvp.ElementAt(0);
-                if (outputRole.Value.Any())
+               
+                foreach(var item in companyRoleIds.Select(companyrole => companyrole.CompanyUserRoleText).Except(outputRole.Value))
                 {
-                    var outputRoles = outputRole.Value.Select(x => x);
-                    var roleObj = outputRoles.ToArray();
-                    for (int index = 0; index < roleObj.Length; index++)
-                    {
-                        warning.Add(new Message { Name = roleObj[index].ToString(), Info = MessageDetail.ROLE_DOESNT_EXIST });
-                    }
+                    warning.Add(new Message { Name = item, Info = MessageDetail.ROLE_DOESNT_EXIST });
                 }
                 foreach (var role in companyRoleIds)
                 {
-                    if (companyRoleIds.Count() >= 1 && !warning.Any() && !companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    if (outputRole.Value.Contains(role.CompanyUserRoleText) && !companyUser.RoleIds.Contains(role.CompanyUserRoleId))
                     {
                         userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role.CompanyUserRoleId);
                         success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ADDED });
                     }
-                    
-                    if (companyRoleIds.Count() >1 && warning.Any() && !string.IsNullOrWhiteSpace(warning.Where(e => e.Name==role.CompanyUserRoleText).Select(e => e.Name).FirstOrDefault()) && !warning.Where(e => e.Name==role.CompanyUserRoleText).Select(e => e.Name).FirstOrDefault().Contains(role.CompanyUserRoleText) && !companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    if (!warning.Where(e => e.Name == role.CompanyUserRoleText).Select(e => e.Name).Contains(role.CompanyUserRoleText) && outputRole.Value.Contains(role.CompanyUserRoleText) && companyUser.RoleIds.Contains(role.CompanyUserRoleId))
                     {
-                        userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role.CompanyUserRoleId);
-                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ADDED });
+                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ALREADY_ADDED }); 
                     }
-                    if (companyRoleIds.Count() >= 1 && !warning.Any() && companyUser.RoleIds.Contains(role.CompanyUserRoleId))
-                    {
-                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ALREADY_ADDED });
-                    }
-                    if (companyRoleIds.Count() > 1 && warning.Any()  && companyUser.RoleIds.Contains(role.CompanyUserRoleId))
-                    {
-                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ALREADY_ADDED });
-                    }
-                   
                 }
             }
             await _portalRepositories.SaveAsync().ConfigureAwait(false);

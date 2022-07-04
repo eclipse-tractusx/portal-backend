@@ -8,7 +8,7 @@ public interface IProvisioningManager
     Task<string> GetNextServiceAccountClientIdAsync();
     Task SetupSharedIdpAsync(string idpName, string organisationName);
     Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile);
-    Task<IDictionary<string, IEnumerable<string>>[]> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
+    Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
     Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
     Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
     Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
