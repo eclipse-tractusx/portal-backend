@@ -118,10 +118,17 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("owncompany/apps/{appid}/users")]
         public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
             this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
+
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("app/{appId}/roles")]
         public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
+
+        [HttpDelete]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("owncompany/users/{companyUserId}/userBusinessPartnerNumbers")]
+        public Task<int> DeleteOwnUserBusinessPartnerNumbers([FromRoute] Guid companyUserId) =>
+           this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId,adminUserId));
     }
 }
