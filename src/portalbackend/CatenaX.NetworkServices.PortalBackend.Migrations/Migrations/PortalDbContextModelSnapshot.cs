@@ -3590,8 +3590,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
                         .HasColumnName("title");
 
                     b.HasKey("Id")

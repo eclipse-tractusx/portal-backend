@@ -43,7 +43,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     receiver_user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     message = table.Column<string>(type: "text", nullable: false),
                     notification_type_id = table.Column<int>(type: "integer", nullable: false),
                     read_status_id = table.Column<int>(type: "integer", nullable: false),
