@@ -3,7 +3,12 @@ name: Marketplace-App-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/marketplace/CatenaX.NetworkServices.App.Service/**'
+      # workflow file
+      - '.github/workflows/marketplace-app-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-marketplace-app-service'
 
     branches:
       - 'main'
