@@ -57,28 +57,4 @@ public class UserRolesRepository : IUserRolesRepository
                 userRole.Id
             ))
             .AsAsyncEnumerable();
-
-    public async IAsyncEnumerable<UserRoleWithId> GetUserRoleUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
-    {
-        foreach (var clientRole in clientRoles)
-        {
-            await foreach (var userRoleId in _dbContext.UserRoles
-                .AsNoTracking()
-                .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
-                .AsQueryable()
-                .Select(userRole => new 
-                {
-                   Name = userRole.UserRoleText,
-                   Id = userRole.Id
-                })
-                .AsAsyncEnumerable().ConfigureAwait(false))
-            {
-                yield return new UserRoleWithId
-                (
-                    userRoleId.Name,
-                    userRoleId.Id
-                );
-            }
-        }
-    }
 }

@@ -497,54 +497,46 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ArgumentException(nameof(appId), $"invalid appId {appId}");
             }
             var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
-            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                        {
-                            { iamClientId, roles }
-                        };
-            var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-            var companyRoleIds = await userRoleRepository.GetUserRoleUntrackedAsync(clientRoleNames).ToListAsync().ConfigureAwait(false);
-            if (companyRoleIds.Count() != roles.Count())
-            {
-                throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",", roles)}]");
-            }
 
-            IDictionary<string, IEnumerable<string>> roleList = null;
+            var success = new List<UserRoleMessage.Message>();
+            var warning = new List<UserRoleMessage.Message>();
+
             if (roles.Count() > 0)
             {
-                roleList = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
-            }
-            
-            var success = new List<Message>();
-            var warning = new List<Message>();
-            foreach (KeyValuePair<string, IEnumerable<string>> outputRole in roleList)
-            {
-               
-                foreach(var item in companyRoleIds.Select(companyrole => companyrole.CompanyUserRoleText).Except(outputRole.Value))
+                var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+                var userRoleWithIds = await userRoleRepository.GetUserRoleWithIdsUntrackedAsync(iamClientId, roles).ToListAsync().ConfigureAwait(false);
+                if (userRoleWithIds.Count() != roles.Count())
                 {
-                    warning.Add(new Message { Name = item, Info = MessageDetail.ROLE_DOESNT_EXIST });
+                    throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",", roles.Except(userRoleWithIds.Select(x => x.CompanyUserRoleText)))}]");
                 }
-                foreach (var role in companyRoleIds)
+                var unassignedRoleNames = userRoleWithIds.Where(x => !companyUser.RoleIds.Contains(x.CompanyUserRoleId)).Select(x => x.CompanyUserRoleText);
+
+                var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+                    {
+                        { iamClientId, unassignedRoleNames }
+                    };
+
+                var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
+           
+                foreach (var roleWithId in userRoleWithIds)
                 {
-                    if (outputRole.Value.Contains(role.CompanyUserRoleText) && !companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    if (assignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
                     {
-                        userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, role.CompanyUserRoleId);
-                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ADDED });
+                        userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
+                        success.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_ADDED));
                     }
-                    if (!warning.Where(e => e.Name == role.CompanyUserRoleText).Select(e => e.Name).Contains(role.CompanyUserRoleText) && outputRole.Value.Contains(role.CompanyUserRoleText) && companyUser.RoleIds.Contains(role.CompanyUserRoleId))
+                    else if (unassignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
                     {
-                        success.Add(new Message { Name = role.CompanyUserRoleText, Info = MessageDetail.ROLE_ALREADY_ADDED }); 
+                        warning.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_DOESNT_EXIST));
+                    }
+                    else
+                    {
+                        success.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_ALREADY_ADDED));
                     }
                 }
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            var roleMessages = new UserRoleMessage
-            {
-                Success = success.AsEnumerable(),
-                Warning = warning.AsEnumerable()
-            };
-            
-            return roleMessages;
+            return new UserRoleMessage(success, warning);
         }
     }
 }
-
