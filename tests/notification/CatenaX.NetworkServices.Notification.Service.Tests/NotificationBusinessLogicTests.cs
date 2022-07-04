@@ -1,24 +1,18 @@
-﻿using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using CatenaX.NetworkServices.App.Service.ViewModels;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.Tests.Shared;
-using FakeItEasy;
-using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
-using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using AutoFixture;
+using AutoFixture.AutoFakeItEasy;
+using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using FakeItEasy;
+using FluentAssertions;
 using Xunit;
 
-namespace CatenaX.NetworkServices.App.Service.Tests
+namespace CatenaX.NetworkServices.Notification.Service.Tests
 {
     public class NotificationBusinessLogicTests
     {
