@@ -3,7 +3,12 @@ name: Marketplace-App-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/marketplace/CatenaX.NetworkServices.App.Service/**'
+      # workflow file
+      - '.github/workflows/marketplace-app-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-marketplace-app-service'
 
     branches:
       - 'main'
@@ -42,6 +47,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-marketplace-app-service
+          pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
