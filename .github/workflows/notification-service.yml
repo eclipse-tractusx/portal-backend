@@ -12,9 +12,11 @@ on:
     branches:
       - 'main'
   workflow_dispatch:
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_notification-service
+
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
