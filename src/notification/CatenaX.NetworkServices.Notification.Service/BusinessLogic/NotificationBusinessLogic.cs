@@ -1,10 +1,9 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 
 /// <inheritdoc />
 public class NotificationBusinessLogic : INotificationBusinessLogic
@@ -31,7 +30,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         var notificationId = Guid.NewGuid();
         var (dateTimeOffset, title, message, notificationTypeId, notificationStatusId, appId, dueData) = creationData;
         CheckEnumValues(notificationTypeId, notificationStatusId);
-        this._portalRepositories.GetInstance<INotificationRepository>().Add(new Notification(notificationId, companyUserId, dateTimeOffset, title, message, notificationTypeId, notificationStatusId)
+        this._portalRepositories.GetInstance<INotificationRepository>().Add(new PortalBackend.PortalEntities.Entities.Notification(notificationId, companyUserId, dateTimeOffset, title, message, notificationTypeId, notificationStatusId)
         {
             DueDate = dueData,
             AppId = appId
