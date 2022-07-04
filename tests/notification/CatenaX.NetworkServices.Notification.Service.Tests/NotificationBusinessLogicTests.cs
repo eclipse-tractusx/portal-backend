@@ -19,16 +19,14 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
 {
     public class NotificationBusinessLogicTests
     {
-        private readonly ITestOutputHelper _testOutputHelper;
         private readonly IFixture _fixture;
         private readonly IPortalRepositories _portalRepositories;
         private readonly INotificationRepository _notificationRepository;
         private readonly IUserRepository _userRepository;
         private readonly CompanyUser _companyUser;
 
-        public NotificationBusinessLogicTests(ITestOutputHelper testOutputHelper)
+        public NotificationBusinessLogicTests()
         {
-            _testOutputHelper = testOutputHelper;
             _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
             var (companyUser, _) = CreateTestUserPair();
             _companyUser = companyUser;
