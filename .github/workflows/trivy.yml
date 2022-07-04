@@ -2,7 +2,6 @@
 # you need to change the path to the specific Docker registry.
 #
 name: "Trivy"
-
 on:
   push:
     branches: [ main ]
@@ -17,7 +16,6 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
   # Trigger manually
-
 jobs:
   analyze-config:
     runs-on: ubuntu-latest
@@ -25,11 +23,9 @@ jobs:
       actions: read
       contents: read
       security-events: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@master
         with:
@@ -40,24 +36,20 @@ jobs:
           format: "sarif"
           output: "trivy-results1.sarif"
           severity: "CRITICAL,HIGH"
-
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
         if: always()
         with:
           sarif_file: "trivy-results1.sarif"
-
   analyze-product-portal-backend-provisioning-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       # It's also possible to scan your private registry with Trivy's built-in image scan.
       # All you have to do is set ENV vars.
       # Docker Hub needs TRIVY_USERNAME and TRIVY_PASSWORD.
@@ -73,24 +65,20 @@ jobs:
           output: "trivy-results2.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
-
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: "trivy-results2.sarif"
-
   analyze-product-portal-backend-registration-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       # It's also possible to scan your private registry with Trivy's built-in image scan.
       # All you have to do is set ENV vars.
       # Docker Hub needs TRIVY_USERNAME and TRIVY_PASSWORD.
@@ -106,24 +94,20 @@ jobs:
           output: "trivy-results3.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
-
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: "trivy-results3.sarif"
-
   analyze-product-portal-backend-administration-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       # It's also possible to scan your private registry with Trivy's built-in image scan.
       # All you have to do is set ENV vars.
       # Docker Hub needs TRIVY_USERNAME and TRIVY_PASSWORD.
@@ -139,14 +123,43 @@ jobs:
           output: "trivy-results4.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
-
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: "trivy-results4.sarif"
-          
+
   analyze-product-portal-backend_marketplace-app-service:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      # It's also possible to scan your private registry with Trivy's built-in image scan.
+      # All you have to do is set ENV vars.
+      # Docker Hub needs TRIVY_USERNAME and TRIVY_PASSWORD.
+      # You don't need to set ENV vars when downloading from a public repository.
+      # For public images, no ENV vars must be set.
+      - name: Run Trivy vulnerability scanner
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          # Path to Docker image
+          image-ref: "ghcr.io/catenax-ng/product-portal-backend_marketplace-app-service:latest"
+          format: "sarif"
+          output: "trivy-results4.sarif"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: "trivy-results4.sarif"
+
+  analyze-product-portal-backend_maintenance-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -167,12 +180,42 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "ghcr.io/catenax-ng/product-portal-backend_marketplace-app-service:latest"
+          image-ref: "ghcr.io/catenax-ng/product-portal-backend_maintenance-service:latest"
+          format: "sarif"
+          output: "trivy-results5.sarif"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: "trivy-results5.sarif"
+
+  analyze-product-portal-backend-notification-service:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      # It's also possible to scan your private registry with Trivy's built-in image scan.
+      # All you have to do is set ENV vars.
+      # Docker Hub needs TRIVY_USERNAME and TRIVY_PASSWORD.
+      # You don't need to set ENV vars when downloading from a public repository.
+      # For public images, no ENV vars must be set.
+      - name: Run Trivy vulnerability scanner
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          # Path to Docker image
+          image-ref: "ghcr.io/catenax-ng/product-portal-backend_notification-service:latest"
           format: "sarif"
           output: "trivy-results4.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
-
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v1
