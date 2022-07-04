@@ -1,27 +1,20 @@
-using CatenaX.NetworkServices.Administration.Service.Custodian;
-using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
-using CatenaX.NetworkServices.Mailing.SendMail;
-using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
+using Microsoft.EntityFrameworkCore;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -70,54 +63,17 @@ builder.Services.AddTransient<IAuthorizationHandler,ClaimRequestPathHandler>()
                     })
                     .AddTransient<IHttpContextAccessor,HttpContextAccessor>();
 
-builder.Services.AddTransient<IMailingService, MailingService>()
-                .AddTransient<ISendMail, SendMail>()
-                .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
-
-builder.Services.AddTransient<ITemplateManager, TemplateManager>()
-                .ConfigureTemplateSettings(builder.Configuration.GetSection(TemplateSettings.Position));
-
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                 .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions",options));
                     
 builder.Services.AddTransient<IKeycloakFactory, KeycloakFactory>()
                 .ConfigureKeycloakSettingsMap(builder.Configuration.GetSection("Keycloak"));
 
-builder.Services.AddTransient<IProvisioningManager, ProvisioningManager>()
-                .ConfigureProvisioningSettings(builder.Configuration.GetSection("Provisioning"));
-                    
-builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
-                .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
-
-builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
-                .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
-
-builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-                .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
-
-builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
-builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
-
-builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
-
-builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
-
+builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>();
 builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
-
-builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
-
-builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();
-
-builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
-                .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
-                .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
 builder.Services.AddDbContext<PortalDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("PortalDB")));
-
-builder.Services.AddDbContext<ProvisioningDBContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
-
 
 var app = builder.Build();
 
@@ -129,10 +85,10 @@ if (app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configurati
 }
 if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configuration.GetValue<bool>("SwaggerEnabled"))
 {
-    app.UseSwagger( c => c.RouteTemplate = "/api/administration/swagger/{documentName}/swagger.{json|yaml}");
+    app.UseSwagger( c => c.RouteTemplate = "/api/notification/swagger/{documentName}/swagger.{json|yaml}");
     app.UseSwaggerUI(c => {
-        c.SwaggerEndpoint(string.Format("/api/administration/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
-        c.RoutePrefix = "api/administration/swagger";
+        c.SwaggerEndpoint(string.Format("/api/notification/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
+        c.RoutePrefix = "api/notification/swagger";
     });
 }
 
