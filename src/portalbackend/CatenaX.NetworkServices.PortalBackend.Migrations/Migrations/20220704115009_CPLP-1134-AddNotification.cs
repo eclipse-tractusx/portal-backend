@@ -41,7 +41,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    company_user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    receiver_user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     message = table.Column<string>(type: "text", nullable: false),
@@ -49,7 +49,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     read_status_id = table.Column<int>(type: "integer", nullable: false),
                     app_id = table.Column<Guid>(type: "uuid", nullable: true),
                     due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    creator_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    creator_user_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -61,14 +61,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalTable: "apps",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_notifications_company_users_company_user_id",
-                        column: x => x.company_user_id,
+                        name: "fk_notifications_company_users_creator_id",
+                        column: x => x.creator_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_notifications_company_users_creator_id",
-                        column: x => x.creator_id,
+                        name: "fk_notifications_company_users_receiver_id",
+                        column: x => x.receiver_user_id,
                         principalSchema: "portal",
                         principalTable: "company_users",
                         principalColumn: "id");
@@ -113,16 +113,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 column: "app_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_notifications_company_user_id",
+                name: "ix_notifications_creator_user_id",
                 schema: "portal",
                 table: "notifications",
-                column: "company_user_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_notifications_creator_id",
-                schema: "portal",
-                table: "notifications",
-                column: "creator_id");
+                column: "creator_user_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_notifications_notification_type_id",
@@ -135,6 +129,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "notifications",
                 column: "read_status_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notifications_receiver_user_id",
+                schema: "portal",
+                table: "notifications",
+                column: "receiver_user_id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
