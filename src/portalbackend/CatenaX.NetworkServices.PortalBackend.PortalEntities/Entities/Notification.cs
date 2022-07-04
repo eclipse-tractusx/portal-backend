@@ -41,26 +41,30 @@ public class Notification
 
     public Guid Id { get; private set; }
 
-    public Guid CompanyUserId { get; set; }
+    public Guid CompanyUserId { get; private set; }
     
     public DateTimeOffset DateCreated { get; private set; }
 
     [MaxLength(255)]
-    public string Title { get; set; }
+    public string Title { get; private set; }
 
-    public string Message { get; set; }
+    public string Message { get; private set; }
 
-    public NotificationTypeId NotificationTypeId { get; set; }
+    public NotificationTypeId NotificationTypeId { get; private set; }
     
-    public NotificationStatusId ReadStatusId { get; set; }
+    public NotificationStatusId ReadStatusId { get; private set; }
 
     public Guid? AppId { get; set; }
     
     public DateTimeOffset? DueDate { get; set; }
+
+    public Guid? CreatorId { get; set; }
 
     // Navigation properties
     public virtual App? App { get; private set; }
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual NotificationType? NotificationType { get; private set; }
     public virtual NotificationStatus? ReadStatus { get; private set; }
+
+    public virtual CompanyUser? Creator { get; private set; }
 }

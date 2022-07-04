@@ -639,9 +639,17 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
+            entity.Property(x => x.DueDate)
+                .IsRequired(false);
+
             entity.HasOne(d => d.CompanyUser)
                 .WithMany(p => p!.Notifications)
                 .HasForeignKey(d => d.CompanyUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Creator)
+                .WithMany(p => p!.CreatedNotifications)
+                .HasForeignKey(d => d.CreatorId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.ReadStatus)
