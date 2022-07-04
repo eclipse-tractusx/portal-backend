@@ -3559,13 +3559,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("app_id");
 
-                    b.Property<Guid>("CompanyUserId")
+                    b.Property<Guid?>("CreatorUserId")
                         .HasColumnType("uuid")
-                        .HasColumnName("company_user_id");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("creator_id");
+                        .HasColumnName("creator_user_id");
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
@@ -3588,6 +3584,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("read_status_id");
 
+                    b.Property<Guid>("ReceiverUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("receiver_user_id");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -3600,17 +3600,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasIndex("AppId")
                         .HasDatabaseName("ix_notifications_app_id");
 
-                    b.HasIndex("CompanyUserId")
-                        .HasDatabaseName("ix_notifications_company_user_id");
-
-                    b.HasIndex("CreatorId")
-                        .HasDatabaseName("ix_notifications_creator_id");
+                    b.HasIndex("CreatorUserId")
+                        .HasDatabaseName("ix_notifications_creator_user_id");
 
                     b.HasIndex("NotificationTypeId")
                         .HasDatabaseName("ix_notifications_notification_type_id");
 
                     b.HasIndex("ReadStatusId")
                         .HasDatabaseName("ix_notifications_read_status_id");
+
+                    b.HasIndex("ReceiverUserId")
+                        .HasDatabaseName("ix_notifications_receiver_user_id");
 
                     b.ToTable("notifications", "portal");
                 });
@@ -4478,15 +4478,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("AppId")
                         .HasConstraintName("fk_notifications_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
-                        .WithMany("Notifications")
-                        .HasForeignKey("CompanyUserId")
-                        .IsRequired()
-                        .HasConstraintName("fk_notifications_company_users_company_user_id");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "Creator")
                         .WithMany("CreatedNotifications")
-                        .HasForeignKey("CreatorId")
+                        .HasForeignKey("CreatorUserId")
                         .HasConstraintName("fk_notifications_company_users_creator_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
@@ -4501,15 +4495,21 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_notifications_notification_status_read_status_id");
 
-                    b.Navigation("App");
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "Receiver")
+                        .WithMany("Notifications")
+                        .HasForeignKey("ReceiverUserId")
+                        .IsRequired()
+                        .HasConstraintName("fk_notifications_company_users_receiver_id");
 
-                    b.Navigation("CompanyUser");
+                    b.Navigation("App");
 
                     b.Navigation("Creator");
 
                     b.Navigation("NotificationType");
 
                     b.Navigation("ReadStatus");
+
+                    b.Navigation("Receiver");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
