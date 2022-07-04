@@ -47,7 +47,7 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
             // Act
             try
             {
-                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", (NotificationTypeId)666, NotificationStatusId.UNREAD, null, null), _companyUser.Id);
+                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", (NotificationTypeId)666, NotificationStatusId.UNREAD), _companyUser.Id);
             }
             catch (ArgumentException e)
             {
@@ -71,7 +71,7 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
             // Act
             try
             {
-                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, (NotificationStatusId)666, null, null), _companyUser.Id);
+                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, (NotificationStatusId)666), _companyUser.Id);
             }
             catch (ArgumentException e)
             {
@@ -96,7 +96,7 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
             // Act
             try
             {
-                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, NotificationStatusId.UNREAD, null, null), Guid.NewGuid());
+                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, NotificationStatusId.UNREAD), Guid.NewGuid());
             }
             catch (ArgumentException e)
             {
