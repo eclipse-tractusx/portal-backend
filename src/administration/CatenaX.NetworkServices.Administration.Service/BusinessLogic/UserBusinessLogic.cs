@@ -13,7 +13,6 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -86,7 +85,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     .Where(role => !String.IsNullOrWhiteSpace(role))
                     .Distinct();
 
-            var companyRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
+            var userRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
                 clientId,
                 roles
                 )
@@ -98,7 +97,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             foreach (var role in roles)
             {
-                if (!companyRoleIds.ContainsKey(role))
+                if (!userRoleIds.ContainsKey(role))
                 {
                     throw new ArgumentException($"invalid Role: {role}");
                 }
@@ -124,21 +123,25 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         BusinessPartnerNumber = businessPartnerNumber
                     }).ConfigureAwait(false);
 
+                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
+
                     var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
                     if (validRoles.Count() > 0)
                     {
                         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
-                            { clientId, user.Roles }
+                            { clientId, validRoles }
                         };
-                        await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
-                    }
-
-                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
-
-                    foreach (var role in validRoles)
-                    {
-                        userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+                        var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
+                        foreach (var role in assignedRoles)
+                        {
+                            userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleIds[role]);
+                        }
+                        if (assignedRoles.Count() < validRoles.Count())
+                        {
+                            //TODO change return-type of method to include role-assignment-error information if assignedRoles is not the same as validRoles
+                            _logger.LogError($"invalid role data, client: {clientId}, [{String.Join(", ",validRoles.Except(assignedRoles))}] has not been assigned in keycloak");
+                        }
                     }
 
                     userRepository.CreateIamUser(companyUser, centralUserId);
