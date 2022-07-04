@@ -1,16 +1,16 @@
-﻿using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Administration.Service.Controllers;
+namespace CatenaX.NetworkServices.Notification.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for creating, displaying and updating notifications.
 /// </summary>
 [ApiController]
-[Route("api/administration/[controller]")]
+[Route("api/[controller]")]
 [Consumes("application/json")]
 [Produces("application/json")]
 public class NotificationController : ControllerBase
@@ -31,7 +31,7 @@ public class NotificationController : ControllerBase
     /// </summary>
     /// <param name="companyUserId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the user to create the notification for.</param>
     /// <param name="data">Contains the information needed to create the notification.</param>
-    /// <remarks>Example: POST: /api/administration/notification/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <remarks>Example: POST: /api/notification/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="201">Notification was successfully created.</response>
     /// <response code="400">UserId not found or the NotificationType or NotificationStatus don't exist.</response>
     [HttpPost]
