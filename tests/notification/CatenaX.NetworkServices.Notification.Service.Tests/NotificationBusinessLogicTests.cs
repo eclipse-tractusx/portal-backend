@@ -37,17 +37,17 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
         }
 
         [Fact]
-        public async void CreateNotification_WithInvalidNotificationType_ThrowsArgumentException()
+        public async Task CreateNotification_WithInvalidNotificationType_ThrowsArgumentException()
         {
             // Arrange
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
             var sut = _fixture.Create<NotificationBusinessLogic>();
 
-            // Acttry
+            // Act
             try
             {
-                var results = await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", (NotificationTypeId)666, NotificationStatusId.UNREAD, null, null), _companyUser.Id);
+                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", (NotificationTypeId)666, NotificationStatusId.UNREAD, null, null), _companyUser.Id);
             }
             catch (ArgumentException e)
             {
@@ -61,17 +61,17 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
         }
 
         [Fact]
-        public async void CreateNotification_WithInvalidNotificationStatus_ThrowsArgumentException()
+        public async Task CreateNotification_WithInvalidNotificationStatus_ThrowsArgumentException()
         {
             // Arrange
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
             var sut = _fixture.Create<NotificationBusinessLogic>();
 
-            // Acttry
+            // Act
             try
             {
-                var results = await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, (NotificationStatusId)666, null, null), _companyUser.Id);
+                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, (NotificationStatusId)666, null, null), _companyUser.Id);
             }
             catch (ArgumentException e)
             {
@@ -85,7 +85,7 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
         }
 
         [Fact]
-        public async void CreateNotification_WithNotExistingCompanyUser_ThrowsArgumentException()
+        public async Task CreateNotification_WithNotExistingCompanyUser_ThrowsArgumentException()
         {
             // Arrange
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
@@ -96,7 +96,7 @@ namespace CatenaX.NetworkServices.Notification.Service.Tests
             // Act
             try
             {
-                var results = await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, NotificationStatusId.UNREAD, null, null), Guid.NewGuid());
+                await sut.CreateNotification(new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader", NotificationTypeId.INFO, NotificationStatusId.UNREAD, null, null), Guid.NewGuid());
             }
             catch (ArgumentException e)
             {
