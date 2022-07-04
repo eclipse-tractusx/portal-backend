@@ -1,6 +1,5 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Keycloak.Net.Models.Roles;
-using System.Collections;
 using Keycloak.Net.Models.Clients;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
@@ -13,32 +12,24 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             Client? client = null;
             try
             {
-            client = await GetCentralClientViewableAsync(clientName).ConfigureAwait(false);
-            switch (count)
-            {
-                case 0:
-                    return (client.Id, Enumerable.Empty<Role>());
-                case 1:
-                    return (client.Id, Enumerable.Repeat<Role>(await _CentralIdp.GetRoleByNameAsync(_Settings.CentralRealm, client.Id, roleNames.Single()).ConfigureAwait(false), 1));
-                default:
-                     var roles = (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, client.Id).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name));
-                     return (client.Id, roles);
-            }
-            
-            }
-            catch(NotFoundException ex)
-            {
-                if (client == null)
+                client = await GetCentralClientViewableAsync(clientName).ConfigureAwait(false);
+                switch (count)
                 {
-                    return (null, Enumerable.Empty<Role>());
+                    case 0:
+                        return (client.Id, Enumerable.Empty<Role>());
+                    case 1:
+                        return (client.Id, Enumerable.Repeat<Role>(await _CentralIdp.GetRoleByNameAsync(_Settings.CentralRealm, client.Id, roleNames.Single()).ConfigureAwait(false), 1));
+                    default:
+                        return (client.Id, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, client.Id).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name)));
                 }
-                return (client.Id, Enumerable.Empty<Role>());
             }
-            return (null, Enumerable.Empty<Role>());
+            catch(NotFoundException)
+            {
+                return (client?.Id, Enumerable.Empty<Role>());
+            }
         }
 
-        public async Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames)
-        =>
+        public async Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames) =>
             (await Task.WhenAll(clientRoleNames.Select(async x =>
                 {
                     var (client, roleNames) = x;
