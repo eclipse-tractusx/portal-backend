@@ -3,7 +3,12 @@ name: Portal-Migrations
 on: 
   push:
     paths:
+      # service path
       - 'src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations/Migrations/**'
+      # workflow file
+      - '.github/workflows/portal-migrations.yml'
+      # dockerfile
+      - 'docker/Dockerfile-portal-migrations'
 
     branches:
       - 'main'

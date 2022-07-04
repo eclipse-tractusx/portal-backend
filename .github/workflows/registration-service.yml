@@ -3,8 +3,12 @@ name: Registration-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/registration/CatenaX.NetworkServices.Registration.Service/**'
-      - 'docker/**'
+      # workflow file
+      - '.github/workflows/registration-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-registration-service'
 
     branches:
       - 'main'
