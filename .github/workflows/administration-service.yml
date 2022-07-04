@@ -3,7 +3,12 @@ name: Administration-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/administration/CatenaX.NetworkServices.Administration.Service/**'
+      # workflow file
+      - '.github/workflows/administration-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-administration-service'
 
     branches:
       - 'main'
