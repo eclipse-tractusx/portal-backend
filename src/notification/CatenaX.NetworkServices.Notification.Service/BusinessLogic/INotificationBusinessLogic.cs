@@ -1,6 +1,6 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic to work with the notifications
