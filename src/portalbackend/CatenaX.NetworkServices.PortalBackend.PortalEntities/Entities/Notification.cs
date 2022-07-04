@@ -45,7 +45,7 @@ public class Notification
     
     public DateTimeOffset DateCreated { get; private set; }
 
-    [MaxLength(255)]
+    [MaxLength(150)]
     public string Title { get; private set; }
 
     public string Message { get; private set; }
