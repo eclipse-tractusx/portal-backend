@@ -22,7 +22,7 @@ public partial class ProvisioningManager
             var assignedRoles = await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles).ConfigureAwait(false);
 
             var unassignedClientRoles = config.ClientRoles
-                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+                .Select(clientRoles => (client: clientRoles.Key, roles: clientRoles.Value.Except(assignedRoles[clientRoles.Key])))
                 .Where(clientRoles => clientRoles.roles.Count() > 0);
 
             if (unassignedClientRoles.Count() > 0)
