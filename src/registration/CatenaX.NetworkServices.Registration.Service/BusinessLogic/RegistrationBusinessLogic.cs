@@ -264,19 +264,21 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     Password = password
                 }).ConfigureAwait(false);
 
+            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+
+            IEnumerable<string>? unassignedRoles = null;
             if (roles.Count() > 0)
             {
                 var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                 {
                     { _settings.KeyCloakClientID, roles }
                 };
-                await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false);
-            }
-            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
-
-            foreach (var role in roles)
-            {
-                userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+                var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
+                foreach (var role in assignedRoles)
+                {
+                    userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, companyRoleIds[role]);
+                }
+                unassignedRoles = roles.Except(assignedRoles);
             }
 
             userRepository.CreateIamUser(companyUser, centralUserId);
@@ -301,6 +303,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             };
 
             await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
+
+            if (unassignedRoles != null && unassignedRoles.Count() > 0)
+            {
+                //TODO maybe change return type to indicate error-conditions.
+                throw new Exception($"invalid data, failed to assign roles [{String.Join(", ",unassignedRoles)}] in keycloak");
+            }
 
             return modified;
         }
