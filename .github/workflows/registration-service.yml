@@ -3,7 +3,12 @@ name: Registration-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/registration/CatenaX.NetworkServices.Registration.Service/**'
+      # workflow file
+      - '.github/workflows/registration-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-registration-service'
 
     branches:
       - 'main'
@@ -42,6 +47,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-registration-service
+          pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}

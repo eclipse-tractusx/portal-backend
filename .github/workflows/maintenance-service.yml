@@ -1,14 +1,14 @@
-name: Marketplace-App-Service
+name: Maintenance-Service
 
 on: 
   push:
     paths:
       # service path
-      - 'src/marketplace/CatenaX.NetworkServices.App.Service/**'
+      - 'src/maintenance/CatenaX.NetworkServices.Maintenance.App/**'
       # workflow file
-      - '.github/workflows/marketplace-app-service.yml'
+      - '.github/workflows/maintenance-service.yml'
       # dockerfile
-      - 'docker/Dockerfile-marketplace-app-service'
+      - 'docker/Dockerfile-maintenance-service'
 
     branches:
       - 'main'
@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}_marketplace-app-service
+  IMAGE_NAME: ${{ github.repository }}_maintenance-service
 
 jobs:
   build-and-push-image:
@@ -46,8 +46,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker/Dockerfile-marketplace-app-service
+          file: docker/Dockerfile-maintenance-service
           pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
+ 
