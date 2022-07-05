@@ -58,7 +58,7 @@ public class UserRolesRepository : IUserRolesRepository
             ))
             .AsAsyncEnumerable();
 
-    public async IAsyncEnumerable<UserRoleWithId> GetUserRoleUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
+    public async IAsyncEnumerable<UserRoleData> GetUserRoleUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
     {
         foreach (var clientRole in clientRoles)
         {
@@ -68,13 +68,15 @@ public class UserRolesRepository : IUserRolesRepository
                 .Select(userRole => new 
                 {
                     Id = userRole.Id,
-                    Text = userRole.UserRoleText
+                    Text = userRole.UserRoleText,
+                    ClientId = userRole.IamClient!.ClientClientId
                 })
                 .AsAsyncEnumerable())
             {
-                yield return new UserRoleWithId(
-                userRoleId.Text,
-                userRoleId.Id
+                yield return new UserRoleData(
+                userRoleId.Id,
+                userRoleId.ClientId,
+                userRoleId.Text
             );
             }
         }
