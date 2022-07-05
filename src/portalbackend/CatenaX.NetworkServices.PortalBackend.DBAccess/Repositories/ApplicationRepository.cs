@@ -87,14 +87,12 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null) =>
+    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null) =>
         _dbContext.Companies
             .AsNoTracking()
             .Where(company => companyName != null ? EF.Functions.ILike(company!.Name, $"{companyName}%") : true)
             .SelectMany(company => company.CompanyApplications.Where(companyApplication =>
-           companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
-           || companyApplication.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
-           || companyApplication.ApplicationStatusId == CompanyApplicationStatusId.DECLINED));
+                applicationStatusIds != null ? applicationStatusIds.Contains(companyApplication.ApplicationStatusId) : true));
 
     public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
         _dbContext.CompanyApplications
