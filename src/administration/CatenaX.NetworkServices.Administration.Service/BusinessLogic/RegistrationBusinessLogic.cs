@@ -108,7 +108,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             
             foreach (var userRole in userRoleWithIds)
             {
-                var assignedRoleName = assignedRoles.Where(x => userRole.ClientClientId.Contains(x.Key)).Select(x => x.Value).Single();
+                var assignedRoleName = assignedRoles[userRole.ClientClientId];
                 if (!userData.RoleIds.Contains(userRole.UserRoleId) && assignedRoleName.Contains(userRole.UserRoleText))
                 {
                     userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, userRole.UserRoleId);
