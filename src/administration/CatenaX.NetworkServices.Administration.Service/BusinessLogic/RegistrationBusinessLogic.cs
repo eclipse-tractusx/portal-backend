@@ -119,7 +119,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var assignedRoleName = userRoleWithIds.Where(x => userData.RoleIds.Contains(x.CompanyUserRoleId)).Select(x => x.CompanyUserRoleText);
             foreach (var userRoleId in userRoleWithIds)
             {
-                if (assignedRoleName.Contains(userRoleId.CompanyUserRoleText))
+                if (!userData.RoleIds.Contains(userRoleId.CompanyUserRoleId) && assignedRoleName.Contains(userRoleId.CompanyUserRoleText))
                 {
                     userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, userRoleId.CompanyUserRoleId);
                 }
