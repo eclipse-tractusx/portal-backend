@@ -95,24 +95,33 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
-        var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
-        if (userRoleIds.Count() < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        var userRoleWithIds = await userRolesRepository.GetUserRoleUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
+        if (userRoleWithIds.Count() < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
         {
-            throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ",_settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
+            throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ", clientRoles.Value)}]"))}");
         }
 
         IDictionary<string, IEnumerable<string>>? assignedClientRoles = null;
         await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
         {
             assignedClientRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
-
-            foreach (var userRoleId in userRoleIds)
+            if (assignedClientRoles != null)
             {
-                if (!userData.RoleIds.Contains(userRoleId))
+                var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+                    .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedClientRoles[initialClientRoles.Key])))
+                    .Where(clientRoles => clientRoles.roles.Count() > 0);
+
+                if (unassignedClientRoles.Count() > 0)
                 {
-                    //TODO make sure to create assignedRoles in db only for those roles that have been actually assigned in keyclaok
-                    userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, userRoleId);
+                    throw new Exception($"invalid configuration, configured roles were not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
+                }
+            }
+            var assignedRoleName = userRoleWithIds.Where(x => userData.RoleIds.Contains(x.CompanyUserRoleId)).Select(x => x.CompanyUserRoleText);
+            foreach (var userRoleId in userRoleWithIds)
+            {
+                if (assignedRoleName.Contains(userRoleId.CompanyUserRoleText))
+                {
+                    userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, userRoleId.CompanyUserRoleId);
                 }
             }
             if (!userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
@@ -127,19 +136,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
-
-        if (assignedClientRoles != null)
-        {
-            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedClientRoles[initialClientRoles.Key])))
-                .Where(clientRoles => clientRoles.roles.Count() > 0);
-
-            if (unassignedClientRoles.Count() > 0)
-            {
-                throw new Exception($"invalid configuration, configured roles were not assigned in keycloak: {String.Join(", ",unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ",clientRoles.roles)}]"))}");
-            }
-        }
-
         return true;
     }
 
