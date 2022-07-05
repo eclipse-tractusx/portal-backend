@@ -101,14 +101,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ", clientRoles.Value)}]"))}");
         }
 
-        IEnumerable<string> newAssignedRoles = null;
+        IDictionary<string, IEnumerable<string>> assignedRoles = null;
         await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            var (_, assignedRoles)  = (await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false)).Single();
-            newAssignedRoles = assignedRoles;
+            assignedRoles  = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
+            
             foreach (var userRole in userRoleWithIds)
             {
-                if (!userData.RoleIds.Contains(userRole.UserRoleId) && assignedRoles.Contains(userRole.UserRoleText))
+                var assignedRoleName = assignedRoles.Where(x => userRole.ClientClientId.Contains(x.Key)).Select(x => x.Value).Single();
+                if (!userData.RoleIds.Contains(userRole.UserRoleId) && assignedRoleName.Contains(userRole.UserRoleText))
                 {
                     userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, userRole.UserRoleId);
                 }
@@ -125,10 +126,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
-        if (newAssignedRoles != null)
+        if (assignedRoles != null)
         {
             var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(newAssignedRoles)))
+                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
                 .Where(clientRoles => clientRoles.roles.Count() > 0);
 
             if (unassignedClientRoles.Count() > 0)
