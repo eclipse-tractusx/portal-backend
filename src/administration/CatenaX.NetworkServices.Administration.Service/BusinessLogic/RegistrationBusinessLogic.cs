@@ -96,22 +96,28 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
-
-        await foreach (var item in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
+        var initialRolesData = await userRolesRepository.GetUserRoleDataUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
+        if (initialRolesData.Count() < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
         {
-            await _provisioningManager.AssignClientRolesToCentralUserAsync(item.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
-            foreach (var userRoleId in userRoleIds)
+            throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ", clientRoles.Value)}]"))}");
+        }
+
+        IDictionary<string, IEnumerable<string>>? assignedRoles = null;
+        await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
+        {
+            assignedRoles  = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
+            
+            foreach (var roleData in initialRolesData)
             {
-                if (!item.RoleIds.Contains(userRoleId))
+                if (!userData.RoleIds.Contains(roleData.UserRoleId) && assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText))
                 {
-                    userRolesRepository.CreateCompanyUserAssignedRole(item.CompanyUserId, userRoleId);
+                    userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
                 }
             }
-            if (!item.BusinessPartnerNumbers.Contains(businessPartnerNumber))
+            if (!userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
             {
-                userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(item.CompanyUserId, businessPartnerNumber);
-                await _provisioningManager.AddBpnAttributetoUserAsync(item.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
+                userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
+                await _provisioningManager.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
             }
         }
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
@@ -121,6 +127,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
         await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
+        if (assignedRoles != null)
+        {
+            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+                .Where(clientRoles => clientRoles.roles.Count() > 0);
+
+            if (unassignedClientRoles.Count() > 0)
+            {
+                throw new Exception($"inconsistend data, roles not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
+            }
+        }
         return true;
     }
 
