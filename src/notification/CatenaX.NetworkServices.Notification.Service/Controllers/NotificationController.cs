@@ -56,7 +56,7 @@ public class NotificationController : ControllerBase
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(ICollection<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<ICollection<NotificationDetailData>> GetNotifications() =>
+    public Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications() =>
         this.WithIamUserId(userId => _logic.GetNotifications(userId));
 
     /// <summary>

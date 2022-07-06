@@ -42,7 +42,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<ICollection<NotificationDetailData>> GetNotifications(string iamUserId)
+    public async Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserIdUntrackedAsync(iamUserId)
@@ -52,9 +52,8 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
         }
 
-        return await this._portalRepositories.GetInstance<INotificationRepository>()
-            .GetAllAsDetailsByUserIdUntrackedAsync(companyUserId)
-            .ConfigureAwait(false);
+        return this._portalRepositories.GetInstance<INotificationRepository>()
+            .GetAllAsDetailsByUserIdUntracked(companyUserId, NotificationStatusId.UNREAD);
     }
 
     /// <inheritdoc />

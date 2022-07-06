@@ -27,14 +27,14 @@ public class NotificationRepository : INotificationRepository
     }
 
     /// <inheritdoc />
-    public async Task<ICollection<NotificationDetailData>> GetAllAsDetailsByUserIdUntrackedAsync(Guid companyUserId, NotificationStatusId? statusId = null, NotificationTypeId? typeId = null) =>
-        await _dbContext.Notifications
+    public IAsyncEnumerable<NotificationDetailData> GetAllAsDetailsByUserIdUntracked(Guid companyUserId, NotificationStatusId? statusId = null, NotificationTypeId? typeId = null) =>
+        _dbContext.Notifications
             .Where(x =>
                 x.ReceiverUserId == companyUserId &&
-                statusId.HasValue ?  x.ReadStatusId == statusId.Value : true &&
+                statusId.HasValue ? x.ReadStatusId == statusId.Value : true &&
                 typeId.HasValue ? x.NotificationTypeId == typeId.Value : true)
             .Select(x => new NotificationDetailData(x.Id, x.Title, x.Message))
-            .ToListAsync();
+            .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public async Task<NotificationDetailData?> GetByIdAndUserIdUntrackedAsync(Guid notificationId, Guid companyUserId) =>
