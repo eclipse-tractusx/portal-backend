@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -19,7 +20,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public InvitationBusinessLogic(
             IProvisioningManager provisioningManager,
-            IPortalBackendDBAccess portalDBAccess,
             IPortalRepositories portalRepositories,
             IMailingService mailingService,
             IOptions<InvitationSettings> configuration,
@@ -43,6 +43,18 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new ArgumentException("organisationName must not be empty", "organisationName");
             }
+
+            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+
+            var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
+            if (userRoleIds.Count() < _settings.InvitedUserInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
+            {
+                throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ",_settings.InvitedUserInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
+            }
+
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
             await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
@@ -58,17 +70,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 Password = password
             }).ConfigureAwait(false);
 
-            await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId,_settings.InvitedUserInitialRoles).ConfigureAwait(false);
-
-            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-            var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-
+            var assignedClientRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, _settings.InvitedUserInitialRoles).ConfigureAwait(false);
+            var unassignedClientRoles = _settings.InvitedUserInitialRoles
+                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedClientRoles[initialClientRoles.Key])))
+                .Where(clientRoles => clientRoles.roles.Count() > 0);
+            
             var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
             var application = applicationRepository.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
             var companyUser = userRepository.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.ACTIVE);
-            await foreach(var userRoleId in userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ConfigureAwait(false))
+            foreach(var userRoleId in userRoleIds)
             {
                 userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
             }
@@ -78,6 +88,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             userRepository.CreateIamUser(companyUser, centralUserId);
 
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+            if (unassignedClientRoles.Count() > 0)
+            {
+                throw new Exception($"invalid configuration, configured roles were not assigned in keycloak: {String.Join(", ",unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ",clientRoles.roles)}]"))}");
+            }
 
             var mailParameters = new Dictionary<string, string>
             {
