@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.Administration.Service.Models;
+﻿// /********************************************************************************
+//  * Copyright (c) 2021,2022 BMW Group AG
+//  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+//  *
+//  * See the NOTICE file(s) distributed with this work for additional
+//  * information regarding copyright ownership.
+//  *
+//  * This program and the accompanying materials are made available under the
+//  * terms of the Apache License, Version 2.0 which is available at
+//  * https://www.apache.org/licenses/LICENSE-2.0.
+//  *
+//  * Unless required by applicable law or agreed to in writing, software
+//  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//  * License for the specific language governing permissions and limitations
+//  * under the License.
+//  *
+//  * SPDX-License-Identifier: Apache-2.0
+//  ********************************************************************************/
+
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
@@ -336,7 +356,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var userData = await _userRepository.GetUserWithIdpAsync(iamUserId).ConfigureAwait(false);
             if (userData == null)
             {
-                throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
+                throw new NotFoundException($"iamUser {iamUserId} is not a shared idp user");
             }
             if (userData.CompanyUser.Id != companyUserId)
             {
@@ -521,7 +541,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     };
 
                 var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
-           
+
                 foreach (var roleWithId in userRoleWithIds)
                 {
                     if (assignedRoleNames.Contains(roleWithId.CompanyUserRoleText))

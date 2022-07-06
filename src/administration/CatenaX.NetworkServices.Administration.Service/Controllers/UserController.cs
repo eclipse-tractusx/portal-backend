@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.Keycloak.Authentication;
+﻿// /********************************************************************************
+//  * Copyright (c) 2021,2022 BMW Group AG
+//  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+//  *
+//  * See the NOTICE file(s) distributed with this work for additional
+//  * information regarding copyright ownership.
+//  *
+//  * This program and the accompanying materials are made available under the
+//  * terms of the Apache License, Version 2.0 which is available at
+//  * https://www.apache.org/licenses/LICENSE-2.0.
+//  *
+//  * Unless required by applicable law or agreed to in writing, software
+//  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//  * License for the specific language governing permissions and limitations
+//  * under the License.
+//  *
+//  * SPDX-License-Identifier: Apache-2.0
+//  ********************************************************************************/
+
+using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -39,7 +59,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the emails of the new users</returns>
         /// <remarks>Example: POST: api/administration/user/owncompany/users</remarks>
         /// <response code="200">User successfully created and invite email send</response>
-        /// <response code="400">Invalid role.</response>
+        /// <response code="400">Provided input is not sufficient.</response>
         [HttpPost]
         [Authorize(Roles = "add_user_account")]
         [Route("owncompany/users")]
@@ -87,10 +107,12 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the company user details.</returns>
         /// <remarks>Example: GET: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Returns the company user details.</response>
+        /// <response code="404">User not found</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users/{companyUserId}")]
         [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetails(companyUserId, iamUserId));
 
@@ -103,7 +125,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: POST: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/businessPartnerNumbers</remarks>
         /// <response code="200">The business partner numbers have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
-        /// <response code="404">User is either not existing.</response>
+        /// <response code="404">User not found.</response>
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers")]
@@ -156,7 +178,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: PUT: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/resetPassword</remarks>
         /// <response code="200">The password was successfully reset.</response>
         /// <response code="400">Maximum amount of password resets reached. Password reset function is locked for the user for a certain time.</response>
-        /// <response code="404">Cannot identify companyId or shared idp</response>
+        /// <response code="404">User id not found.</response>
         /// <response code="500">Internal Server Error, e.g. the password reset failed.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
@@ -170,10 +192,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <summary>
         /// Gets the client roles for the given app.
         /// </summary>
-        /// <param name="appId">Id of the app which roles should be returned.</param>
+        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
         /// <param name="languageShortName">OPTIONAL: The language short name.</param>
         /// <returns>Returns the client roles for the given app.</returns>
-        /// <remarks>Example: GET: api/administration/user/owncompany/users/ac1cf001-7fbc-1f2f-817f-bce0575a0011/resetPassword</remarks>
+        /// <remarks>Example: GET: api/administration/user/owncompany/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
         /// <response code="200">Returns the client roles.</response>
         /// <response code="400">The language does not exist.</response>
         /// <response code="404">The app was not found.</response>
@@ -208,7 +230,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the updated company user details</returns>
         /// <remarks>Example: PUT: api/administration/user/ownUser/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Returns the updated company user details.</response>
-        /// <response code="403">Invalid or not existing user id.</response>
+        /// <response code="403">Invalid userId.</response>
         /// <response code="404">No shared realm userid found for the id in realm</response>
         [HttpPut]
         [Route("ownUser/{companyUserId}")]
@@ -226,6 +248,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <remarks>Example: DELETE: api/administration/user/ownUser/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Successfully deleted the user.</response>
         /// <response code="403">Invalid or not existing user id.</response>
+        /// <response code="404">User is not existing/found.</response>
         [HttpDelete]
         [Route("ownUser/{companyUserId}")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
@@ -271,11 +294,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns></returns>
         /// <remarks>Example: POST: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
         /// <response code="200">Role got successfully added to the user account.</response>
-        /// <response code="404">User or user role not found.</response>
+        /// <response code="400">Invalid User roles for client</response>
+        /// <response code="404">User not found</response>
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("app/{appId}/roles")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
