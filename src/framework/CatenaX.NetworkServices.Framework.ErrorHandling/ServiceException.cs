@@ -11,6 +11,11 @@ public class ServiceException : Exception
     {
         StatusCode = httpStatusCode;
     }
+    public ServiceException(string message, System.Exception inner, HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest) : base(message, inner)
+    {
+        StatusCode = httpStatusCode;
+    }
+
     protected ServiceException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
