@@ -19,6 +19,7 @@
 //  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 
@@ -33,4 +34,12 @@ public interface INotificationBusinessLogic
     /// <param name="creationData">The data for the creation of the notification.</param>
     /// <param name="companyUserId">Id of the company user the notification is intended for.</param>
     Task<NotificationDetailData> CreateNotification(NotificationCreationData creationData, Guid companyUserId);
+
+    /// <summary>
+    /// Gets the notification account for the given user
+    /// </summary>
+    /// <param name="userId">Id of the current user</param>
+    /// <param name="statusId">OPTIONAL: Status of the notifications that should be considered</param>
+    /// <returns>Returns the count of the notifications</returns>
+    Task<int> GetNotificationCount(string userId, NotificationStatusId? statusId);
 }

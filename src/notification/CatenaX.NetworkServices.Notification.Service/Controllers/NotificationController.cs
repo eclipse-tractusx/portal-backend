@@ -19,8 +19,10 @@
 //  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -69,4 +71,19 @@ public class NotificationController : ControllerBase
         return CreatedAtRoute(nameof(CreateNotification), new {notificationId = notificationDetailData.Id},
             notificationDetailData); // TODO - change the createdAtRoute as soon the get method exists
     }
+
+    /// <summary>
+    /// Gets the notification count for the current logged in user
+    /// </summary>
+    /// <param name="statusId" example="1">OPTIONAL: Id of the notification status</param>
+    /// <returns>the count of unread notifications</returns>
+    /// <response code="200">Count of the notifications.</response>
+    /// <response code="400">NotificationStatus does not exist.</response>
+    /// <response code="403">IamUserId is not assigned.</response>
+    [HttpGet]
+    [Route("count")]
+    [Authorize(Roles = "view_notifications")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public Task<int> NotificationCount([FromQuery] NotificationStatusId? statusId) =>
+        this.WithIamUserId((iamUser) => _logic.GetNotificationCount(iamUser, statusId));
 }
