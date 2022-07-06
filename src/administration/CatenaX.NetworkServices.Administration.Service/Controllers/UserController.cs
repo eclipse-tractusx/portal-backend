@@ -230,7 +230,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <returns>Returns the updated company user details</returns>
         /// <remarks>Example: PUT: api/administration/user/ownUser/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
         /// <response code="200">Returns the updated company user details.</response>
-        /// <response code="403">Invalid userId.</response>
+        /// <response code="403">Invalid companyUserId for user.</response>
         /// <response code="404">No shared realm userid found for the id in realm</response>
         [HttpPut]
         [Route("ownUser/{companyUserId}")]
