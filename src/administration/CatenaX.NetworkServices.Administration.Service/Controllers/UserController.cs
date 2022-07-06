@@ -22,7 +22,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         private readonly IUserBusinessLogic _logic;
 
         /// <summary>
-        /// Creates a new instance of <see cref="UserController"/> 
+        /// Creates a new instance of <see cref="UserController"/>
         /// </summary>
         /// <param name="logger">The logger</param>
         /// <param name="logic">The User Business Logic</param>
@@ -248,6 +248,22 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
         /// <summary>
+        /// Gets the company app user
+        /// </summary>
+        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
+        /// <param name="page" example="0">Index of the page</param>
+        /// <param name="size" example="15">Intended size of the results per page</param>
+        /// <returns></returns>
+        /// <remarks>Example: GET: owncompany/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/users</remarks>
+        /// <response code="200">Returns the user details as pagination.</response>
+        [HttpGet]
+        [Authorize(Roles = "view_user_management")]
+        [Route("owncompany/apps/{appId}/users")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
+            this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
+
+        /// <summary>
         /// Adds a user role
         /// </summary>
         /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
@@ -261,23 +277,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("app/{appId}/roles")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
+        public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
-
-        /// <summary>
-        /// Gets the company app user
-        /// </summary>
-        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
-        /// <param name="page" example="0">Index of the page</param>
-        /// <param name="size" example="15">Intended size of the results per page</param>
-        /// <returns></returns>
-        /// <remarks>Example: GET: owncompany/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/users</remarks>
-        /// <response code="200">Returns the user details as pagination.</response>
-        [HttpGet]
-        [Authorize(Roles = "view_user_management")]
-        [Route("owncompany/apps/{appid}/users")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
-            this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
     }
 }

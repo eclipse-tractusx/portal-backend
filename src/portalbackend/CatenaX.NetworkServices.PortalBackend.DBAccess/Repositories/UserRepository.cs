@@ -104,6 +104,19 @@ public class UserRepository : IUserRepository
                 iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
+    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias)> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser!.CompanyUser!.Company)
+            .Select(company => ((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias))new (
+                company!.Id,
+                company.Name,
+                company!.BusinessPartnerNumber,
+                company!.IdentityProviders
+                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .SingleOrDefault()!.IamIdentityProvider!.IamIdpAlias)).SingleOrDefaultAsync();
+
     /// <inheritdoc/>
     public Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()
