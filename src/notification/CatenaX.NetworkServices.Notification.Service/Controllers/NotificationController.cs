@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -74,16 +75,21 @@ public class NotificationController : ControllerBase
     /// <summary>
     ///     Gets all notifications for the logged in user
     /// </summary>
+    /// <param name="notificationStatusId">OPTIONAL: Status of the notificatons</param>
+    /// <param name="notificationTypeId">OPTIONAL: Type of the notificatons</param>
     /// <remarks>Example: Get: /api/notification/</remarks>
     /// <response code="200">Collection of the unread notifications for the user.</response>
-    /// <response code="400">UserId not found.</response>
+    /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
+    /// <response code="403">User is not assigned.</response>
     [HttpGet]
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(ICollection<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications()
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(
+        [FromQuery] NotificationStatusId? notificationStatusId, NotificationTypeId? notificationTypeId)
     {
-        return this.WithIamUserId(userId => _logic.GetNotifications(userId));
+        return this.WithIamUserId(userId => _logic.GetNotifications(userId, notificationStatusId, notificationTypeId));
     }
 
     /// <summary>
@@ -92,13 +98,14 @@ public class NotificationController : ControllerBase
     /// <param name="notificationId" example="ad5b64ee-98fc-41c4-982a-f32610ad01b8"></param>
     /// <remarks>Example: Get: /api/notification/ad5b64ee-98fc-41c4-982a-f32610ad01b8</remarks>
     /// <response code="200">Collection of the unread notifications for the user.</response>
-    /// <response code="400">UserId not found.</response>
+    /// <response code="403">User is not assigned.</response>
+    /// <response code="403">User is not assigned.</response>
     /// <response code="404">Notification does not exist.</response>
     [HttpGet]
     [Route("{notificationId}", Name = nameof(GetNotification))]
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId)
     {
