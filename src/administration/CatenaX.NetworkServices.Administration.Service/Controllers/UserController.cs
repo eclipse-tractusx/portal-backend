@@ -28,7 +28,21 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("owncompany/users")]
         public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
             this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
-
+        
+        /// <summary>
+        /// Get Company User Data
+        /// </summary>
+        /// <param name="page">page index start from 0</param>
+        /// <param name="size">size to get number of records</param>
+        /// <param name="userEntityId">User Entity Id</param>
+        /// <param name="companyUserId">Company User Id</param>
+        /// <param name="firstName">First Name of User</param>
+        /// <param name="lastName">Last Name of User</param>
+        /// <param name="email">Email Id of User</param>
+        /// <returns>Company User Data</returns>
+        /// <remarks>Example: GET: api/administration/user/owncompany/users?page=0&size=5</remarks>
+        /// <remarks>Example: GET: api/administration/user/owncompany/users?page=0&size=5&userEntityId=31404026-64ee-4023-a122-3c7fc40e57b1</remarks>
+        /// <response code="200">Result as a Company User Data</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
