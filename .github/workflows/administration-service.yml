@@ -3,7 +3,12 @@ name: Administration-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/administration/CatenaX.NetworkServices.Administration.Service/**'
+      # workflow file
+      - '.github/workflows/administration-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-administration-service'
 
     branches:
       - 'main'
@@ -42,6 +47,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-administration-service
+          pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}

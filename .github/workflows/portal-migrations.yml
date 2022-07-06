@@ -3,7 +3,12 @@ name: Portal-Migrations
 on: 
   push:
     paths:
+      # service path
       - 'src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations/Migrations/**'
+      # workflow file
+      - '.github/workflows/portal-migrations.yml'
+      # dockerfile
+      - 'docker/Dockerfile-portal-migrations'
 
     branches:
       - 'main'
@@ -42,6 +47,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-portal-migrations
+          pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
