@@ -71,7 +71,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
     /// <inheritdoc />
     public async Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId,
-        NotificationStatusId? statusId = null, NotificationTypeId? typeId = null)
+        NotificationStatusId? statusId, NotificationTypeId? typeId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserIdUntrackedAsync(iamUserId)

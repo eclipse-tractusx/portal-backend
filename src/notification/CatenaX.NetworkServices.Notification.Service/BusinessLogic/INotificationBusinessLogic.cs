@@ -43,7 +43,7 @@ public interface INotificationBusinessLogic
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <returns>Returns a collection of the users notification</returns>
     Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId,
-        NotificationStatusId? statusId = null, NotificationTypeId? typeId = null);
+        NotificationStatusId? statusId, NotificationTypeId? typeId);
 
     /// <summary>
     ///     Gets a specific notification from the database
