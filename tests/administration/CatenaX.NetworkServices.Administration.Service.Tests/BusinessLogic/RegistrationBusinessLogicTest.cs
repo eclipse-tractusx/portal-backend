@@ -15,7 +15,6 @@ using CatenaX.NetworkServices.Administration.Service.Custodian;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using Microsoft.Extensions.Configuration;
 
 namespace CatenaX.NetworkServices.Administration.Service.Tests
 {
