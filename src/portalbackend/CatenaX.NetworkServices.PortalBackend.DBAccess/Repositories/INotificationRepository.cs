@@ -22,7 +22,7 @@ public interface INotificationRepository
     /// <param name="statusId">OPTIONAL: The status of the notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    Task<ICollection<NotificationDetailData>> GetAllAsDetailsByUserIdUntrackedAsync(Guid companyUserId, NotificationStatusId? statusId = null, NotificationTypeId? typeId = null);
+    IAsyncEnumerable<NotificationDetailData> GetAllAsDetailsByUserIdUntracked(Guid companyUserId, NotificationStatusId? statusId = null, NotificationTypeId? typeId = null);
 
     /// <summary>
     /// Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null

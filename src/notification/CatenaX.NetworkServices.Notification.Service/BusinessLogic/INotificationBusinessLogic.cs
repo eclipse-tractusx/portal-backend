@@ -1,5 +1,4 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 
@@ -20,7 +19,7 @@ public interface INotificationBusinessLogic
     /// </summary>
     /// <param name="iamUserId">The id of the current user</param>
     /// <returns>Returns a collection of the users notification</returns>
-    Task<ICollection<NotificationDetailData>> GetNotifications(string iamUserId);
+    Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId);
 
     /// <summary>
     /// Gets a specific notification from the database
