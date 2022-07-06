@@ -50,7 +50,13 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         var notificationId = Guid.NewGuid();
         var (dateTimeOffset, title, message, notificationTypeId, notificationStatusId, appId, dueData, creatorUserId) =
             creationData;
-        CheckEnumValues(notificationTypeId, notificationStatusId);
+
+        if (!Enum.IsDefined(typeof(NotificationTypeId), notificationTypeId.ToString()))
+            throw new ArgumentException("notificationType does not exist.", nameof(notificationTypeId));
+
+        if (!Enum.IsDefined(typeof(NotificationStatusId), notificationStatusId.ToString()))
+            throw new ArgumentException("notificationStatus does not exist.", nameof(notificationStatusId));
+
         _portalRepositories.GetInstance<INotificationRepository>().Add(
             new PortalBackend.PortalEntities.Entities.Notification(notificationId, companyUserId, dateTimeOffset, title,
                 message, notificationTypeId, notificationStatusId)
@@ -64,19 +70,26 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId)
+    public async Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId,
+        NotificationStatusId? statusId = null, NotificationTypeId? typeId = null)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserIdUntrackedAsync(iamUserId)
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
 
+        if (typeId.HasValue && !Enum.IsDefined(typeof(NotificationTypeId), typeId.Value.ToString()))
+            throw new ArgumentException("notificationType does not exist.", nameof(typeId));
+
+        if (statusId.HasValue && !Enum.IsDefined(typeof(NotificationStatusId), statusId.Value.ToString()))
+            throw new ArgumentException("notificationStatus does not exist.", nameof(statusId));
+
         return _portalRepositories.GetInstance<INotificationRepository>()
-            .GetAllAsDetailsByUserIdUntracked(companyUserId, NotificationStatusId.UNREAD);
+            .GetAllAsDetailsByUserIdUntracked(companyUserId, statusId, typeId);
     }
 
     /// <inheritdoc />
-    public async Task<NotificationDetailData> GetNotification(Guid notficationId, string iamUserId)
+    public async Task<NotificationDetailData> GetNotification(Guid notificationId, string iamUserId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserIdUntrackedAsync(iamUserId)
@@ -84,25 +97,10 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
 
         var notificationDetails = await _portalRepositories.GetInstance<INotificationRepository>()
-            .GetByIdAndUserIdUntrackedAsync(notficationId, companyUserId)
+            .GetByIdAndUserIdUntrackedAsync(notificationId, companyUserId)
             .ConfigureAwait(false);
         if (notificationDetails is null) throw new NotFoundException("Notification does not exist.");
 
         return notificationDetails;
-    }
-
-    /// <summary>
-    ///     Check the enum values if the api receives a int value which is not in the range of the valid values
-    /// </summary>
-    /// <param name="notificationTypeId">The notification type</param>
-    /// <param name="notificationStatusId">The notification status</param>
-    private static void CheckEnumValues(NotificationTypeId notificationTypeId,
-        NotificationStatusId notificationStatusId)
-    {
-        if (!Enum.IsDefined(typeof(NotificationTypeId), notificationTypeId))
-            throw new ArgumentException("notificationType does not exist.", nameof(notificationTypeId));
-
-        if (!Enum.IsDefined(typeof(NotificationStatusId), notificationStatusId.ToString()))
-            throw new ArgumentException("notificationStatus does not exist.", nameof(notificationStatusId));
     }
 }
