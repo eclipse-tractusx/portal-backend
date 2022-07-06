@@ -14,7 +14,6 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CatenaX.NetworkServices.Notification.Service.Tests
 {
