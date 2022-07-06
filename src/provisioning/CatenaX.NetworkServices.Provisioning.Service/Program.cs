@@ -74,12 +74,14 @@ builder.Services.AddDbContext<ProvisioningDBContext>(options =>
 
 var app = builder.Build();
 
-if (app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configuration.GetValue<bool>("DebugEnabled"))
+var debugEnabled = app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configuration.GetValue<bool>("DebugEnabled");
+if (debugEnabled)
 {
     app.UseDeveloperExceptionPage();
     KeycloakUntrustedCertExceptionHandler.ConfigureExceptions(app.Configuration.GetSection("Keycloak"));
-    FlurlErrorLogging.ConfigureLogger(app.Services.GetRequiredService<ILogger<Program>>());
 }
+FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<Program>>(), debugEnabled);
+
 if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configuration.GetValue<bool>("SwaggerEnabled"))
 {
     app.UseSwagger( c => c.RouteTemplate = "/api/provisioning/swagger/{documentName}/swagger.{json|yaml}");
