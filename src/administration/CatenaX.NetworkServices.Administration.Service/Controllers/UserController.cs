@@ -115,14 +115,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
-        [Route("owncompany/apps/{appid}/users")]
+        [Route("owncompany/apps/{appId}/users")]
         public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
             this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
-
+            
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("app/{appId}/roles")]
-        public Task<string> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
+        public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
 
         [HttpDelete]
