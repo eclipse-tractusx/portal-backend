@@ -15,7 +15,6 @@ using CatenaX.NetworkServices.Administration.Service.Custodian;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using Microsoft.Extensions.Configuration;
 
 namespace CatenaX.NetworkServices.Administration.Service.Tests
 {
@@ -80,20 +79,24 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             var companyApplication = _fixture.Build<CompanyApplication>()
                 .With(u => u.Company, company)
                 .Create();
-            string clientId = "catenax-portal";
-            List<Guid> userRoleIds = new List<Guid>() { userRoleId };
-            List<string> roles = new List<string> { "IT Admin" };
+            var clientId = "catenax-portal";
+            var userRoleIds = new List<Guid>() { userRoleId };
+            var roles = new List<string> { "IT Admin" };
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
                             { clientId, roles.AsEnumerable() }
                         };
             var companyInvitedUsers = new List<CompanyInvitedUserData>()
             {
-                new CompanyInvitedUserData(companyUserId1, userEntityId, Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
-                new CompanyInvitedUserData(companyUserId2, userEntityId, Enumerable.Repeat(businessPartnerNumber, 1), Enumerable.Repeat(userRoleId, 1)),
-                new CompanyInvitedUserData(companyUserId3, userEntityId, Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
+                new(companyUserId1, userEntityId, Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
+                new(companyUserId2, userEntityId, Enumerable.Repeat(businessPartnerNumber, 1), Enumerable.Repeat(userRoleId, 1)),
+                new(companyUserId3, userEntityId, Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
             }.ToAsyncEnumerable();
 
+            var userRole = _fixture.Build<UserRoleData>()
+                .With(x => x.UserRoleId, userRoleId)
+                .CreateMany(1)
+                .ToAsyncEnumerable();
             var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
             var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
             var bpns = new List<string> { businessPartnerNumber }.AsEnumerable();
@@ -106,11 +109,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(clientRoleNames))
                 .Returns(userRoleIds.ToAsyncEnumerable());
 
+            A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(clientRoleNames))
+                .Returns(userRole);
+
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(id))
                 .Returns(companyInvitedUsers);
 
-            A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId.ToString(), clientRoleNames))
-                .Returns(Task.CompletedTask);
+            A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(userEntityId.ToString(), A<Dictionary<string, IEnumerable<string>>>._))
+                .ReturnsLazily(() => clientRoleNames);
 
             A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(centralUserId.ToString(), bpns))
                 .Returns(Task.CompletedTask);
