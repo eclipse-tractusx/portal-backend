@@ -33,10 +33,17 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
     public CompanyUserAssignedBusinessPartner RemoveCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
         _dbContext.Remove(CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber)).Entity;
 
-    public async Task<CompanyUserAssignedBusinessPartner?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId) =>
-    await _dbContext.CompanyUserAssignedBusinessPartners
-        .Where(companyUserBusinessPartners => companyUserBusinessPartners.CompanyUserId == companyUserId)
-        .SingleOrDefaultAsync();
+    public Task<CompanyUserBusinessPartnerNumbersDetails?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber) =>
+      _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == adminUserId)
+            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyUsers)
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser => new CompanyUserBusinessPartnerNumbersDetails(
+                companyUser.IamUser!.UserEntityId,
+                companyUser.CompanyUserAssignedBusinessPartners.Where(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefault()
+            ))
+            .SingleOrDefaultAsync();
 
     public Task<bool> IsAdminUserAndCompanyUserHavingSameCompanyId(Guid companyUserId, string adminUserId) =>
     _dbContext.IamUsers
