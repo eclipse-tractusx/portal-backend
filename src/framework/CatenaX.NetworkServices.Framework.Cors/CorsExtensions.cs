@@ -18,19 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Configuration;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Framework.Cors;
 
 /// <summary>
-/// Model for the CreateNotification endpoint
+/// Provides Extension methods for cors
 /// </summary>
-/// <param name="DateCreated">The date the notification was created</param>
-/// <param name="Title">The notifications title</param>
-/// <param name="Message">The notifications message</param>
-/// <param name="NotificationTypeId">The notifications type</param>
-/// <param name="ReadStatusId">The notifications status</param>
-/// <param name="AppId">OPTIONAL: The linked app for the notification</param>
-/// <param name="DueDate">OPTIONAL: The notifications due date</param>
-/// <param name="CreatorUserId">OPTIONAL: Id of the user who created the notification</param>
-public record NotificationCreationData(DateTimeOffset DateCreated, string Title, string Message, NotificationTypeId  NotificationTypeId, NotificationStatusId ReadStatusId, Guid? AppId = null, DateTimeOffset? DueDate = null, Guid? CreatorUserId = null);
+public static class CorsExtensions
+{
+    public const string AllowSpecificOrigins = "_catenaXAllowSpecificOrigins";
+
+    /// <summary>
+    /// Setup for the cors configuration
+    /// </summary>
+    /// <param name="corsOption">Cors options</param>
+    /// <param name="configuration">configuration to access the allowed domains</param>
+    public static void SetupCors(this CorsOptions corsOption, IConfigurationRoot configuration)
+    {
+        var corsConfig = configuration.Get<CorsConfiguration>();
+        corsOption.AddPolicy(AllowSpecificOrigins, policy =>
+        {
+            policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    }
+}
