@@ -22,12 +22,10 @@ using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Framework.Cors;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
-
-var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +37,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
+builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
+
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -49,17 +49,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
     c.OperationFilter<SwaggerFileOperationFilter>();
-});
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy  =>
-                      {
-                          policy.WithOrigins("http://localhost:3000", "http://localhost:4000")
-                                                  .AllowAnyHeader()
-                                                  .AllowAnyMethod();
-                      });
 });
 
 builder.Services.AddAuthentication(x =>
@@ -147,7 +136,7 @@ if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configura
 
 app.UseRouting();
 
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors(CorsExtensions.AllowSpecificOrigins);
 
 app.UseMiddleware<GeneralHttpErrorHandler>();
 app.UseAuthentication();

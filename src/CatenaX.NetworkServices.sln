@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Mai
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "maintenance", "maintenance", "{DBBC27FE-1154-4ECE-874E-D5435D55CC42}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Framework.Cors", "framework\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj", "{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -410,6 +412,18 @@ Global
 		{BD77690A-5ADF-4668-B5FF-DF88AE5BEF07}.Release|x64.Build.0 = Release|Any CPU
 		{BD77690A-5ADF-4668-B5FF-DF88AE5BEF07}.Release|x86.ActiveCfg = Release|Any CPU
 		{BD77690A-5ADF-4668-B5FF-DF88AE5BEF07}.Release|x86.Build.0 = Release|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Debug|x64.Build.0 = Debug|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Debug|x86.Build.0 = Debug|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Release|x64.ActiveCfg = Release|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Release|x64.Build.0 = Release|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -441,6 +455,7 @@ Global
 		{A9336B40-6D50-4A49-8FBC-CD2E5D5866CD} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 		{AC8C9B72-AA30-4FD1-80D7-9703E23A06B6} = {79657784-5B49-4B63-B7EF-57620C4EEA20}
 		{BD77690A-5ADF-4668-B5FF-DF88AE5BEF07} = {DBBC27FE-1154-4ECE-874E-D5435D55CC42}
+		{C94334A5-E3BE-46A1-9C00-3A6DFAD2B19A} = {79657784-5B49-4B63-B7EF-57620C4EEA20}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2EB6265F-323A-4BF3-969E-003D64A14B64}
