@@ -119,8 +119,7 @@ public class NotificationBusinessLogicTests
         var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
         A.CallTo(() => _notificationRepository.Add(A<PortalBackend.PortalEntities.Entities.Notification>._))
             .Invokes(action =>
-                notifications.Add(
-                    action.GetArgument<PortalBackend.PortalEntities.Entities.Notification>("notification")));
+                notifications.Add(action.GetArgument<PortalBackend.PortalEntities.Entities.Notification>("notification")!));
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationBusinessLogic>();
         const string title = "That's a title";
