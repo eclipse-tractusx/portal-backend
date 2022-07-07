@@ -123,7 +123,7 @@ public class NotificationRespotitoryTests
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(2);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Where(x => x.NotificationTypeId == NotificationTypeId.INFO).Select(notification => notification.Id).Contains(x.Id));
+        results.Should().AllSatisfy(x => _readNotifications.Where(x => x.NotificationTypeId == NotificationTypeId.ACTION).Select(notification => notification.Id).Contains(x.Id));
     }
 
     private void SetupNotificationDb()
