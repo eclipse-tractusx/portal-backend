@@ -142,7 +142,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("owncompany/users/{companyUserId}/userBusinessPartnerNumbers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<int> DeleteOwnUserBusinessPartnerNumbers([FromRoute] Guid companyUserId, string businessPartnerNumber) =>
            this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId,businessPartnerNumber,adminUserId));
     }
