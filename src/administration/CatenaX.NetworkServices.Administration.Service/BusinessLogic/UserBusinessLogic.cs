@@ -560,8 +560,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} does not belongs to same company");
             }
 
-            var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId,adminUserId,businessPartnerNumber).ConfigureAwait(false);
-            if (userWithBpn.AssignedBusinessPartnerNumbers == null || userWithBpn.UserEntityId == null)
+            var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
+            if (userWithBpn == null || userWithBpn.AssignedBusinessPartnerNumbers == null || userWithBpn.UserEntityId == null)
             {
                 throw new NotFoundException($"user {companyUserId} not found in company of {adminUserId}");
             }
