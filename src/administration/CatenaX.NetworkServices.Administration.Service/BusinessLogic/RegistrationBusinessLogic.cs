@@ -46,7 +46,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
     {
-        var applications = _applicationRepository.GetCompanyApplicationsFilteredQuery(companyName?.Length >= 3 ? companyName : null);
+        var applications = _applicationRepository.GetCompanyApplicationsFilteredQuery(
+            companyName?.Length >= 3 ? companyName : null,
+            new CompanyApplicationStatusId[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
+
         return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
             page,
             size,
