@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\keycloak\src\Keycloak.Net\Keycloak.Net.csproj" />
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
   </ItemGroup>
 
   <ItemGroup>

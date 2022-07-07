@@ -3,7 +3,12 @@ name: Provisioning-Service
 on: 
   push:
     paths:
+      # service path
       - 'src/provisioning/CatenaX.NetworkServices.Provisioning.Service/**'
+      # workflow file
+      - '.github/workflows/provisioning-service.yml'
+      # dockerfile
+      - 'docker/Dockerfile-provisioning-service'
 
     branches:
       - 'main'
@@ -42,6 +47,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile-provisioning-service
+          pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
