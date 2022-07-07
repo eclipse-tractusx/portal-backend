@@ -128,7 +128,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpDelete]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/userBusinessPartnerNumbers")]
-        public Task<int> DeleteOwnUserBusinessPartnerNumbers([FromRoute] Guid companyUserId) =>
-           this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId,adminUserId));
+        public Task<int> DeleteOwnUserBusinessPartnerNumbers([FromRoute] Guid companyUserId, string businessPartnerNumber) =>
+           this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId,businessPartnerNumber,adminUserId));
     }
 }

@@ -13,6 +13,8 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using Microsoft.EntityFrameworkCore;
+using Keycloak.Net;
+using CatenaX.NetworkServices.Keycloak.Factory;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
@@ -29,6 +31,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly UserSettings _settings;
+        private readonly KeycloakClient _CentralIdp;
+        private readonly ProvisioningSettings _ProvisioningSettings;
 
         /// <summary>
         /// Constructor.
@@ -47,7 +51,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             IPortalRepositories portalRepositories,
             IMailingService mailingService,
             ILogger<UserBusinessLogic> logger,
-            IOptions<UserSettings> settings)
+            IOptions<UserSettings> settings,
+            IOptions<ProvisioningSettings> provisioningSettings,
+            IKeycloakFactory keycloakFactory)
         {
             _provisioningManager = provisioningManager;
             _provisioningDBAccess = provisioningDBAccess;
@@ -57,6 +63,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _mailingService = mailingService;
             _logger = logger;
             _settings = settings.Value;
+            _CentralIdp = keycloakFactory.CreateKeycloakClient("central");
+            _ProvisioningSettings = provisioningSettings.Value;
         }
 
         public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
@@ -542,7 +550,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             return new UserRoleMessage(success, warning);
         }
     
-        public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string adminUserId)
+        public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
         {
             var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
@@ -552,13 +560,35 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} does not belongs to same company");
             }
 
-            var businessPartnerNumberData = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId).ConfigureAwait(false);
-            if (businessPartnerNumberData == null)
+            var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId,adminUserId,businessPartnerNumber).ConfigureAwait(false);
+            if (userWithBpn.AssignedBusinessPartnerNumbers == null || userWithBpn.UserEntityId == null)
             {
-                throw new NotFoundException($"business partner number for companyUserId {companyUserId} not found");
+                throw new NotFoundException($"user {companyUserId} not found in company of {adminUserId}");
             }
 
-            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(businessPartnerNumberData);
+            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartnerNumbers);
+          
+            var user = await _CentralIdp.GetUserAsync(_ProvisioningSettings.CentralRealm, userWithBpn.UserEntityId.ToString()).ConfigureAwait(false);
+            if (user == null)
+            {
+                throw new Exception($"failed to retrieve central user {companyUserId}");
+            }
+            
+            user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
+
+            if ((user.Attributes.TryGetValue(_ProvisioningSettings.MappedBpnAttribute, out var existingBpns)))
+            {
+                user.Attributes[_ProvisioningSettings.MappedBpnAttribute] = existingBpns.Where(bpn => bpn != userWithBpn.AssignedBusinessPartnerNumbers.BusinessPartnerNumber);
+            }
+            else
+            {
+                throw new NotFoundException($"bpn is not found in the user mapper");
+            }
+             
+            if (!await _CentralIdp.UpdateUserAsync(_ProvisioningSettings.CentralRealm, userWithBpn.UserEntityId.ToString(), user).ConfigureAwait(false))
+            {
+                throw new Exception($"failed to delete bpn for central user {companyUserId}");
+            }
 
             return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }

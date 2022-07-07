@@ -32,6 +32,5 @@ public interface IUserBusinessLogic
     /// <param name="adminUserId">Admin User Id</param>
     /// <returns>messages</returns>
     Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
-    Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string adminUserId);
-    
+    Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
 }
