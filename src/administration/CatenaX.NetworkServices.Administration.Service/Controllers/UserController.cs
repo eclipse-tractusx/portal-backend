@@ -5,6 +5,7 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
 {
     [ApiController]
     [Route("api/administration/user")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     public class UserController : ControllerBase
     {
 
@@ -125,9 +128,21 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
 
+        /// <summary>
+        /// Delete BPN assigned to user from DB and Keycloack.
+        /// </summary>
+        /// <param name="companyUserId" example="4f06431c-25ae-40ad-9cac-9dee8fe4754d">ID of the company user to be deleted.</param>
+        /// <param name="businessPartnerNumber" example="CAXSDUMMYTESTCX1">BPN to be deleted.</param>
+        /// <remarks>Example: DELETE: /api/administration/user/owncompany/users/4f06431c-25ae-40ad-9cac-9dee8fe4754d/userBusinessPartnerNumbers?businessPartnerNumber=CAXSDUMMYTESTCX1</remarks>
+        /// <response code="200">Empty response on success.</response>
+        /// <response code="403">ForbiddenException if both users does not belongs to same company</response>
+        /// <response code="404">Record not found.</response>
         [HttpDelete]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/userBusinessPartnerNumbers")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public Task<int> DeleteOwnUserBusinessPartnerNumbers([FromRoute] Guid companyUserId, string businessPartnerNumber) =>
            this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId,businessPartnerNumber,adminUserId));
     }
