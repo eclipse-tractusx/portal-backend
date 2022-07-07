@@ -27,6 +27,8 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
 
+var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -47,6 +49,17 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
     c.OperationFilter<SwaggerFileOperationFilter>();
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy  =>
+                      {
+                          policy.WithOrigins("http://localhost:3000", "http://localhost:4000")
+                                                  .AllowAnyHeader()
+                                                  .AllowAnyMethod();
+                      });
 });
 
 builder.Services.AddAuthentication(x =>
@@ -133,6 +146,8 @@ if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configura
 }
 
 app.UseRouting();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseMiddleware<GeneralHttpErrorHandler>();
 app.UseAuthentication();
