@@ -18,19 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Framework.Cors;
 
 /// <summary>
-/// Model for the CreateNotification endpoint
+/// Configuration for CORS
 /// </summary>
-/// <param name="DateCreated">The date the notification was created</param>
-/// <param name="Title">The notifications title</param>
-/// <param name="Message">The notifications message</param>
-/// <param name="NotificationTypeId">The notifications type</param>
-/// <param name="ReadStatusId">The notifications status</param>
-/// <param name="AppId">OPTIONAL: The linked app for the notification</param>
-/// <param name="DueDate">OPTIONAL: The notifications due date</param>
-/// <param name="CreatorUserId">OPTIONAL: Id of the user who created the notification</param>
-public record NotificationCreationData(DateTimeOffset DateCreated, string Title, string Message, NotificationTypeId  NotificationTypeId, NotificationStatusId ReadStatusId, Guid? AppId = null, DateTimeOffset? DueDate = null, Guid? CreatorUserId = null);
+public class CorsConfiguration
+{
+    /// <summary>The Cors configuration</summary>
+    public CorsModel Cors { get; init; } = null!;
+}
+
+/// <summary>
+/// Model for the Cors Configuration
+/// </summary>
+public class CorsModel
+{
+    /// <summary>The allowed origins</summary>
+    public string[] AllowedOrigins { get; init; } = null!;
+}
