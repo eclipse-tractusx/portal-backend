@@ -39,13 +39,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="firstName">First Name of User</param>
         /// <param name="lastName">Last Name of User</param>
         /// <param name="email">Email Id of User</param>
-        /// <returns>Company User Data</returns>
-        /// <remarks>Example: GET: api/administration/user/owncompany/users?page=0&size=5</remarks>
-        /// <remarks>Example: GET: api/administration/user/owncompany/users?page=0&size=5&userEntityId=31404026-64ee-4023-a122-3c7fc40e57b1</remarks>
+        /// <returns>Paginated Result of Company User Data</returns>
+        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&size=5</remarks>
+        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&size=5&userEntityId="31404026-64ee-4023-a122-3c7fc40e57b1"</remarks>
         /// <response code="200">Result as a Company User Data</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
+        [ProducesResponseType(typeof(Pagination.Response<CompanyUserData>), StatusCodes.Status200OK)]
         public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
             [FromQuery] int page, 
             [FromQuery] int size,
