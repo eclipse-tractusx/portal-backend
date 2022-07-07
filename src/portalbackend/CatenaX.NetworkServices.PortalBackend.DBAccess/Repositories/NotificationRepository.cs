@@ -50,12 +50,20 @@ public class NotificationRepository : INotificationRepository
     public IAsyncEnumerable<NotificationDetailData> GetAllAsDetailsByUserIdUntracked(Guid companyUserId,
         NotificationStatusId? statusId, NotificationTypeId? typeId)
     {
-        return _dbContext.Notifications
+        var query = _dbContext.Notifications
             .Where(x =>
-                x.ReceiverUserId == companyUserId &&
-                statusId.HasValue ? x.ReadStatusId == statusId.Value :
-                true &&
-                typeId.HasValue ? x.NotificationTypeId == typeId.Value : true)
+                x.ReceiverUserId == companyUserId);
+        if (statusId.HasValue)
+        {
+            query = query.Where(x => x.ReadStatusId == statusId.Value);
+        }
+
+        if (typeId.HasValue)
+        {
+            query = query.Where(x => x.NotificationTypeId == typeId.Value);
+        }
+
+        return query
             .Select(x => new NotificationDetailData(x.Id, x.Title, x.Message))
             .AsAsyncEnumerable();
     }
