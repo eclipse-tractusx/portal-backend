@@ -41,16 +41,19 @@ public class NotificationRespotitoryTests
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
     private readonly Guid _companyUserId;
-    private ICollection<Notification> _readNotifications = new List<Notification>();
-    private ICollection<Notification> _unreadNotifications = new List<Notification>();
+    private readonly ICollection<Notification> _readNotifications;
+    private readonly ICollection<Notification> _unreadNotifications;
     private List<Notification> _notifications;
 
     public NotificationRespotitoryTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _companyUserId = Guid.NewGuid();
-
         _contextFake = A.Fake<PortalDbContext>();
+
+        _readNotifications = new List<Notification>();
+        _unreadNotifications = new List<Notification>();
+        _notifications = new List<Notification>();
         SetupNotificationDb();
     }
 
@@ -67,7 +70,7 @@ public class NotificationRespotitoryTests
 
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(_unreadNotifications.Count());
+        results.Should().HaveCount(_unreadNotifications.Count);
         results.Should().AllBeOfType<NotificationDetailData>();
         results.Should().AllSatisfy(x => _unreadNotifications.Select(notification => notification.Id).Contains(x.Id));
     }
@@ -85,7 +88,7 @@ public class NotificationRespotitoryTests
 
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(_readNotifications.Count());
+        results.Should().HaveCount(_readNotifications.Count);
         results.Should().AllBeOfType<NotificationDetailData>();
         results.Should().AllSatisfy(x => _readNotifications.Select(notification => notification.Id).Contains(x.Id));
     }
