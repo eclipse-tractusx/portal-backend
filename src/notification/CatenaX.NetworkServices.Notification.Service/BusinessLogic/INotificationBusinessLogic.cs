@@ -19,6 +19,7 @@
 //  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 
@@ -33,4 +34,22 @@ public interface INotificationBusinessLogic
     /// <param name="creationData">The data for the creation of the notification.</param>
     /// <param name="companyUserId">Id of the company user the notification is intended for.</param>
     Task<NotificationDetailData> CreateNotification(NotificationCreationData creationData, Guid companyUserId);
+
+    /// <summary>
+    ///     Gets all unread notification for the given user.
+    /// </summary>
+    /// <param name="iamUserId">The id of the current user</param>
+    /// <param name="statusId">OPTIONAL: The status of the notifications</param>
+    /// <param name="typeId">OPTIONAL: The type of the notifications</param>
+    /// <returns>Returns a collection of the users notification</returns>
+    Task<IAsyncEnumerable<NotificationDetailData>> GetNotifications(string iamUserId,
+        NotificationStatusId? statusId, NotificationTypeId? typeId);
+
+    /// <summary>
+    ///     Gets a specific notification from the database
+    /// </summary>
+    /// <param name="notificationId">the notification that should be returned</param>
+    /// <param name="iamUserId">the id of the current user</param>
+    /// <returns>Returns detail data for the given notification</returns>
+    Task<NotificationDetailData> GetNotification(Guid notificationId, string iamUserId);
 }
