@@ -119,4 +119,23 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             .GetNotificationCountAsync(companyUserId, statusId)
             .ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async Task SetNotificationToRead(string userId, Guid notificationId)
+    {
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserIdUntrackedAsync(userId)
+            .ConfigureAwait(false);
+        if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
+
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        var notificationDetails = await notificationRepository.GetByIdAndUserIdUntrackedAsync(notificationId, companyUserId).ConfigureAwait(false);
+
+        if (notificationDetails is null) throw new NotFoundException("Notification does not exist.");
+
+        var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationDetails.Id);
+        notificationRepository.AttachToNotification(notification);
+        notification.ReadStatusId = NotificationStatusId.READ;
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }

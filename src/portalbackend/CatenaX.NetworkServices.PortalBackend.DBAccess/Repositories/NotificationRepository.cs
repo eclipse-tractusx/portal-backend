@@ -82,4 +82,8 @@ public class NotificationRepository : INotificationRepository
         await _dbContext.Notifications.CountAsync(x =>
             x.ReceiverUserId == companyUserId &&
             statusId.HasValue ? x.ReadStatusId == statusId.Value : true);
+
+    /// <inheritdoc />
+    public void AttachToNotification(Notification notification) =>
+        _dbContext.Notifications.Attach(notification);
 }

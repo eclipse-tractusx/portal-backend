@@ -60,4 +60,11 @@ public interface INotificationBusinessLogic
     /// <param name="statusId">OPTIONAL: Status of the notifications that should be considered</param>
     /// <returns>Returns the count of the notifications</returns>
     Task<int> GetNotificationCount(string userId, NotificationStatusId? statusId);
+
+    /// <summary>
+    /// Sets the status of the notification with the given id to read
+    /// </summary>
+    /// <param name="userId">Id of the notification receiver</param>
+    /// <param name="notificationId">Id of the notification</param>
+    Task SetNotificationToRead(string userId, Guid notificationId);
 }
