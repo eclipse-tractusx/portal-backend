@@ -12,11 +12,13 @@ on:
 
     branches:
       - 'main'
+      - 'feature/CPLP-1074_auto_image_update'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_administration-service
+  COMMIT_SHA: ${{ github.sha }}
 
 jobs:
   build-and-push-image:
@@ -49,5 +51,5 @@ jobs:
           file: docker/Dockerfile-administration-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
