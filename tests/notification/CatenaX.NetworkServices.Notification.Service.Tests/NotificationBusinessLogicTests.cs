@@ -352,4 +352,71 @@ public class NotificationBusinessLogicTests
     }
 
     #endregion
+
+    #region Set Notification To Read
+
+    [Fact]
+    public async Task SetNotificationToRead_WithMatchingId_ReturnsDetailData()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+
+        // Act
+        await sut.SetNotificationToRead(_iamUser.UserEntityId, _notificationDetail.Id);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetNotificationToRead_WithNotMatchingNotification_NotFoundException()
+    {
+        // Arrange
+        var randomNotificationId = Guid.NewGuid();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var notExistingUserId = Guid.NewGuid().ToString();
+
+        // Act
+        try
+        {
+            await sut.SetNotificationToRead(notExistingUserId, randomNotificationId);
+        }
+        catch (ForbiddenException e)
+        {
+            // Assert
+            e.Message.Should().Be($"iamUserId {notExistingUserId} is not assigned");
+            return;
+        }
+
+        // Must not reach that code because of the exception
+        false.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SetNotificationToRead_WithNotExistingCompanyUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        var iamUserId = Guid.NewGuid().ToString();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+
+        // Act
+        try
+        {
+            await sut.SetNotificationToRead(iamUserId, Guid.NewGuid());
+        }
+        catch (ForbiddenException e)
+        {
+            // Assert
+            e.Message.Should().Be($"iamUserId {iamUserId} is not assigned");
+            return;
+        }
+
+        // Must not reach that code because of the exception
+        false.Should().BeTrue();
+    }
+
+    #endregion
 }

@@ -60,4 +60,10 @@ public interface INotificationRepository
     /// <param name="statusId">OPTIONAL: Status of the notifications that should be considered</param>
     /// <returns>Returns the count of the notifications</returns>
     Task<int> GetNotificationCountAsync(Guid companyUserId, NotificationStatusId? statusId);
+
+    /// <summary>
+    /// Attaches the given notification to the database.
+    /// </summary>
+    /// <param name="notification">The notification that should be attached</param>
+    void AttachToNotification(Notification notification);
 }

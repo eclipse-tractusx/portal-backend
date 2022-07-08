@@ -39,6 +39,17 @@ public class Notification
     }
 
     /// <summary>
+    /// Use this constructor only when attaching the Notification to the database
+    /// </summary>
+    /// <param name="id">Id of the notification</param>
+    public Notification(Guid id)
+    {
+        Id = id;
+        Title = null!;
+        Message = null!;
+    }
+
+    /// <summary>
     /// Creates a new instance of <see cref="Notification"/> and sets the required values.
     /// </summary>
     /// <param name="id">Id of the notification</param>
@@ -72,7 +83,7 @@ public class Notification
 
     public NotificationTypeId NotificationTypeId { get; private set; }
     
-    public NotificationStatusId ReadStatusId { get; private set; }
+    public NotificationStatusId ReadStatusId { get; set; }
 
     public Guid? AppId { get; set; }
     
