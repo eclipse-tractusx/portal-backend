@@ -180,42 +180,46 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
         }
 
-        public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
+        public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
             string adminUserId,
+            int page, 
+            int size,
             Guid? companyUserId = null,
             string? userEntityId = null,
             string? firstName = null,
             string? lastName = null,
-            string? email = null,
-            CompanyUserStatusId? status = null)
+            string? email = null
+            )
         {
-            if (!companyUserId.HasValue
-                && String.IsNullOrWhiteSpace(userEntityId)
-                && String.IsNullOrWhiteSpace(firstName)
-                && String.IsNullOrWhiteSpace(lastName)
-                && String.IsNullOrWhiteSpace(email)
-                && !status.HasValue)
-            {
-                throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
-            }
-            return _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
+           
+            var companyUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
                 adminUserId,
                 companyUserId,
                 userEntityId,
                 firstName,
                 lastName,
-                email,
-                status)
-                .AsNoTracking()
-                .Select(companyUser => new CompanyUserData(
+                email
+            );
+            return Pagination.CreateResponseAsync<CompanyUserData>(
+                page,
+                size,
+                _settings.ApplicationsMaxPageSize,
+                (int skip, int take) => new Pagination.AsyncSource<CompanyUserData>(
+                    companyUsers.CountAsync(),
+                    companyUsers.OrderByDescending(companyUser => companyUser.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(companyUser => new CompanyUserData(
+                    companyUser.IamUser!.UserEntityId,
                     companyUser.Id,
                     companyUser.CompanyUserStatusId)
                 {
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
-                    Email = companyUser.Email
+                    Email = companyUser.Email,
+                    Roles = companyUser.UserRoles.Select(userRole => userRole.UserRoleText)
                 })
-                .AsAsyncEnumerable();
+                .AsAsyncEnumerable()));
         }
 
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
