@@ -10,6 +10,7 @@ public class UserSettings
 
     public UserSetting Portal { get; set; }
     public PasswordReset PasswordReset { get; set; }
+    public int ApplicationsMaxPageSize { get; set; }
     
 }
 
