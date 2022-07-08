@@ -23,7 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Framework.Cors;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -37,6 +37,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     var provider = new PhysicalFileProvider("/app/secrets");
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
+
+builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
@@ -130,6 +132,8 @@ if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configura
 }
 
 app.UseRouting();
+
+app.UseCors(CorsExtensions.AllowSpecificOrigins);
 
 app.UseMiddleware<GeneralHttpErrorHandler>();
 app.UseAuthentication();

@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,15 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Framework.Cors;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-
-public interface IRegistrationBusinessLogic
+/// <summary>
+/// Configuration for CORS
+/// </summary>
+public class CorsConfiguration
 {
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(Guid? applicationId);
-    Task<bool> DeclinePartnerRequest(Guid? applicationId);
+    /// <summary>The Cors configuration</summary>
+    public CorsModel Cors { get; init; } = null!;
+}
+
+/// <summary>
+/// Model for the Cors Configuration
+/// </summary>
+public class CorsModel
+{
+    /// <summary>The allowed origins</summary>
+    public string[] AllowedOrigins { get; init; } = null!;
 }

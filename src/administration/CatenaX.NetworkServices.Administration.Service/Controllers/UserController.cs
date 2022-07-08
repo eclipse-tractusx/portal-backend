@@ -1,26 +1,25 @@
-﻿// /********************************************************************************
-//  * Copyright (c) 2021,2022 BMW Group AG
-//  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
-//  *
-//  * See the NOTICE file(s) distributed with this work for additional
-//  * information regarding copyright ownership.
-//  *
-//  * This program and the accompanying materials are made available under the
-//  * terms of the Apache License, Version 2.0 which is available at
-//  * https://www.apache.org/licenses/LICENSE-2.0.
-//  *
-//  * Unless required by applicable law or agreed to in writing, software
-//  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//  * License for the specific language governing permissions and limitations
-//  * under the License.
-//  *
-//  * SPDX-License-Identifier: Apache-2.0
-//  ********************************************************************************/
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
 
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
@@ -69,36 +68,40 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
             this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
         /// <summary>
-        /// Gets the user data for the current users company.
+        /// Get Company User Data
         /// </summary>
-        /// <param name="userEntityId"></param>
-        /// <param name="companyUserId"></param>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="email"></param>
-        /// <param name="status"></param>
-        /// <returns>Returns a list of company user data for the current users company.</returns>
-        /// <remarks>Example: GET: api/administration/user/owncompany/users</remarks>
-        /// <response code="200">Returns a list of company user data for the current users company.</response>
+        /// <param name="page">page index start from 0</param>
+        /// <param name="size">size to get number of records</param>
+        /// <param name="userEntityId">User Entity Id</param>
+        /// <param name="companyUserId">Company User Id</param>
+        /// <param name="firstName">First Name of User</param>
+        /// <param name="lastName">Last Name of User</param>
+        /// <param name="email">Email Id of User</param>
+        /// <returns>Paginated Result of Company User Data</returns>
+        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&size=5</remarks>
+        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&size=5&userEntityId="31404026-64ee-4023-a122-3c7fc40e57b1"</remarks>
+        /// <response code="200">Result as a Company User Data</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/users")]
-        [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserData>), StatusCodes.Status200OK)]
-        public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
+        [ProducesResponseType(typeof(Pagination.Response<CompanyUserData>), StatusCodes.Status200OK)]
+        public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
+            [FromQuery] int page,
+            [FromQuery] int size,
             [FromQuery] string? userEntityId = null,
             [FromQuery] Guid? companyUserId = null,
             [FromQuery] string? firstName = null,
             [FromQuery] string? lastName = null,
-            [FromQuery] string? email = null,
-            [FromQuery] CompanyUserStatusId? status = null) =>
+            [FromQuery] string? email = null) =>
             this.WithIamUserId(adminUserId => _logic.GetOwnCompanyUserDatasAsync(
                 adminUserId,
+                page,
+                size,
                 companyUserId,
                 userEntityId,
                 firstName,
                 lastName,
-                email,
-                status));
+                email));
 
         /// <summary>
         /// Gets the user details for the given user Id
