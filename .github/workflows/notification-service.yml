@@ -11,6 +11,7 @@ on:
 
     branches:
       - 'main'
+      - 'feature/CPLP-1134-db-notification'
   workflow_dispatch:
 
 env:
