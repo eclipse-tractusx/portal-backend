@@ -20,14 +20,13 @@ env:
   IMAGE_NAME: ${{ github.repository }}_administration-service
   COMMIT_SHA: ${{ github.sha }}
   IMAGE_BEGINN: 'administationtag: '
-  IMAGE_FULL: 'administationtag: '${{ github.sha }}
+  IMAGE_FULL: 'administationtag: ${{ github.sha }}'
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -64,7 +63,9 @@ jobs:
           path: product-portal-cd/chart/portal-backend/values-dev.yaml
 
       - name: Modify image tag in product-portal-cd repo
-        run: sed -i '${{ env.IMAGE_BEGINN }}.*${{ env.IMAGE_FULL }}' product-portal-cd/chart/portal-backend/values-dev.yaml
+        run: >
+          sed -i 's/${{ env.IMAGE_BEGINN }}.*/${{ env.IMAGE_FULL }}'
+          product-portal-cd/chart/portal-backend/values-dev.yaml
 
       - name: Commit and push new image tag to product-portal-cd repo
         run: |
