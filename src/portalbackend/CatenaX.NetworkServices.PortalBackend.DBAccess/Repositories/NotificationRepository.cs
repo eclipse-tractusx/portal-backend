@@ -64,7 +64,7 @@ public class NotificationRepository : INotificationRepository
         }
 
         return query
-            .Select(x => new NotificationDetailData(x.Id, x.Title, x.Message))
+            .Select(x => new NotificationDetailData(x.Id, x.Content, x.DueDate, x.NotificationTypeId, x.ReadStatusId))
             .AsAsyncEnumerable();
     }
 
@@ -73,7 +73,7 @@ public class NotificationRepository : INotificationRepository
     {
         return await _dbContext.Notifications
             .Where(x => x.Id == notificationId && x.ReceiverUserId == companyUserId)
-            .Select(x => new NotificationDetailData(x.Id, x.Title, x.Message))
+            .Select(x => new NotificationDetailData(x.Id, x.Content, x.DueDate, x.NotificationTypeId, x.ReadStatusId))
             .SingleOrDefaultAsync();
     }
 

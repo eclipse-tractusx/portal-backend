@@ -18,12 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Detail data of a notification
 /// </summary>
 /// <param name="Id">The Id of the notification</param>
-/// <param name="Title">The notifications title</param>
-/// <param name="Message">The notifications message</param>
-public record NotificationDetailData(Guid Id, string Title, string Message);
+/// <param name="Content">The notifications content</param>
+/// <param name="DueDate">Optional: The notifications dueDate</param>
+/// <param name="NotificationTypeId">The notifications type id</param>
+public record NotificationDetailData(Guid Id, string Content, DateTimeOffset? DueDate, NotificationTypeId NotificationTypeId, NotificationStatusId NotificationStatusId);

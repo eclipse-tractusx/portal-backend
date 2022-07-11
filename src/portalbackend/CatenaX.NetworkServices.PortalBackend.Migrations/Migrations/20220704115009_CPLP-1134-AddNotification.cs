@@ -1,24 +1,4 @@
-﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ********************************************************************************/
-
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -63,23 +43,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     receiver_user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    message = table.Column<string>(type: "text", nullable: false),
+                    content = table.Column<string>(type: "text", nullable: false),
                     notification_type_id = table.Column<int>(type: "integer", nullable: false),
                     read_status_id = table.Column<int>(type: "integer", nullable: false),
-                    app_id = table.Column<Guid>(type: "uuid", nullable: true),
                     due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     creator_user_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_notifications", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_notifications_apps_app_id",
-                        column: x => x.app_id,
-                        principalSchema: "portal",
-                        principalTable: "apps",
-                        principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_notifications_company_users_creator_id",
                         column: x => x.creator_user_id,
@@ -125,12 +97,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     { 1, "INFO" },
                     { 2, "ACTION" }
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "ix_notifications_app_id",
-                schema: "portal",
-                table: "notifications",
-                column: "app_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_notifications_creator_user_id",

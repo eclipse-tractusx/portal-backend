@@ -38,7 +38,6 @@ public class App
         CompanyUsers = new HashSet<CompanyUser>();
         Tags = new HashSet<AppTag>();
         SupportedLanguages = new HashSet<Language>();
-        Notifications = new HashSet<Notification>();
     }
 
     public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
@@ -92,5 +91,4 @@ public class App
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     public virtual ICollection<Language> SupportedLanguages { get; private set; }
-    public virtual ICollection<Notification> Notifications { get; private set; }
 }

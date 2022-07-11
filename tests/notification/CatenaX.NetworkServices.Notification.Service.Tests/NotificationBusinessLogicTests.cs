@@ -56,7 +56,7 @@ public class NotificationBusinessLogicTests
         var (companyUser, iamuser) = CreateTestUserPair();
         _companyUser = companyUser;
         _iamUser = iamuser;
-        _notificationDetail = new NotificationDetailData(Guid.NewGuid(), "Test Title", "Test Message");
+        _notificationDetail = new NotificationDetailData(Guid.NewGuid(), "Test Message", null, NotificationTypeId.INFO, NotificationStatusId.UNREAD);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _notificationRepository = A.Fake<INotificationRepository>();
@@ -122,12 +122,11 @@ public class NotificationBusinessLogicTests
                 notifications.Add(action.GetArgument<PortalBackend.PortalEntities.Entities.Notification>("notification")!));
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationBusinessLogic>();
-        const string title = "That's a title";
-        const string message = "Here is a message for the reader";
+        const string content = "That's a title";
 
         // Act
         var result = await sut.CreateNotification(
-            new NotificationCreationData(DateTimeOffset.Now, title, message, NotificationTypeId.INFO,
+            new NotificationCreationData(DateTimeOffset.Now, content, NotificationTypeId.INFO,
                 NotificationStatusId.UNREAD), _companyUser.Id);
 
         // Assert
@@ -135,8 +134,7 @@ public class NotificationBusinessLogicTests
         notifications.Should().HaveCount(1);
         var notification = notifications.Single();
         notification.Should().NotBeNull();
-        notification.Title.Should().Be(title);
-        notification.Message.Should().Be(message);
+        notification.Content.Should().Be(content);
     }
 
     [Fact]
@@ -150,7 +148,7 @@ public class NotificationBusinessLogicTests
         try
         {
             await sut.CreateNotification(
-                new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader",
+                new NotificationCreationData(DateTimeOffset.Now, "That's a title",
                     (NotificationTypeId) 666, NotificationStatusId.UNREAD), _companyUser.Id);
         }
         catch (ArgumentException e)
@@ -175,7 +173,7 @@ public class NotificationBusinessLogicTests
         try
         {
             await sut.CreateNotification(
-                new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader",
+                new NotificationCreationData(DateTimeOffset.Now, "That's a title",
                     NotificationTypeId.INFO, (NotificationStatusId) 666), _companyUser.Id);
         }
         catch (ArgumentException e)
@@ -200,7 +198,7 @@ public class NotificationBusinessLogicTests
         try
         {
             await sut.CreateNotification(
-                new NotificationCreationData(DateTimeOffset.Now, "That's a title", "Here is a message for the reader",
+                new NotificationCreationData(DateTimeOffset.Now, "That's a title",
                     NotificationTypeId.INFO, NotificationStatusId.UNREAD), Guid.NewGuid());
         }
         catch (ArgumentException e)
@@ -272,73 +270,6 @@ public class NotificationBusinessLogicTests
         try
         {
             await sut.GetNotifications(iamUserId, null, null);
-        }
-        catch (ForbiddenException e)
-        {
-            // Assert
-            e.Message.Should().Be($"iamUserId {iamUserId} is not assigned");
-            return;
-        }
-
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Get Notification
-
-    [Fact]
-    public async Task GetNotification_WithMatchingId_ReturnsDetailData()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
-
-        // Act
-        var (_, title, message) = await sut.GetNotification(_notificationDetail.Id, _iamUser.UserEntityId);
-
-        // Assert
-        title.Should().Be("Test Title");
-        message.Should().Be("Test Message");
-    }
-
-    [Fact]
-    public async Task GetNotification_WithNotMatchingNotification_NotFoundException()
-    {
-        // Arrange
-        var randomNotificationId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
-
-        // Act
-        try
-        {
-            await sut.GetNotification(randomNotificationId, _iamUser.UserEntityId);
-        }
-        catch (NotFoundException e)
-        {
-            // Assert
-            e.Message.Should().Be("Notification does not exist.");
-            return;
-        }
-
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GetNotification_WithNotExistingCompanyUser_ThrowsForbiddenException()
-    {
-        // Arrange
-        var iamUserId = Guid.NewGuid().ToString();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
-
-        // Act
-        try
-        {
-            await sut.GetNotification(Guid.NewGuid(), iamUserId);
         }
         catch (ForbiddenException e)
         {
