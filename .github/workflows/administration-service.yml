@@ -71,6 +71,7 @@ jobs:
 
       - name: Modify image tag in product-portal-cd repo
         run: |
+          ls -lisa
           pwd
           sed -i 's/${{ env.IMAGE_BEGINN }}.*/${{ env.IMAGE_FULL }}/' \
           product-portal-cd/chart/portal-backend/values-dev.yaml
