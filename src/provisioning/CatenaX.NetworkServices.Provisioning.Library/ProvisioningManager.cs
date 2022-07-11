@@ -147,6 +147,32 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             }
         }
 
+        public async Task DeleteOwnUserBusinessPartnerNumbersAsync(string userId,string businessPartnerNumber)
+        {
+            var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+            if (user == null)
+            {
+                throw new Exception($"failed to retrieve central user {userId}");
+            }
+            
+            user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
+
+            if ((user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns)))
+            {
+                user.Attributes[_Settings.MappedBpnAttribute] = existingBpns.Where(bpn => bpn != businessPartnerNumber);
+            }
+            else
+            {
+                throw new NotFoundException($"bpn is not found in the user mapper");
+            }
+             
+            if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false))
+            {
+                throw new Exception($"failed to delete bpn for central user {userId}");
+            }
+
+        }
+
         public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)
         {
             var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
