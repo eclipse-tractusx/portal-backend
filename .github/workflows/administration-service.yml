@@ -76,8 +76,8 @@ jobs:
 
       - name: Commit and push new image tag to product-portal-cd repo
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name evegufy
+          git config user.email evelyn.gurschler@bmw.de
           git add chart/portal-backend/values-dev.yaml
           git commit -m "Add new image for administration service"
           git push
