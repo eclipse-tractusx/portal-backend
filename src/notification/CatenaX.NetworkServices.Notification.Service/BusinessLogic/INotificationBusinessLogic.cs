@@ -60,4 +60,11 @@ public interface INotificationBusinessLogic
     /// <param name="notificationId">Id of the notification</param>
     /// <param name="notificationStatusId">Id of the notification status</param>
     Task SetNotificationToRead(string userId, Guid notificationId, NotificationStatusId notificationStatusId);
+
+    /// <summary>
+    /// Deletes the given notification
+    /// </summary>
+    /// <param name="userId">Id of the notification receiver</param>
+    /// <param name="notificationId">Id of the notification that should be deleted</param>
+    Task DeleteNotification(string userId, Guid notificationId);
 }

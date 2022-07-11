@@ -69,45 +69,7 @@ public class NotificationBusinessLogicTests
             .CreateMany(3)
             .ToAsyncEnumerable();
         _notificationDetails = _readNotificationDetails.Concat(_unreadNotificationDetails).AsAsyncEnumerable();
-        A.CallTo(() => _userRepository.IsUserWithIdExisting(companyUser.Id))
-            .ReturnsLazily(() => Task.FromResult(true));
-        A.CallTo(() => _userRepository.IsUserWithIdExisting(A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => Task.FromResult(false));
-        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserIdUntrackedAsync(iamuser.UserEntityId))
-            .ReturnsLazily(() => Task.FromResult(companyUser.Id));
-        A.CallTo(() =>
-                _notificationRepository.GetByIdAndUserIdUntrackedAsync(_notificationDetail.Id, _companyUser.Id))
-            .Returns(_notificationDetail);
-        A.CallTo(() =>
-                _notificationRepository.GetByIdAndUserIdUntrackedAsync(
-                    A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
-            .Returns((NotificationDetailData?) null);
-
-        A.CallTo(() =>
-                _notificationRepository.GetAllAsDetailsByUserIdUntracked(_companyUser.Id, NotificationStatusId.UNREAD,
-                    null))
-            .Returns(_unreadNotificationDetails);
-        A.CallTo(() =>
-                _notificationRepository.GetAllAsDetailsByUserIdUntracked(_companyUser.Id, NotificationStatusId.READ,
-                    null))
-            .Returns(_readNotificationDetails);
-        A.CallTo(() =>
-                _notificationRepository.GetAllAsDetailsByUserIdUntracked(_companyUser.Id, null, null))
-            .Returns(_notificationDetails);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
-    }
-
-    private (CompanyUser, IamUser) CreateTestUserPair()
-    {
-        var companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
-            .Create();
-        var iamUser = _fixture.Build<IamUser>()
-            .With(u => u.CompanyUser, companyUser)
-            .Create();
-        companyUser.IamUser = iamUser;
-        return (companyUser, iamUser);
+        SetupRepositories(companyUser, iamuser);
     }
 
     #region Create Notification
@@ -347,6 +309,128 @@ public class NotificationBusinessLogicTests
 
         // Must not reach that code because of the exception
         false.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Delete Notifications
+
+    [Fact]
+    public async Task DeleteNotification_WithValidData_ExecutesSuccessfully()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+
+        // Act
+        await sut.DeleteNotification(_iamUser.UserEntityId, _notificationDetail.Id);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteNotification_WithNotExistingCompanyUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        var iamUserId = Guid.NewGuid().ToString();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+
+        // Act
+        try
+        {
+            await sut.DeleteNotification(iamUserId, _notificationDetail.Id);
+        }
+        catch (ForbiddenException e)
+        {
+            // Assert
+            e.Message.Should().Be($"iamUserId {iamUserId} is not assigned");
+            return;
+        }
+
+        // Must not reach that code because of the exception
+        false.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteNotification_WithNotExistingNotification_ThrowsNotFoundException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+
+        // Act
+        try
+        {
+            await sut.DeleteNotification(_iamUser.UserEntityId, Guid.NewGuid());
+        }
+        catch (NotFoundException e)
+        {
+            // Assert
+            e.Message.Should().Be("Notification does not exist.");
+            return;
+        }
+
+        // Must not reach that code because of the exception
+        false.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Setup
+
+    private void SetupRepositories(CompanyUser companyUser, IamUser iamuser)
+    {
+        A.CallTo(() => _userRepository.IsUserWithIdExisting(companyUser.Id))
+            .ReturnsLazily(() => Task.FromResult(true));
+        A.CallTo(() => _userRepository.IsUserWithIdExisting(A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
+            .ReturnsLazily(() => Task.FromResult(false));
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserIdUntrackedAsync(iamuser.UserEntityId))
+            .ReturnsLazily(() => Task.FromResult(companyUser.Id));
+        A.CallTo(() =>
+                _notificationRepository.GetByIdAndUserIdUntrackedAsync(_notificationDetail.Id, _companyUser.Id))
+            .Returns(_notificationDetail);
+        A.CallTo(() =>
+                _notificationRepository.GetByIdAndUserIdUntrackedAsync(
+                    A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
+            .Returns((NotificationDetailData?) null);
+
+        A.CallTo(() =>
+                _notificationRepository.GetAllAsDetailsByUserIdUntracked(_companyUser.Id, NotificationStatusId.UNREAD,
+                    null))
+            .Returns(_unreadNotificationDetails);
+        A.CallTo(() =>
+                _notificationRepository.GetAllAsDetailsByUserIdUntracked(_companyUser.Id, NotificationStatusId.READ,
+                    null))
+            .Returns(_readNotificationDetails);
+        A.CallTo(() =>
+                _notificationRepository.GetAllAsDetailsByUserIdUntracked(_companyUser.Id, null, null))
+            .Returns(_notificationDetails);
+
+        A.CallTo(() =>
+                _notificationRepository.CheckExistsByIdAndUserIdAsync(_notificationDetail.Id, _companyUser.Id))
+            .ReturnsLazily(() => true);
+
+        A.CallTo(() =>
+                _notificationRepository.CheckExistsByIdAndUserIdAsync(
+                    A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
+            .ReturnsLazily(() => false);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
+    }
+
+    private (CompanyUser, IamUser) CreateTestUserPair()
+    {
+        var companyUser = _fixture.Build<CompanyUser>()
+            .Without(u => u.IamUser)
+            .Create();
+        var iamUser = _fixture.Build<IamUser>()
+            .With(u => u.CompanyUser, companyUser)
+            .Create();
+        companyUser.IamUser = iamUser;
+        return (companyUser, iamUser);
     }
 
     #endregion

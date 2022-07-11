@@ -84,6 +84,17 @@ public class NotificationRepository : INotificationRepository
             statusId.HasValue ? x.ReadStatusId == statusId.Value : true);
 
     /// <inheritdoc />
+    public async Task<bool> CheckExistsByIdAndUserIdAsync(Guid notificationId, Guid companyUserId) =>
+        await _dbContext.Notifications
+            .AnyAsync(x => x.Id == notificationId && x.ReceiverUserId == companyUserId);
+
+    /// <inheritdoc />
     public void AttachToNotification(Notification notification) =>
         _dbContext.Notifications.Attach(notification);
+
+    /// <inheritdoc />
+    public void DeleteAsync(Notification notification)
+    {
+        _dbContext.Notifications.Remove(notification);
+    }
 }
