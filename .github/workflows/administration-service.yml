@@ -19,8 +19,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_administration-service
   COMMIT_SHA: ${{ github.sha }}
-  IMAGE_BEGINN: 'administationtag: '
-  IMAGE_FULL: 'administationtag: ${{ github.sha }}'
+  IMAGE_BEGINN: 'administrationtag: '
+  IMAGE_FULL: 'administrationtag: ${{ github.sha }}'
 
 jobs:
   # build-and-push-image:
