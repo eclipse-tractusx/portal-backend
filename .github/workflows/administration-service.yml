@@ -77,6 +77,8 @@ jobs:
 
       - name: Commit and push updated values-dev.yaml to product-portal-cd repo
         run: |
+          git config --global user.name "evegufy"
+          git config --global user.email "evelyn.gurschler@bmw.de"
           git remote set-url origin git@github.com:evegufy/catenax-ng/product-portal-cd.git.git
           git add chart/portal-backend/values-dev.yaml
           git commit -m "Add new image for administration service"
