@@ -22,7 +22,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Framework.Cors;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -36,6 +36,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     var provider = new PhysicalFileProvider("/app/secrets");
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
+
+builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
@@ -114,12 +116,14 @@ builder.Services.AddDbContext<PortalDbContext>(options =>
 
 var app = builder.Build();
 
-if (app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configuration.GetValue<bool>("DebugEnabled"))
+var debugEnabled = app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configuration.GetValue<bool>("DebugEnabled");
+if (debugEnabled)
 {
     app.UseDeveloperExceptionPage();
     KeycloakUntrustedCertExceptionHandler.ConfigureExceptions(app.Configuration.GetSection("Keycloak"));
-    FlurlErrorLogging.ConfigureLogger(app.Services.GetRequiredService<ILogger<Program>>());
 }
+FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<Program>>(), debugEnabled);
+
 if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configuration.GetValue<bool>("SwaggerEnabled"))
 {
     app.UseSwagger(c => c.RouteTemplate = "/api/registration/swagger/{documentName}/swagger.{json|yaml}");
@@ -131,6 +135,8 @@ if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configura
 }
 
 app.UseRouting();
+
+app.UseCors(CorsExtensions.AllowSpecificOrigins);
 
 app.UseMiddleware<GeneralHttpErrorHandler>();
 app.UseAuthentication();

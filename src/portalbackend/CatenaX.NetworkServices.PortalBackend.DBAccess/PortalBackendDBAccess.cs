@@ -17,35 +17,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
             _dbContext = dbContext;
         }
 
-        [Obsolete("user IUserRepository instead")]
-        public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId) =>
-            _dbContext.CompanyUsers.Add(
-                new CompanyUser(
-                    Guid.NewGuid(),
-                    companyId,
-                    companyUserStatusId,
-                    DateTimeOffset.UtcNow)
-                {
-                    Firstname = firstName,
-                    Lastname = lastName,
-                    Email = email,
-                }).Entity;
-
-        [Obsolete("use IUserRolesRepository instead")]
-        public CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId) =>
-            _dbContext.CompanyUserAssignedRoles.Add(
-                new CompanyUserAssignedRole(
-                    companyUserId,
-                    userRoleId
-                )).Entity;
-
-        [Obsolete("user IUserRepository instead")]
-        public IamUser CreateIamUser(CompanyUser user, string iamUserEntityId) =>
-            _dbContext.IamUsers.Add(
-                new IamUser(
-                    iamUserEntityId,
-                    user.Id)).Entity;
-
         public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
                 .AsNoTracking()
@@ -57,21 +28,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                         ApplicationStatus = companyApplication.ApplicationStatusId
                     })
                 .AsAsyncEnumerable();
-
-        public Task<CompanyNameBpnIdpAlias?> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId) =>
-            _dbContext.IamUsers
-                .AsNoTracking()
-                .Where(iamUser => iamUser.UserEntityId == iamUserId)
-                .Select(iamUser => iamUser!.CompanyUser!.Company)
-                .Select(company => new CompanyNameBpnIdpAlias(
-                    company!.Id,
-                    company.Name)
-                {
-                    BusinessPartnerNumber = company!.BusinessPartnerNumber,
-                    IdpAlias = company!.IdentityProviders
-                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                        .SingleOrDefault()!.IamIdentityProvider!.IamIdpAlias,
-                }).SingleOrDefaultAsync();
 
         public Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId) =>
             _dbContext.IamUsers
@@ -91,37 +47,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess
                 .Include(companyUser => companyUser.IamUser)
                 .AsAsyncEnumerable();
 
-        public Task<CompanyApplication?> GetCompanyApplicationAsync(Guid applicationId) =>
-            _dbContext.CompanyApplications
-                .Where(application => application.Id == applicationId)
-                .SingleOrDefaultAsync();
-
-        public Task<CompanyApplicationStatusId> GetApplicationStatusUntrackedAsync(Guid applicationId)
-        {
-            return _dbContext.CompanyApplications
-                .Where(application => application.Id == applicationId)
-                .AsNoTracking()
-                .Select(application => application.ApplicationStatusId)
-                .SingleOrDefaultAsync();
-        }
-
         public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
             _dbContext.Remove(companyUserAssignedRole).Entity;
 
         public IamUser RemoveIamUser(IamUser iamUser) =>
             _dbContext.Remove(iamUser).Entity;
-
-        [Obsolete("user IUserRolesRepository instead")]
-        public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
-            _dbContext.UserRoles
-                .AsNoTracking()
-                .Where(userRole => userRole.IamClient!.ClientClientId == clientClientId && userRoles.Contains(userRole.UserRoleText))
-                .AsQueryable()
-                .Select(userRole => new UserRoleWithId(
-                    userRole.UserRoleText,
-                    userRole.Id
-                ))
-                .AsAsyncEnumerable();
 
         public IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId) =>
             (from invitation in _dbContext.Invitations
