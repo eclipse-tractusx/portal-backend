@@ -1,6 +1,6 @@
 name: Administration-Service
 
-on: 
+on:
   push:
     paths:
       # service path
@@ -55,6 +55,12 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  change-image-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
       - name: Checkout product-portal-cd repository
         uses: actions/checkout@v3
         with:
