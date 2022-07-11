@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
@@ -25,4 +26,5 @@ public interface IProvisioningManager
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
+    Task<(string RedirectUrl, string DisplayName, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, bool Enabled)> GetCentralIdentityProviderDataAsync(string alias);
 }
