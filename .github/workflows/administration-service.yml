@@ -74,7 +74,7 @@ jobs:
           ls -lisa
           pwd
           sed -i 's/${{ env.IMAGE_BEGINN }}.*/${{ env.IMAGE_FULL }}/' \
-          product-portal-cd/chart/portal-backend/values-dev.yaml
+          chart/portal-backend/values-dev.yaml
 
       - name: Commit and push new image tag to product-portal-cd repo
         run: |
