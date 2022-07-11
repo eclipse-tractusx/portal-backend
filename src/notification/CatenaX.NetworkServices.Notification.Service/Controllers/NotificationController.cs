@@ -116,8 +116,11 @@ public class NotificationController : ControllerBase
     /// <summary>
     /// Changes the read status of a notification to <see cref="NotificationStatusId.READ"/>
     /// </summary>
-    /// <param name="notificationId" example="1">OPTIONAL: Id of the notification status</param>
+    /// <param name="notificationId" example="f22f2b57-426a-4ac3-b3af-7924a1c61590">OPTIONAL: Id of the notification status</param>
+    /// <param name="notificationStatusId" example="1">OPTIONAL: Id of the notification status</param>
     /// <returns>Return NoContent</returns>
+    /// <remarks>Example: Get: /api/notification/read</remarks>
+    /// <remarks>Example: Get: /api/notification/read?statusId=1</remarks>
     /// <response code="204">Count of the notifications.</response>
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>
@@ -125,9 +128,9 @@ public class NotificationController : ControllerBase
     [Route("{notificationId:guid}/read")]
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId)
+    public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] NotificationStatusId notificationStatusId = NotificationStatusId.READ)
     {
-        await this.WithIamUserId(userId => this._logic.SetNotificationToRead(userId, notificationId));
+        await this.WithIamUserId(userId => this._logic.SetNotificationToRead(userId, notificationId, notificationStatusId));
         return NoContent();
     }
 }

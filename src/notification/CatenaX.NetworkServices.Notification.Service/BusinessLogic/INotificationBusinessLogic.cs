@@ -58,5 +58,6 @@ public interface INotificationBusinessLogic
     /// </summary>
     /// <param name="userId">Id of the notification receiver</param>
     /// <param name="notificationId">Id of the notification</param>
-    Task SetNotificationToRead(string userId, Guid notificationId);
+    /// <param name="notificationStatusId">Id of the notification status</param>
+    Task SetNotificationToRead(string userId, Guid notificationId, NotificationStatusId notificationStatusId);
 }

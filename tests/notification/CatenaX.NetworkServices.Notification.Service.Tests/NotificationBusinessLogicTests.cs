@@ -294,7 +294,7 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        await sut.SetNotificationToRead(_iamUser.UserEntityId, _notificationDetail.Id);
+        await sut.SetNotificationToRead(_iamUser.UserEntityId, _notificationDetail.Id, NotificationStatusId.READ);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -312,7 +312,7 @@ public class NotificationBusinessLogicTests
         // Act
         try
         {
-            await sut.SetNotificationToRead(notExistingUserId, randomNotificationId);
+            await sut.SetNotificationToRead(notExistingUserId, randomNotificationId, NotificationStatusId.READ);
         }
         catch (ForbiddenException e)
         {
@@ -336,7 +336,7 @@ public class NotificationBusinessLogicTests
         // Act
         try
         {
-            await sut.SetNotificationToRead(iamUserId, Guid.NewGuid());
+            await sut.SetNotificationToRead(iamUserId, Guid.NewGuid(), NotificationStatusId.READ);
         }
         catch (ForbiddenException e)
         {
