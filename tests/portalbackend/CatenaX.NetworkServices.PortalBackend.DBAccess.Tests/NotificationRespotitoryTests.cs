@@ -171,12 +171,12 @@ public class NotificationRespotitoryTests
     {
         for (var i = 0; i < 3; i++)
         {
-            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationStatusId.READ));
+            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationStatusId.READ));
         }
 
         for (var i = 0; i < 2; i++)
         {
-            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationStatusId.UNREAD));
+            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationStatusId.UNREAD));
         }
 
         _notifications = _readNotifications.Concat(_unreadNotifications).ToList();

@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -34,8 +33,7 @@ public class Notification
     /// </summary>
     private Notification()
     {
-        Title = null!;
-        Message = null!;
+        Content = null!;
     }
 
     /// <summary>
@@ -45,8 +43,7 @@ public class Notification
     public Notification(Guid id)
     {
         Id = id;
-        Title = null!;
-        Message = null!;
+        Content = null!;
     }
 
     /// <summary>
@@ -55,17 +52,15 @@ public class Notification
     /// <param name="id">Id of the notification</param>
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="dateCreated">The creation date</param>
-    /// <param name="title">The title of the notification</param>
-    /// <param name="message">A custom notification message</param>
+    /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="readStatusId">id of the notification status</param>
-    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, string title, string message, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId)
+    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId)
     {
         Id = id;
         ReceiverUserId = receiverUserId;
         DateCreated = dateCreated;
-        Title = title;
-        Message = message;
+        Content = content;
         NotificationTypeId = notificationTypeId;
         ReadStatusId = readStatusId;
     }
@@ -76,23 +71,18 @@ public class Notification
     
     public DateTimeOffset DateCreated { get; private set; }
 
-    [MaxLength(150)]
-    public string Title { get; private set; }
-
-    public string Message { get; private set; }
+    public string Content { get; private set; }
 
     public NotificationTypeId NotificationTypeId { get; private set; }
     
     public NotificationStatusId ReadStatusId { get; set; }
 
-    public Guid? AppId { get; set; }
-    
+
     public DateTimeOffset? DueDate { get; set; }
 
     public Guid? CreatorUserId { get; set; }
 
     // Navigation properties
-    public virtual App? App { get; private set; }
     public virtual CompanyUser? Receiver { get; private set; }
     public virtual NotificationType? NotificationType { get; private set; }
     public virtual NotificationStatus? ReadStatus { get; private set; }
