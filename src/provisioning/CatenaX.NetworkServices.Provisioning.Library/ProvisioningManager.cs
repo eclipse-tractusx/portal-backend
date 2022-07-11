@@ -1,6 +1,6 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net;
 using Microsoft.Extensions.Options;
@@ -29,7 +29,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async Task SetupSharedIdpAsync(string idpName, string organisationName)
         {
-            await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false);
+            await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
 
             await CreateSharedRealmAsync(idpName, organisationName).ConfigureAwait(false);
 
@@ -53,7 +53,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         {
             var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
-            await CreateCentralIdentityProviderAsync(idpName, organisationName).ConfigureAwait(false);
+            await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
 
             var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(idpName).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
 
@@ -70,6 +70,15 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
 
             await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false);
+
+            return idpName;
+        }
+
+        public async Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol)
+        {
+            var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
+
+            await CreateCentralIdentityProviderAsync(idpName, organisationName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
 
             return idpName;
         }
@@ -162,6 +171,19 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
             return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
                 .Where(r => r.Composite == true).Select(x => x.Name);
+        }
+
+        public async Task<(string RedirectUrl, string DisplayName, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, bool Enabled)> GetCentralIdentityProviderDataAsync(string alias)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            var redirectUri = await GetCentralBrokerEndpointAsync(alias).ConfigureAwait(false);
+            return ((string RedirectUrl, string DisplayName, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, bool Enabled))
+                new (redirectUri,
+                    identityProvider.DisplayName,
+                    identityProvider.Config.AuthorizationUrl,
+                    IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
+                    identityProvider.Config.ClientId,
+                    identityProvider.Enabled ?? false);
         }
     }
 }
