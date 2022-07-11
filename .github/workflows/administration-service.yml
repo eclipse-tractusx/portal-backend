@@ -19,6 +19,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_administration-service
   COMMIT_SHA: ${{ github.sha }}
+  IMAGE_BEGINN: 'administationtag: '
+  IMAGE_FULL: 'administationtag: '${{ github.sha }}
 
 jobs:
   build-and-push-image:
@@ -53,3 +55,21 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Checkout product-portal-cd repository
+        uses: actions/checkout@v3
+        with:
+          repository: catenax-ng/product-portal-cd
+          ref: feature/CPLP-1074_auto_image_update
+          path: product-portal-cd/chart/portal-backend/values-dev.yaml
+
+      - name: Modify image tag in product-portal-cd repo
+        run: sed -i '${{ env.IMAGE_BEGINN }}.*${{ env.IMAGE_FULL }}' product-portal-cd/chart/portal-backend/values-dev.yaml
+
+      - name: Commit and push new image tag to product-portal-cd repo
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add product-portal-cd/chart/portal-backend/values-dev.yaml
+          git commit -m "Add new image for administration service"
+          git push
