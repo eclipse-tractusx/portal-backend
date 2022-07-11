@@ -54,6 +54,14 @@ public interface INotificationRepository
     Task<NotificationDetailData?> GetByIdAndUserIdUntrackedAsync(Guid notificationId, Guid companyUserId);
 
     /// <summary>
+    /// Checks if a notification exists for the given id and companyUserId
+    /// </summary>
+    /// <param name="notificationId">Id of the notification</param>
+    /// <param name="companyUserId">Id of the receiver</param>
+    /// <returns><c>true</c> if the notification exists, <c>false</c> if it doesn't exist</returns>
+    Task<bool> CheckExistsByIdAndUserIdAsync(Guid notificationId, Guid companyUserId);
+
+    /// <summary>
     /// Gets the count of the notifications for the given user and optional status
     /// </summary>
     /// <param name="companyUserId">Id of the company user </param>
@@ -66,4 +74,10 @@ public interface INotificationRepository
     /// </summary>
     /// <param name="notification">The notification that should be attached</param>
     void AttachToNotification(Notification notification);
+
+    /// <summary>
+    /// Deletes the given notification from the persistence storage
+    /// </summary>
+    /// <param name="notification">Notification that should be removed</param>
+    void DeleteAsync(Notification notification);
 }

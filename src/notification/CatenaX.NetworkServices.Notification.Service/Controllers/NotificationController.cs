@@ -112,25 +112,46 @@ public class NotificationController : ControllerBase
     public Task<int> NotificationCount([FromQuery] NotificationStatusId? statusId) =>
         this.WithIamUserId((iamUser) => _logic.GetNotificationCount(iamUser, statusId));
 
-
     /// <summary>
     /// Changes the read status of a notification to <see cref="NotificationStatusId.READ"/>
     /// </summary>
     /// <param name="notificationId" example="f22f2b57-426a-4ac3-b3af-7924a1c61590">OPTIONAL: Id of the notification status</param>
     /// <param name="notificationStatusId" example="1">OPTIONAL: Id of the notification status</param>
     /// <returns>Return NoContent</returns>
-    /// <remarks>Example: Get: /api/notification/read</remarks>
-    /// <remarks>Example: Get: /api/notification/read?statusId=1</remarks>
-    /// <response code="204">Count of the notifications.</response>
+    /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590</remarks>
+    /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590?statusId=1</remarks>
+    /// <response code="204">The Read status was updated.</response>
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpPut]
     [Route("{notificationId:guid}/read")]
     [Authorize(Roles = "view_notifications")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] NotificationStatusId notificationStatusId = NotificationStatusId.READ)
     {
         await this.WithIamUserId(userId => this._logic.SetNotificationToRead(userId, notificationId, notificationStatusId));
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Delete the
+    /// </summary>
+    /// <param name="notificationId" example="f22f2b57-426a-4ac3-b3af-7924a1c615901">Id of the notification</param>
+    /// <returns>Return NoContent</returns>
+    /// <remarks>Example: DELETE: /api/notification/f22f2b57-426a-4ac3-b3af-7924a1c615901</remarks>
+    /// <response code="204">Count of the notifications.</response>
+    /// <response code="400">NotificationStatus does not exist.</response>
+    /// <response code="403">IamUserId is not assigned.</response>
+    [HttpDelete]
+    [Route("{notificationId:guid}")]
+    [Authorize(Roles = "view_notifications")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
+    {
+        await this.WithIamUserId(userId => this._logic.DeleteNotification(userId, notificationId));
         return NoContent();
     }
 }

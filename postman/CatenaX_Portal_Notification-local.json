@@ -160,7 +160,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"dateCreated\": \"2022-07-01T12:33:16.013Z\",\r\n  \"title\": \"Super duper news\",\r\n  \"message\": \"Here are super duper news for you, enjoy.\",\r\n  \"notificationTypeId\": \"INFO\",\r\n  \"readStatusId\": \"UNREAD\",\r\n  \"dueDate\": \"2022-07-01T12:33:16.013Z\"\r\n}"
+					"raw": "{\r\n  \"dateCreated\": \"2022-07-01T12:33:16.013Z\",\r\n  \"content\": \"{ \\\"title\\\": \\\"this is a test message\\\", \\\"message\\\": \\\"test message for the notification\\\" }\",\r\n  \"notificationTypeId\": \"INFO\",\r\n  \"readStatusId\": \"UNREAD\",\r\n  \"dueDate\": \"2022-07-01T12:33:16.013Z\"\r\n}"
 				},
 				"url": {
 					"raw": "https://localhost:5001/api/notification/c96e3b89-904d-4a89-904c-797df48845a4",
@@ -339,6 +339,37 @@
 						"notification",
 						"{{notificationId}}",
 						"read"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Notifications",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/notification/{{notificationId}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"notification",
+						"{{notificationId}}"
 					]
 				}
 			},

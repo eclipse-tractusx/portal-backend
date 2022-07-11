@@ -121,4 +121,23 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         notification.ReadStatusId = notificationStatusId;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async Task DeleteNotification(string userId, Guid notificationId)
+    {
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserIdUntrackedAsync(userId)
+            .ConfigureAwait(false);
+        if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
+
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        var exists = await notificationRepository.CheckExistsByIdAndUserIdAsync(notificationId, companyUserId).ConfigureAwait(false);
+
+        if (!exists) throw new NotFoundException("Notification does not exist.");
+
+        var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId);
+        notificationRepository.AttachToNotification(notification);
+        notificationRepository.DeleteAsync(notification);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }
