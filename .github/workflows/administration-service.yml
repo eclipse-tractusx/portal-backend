@@ -68,12 +68,12 @@ jobs:
         with:
           repository: catenax-ng/product-portal-cd
           ref: feature/CPLP-1074_auto_image_update
-          path: product-portal-cd/chart/portal-backend/values-dev.yaml
 
       - name: Modify image tag in product-portal-cd repo
-        run: >
-          sed -i 's/${{ env.IMAGE_BEGINN }}.*/${{ env.IMAGE_FULL }}/'
-          /product-portal-cd/chart/portal-backend/values-dev.yaml
+        run: |
+          pwd
+          sed -i 's/${{ env.IMAGE_BEGINN }}.*/${{ env.IMAGE_FULL }}/' \
+          product-portal-cd/chart/portal-backend/values-dev.yaml
 
       - name: Commit and push new image tag to product-portal-cd repo
         run: |
