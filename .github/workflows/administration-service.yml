@@ -71,15 +71,13 @@ jobs:
           repository: catenax-ng/product-portal-cd
           ref: feature/CPLP-1074_auto_image_update
 
-      - name: Modify image tag in product-portal-cd repo
+      - name: Modify image tag in values-dev.yaml
         run: |
           sed -i 's/${{ env.IMAGE_BEGINN }}.*/${{ env.IMAGE_FULL }}/' chart/portal-backend/values-dev.yaml
-          cat chart/portal-backend/values-dev.yaml
 
-      - name: Commit and push new image tag to product-portal-cd repo
+      - name: Commit and push updated values-dev.yaml to product-portal-cd repo
         run: |
-          git config user.name evegufy
-          git config user.email evelyn.gurschler@bmw.de
+          git remote set-url origin git@github.com:evegufy/catenax-ng/product-portal-cd.git.git
           git add chart/portal-backend/values-dev.yaml
           git commit -m "Add new image for administration service"
           git push
