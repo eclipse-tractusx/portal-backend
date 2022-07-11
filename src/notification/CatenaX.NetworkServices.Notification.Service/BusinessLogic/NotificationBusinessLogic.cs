@@ -104,7 +104,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task SetNotificationToRead(string userId, Guid notificationId)
+    public async Task SetNotificationToRead(string userId, Guid notificationId, NotificationStatusId notificationStatusId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserIdUntrackedAsync(userId)
@@ -118,7 +118,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
         var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationDetails.Id);
         notificationRepository.AttachToNotification(notification);
-        notification.ReadStatusId = NotificationStatusId.READ;
+        notification.ReadStatusId = notificationStatusId;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
