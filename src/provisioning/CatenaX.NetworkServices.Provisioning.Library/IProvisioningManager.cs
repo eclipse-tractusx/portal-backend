@@ -13,6 +13,7 @@ public interface IProvisioningManager
     Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
     Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
     Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
+    Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
     Task<bool> DeleteSharedRealmUserAsync(string idpName, string userIdShared);
@@ -26,5 +27,6 @@ public interface IProvisioningManager
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
-    Task<(string RedirectUrl, string DisplayName, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, bool Enabled)> GetCentralIdentityProviderDataAsync(string alias);
+    Task<(string DisplayName, string RedirectUrl, bool Enabled, string AuthorizationUrl, string ClientId, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias);
+    Task<(string DisplayName, string RedirectUrl, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias);
 }

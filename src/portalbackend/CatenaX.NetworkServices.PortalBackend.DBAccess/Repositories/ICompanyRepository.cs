@@ -22,6 +22,8 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the company to retrieve.</param>
     /// <returns>Requested company entity or null if it does not exist.</returns>
     ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
+    
+    Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 }

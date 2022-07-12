@@ -83,7 +83,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
             }
             applicationRepository.CreateInvitation(application.Id, companyUser);
-            var identityprovider = identityProviderRepository.CreateSharedIdentityProvider(company);
+            var identityprovider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED);
+            identityprovider.Companies.Add(company);
             identityProviderRepository.CreateIamIdentityProvider(identityprovider, idpName);
             userRepository.CreateIamUser(companyUser, centralUserId);
 

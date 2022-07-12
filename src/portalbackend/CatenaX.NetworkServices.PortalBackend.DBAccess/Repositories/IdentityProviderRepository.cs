@@ -20,18 +20,21 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     }
 
     /// <inheritdoc/>
-    public IdentityProvider CreateSharedIdentityProvider(Company company)
-    {
-        var idp = new IdentityProvider(
+    public IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory) =>
+        _context.IdentityProviders
+            .Add(new IdentityProvider(
             Guid.NewGuid(),
-            IdentityProviderCategoryId.KEYCLOAK_SHARED,
-            DateTimeOffset.UtcNow);
-        idp.Companies.Add(company);
-        return _context.IdentityProviders.Add(idp).Entity;
-    }
+            identityProviderCategory,
+            DateTimeOffset.UtcNow)).Entity;
+
+    public CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
+        _context.CompanyIdentityProviders
+            .Add(new CompanyIdentityProvider(
+                companyId,
+                identityProviderId
+            )).Entity;
 
     /// <inheritdoc/>
-
     public IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias) =>
         _context.IamIdentityProviders.Add(
             new IamIdentityProvider(

@@ -43,6 +43,14 @@ public class CompanyRepository : ICompanyRepository
     public ValueTask<Company?> GetCompanyByIdAsync(Guid companyId) =>
         _context.Companies.FindAsync(companyId);
 
+    public Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser!.CompanyUser!.Company)
+            .Select(company => ((string? Name, Guid Id)) new (company!.Name, company.Id))
+            .SingleOrDefaultAsync();
+
     public Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
         _context.IamUsers
             .AsNoTracking()

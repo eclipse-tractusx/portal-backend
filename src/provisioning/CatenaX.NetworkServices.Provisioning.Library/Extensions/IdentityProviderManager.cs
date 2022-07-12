@@ -127,7 +127,7 @@ public partial class ProvisioningManager
         throw new Exception($"failed to enable central identityprovider {alias}");
     }
 
-    private async Task<string> GetCentralBrokerEndpointAsync(string alias)
+    private async Task<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
         var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false);
         if (openidconfig == null)
@@ -137,7 +137,21 @@ public partial class ProvisioningManager
         return new Url(openidconfig.Issuer)
             .AppendPathSegment("/broker/")
             .AppendPathSegment(alias)
-            .AppendPathSegment("/endpoint/*")
+            .AppendPathSegment("/endpoint")
+            .ToString();
+    }
+
+    private async Task<string> GetCentralBrokerEndpointSAMLAsync(string alias)
+    {
+        var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(false);
+        if (samlDescriptor == null)
+        {
+            throw new Exception($"failed to retrieve central samldescriptor");
+        }
+        return new Url(samlDescriptor.EntityId)
+            .AppendPathSegment("/broker/")
+            .AppendPathSegment(alias)
+            .AppendPathSegment("/endpoint")
             .ToString();
     }
 
