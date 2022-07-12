@@ -18,26 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using Microsoft.EntityFrameworkCore;
 
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-/// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
-/// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Type">Connector type.</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="Provider">Providing company's ID..</param>
-/// <param name="Host">Hosting company's ID.</param>
-public record ConnectorInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
-    Guid Provider,
-    Guid? Host);
+public class CountryRepository : ICountryRepository
+{
+    private readonly PortalDbContext _portalDbContext;
+
+    /// <summary>
+    /// Creates an instance of <see cref="CountryRepository"/>
+    /// </summary>
+    /// <param name="portalDbContext">The database</param>
+    public CountryRepository(PortalDbContext portalDbContext)
+    {
+        _portalDbContext = portalDbContext;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code) =>
+        await _portalDbContext.Countries.AnyAsync(x => x.Alpha2Code == alpha2Code);
+}

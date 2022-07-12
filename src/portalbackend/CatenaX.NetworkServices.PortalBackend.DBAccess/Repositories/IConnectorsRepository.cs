@@ -27,10 +27,4 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
     public Task DeleteConnectorAsync(Guid connectorId);
-
-    /// <summary>
-    /// Begins a persistence layer transaction.
-    /// </summary>
-    /// <returns>DbContextTransaction for scoping and rolling back requests.</returns>
-    public Task<IDbContextTransaction> BeginTransactionAsync();
 }
