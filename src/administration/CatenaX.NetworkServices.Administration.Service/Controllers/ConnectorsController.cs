@@ -71,7 +71,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="400">Input parameter are invalid.</response>
     [HttpPost]
     [Route("")]
-    // [Authorize(Roles = "add_connectors")]
+    [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>

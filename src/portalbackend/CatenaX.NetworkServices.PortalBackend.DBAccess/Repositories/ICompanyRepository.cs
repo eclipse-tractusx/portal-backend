@@ -50,5 +50,5 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="id">Id of the company to check</param>
     /// <returns><c>true</c> if the company exists, otherwise <c>false</c></returns>
-    Task<bool> CheckCompanyExistsById(Guid id);
+    Task<bool> CheckCompanyExistsByIdAsync(Guid id);
 }
