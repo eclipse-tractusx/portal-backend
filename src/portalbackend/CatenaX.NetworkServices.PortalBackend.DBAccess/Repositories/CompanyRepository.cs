@@ -87,4 +87,8 @@ public class CompanyRepository : ICompanyRepository
             .Where(c => c.Id == companyId)
             .SelectMany(c => c.ProvidedApps.Select(a => a.Id))
             .ContainsAsync(appId);
+
+    /// <inheritdoc />
+    public async Task<bool> CheckCompanyExistsById(Guid id) =>
+        await _context.Companies.AnyAsync(x => x.Id == id);
 }
