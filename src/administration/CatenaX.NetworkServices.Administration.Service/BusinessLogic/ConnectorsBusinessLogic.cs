@@ -37,8 +37,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    // private readonly IConnectorsRepository _repository;
-    // private readonly ICompanyRepository _companyRepository;
     private readonly ConnectorsSettings _settings;
 
     /// <summary>
@@ -86,12 +84,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ArgumentException($"Location {connectorInputModel.Location} does not exist", nameof(location));
         }
 
-        if (!await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsById(provider))
+        if (!await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsByIdAsync(provider).ConfigureAwait(false))
         {
             throw new ArgumentException($"Company {connectorInputModel.Provider} does not exist", nameof(provider));
         }
 
-        if (provider != host && host.HasValue && !await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsById(host.Value))
+        if (provider != host && host.HasValue && !await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsByIdAsync(host.Value).ConfigureAwait(false))
         {
             throw new ArgumentException($"Company {host} does not exist", nameof(host));
         }
