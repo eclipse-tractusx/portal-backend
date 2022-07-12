@@ -1,5 +1,6 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
 
@@ -48,6 +49,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new ConsentRepository(_dbContext));
         }
+        else if (repositoryType == typeof(ICountryRepository))
+        {
+            return To<RepositoryType>(new CountryRepository(_dbContext));
+        }
         else if (repositoryType == typeof(IDocumentRepository))
         {
             return To<RepositoryType>(new DocumentRepository(_dbContext));
@@ -79,6 +84,8 @@ public class PortalRepositories : IPortalRepositories
     }
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
+
+    public Task<IDbContextTransaction> BeginTransactionAsync() => _dbContext.Database.BeginTransactionAsync();
 
     private static T To<T>(dynamic value) => (T) value;
 }

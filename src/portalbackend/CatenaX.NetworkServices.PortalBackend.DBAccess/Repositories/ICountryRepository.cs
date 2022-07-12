@@ -18,26 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
-
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
+/// Provides access to methods to work with Countries
 /// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Type">Connector type.</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="Provider">Providing company's ID..</param>
-/// <param name="Host">Hosting company's ID.</param>
-public record ConnectorInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
-    Guid Provider,
-    Guid? Host);
+public interface ICountryRepository
+{
+    /// <summary>
+    /// Checks if a country exists in the database depending on the alpha2code
+    /// </summary>
+    /// <param name="alpha2Code">The alpha2code to check the countries for</param>
+    /// <returns><c>true</c> if the country exists for the given alpha 2 code, otherwise <c>false</c></returns>
+    Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code);
+}

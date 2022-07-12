@@ -58,10 +58,4 @@ public class ConnectorsRepository : IConnectorsRepository
             throw new ArgumentException("Connector with provided ID does not exist.", nameof(connectorId));
         }
     }
-
-    /// <inheritdoc/>
-    public Task<IDbContextTransaction> BeginTransactionAsync()
-    {
-        return _context.Database.BeginTransactionAsync();
-    }
 }
