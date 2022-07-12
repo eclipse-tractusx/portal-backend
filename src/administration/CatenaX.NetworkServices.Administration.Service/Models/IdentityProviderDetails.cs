@@ -6,39 +6,44 @@ namespace CatenaX.NetworkServices.Administration.Service.Models;
 
 public class IdentityProviderDetails
 {
-    public IdentityProviderDetails(Guid identityProviderId, IdentityProviderCategoryId identityProviderCategoryId, string redirectUrl, string displayName, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId, bool enabled)
+    public IdentityProviderDetails(Guid identityProviderId, IdentityProviderCategoryId identityProviderCategoryId, string displayName, string redirectUrl, bool enabled)
     {
         IdentityProviderId = identityProviderId;
         IdentityProviderCategoryId = identityProviderCategoryId;
-        RedirectUrl = redirectUrl;
         DisplayName = displayName;
-        AuthorizationUrl = authorizationUrl;
-        ClientAuthMethod = clientAuthMethod;
-        ClientId = clientId;
+        RedirectUrl = redirectUrl;
         Enabled = enabled;
     }
 
-    [JsonPropertyName("identity_provider_id")]
+    [JsonPropertyName("identityProviderId")]
     public Guid IdentityProviderId { get; }
 
-    [JsonPropertyName("identity_provider_category")]
+    [JsonPropertyName("identityProviderCategory")]
     public IdentityProviderCategoryId IdentityProviderCategoryId { get; }
 
-    [JsonPropertyName("redirect_url")]
-    public string RedirectUrl { get; }
-
-    [JsonPropertyName("display_name")]
+    [JsonPropertyName("displayName")]
     public string DisplayName { get; }
 
-    [JsonPropertyName("authorization_url")]
-    public string AuthorizationUrl { get; }
-
-    [JsonPropertyName("client_auth_method")]
-    public IamIdentityProviderClientAuthMethod ClientAuthMethod { get; }
-
-    [JsonPropertyName("client_id")]
-    public string ClientId { get; }
+    [JsonPropertyName("redirectUrl")]
+    public string RedirectUrl { get; set; }
 
     [JsonPropertyName("enabled")]
     public bool Enabled { get; }
+
+    // OIDC related properties:
+    [JsonPropertyName("clientId")]
+    public string? ClientId { get; set; }
+
+    [JsonPropertyName("authorizationUrl")]
+    public string? AuthorizationUrl { get; set; }
+
+    [JsonPropertyName("clientAuthMethod")]
+    public IamIdentityProviderClientAuthMethod? ClientAuthMethod { get; set; }
+
+    // SAML related properties:
+    [JsonPropertyName("serviceProviderEntityId")]
+    public string? ServiceProviderEntityId { get; set; }
+
+    [JsonPropertyName("singleSignOnServiceUrl")]
+    public string? SingleSignOnServiceUrl { get; set; }
 }

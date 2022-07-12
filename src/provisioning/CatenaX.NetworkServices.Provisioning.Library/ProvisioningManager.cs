@@ -42,7 +42,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
 
             await CreateSharedRealmIdentityProviderClientAsync(idpName, new IdentityProviderClientConfig(
-                await GetCentralBrokerEndpointAsync(idpName).ConfigureAwait(false),
+                await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false)+"/*",
                 await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
             )).ConfigureAwait(false);
 
@@ -173,17 +173,29 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Where(r => r.Composite == true).Select(x => x.Name);
         }
 
-        public async Task<(string RedirectUrl, string DisplayName, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, bool Enabled)> GetCentralIdentityProviderDataAsync(string alias)
+        public async Task<(string DisplayName, string RedirectUrl, bool Enabled, string AuthorizationUrl, string ClientId, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            var redirectUri = await GetCentralBrokerEndpointAsync(alias).ConfigureAwait(false);
-            return ((string RedirectUrl, string DisplayName, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, bool Enabled))
-                new (redirectUri,
-                    identityProvider.DisplayName,
+            var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
+            return ((string DisplayName, string RedirectUrl, bool Enabled, string AuthorizationUrl, string ClientId, IamIdentityProviderClientAuthMethod ClientAuthMethod))
+                new (identityProvider.DisplayName,
+                    redirectUri,
+                    identityProvider.Enabled ?? false,
                     identityProvider.Config.AuthorizationUrl,
-                    IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
                     identityProvider.Config.ClientId,
-                    identityProvider.Enabled ?? false);
+                    IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod));
+        }
+
+        public async Task<(string DisplayName, string RedirectUrl, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
+            return ((string DisplayName, string RedirectUrl, bool Enabled, string EntityId, string SingleSignOnServiceUrl))
+                new (identityProvider.DisplayName,
+                    redirectUri,
+                    identityProvider.Enabled ?? false,
+                    identityProvider.Config.EntityId,
+                    identityProvider.Config.SingleSignOnServiceUrl);
         }
     }
 }
