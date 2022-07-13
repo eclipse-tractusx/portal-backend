@@ -205,4 +205,44 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         return true;
     }
+
+    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size)
+    {
+        var applications = _applicationRepository.GetAllCompanyApplicationsDetailsQuery();
+
+        return Pagination.CreateResponseAsync<CompanyApplicationWithCompanyUserDetails>(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
+                applications.CountAsync(),
+                applications.OrderByDescending(application => application.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new CompanyApplicationWithCompanyUserDetails(
+                        application.ApplicationStatusId,
+                        application.DateCreated,
+                        application.Company!.Name)
+                    {
+                        FirstName = application.Invitations
+                            .Select(invitation => invitation.CompanyUser)
+                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                && companyUser!.Firstname != null)
+                            .Select(companyUser => companyUser!.Firstname)
+                            .FirstOrDefault(),
+                        LastName = application.Invitations
+                            .Select(invitation => invitation.CompanyUser)
+                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                && companyUser!.Lastname != null)
+                            .Select(companyUser => companyUser!.Lastname)
+                            .FirstOrDefault(),
+                        Email = application.Invitations
+                            .Select(invitation => invitation.CompanyUser)
+                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                                && companyUser!.Email != null)
+                            .Select(companyUser => companyUser!.Email)
+                            .FirstOrDefault()
+                    })
+                    .AsAsyncEnumerable()));
+    }
 }
