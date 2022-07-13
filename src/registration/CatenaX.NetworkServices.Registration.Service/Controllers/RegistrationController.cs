@@ -100,25 +100,20 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Get all composite client roles
+        /// </summary>
+        /// <returns>all composite client roles</returns>
+        /// <remarks>Example: Get: /api/registration/rolesComposite</remarks>
+        /// <response code="200">returns all composite client roles</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("rolesComposite")]
         [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetClientRolesComposite()
-        {
-            try
-            {
-                var result = await _registrationBusinessLogic.GetClientRolesCompositeAsync().ConfigureAwait(false);
-                return Ok(result.ToList());
-
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
-
+        public IAsyncEnumerable<string> GetClientRolesComposite() =>
+            _registrationBusinessLogic.GetClientRolesCompositeAsync();
+            
+           
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("applications")]
