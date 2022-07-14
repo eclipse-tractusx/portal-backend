@@ -273,19 +273,19 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
-        /// <summary>
-        /// Gets the company app user
+         /// <summary>
+        /// Get company app users by appId
         /// </summary>
-        /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
-        /// <param name="page" example="0">Index of the page</param>
-        /// <param name="size" example="15">Intended size of the results per page</param>
-        /// <returns></returns>
-        /// <remarks>Example: GET: owncompany/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/users</remarks>
-        /// <response code="200">Returns the user details as pagination.</response>
+        /// <param name="appId">Get company app users by appId</param>
+        /// <param name="page">page index start from 0</param>
+        /// <param name="size">size to get number of records</param>
+        /// <returns>Returns the company users with assigned role for the requested app id</returns>
+        /// <remarks>Example: GET: /api/administration/user/owncompany/apps/5cf74ef8-e0b7-4984-a872-474828beb5d3/users?page=0&size=15</remarks>
+        /// <response code="200">Result as a Company App Users Details</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/apps/{appId}/users")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
         public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
             this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
 
@@ -302,7 +302,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "modify_user_account")]
         [Route("app/{appId}/roles")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
