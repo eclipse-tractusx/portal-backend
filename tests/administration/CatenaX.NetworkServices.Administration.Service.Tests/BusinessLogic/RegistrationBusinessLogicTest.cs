@@ -86,9 +86,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             Guid companyUserId2 = new Guid("857b93b1-8fcb-4141-81b0-ae81950d489f");
             Guid companyUserId3 = new Guid("857b93b1-8fcb-4141-81b0-ae81950d48af");
             Guid companyUserRoleId = new Guid("607818be-4978-41f4-bf63-fa8d2de51154");
-            Guid centralUserId = new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f");
+            Guid centralUserId1 = new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f");
+            Guid centralUserId2 = new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd70");
+            Guid centralUserId3 = new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd71");
             Guid userRoleId = new Guid("607818be-4978-41f4-bf63-fa8d2de51154");
-            string userEntityId = "some entity id";
             string businessPartnerNumber = "CAXLSHAREDIDPZZ";
             string companyName = "Shared Idp Test";
 
@@ -99,24 +100,20 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             var companyApplication = _fixture.Build<CompanyApplication>()
                 .With(u => u.Company, company)
                 .Create();
-            var clientId = "catenax-portal";
-            var userRoleIds = new List<Guid>() { userRoleId };
-            var roles = new List<string> { "IT Admin" };
+            string clientId = "catenax-portal";
+            List<string> roles = new List<string> { "IT Admin" };
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
                             { clientId, roles.AsEnumerable() }
                         };
+            List<UserRoleData> userRoleData = new List<UserRoleData>() { new UserRoleData(userRoleId, clientId, "IT Admin") };
             var companyInvitedUsers = new List<CompanyInvitedUserData>()
             {
-                new(companyUserId1, userEntityId, Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
-                new(companyUserId2, userEntityId, Enumerable.Repeat(businessPartnerNumber, 1), Enumerable.Repeat(userRoleId, 1)),
-                new(companyUserId3, userEntityId, Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
+                new CompanyInvitedUserData(companyUserId1, centralUserId1.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
+                new CompanyInvitedUserData(companyUserId2, centralUserId2.ToString(), Enumerable.Repeat(businessPartnerNumber, 1), Enumerable.Repeat(userRoleId, 1)),
+                new CompanyInvitedUserData(companyUserId3, centralUserId3.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
             }.ToAsyncEnumerable();
 
-            var userRole = _fixture.Build<UserRoleData>()
-                .With(x => x.UserRoleId, userRoleId)
-                .CreateMany(1)
-                .ToAsyncEnumerable();
             var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
             var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
             var bpns = new List<string> { businessPartnerNumber }.AsEnumerable();
@@ -126,19 +123,28 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(id))
                 .Returns(companyApplication);
 
-            A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(clientRoleNames))
-                .Returns(userRoleIds.ToAsyncEnumerable());
-
             A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(clientRoleNames))
-                .Returns(userRole);
+                .Returns(userRoleData.ToAsyncEnumerable());
 
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(id))
                 .Returns(companyInvitedUsers);
 
-            A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(userEntityId.ToString(), A<Dictionary<string, IEnumerable<string>>>._))
-                .ReturnsLazily(() => clientRoleNames);
+            A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId1.ToString(), clientRoleNames))
+                .Returns(Task.FromResult((IDictionary<string,IEnumerable<string>>)clientRoleNames));
 
-            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(centralUserId.ToString(), bpns))
+            A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId2.ToString(), clientRoleNames))
+                .Returns(Task.FromResult((IDictionary<string,IEnumerable<string>>)clientRoleNames));
+
+            A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId3.ToString(), clientRoleNames))
+                .Returns(Task.FromResult((IDictionary<string,IEnumerable<string>>)clientRoleNames));
+
+            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(centralUserId1.ToString(), bpns))
+                .Returns(Task.CompletedTask);
+
+            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(centralUserId2.ToString(), bpns))
+                .Returns(Task.CompletedTask);
+
+            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(centralUserId3.ToString(), bpns))
                 .Returns(Task.CompletedTask);
 
             A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(companyUserId1, companyUserRoleId))
