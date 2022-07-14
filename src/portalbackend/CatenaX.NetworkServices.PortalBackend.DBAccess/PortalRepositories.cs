@@ -32,6 +32,16 @@ public class PortalRepositories : IPortalRepositories
         _dbContext = portalDbContext;
     }
 
+    /// <inheritdoc />
+    public TEntity Attach<TEntity>(TEntity entity)
+        where TEntity : class
+        => _dbContext.Attach(entity).Entity;
+
+    /// <inheritdoc />
+    public TEntity Remove<TEntity>(TEntity entity)
+        where TEntity : class
+        => _dbContext.Remove(entity).Entity;
+
     public RepositoryType GetInstance<RepositoryType>()
     {
         var repositoryType = typeof(RepositoryType);
@@ -39,26 +49,6 @@ public class PortalRepositories : IPortalRepositories
         if (repositoryType == typeof(IAppRepository))
         {
             return To<RepositoryType>(new AppRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IAppAssignedLicensesRepository))
-        {
-            return To<RepositoryType>(new AppAssignedLicensesRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IAppAssignedUseCasesRepository))
-        {
-            return To<RepositoryType>(new AppAssignedUseCasesRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IAppDescriptionsRepository))
-        {
-            return To<RepositoryType>(new AppDescriptionsRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IAppLanguagesRepository))
-        {
-            return To<RepositoryType>(new AppLanguagesRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IAppLicensesRepository))
-        {
-            return To<RepositoryType>(new AppLicensesRepository(_dbContext));
         }
         if (repositoryType == typeof(IApplicationRepository))
         {
@@ -79,10 +69,6 @@ public class PortalRepositories : IPortalRepositories
         if (repositoryType == typeof(ICompanyRolesRepository))
         {
             return To<RepositoryType>(new CompanyRolesRepository(_dbContext));
-        }
-        if (repositoryType == typeof(ICompanyUserAssignedAppFavouritesRepository))
-        {
-            return To<RepositoryType>(new CompanyUserAssignedAppFavouritesRepository(_dbContext));
         }
         if (repositoryType == typeof(IConnectorsRepository))
         {

@@ -52,8 +52,9 @@ public interface IAppRepository
     /// <summary>
     /// Adds an app to the database
     /// </summary>
-    /// <param name="appEntity">The app that should be added to the database</param>
-    void AddApp(App appEntity);
+    /// <param name="id">Id of the app</param>
+    /// <param name="provider">Provider of the app</param>
+    App CreateApp(Guid id, string provider);
 
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
@@ -70,4 +71,43 @@ public interface IAppRepository
     /// <param name="languageShortName">OPTIONAL: language shortName</param>
     /// <returns>Returns the details of the application</returns>
     Task<AppDetailsData> GetDetailsByIdAsync(Guid appId, Guid? companyId, string? languageShortName);
+
+    /// <summary>
+    /// Adds an <see cref="AppLicense"/> to the database
+    /// </summary>
+    /// <param name="licenseText">Text of the license</param>
+    AppLicense CreateAppLicenses(string licenseText);
+
+
+    /// <summary>
+    /// Adds an <see cref="AppAssignedLicense"/> to the database
+    /// </summary>
+    /// <param name="appId">Id of the application</param>
+    /// <param name="appLicenseId">Id of the app license</param>
+    AppAssignedLicense AddAppAssignedLicense(Guid appId, Guid appLicenseId);
+
+    /// <summary>
+    /// Adds <see cref="AppAssignedUseCase"/>s to the database
+    /// </summary>
+    /// <param name="useCases">The use cases that should be added to the database</param>
+    void AddUseCases(IEnumerable<AppAssignedUseCase> useCases);
+
+    /// <summary>
+    /// Adds <see cref="AppDescription"/>s to the database
+    /// </summary>
+    /// <param name="appDescriptions">The app descriptions that should be added to the database</param>
+    void AddAppDescriptions(IEnumerable<AppDescription> appDescriptions);
+
+    /// <summary>
+    /// Adds <see cref="AppLanguage"/>s to the database
+    /// </summary>
+    /// <param name="appLanguages">The app languages that should be added to the database</param>
+    void AddAppLanguages(IEnumerable<AppLanguage> appLanguages);
+
+    /// <summary>
+    /// Adds the given app favourite to the database
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="companyUserId">Id of the company User</param>
+    CompanyUserAssignedAppFavourite AddAppFavourite(Guid appId, Guid companyUserId);
 }

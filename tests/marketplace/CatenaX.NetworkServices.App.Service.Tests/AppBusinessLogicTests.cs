@@ -38,7 +38,6 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         private readonly IPortalRepositories _portalRepositories;
         private readonly IAppRepository _appRepository;
         private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
-        private readonly ICompanyUserAssignedAppFavouritesRepository _companyUserAssignedAppFavourites;
         private readonly IUserRepository _userRepository;
 
         public AppBusinessLogicTests()
@@ -46,7 +45,6 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
             _portalRepositories = A.Fake<IPortalRepositories>();
             _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
-            _companyUserAssignedAppFavourites = A.Fake<ICompanyUserAssignedAppFavouritesRepository>();
             _appRepository = A.Fake<IAppRepository>();
             _userRepository = A.Fake<IUserRepository>();
         }
@@ -59,7 +57,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var (companyUser, iamUser) = CreateTestUserPair();
             A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
                 .Returns(companyUser.Id);
-            A.CallTo(() => _portalRepositories.GetInstance<ICompanyUserAssignedAppFavouritesRepository>()).Returns(_companyUserAssignedAppFavourites);
+            A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             _fixture.Inject(_portalRepositories);
             
@@ -69,7 +67,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _companyUserAssignedAppFavourites.AddAppFavourite(A<CompanyUserAssignedAppFavourite>.That.Matches(x => x.AppId == appId && x.CompanyUserId == companyUser.Id))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _appRepository.AddAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == companyUser.Id))).MustHaveHappenedOnceExactly();
             A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         }
 
@@ -82,7 +80,6 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var appId = _fixture.Create<Guid>();
             A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
                 .Returns(companyUser.Id);
-            A.CallTo(() => _portalRepositories.GetInstance<ICompanyUserAssignedAppFavouritesRepository>()).Returns(_companyUserAssignedAppFavourites);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             _fixture.Inject(_portalRepositories);
 
@@ -92,7 +89,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.RemoveFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _companyUserAssignedAppFavourites.RemoveFavouriteAppForUser(appId, companyUser.Id)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _portalRepositories.Remove(A<CompanyUserAssignedAppFavourite>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         }
 
@@ -123,7 +120,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.AddCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _companyAssignedAppsRepository.AddCompanyAssignedApp(A<CompanyAssignedApp>._)).MustHaveHappened(1, Times.Exactly);
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
         }
 
