@@ -37,10 +37,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private const string ERROR_STRING = "ERROR";
     private const string DEFAULT_LANGUAGE = "en";
-    private readonly PortalDbContext context;
-    private readonly ICompanyAssignedAppsRepository companyAssignedAppsRepository;
-    private readonly IAppRepository appRepository;
-    private readonly IMailingService mailingService;
+    private readonly PortalDbContext _context;
+    private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
+    private readonly IAppRepository _appRepository;
+    private readonly IMailingService _mailingService;
 
     /// <summary>
     /// Constructor.
@@ -51,16 +51,16 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="mailingService">Mail service.</param>
     public AppsBusinessLogic(PortalDbContext context, ICompanyAssignedAppsRepository companyAssignedAppsRepository, IAppRepository appRepository, IMailingService mailingService)
     {
-        this.context = context;
-        this.companyAssignedAppsRepository = companyAssignedAppsRepository;
-        this.appRepository = appRepository;
-        this.mailingService = mailingService;
+        this._context = context;
+        this._companyAssignedAppsRepository = companyAssignedAppsRepository;
+        this._appRepository = appRepository;
+        this._mailingService = mailingService;
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<AppViewModel> GetAllActiveAppsAsync(string? languageShortName = null)
     {
-        await foreach(var app in context.Apps.AsNoTracking()
+        await foreach(var app in _context.Apps.AsNoTracking()
             .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
             .Select(a => new {
                 a.Id,
@@ -69,7 +69,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 UseCaseNames = a.UseCases.Select(uc => uc.Name),
                 ThumbnailUrl = (string?)a.ThumbnailUrl,
                 ShortDescription =
-                    this.context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
+                    this._context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
                     ? null 
                     : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                       ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
@@ -94,10 +94,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async IAsyncEnumerable<BusinessAppViewModel> GetAllUserUserBusinessAppsAsync(string userId)
     {
-        await foreach (var app in context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+        await foreach (var app in _context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
             .SelectMany(u => u.CompanyUser!.Company!.BoughtApps)
             .Intersect(
-                context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
+                _context.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
                 .SelectMany(u => u.CompanyUser!.UserRoles.SelectMany(r => r.IamClient!.Apps))
             )
             .Select( a => new
@@ -122,18 +122,16 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
+    public async Task<AppDetailsViewModel> GetAppDetailsByIdAsync(Guid appId, string userId, string? languageShortName = null)
     {
-        var companyId = userId == null ?
-            (Guid?)null :
-            await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
+        var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
 
-        if (!await this.context.Apps.AnyAsync(x => x.Id == appId))
+        if (!await this._companyAssignedAppsRepository.ExistsByAppAndCompanyIdAsync(appId, companyId).ConfigureAwait(false))
         {
-            throw new NotFoundException("App not found");
+            throw new ArgumentException("Company Assigned App does not exists");
         }
 
-        var app = await this.context.Apps.AsNoTracking()
+        var app = await this._context.Apps.AsNoTracking()
             .Where(a => a.Id == appId)
             .Select(a => new
             {
@@ -147,7 +145,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 a.ContactNumber,
                 UseCases = a.UseCases.Select(u => u.Name),
                 LongDescription = 
-                    this.context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
+                    this._context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
                     ? null 
                     : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
                       ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
@@ -155,9 +153,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
                 Tags = a.Tags.Select(t => t.Name),
-                IsPurchased = companyId == null ?
-                    (bool?)null :
-                    a.Companies.Any(c => c.Id == companyId),
+                IsSubscribed = this._context.CompanyAssignedApps.First(x => x.CompanyId == companyId).AppSubscriptionStatusId,
                 Languages = a.SupportedLanguages.Select(l => l.ShortName)
             })
             .SingleAsync().ConfigureAwait(false);
@@ -172,7 +168,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             )
         {
             Id = app.Id,
-            IsSubscribed = app.IsPurchased,
+            IsSubscribed = app.IsSubscribed,
             Tags = app.Tags,
             UseCases = app.UseCases,
             DetailPictureUris = app.DetailPictureUris,
@@ -185,7 +181,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId)
     {
-        return this.context.IamUsers.AsNoTracking()
+        return this._context.IamUsers.AsNoTracking()
             .Where(u => u.UserEntityId == userId) // Id is unique, so single user
             .SelectMany(u => u.CompanyUser!.Apps.Select(a => a.Id))
             .ToAsyncEnumerable();
@@ -198,9 +194,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
             var rowToRemove = new CompanyUserAssignedAppFavourite(appId, companyUserId);
-            this.context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
-            this.context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
-            await this.context.SaveChangesAsync().ConfigureAwait(false);
+            this._context.CompanyUserAssignedAppFavourites.Attach(rowToRemove);
+            this._context.CompanyUserAssignedAppFavourites.Remove(rowToRemove);
+            await this._context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -214,10 +210,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-            this.context.CompanyUserAssignedAppFavourites.Add(
+            this._context.CompanyUserAssignedAppFavourites.Add(
                 new CompanyUserAssignedAppFavourite(appId, companyUserId)
             );
-            await this.context.SaveChangesAsync().ConfigureAwait(false);
+            await this._context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
         {
@@ -230,7 +226,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<IAsyncEnumerable<AppSubscriptionStatusViewModel>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId)
     {
         var companyId = await GetCompanyIdByIamUserIdAsync(iamUserId);
-        return context.CompanyAssignedApps.AsNoTracking()
+        return _context.CompanyAssignedApps.AsNoTracking()
             .Where(s => s.CompanyId == companyId)
             .Select(s => new AppSubscriptionStatusViewModel { AppId = s.AppId, AppSubscriptionStatus = s.AppSubscriptionStatusId})
             .ToAsyncEnumerable();
@@ -240,7 +236,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<IAsyncEnumerable<AppCompanySubscriptionStatusViewModel>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId)
     {
         var companyId = await GetCompanyIdByIamUserIdAsync(iamUserId);
-        return context.CompanyAssignedApps.AsNoTracking()
+        return _context.CompanyAssignedApps.AsNoTracking()
             .Where(s => s.App!.ProviderCompanyId == companyId)
             .GroupBy(s => s.AppId)
             .Select(g => new AppCompanySubscriptionStatusViewModel
@@ -262,29 +258,29 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
 
-            this.context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING});
+            this._context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING));
 
-            await this.context.SaveChangesAsync().ConfigureAwait(false);
+            await this._context.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
         {
             throw new ArgumentException("Parameters are invalid or app is already subscribed to.");
         }
 
-        var appDetails = await appRepository.GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        var appDetails = await _appRepository.GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
 
         var mailParams = new Dictionary<string, string>
             {
                 { "appProviderName", appDetails.providerName},
                 { "appName", appDetails.appName }
             };
-        await mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        await _mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task ActivateCompanyAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId)
     {
-        var isExistingApp = await this.context.Apps.AnyAsync(a => a.Id == appId).ConfigureAwait(false); 
+        var isExistingApp = await this._context.Apps.AnyAsync(a => a.Id == appId).ConfigureAwait(false);
         if(!isExistingApp)
         {
             throw new NotFoundException($"App {appId} does not exist.");
@@ -292,7 +288,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         var companyId = await this.GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
 
-        var isMemberOfCompanyProvidingApp = await this.context.Companies.AsNoTracking()
+        var isMemberOfCompanyProvidingApp = await this._context.Companies.AsNoTracking()
             .Where(c => c.Id == companyId)
             .SelectMany(c => c.ProvidedApps.Select(a => a.Id)).ContainsAsync(appId).ConfigureAwait(false);
         if(!isMemberOfCompanyProvidingApp)
@@ -300,26 +296,26 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
-        var subscription = await this.context.CompanyAssignedApps.FindAsync(companyId, appId).ConfigureAwait(false);
+        var subscription = await this._context.CompanyAssignedApps.FindAsync(companyId, appId).ConfigureAwait(false);
         if (subscription is null || subscription.AppSubscriptionStatusId != PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING)
         {
             throw new ArgumentException("No pending subscription for provided parameters existing.");
         }
         subscription.AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.ACTIVE;
-        await this.context.SaveChangesAsync().ConfigureAwait(false);
+        await this._context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task UnsubscribeCompanyAppSubscriptionAsync(Guid appId, string userId)
     {
         var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-        var appExists = await this.appRepository.CheckAppExistsById(appId).ConfigureAwait(false);
+        var appExists = await this._appRepository.CheckAppExistsById(appId).ConfigureAwait(false);
         if (!appExists)
         {
             throw new NotFoundException($"App '{appId}' does not exist.");
         }
 
-        await this.companyAssignedAppsRepository.UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);
+        await this._companyAssignedAppsRepository.UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -337,28 +333,28 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             ProviderCompanyId = appInputModel.ProviderCompanyId,
             AppStatusId = PortalBackend.PortalEntities.Enums.AppStatusId.CREATED
         };
-        this.context.Apps.Add(appEntity);
+        this._context.Apps.Add(appEntity);
 
         var appLicenseEntity = new AppLicense(Guid.NewGuid(), appInputModel.Price);
-        this.context.AppLicenses.Add(appLicenseEntity);           
+        this._context.AppLicenses.Add(appLicenseEntity);
 
-        this.context.AppAssignedLicenses.Add(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
-        this.context.AppAssignedUseCases.AddRange(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
-        this.context.AppDescriptions.AddRange(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-        this.context.AppLanguages.AddRange(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
-        await this.context.SaveChangesAsync().ConfigureAwait(false);
+        this._context.AppAssignedLicenses.Add(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
+        this._context.AppAssignedUseCases.AddRange(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
+        this._context.AppDescriptions.AddRange(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+        this._context.AppLanguages.AddRange(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
+        await this._context.SaveChangesAsync().ConfigureAwait(false);
 
         return appEntity.Id;
     }
 
     private Task<Guid> GetCompanyUserIdbyIamUserIdAsync(string userId) => 
-        this.context.CompanyUsers.AsNoTracking()
+        this._context.CompanyUsers.AsNoTracking()
             .Where(cu => cu.IamUser!.UserEntityId == userId)
             .Select(cu => cu.Id)
             .SingleAsync();
 
     private Task<Guid> GetCompanyIdByIamUserIdAsync(string userId) => 
-        this.context.CompanyUsers.AsNoTracking()
+        this._context.CompanyUsers.AsNoTracking()
             .Where(cu => cu.IamUser!.UserEntityId == userId)
             .Select(cu => cu.CompanyId)
             .SingleAsync();

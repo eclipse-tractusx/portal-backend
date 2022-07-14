@@ -89,8 +89,8 @@ public class AppsController : ControllerBase
     [Route("{appId}")]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(AppDetailsViewModel), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<AppDetailsViewModel> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
         this.WithIamUserId(userId => this._appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
