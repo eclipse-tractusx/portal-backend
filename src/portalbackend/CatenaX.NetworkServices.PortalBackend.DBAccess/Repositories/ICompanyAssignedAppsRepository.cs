@@ -48,7 +48,7 @@ public interface ICompanyAssignedAppsRepository
     /// <param name="companyId">id of the company</param>
     /// <param name="appId">id of the app</param>
     /// <returns>Returns the found app or null</returns>
-    Task<CompanyAssignedApp?> FindAsync(Guid companyId, Guid appId);
+    ValueTask<CompanyAssignedApp?> FindAsync(Guid companyId, Guid appId);
 
     /// <summary>
     /// Gets the provided app subscription statuses for the user and given company

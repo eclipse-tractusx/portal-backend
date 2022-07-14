@@ -84,7 +84,7 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId">Id of the application</param>
     /// <param name="appLicenseId">Id of the app license</param>
-    AppAssignedLicense AddAppAssignedLicense(Guid appId, Guid appLicenseId);
+    AppAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId);
 
     /// <summary>
     /// Adds <see cref="AppAssignedUseCase"/>s to the database
@@ -109,5 +109,5 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="companyUserId">Id of the company User</param>
-    CompanyUserAssignedAppFavourite AddAppFavourite(Guid appId, Guid companyUserId);
+    CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId);
 }
