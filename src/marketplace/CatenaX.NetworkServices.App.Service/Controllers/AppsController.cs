@@ -46,7 +46,7 @@ public class AppsController : ControllerBase
     /// <param name="appsBusinessLogic">Logic dependency.</param>
     public AppsController(IAppsBusinessLogic appsBusinessLogic)
     {
-        this._appsBusinessLogic = appsBusinessLogic;
+        _appsBusinessLogic = appsBusinessLogic;
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AppData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync([FromQuery] string? lang = null) =>
-        this._appsBusinessLogic.GetAllActiveAppsAsync(lang);
+        _appsBusinessLogic.GetAllActiveAppsAsync(lang);
 
     /// <summary>
     /// Get all apps that currently logged in user has been assigned roles in.
@@ -94,7 +94,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<AppDetailsData> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
-        this.WithIamUserId(userId => this._appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
+        this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>
     /// Creates an app according to input model.
@@ -108,7 +108,7 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel) =>
-        CreatedAtRoute(string.Empty, await this._appsBusinessLogic.CreateAppAsync(appInputModel));
+        CreatedAtRoute(string.Empty, await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false));
 
     /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
@@ -122,7 +122,7 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForCurrentUserAsync() =>
-        this.WithIamUserId(userId => this._appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
+        this.WithIamUserId(userId => _appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
 
     /// <summary>
     /// Adds an app to current user's favourites.
@@ -138,7 +138,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => this._appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId));
+        await this.WithIamUserId(userId => _appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -156,7 +156,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => this._appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId));
+        await this.WithIamUserId(userId => _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
         
@@ -187,7 +187,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<IAsyncEnumerable<AppCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync() =>
-        this.WithIamUserId(userId => this._appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(userId));
+        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(userId));
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
@@ -203,7 +203,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId));
+        await this.WithIamUserId(userId => _appsBusinessLogic.AddCompanyAppSubscriptionAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -224,7 +224,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId) 
     {
-        await this.WithIamUserId(userId => this._appsBusinessLogic.ActivateCompanyAppSubscriptionAsync(appId, companyId, userId));
+        await this.WithIamUserId(userId => _appsBusinessLogic.ActivateCompanyAppSubscriptionAsync(appId, companyId, userId)).ConfigureAwait(false);
         return NoContent();
     }
     
@@ -244,7 +244,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => this._appsBusinessLogic.UnsubscribeCompanyAppSubscriptionAsync(appId, userId));
-        return this.NoContent();
+        await this.WithIamUserId(userId => _appsBusinessLogic.UnsubscribeCompanyAppSubscriptionAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
     }
 }

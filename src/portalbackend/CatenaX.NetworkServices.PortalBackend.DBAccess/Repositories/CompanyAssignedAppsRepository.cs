@@ -37,28 +37,28 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     /// <param name="portalDbContext">PortalDb context.</param>
     public CompanyAssignedAppsRepository(PortalDbContext portalDbContext)
     {
-        this._context = portalDbContext;
+        _context = portalDbContext;
     }
 
     /// <inheritdoc />
     public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId) =>
-        this._context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId)).Entity;
+        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId)).Entity;
 
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)> GetCompanySubscribedAppSubscriptionStatusesForCompanyUntrackedAsync(Guid companyId) =>
-        this._context.CompanyAssignedApps.AsNoTracking()
+        _context.CompanyAssignedApps.AsNoTracking()
             .Where(s => s.CompanyId == companyId)
             .Select(s => ((Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus))
                 new ValueTuple<Guid, AppSubscriptionStatusId>(s.AppId, s.AppSubscriptionStatusId))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public async Task<CompanyAssignedApp?> FindAsync(Guid companyId, Guid appId) =>
-        await this._context.CompanyAssignedApps.FindAsync(companyId, appId);
+    public ValueTask<CompanyAssignedApp?> FindAsync(Guid companyId, Guid appId) =>
+        _context.CompanyAssignedApps.FindAsync(companyId, appId);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(Guid companyId) =>
-        this._context.CompanyAssignedApps.AsNoTracking()
+        _context.CompanyAssignedApps.AsNoTracking()
             .Where(s => s.App!.ProviderCompanyId == companyId)
             .GroupBy(s => s.AppId)
             .Select(g => new AppCompanySubscriptionStatusData
@@ -69,8 +69,4 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
                     .ToList()
             })
             .ToAsyncEnumerable();
-
-    public async Task<CompanyAssignedApp?> GetActiveSubscriptionByCompanyAndAppIdAsync(Guid companyId, Guid appId) =>
-        await this._context.CompanyAssignedApps
-            .SingleOrDefaultAsync(x => x.CompanyId == companyId && x.AppId == appId && x.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE);
 }

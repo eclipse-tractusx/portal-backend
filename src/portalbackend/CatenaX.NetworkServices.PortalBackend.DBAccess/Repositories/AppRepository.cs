@@ -41,8 +41,8 @@ public class AppRepository : IAppRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> CheckAppExistsById(Guid appId) => 
-        await _context.Apps.AnyAsync(x => x.Id == appId);
+    public Task<bool> CheckAppExistsById(Guid appId) => 
+        _context.Apps.AnyAsync(x => x.Id == appId);
 
     ///<inheritdoc/>
     public async Task<(string appName, string providerName, string providerContactEmail)> GetAppProviderDetailsAsync(Guid appId)
@@ -83,12 +83,12 @@ public class AppRepository : IAppRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public App CreateApp(Guid id, string provider) => _context.Apps.Add(new App(id, provider, DateTimeOffset.UtcNow)).Entity;
+    public App CreateApp(Guid id, string provider) =>
+        _context.Apps.Add(new App(id, provider, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName)
-    {
-        return _context.Apps.AsNoTracking()
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
+        _context.Apps.AsNoTracking()
             .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
             .Select(a => new {
                 a.Id,
@@ -115,7 +115,6 @@ public class AppRepository : IAppRepository
                 Id = app.Id,
                 UseCases = app.UseCaseNames.Select(name => name).ToList()
             });
-    }
 
     /// <inheritdoc />
     public async Task<AppDetailsData> GetDetailsByIdAsync(Guid appId, Guid? companyId, string? languageShortName)
@@ -174,7 +173,7 @@ public class AppRepository : IAppRepository
         _context.AppLicenses.Add(new AppLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
-    public AppAssignedLicense AddAppAssignedLicense(Guid appId, Guid appLicenseId) =>
+    public AppAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId) =>
         _context.AppAssignedLicenses.Add(new AppAssignedLicense(appId, appLicenseId)).Entity;
 
     /// <inheritdoc />
@@ -190,6 +189,6 @@ public class AppRepository : IAppRepository
         _context.AppLanguages.AddRange(appLanguages);
 
     /// <inheritdoc />
-    public CompanyUserAssignedAppFavourite AddAppFavourite(Guid appId, Guid companyUserId) =>
-        this._context.CompanyUserAssignedAppFavourites.Add(new CompanyUserAssignedAppFavourite(appId, companyUserId)).Entity;
+    public CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId) =>
+        _context.CompanyUserAssignedAppFavourites.Add(new CompanyUserAssignedAppFavourite(appId, companyUserId)).Entity;
 }
