@@ -20,7 +20,6 @@
 
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using CatenaX.NetworkServices.App.Service.InputModels;
-using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
