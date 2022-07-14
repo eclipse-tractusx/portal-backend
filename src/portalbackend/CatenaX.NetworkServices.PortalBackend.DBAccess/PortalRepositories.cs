@@ -32,6 +32,16 @@ public class PortalRepositories : IPortalRepositories
         _dbContext = portalDbContext;
     }
 
+    /// <inheritdoc />
+    public TEntity Attach<TEntity>(TEntity entity)
+        where TEntity : class
+        => _dbContext.Attach(entity).Entity;
+
+    /// <inheritdoc />
+    public TEntity Remove<TEntity>(TEntity entity)
+        where TEntity : class
+        => _dbContext.Remove(entity).Entity;
+
     public RepositoryType GetInstance<RepositoryType>()
     {
         var repositoryType = typeof(RepositoryType);

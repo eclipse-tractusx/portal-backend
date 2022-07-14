@@ -32,8 +32,12 @@ public interface INotificationRepository
     /// <summary>
     ///     Adds the given notification to the persistence layer.
     /// </summary>
-    /// <param name="notification">The notification that should be added to the persistence layer.</param>
-    void Add(Notification notification);
+    /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
+    /// <param name="dateTimeOffset">Teh datetime for the notification</param>
+    /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
+    /// <param name="notificationTypeId">id of the notification type</param>
+    /// <param name="readStatusId">id of the notification status</param>
+    Notification Add(Guid receiverUserId, DateTimeOffset dateTimeOffset, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId);
 
     /// <summary>
     ///     Gets all Notifications for a specific user
@@ -68,16 +72,4 @@ public interface INotificationRepository
     /// <param name="statusId">OPTIONAL: Status of the notifications that should be considered</param>
     /// <returns>Returns the count of the notifications</returns>
     Task<int> GetNotificationCountAsync(Guid companyUserId, NotificationStatusId? statusId);
-
-    /// <summary>
-    /// Attaches the given notification to the database.
-    /// </summary>
-    /// <param name="notification">The notification that should be attached</param>
-    void AttachToNotification(Notification notification);
-
-    /// <summary>
-    /// Deletes the given notification from the persistence storage
-    /// </summary>
-    /// <param name="notification">Notification that should be removed</param>
-    void DeleteAsync(Notification notification);
 }

@@ -41,10 +41,8 @@ public class NotificationRepository : INotificationRepository
     }
 
     /// <inheritdoc />
-    public void Add(Notification notification)
-    {
-        _dbContext.Add(notification);
-    }
+    public Notification Add(Guid receiverUserId, DateTimeOffset dateTimeOffset, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId) =>
+        _dbContext.Add(new Notification(Guid.NewGuid(), receiverUserId, dateTimeOffset, content, notificationTypeId, readStatusId)).Entity;
 
     /// <inheritdoc />
     public IAsyncEnumerable<NotificationDetailData> GetAllAsDetailsByUserIdUntracked(Guid companyUserId,
@@ -87,14 +85,4 @@ public class NotificationRepository : INotificationRepository
     public async Task<bool> CheckExistsByIdAndUserIdAsync(Guid notificationId, Guid companyUserId) =>
         await _dbContext.Notifications
             .AnyAsync(x => x.Id == notificationId && x.ReceiverUserId == companyUserId);
-
-    /// <inheritdoc />
-    public void AttachToNotification(Notification notification) =>
-        _dbContext.Notifications.Attach(notification);
-
-    /// <inheritdoc />
-    public void DeleteAsync(Notification notification)
-    {
-        _dbContext.Notifications.Remove(notification);
-    }
 }

@@ -41,8 +41,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<NotificationDetailData> CreateNotification(NotificationCreationData creationData,
-        Guid companyUserId)
+    public async Task<NotificationDetailData> CreateNotification(NotificationCreationData creationData, Guid companyUserId)
     {
         if (!await _portalRepositories.GetInstance<IUserRepository>().IsUserWithIdExisting(companyUserId))
             throw new ArgumentException("User does not exist", nameof(companyUserId));
@@ -57,13 +56,10 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         if (!Enum.IsDefined(typeof(NotificationStatusId), notificationStatusId.ToString()))
             throw new ArgumentException("notificationStatus does not exist.", nameof(notificationStatusId));
 
-        _portalRepositories.GetInstance<INotificationRepository>().Add(
-            new PortalBackend.PortalEntities.Entities.Notification(notificationId, companyUserId, dateTimeOffset,
-                content, notificationTypeId, notificationStatusId)
-            {
-                DueDate = dueData,
-                CreatorUserId = creatorUserId
-            });
+        var notification = _portalRepositories.GetInstance<INotificationRepository>().Add(companyUserId, dateTimeOffset, content, notificationTypeId, notificationStatusId);
+        notification.DueDate = dueData;
+        notification.CreatorUserId = creatorUserId;
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new NotificationDetailData(notificationId, content, dueData, notificationTypeId, notificationStatusId);
     }
@@ -117,7 +113,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         if (notificationDetails is null) throw new NotFoundException("Notification does not exist.");
 
         var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationDetails.Id);
-        notificationRepository.AttachToNotification(notification);
+        _portalRepositories.Attach(notification);
         notification.ReadStatusId = notificationStatusId;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -136,8 +132,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         if (!exists) throw new NotFoundException("Notification does not exist.");
 
         var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId);
-        notificationRepository.AttachToNotification(notification);
-        notificationRepository.DeleteAsync(notification);
+        _portalRepositories.Remove(notification);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
