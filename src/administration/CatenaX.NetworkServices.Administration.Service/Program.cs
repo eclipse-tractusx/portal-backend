@@ -38,11 +38,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
+using CatenaX.NetworkServices.Framework.Swagger;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -64,9 +64,7 @@ builder.Services.AddControllers()
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-builder.Services.AddSwaggerGen(c => {
-                    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-                });
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x => {
                     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
