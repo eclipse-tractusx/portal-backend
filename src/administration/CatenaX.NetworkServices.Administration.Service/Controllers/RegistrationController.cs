@@ -66,8 +66,8 @@ public class RegistrationController : ControllerBase
      /// <summary>
     /// fetch all applications details with company user details.
     /// </summary>
-    /// <param name="page">page index start from 0</param>
-    /// <param name="size">size to get number of records</param>
+    /// <param name="page">Optional query parameter defining the page index start from 0</param>
+    /// <param name="size">Optional query parameter defining the size to get number of records</param>
     /// <returns>All Company Applications Details along with user details</returns>
     /// <remarks>Example: GET: api/administration/registration/applicationsWithStatus?page=0&size=15</remarks>
     /// <response code="200">Result as a All Company Applications Details</response>
@@ -75,6 +75,6 @@ public class RegistrationController : ControllerBase
     [Authorize(Roles = "invite_new_partner")]
     [Route("applicationsWithStatus")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationWithCompanyUserDetails>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync([FromQuery]int page, [FromQuery]int size) =>
+    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         _logic.GetAllCompanyApplicationsDetailsAsync(page, size);
 }
