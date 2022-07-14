@@ -83,7 +83,7 @@ public class AppRepository : IAppRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void AddApp(App appEntity) => _context.Apps.Add(appEntity);
+    public App CreateApp(Guid id, string provider) => _context.Apps.Add(new App(id, provider, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName)
@@ -120,7 +120,7 @@ public class AppRepository : IAppRepository
     /// <inheritdoc />
     public async Task<AppDetailsData> GetDetailsByIdAsync(Guid appId, Guid? companyId, string? languageShortName)
     {
-        var app = await this._context.Apps.AsNoTracking()
+       var app = await _context.Apps.AsNoTracking()
             .Where(a => a.Id == appId)
             .Select(a => new
             {
@@ -133,11 +133,11 @@ public class AppRepository : IAppRepository
                 a.ContactEmail,
                 a.ContactNumber,
                 UseCases = a.UseCases.Select(u => u.Name),
-                LongDescription = 
-                    _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
-                        ? null 
-                        : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
-                          ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionLong,
+                LongDescription =
+                    _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
+                    ? null
+                    : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
+                      ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionLong,
                 Price = a.AppLicenses
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
@@ -147,8 +147,8 @@ public class AppRepository : IAppRepository
                     a.Companies.Any(c => c.Id == companyId),
                 Languages = a.SupportedLanguages.Select(l => l.ShortName)
             })
-            .SingleAsync();
-        
+            .SingleAsync().ConfigureAwait(false);
+
         return new AppDetailsData(
             app.Title ?? Constants.ErrorString,
             app.LeadPictureUri ?? Constants.ErrorString,
@@ -156,7 +156,7 @@ public class AppRepository : IAppRepository
             app.Provider,
             app.LongDescription ?? Constants.ErrorString,
             app.Price ?? Constants.ErrorString
-        )
+            )
         {
             Id = app.Id,
             IsSubscribed = app.IsPurchased,
@@ -168,4 +168,28 @@ public class AppRepository : IAppRepository
             Languages = app.Languages
         };
     }
+
+    /// <inheritdoc />
+    public AppLicense CreateAppLicenses(string licenseText) =>
+        _context.AppLicenses.Add(new AppLicense(Guid.NewGuid(), licenseText)).Entity;
+
+    /// <inheritdoc />
+    public AppAssignedLicense AddAppAssignedLicense(Guid appId, Guid appLicenseId) =>
+        _context.AppAssignedLicenses.Add(new AppAssignedLicense(appId, appLicenseId)).Entity;
+
+    /// <inheritdoc />
+    public void AddUseCases(IEnumerable<AppAssignedUseCase> useCases) =>
+        _context.AppAssignedUseCases.AddRange(useCases);
+
+    /// <inheritdoc />
+    public void AddAppDescriptions(IEnumerable<AppDescription> appDescriptions) =>
+        _context.AppDescriptions.AddRange(appDescriptions);
+
+    /// <inheritdoc />
+    public void AddAppLanguages(IEnumerable<AppLanguage> appLanguages) =>
+        _context.AppLanguages.AddRange(appLanguages);
+
+    /// <inheritdoc />
+    public CompanyUserAssignedAppFavourite AddAppFavourite(Guid appId, Guid companyUserId) =>
+        this._context.CompanyUserAssignedAppFavourites.Add(new CompanyUserAssignedAppFavourite(appId, companyUserId)).Entity;
 }

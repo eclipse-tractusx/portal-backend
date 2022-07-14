@@ -36,7 +36,7 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService mailingService;
+    private readonly IMailingService _mailingService;
 
     /// <summary>
     /// Constructor.
@@ -46,7 +46,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
-        this.mailingService = mailingService;
+        _mailingService = mailingService;
     }
 
     /// <inheritdoc/>
@@ -80,7 +80,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-            this._portalRepositories.GetInstance<ICompanyUserAssignedAppFavouritesRepository>().RemoveFavouriteAppForUser(appId, companyUserId);
+            this._portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, companyUserId));
             await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
@@ -95,7 +95,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyUserId = await GetCompanyUserIdbyIamUserIdAsync(userId).ConfigureAwait(false);
-            this._portalRepositories.GetInstance<ICompanyUserAssignedAppFavouritesRepository>().AddAppFavourite(new CompanyUserAssignedAppFavourite(appId, companyUserId));
+            this._portalRepositories.GetInstance<IAppRepository>().AddAppFavourite(appId, companyUserId);
             await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException)
@@ -127,7 +127,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         try
         {
             var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-            this._portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().AddCompanyAssignedApp(new CompanyAssignedApp(appId, companyId) { AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING});
+            var companyAssignedApp = this._portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().CreateCompanyAssignedApp(appId, companyId);
+            companyAssignedApp.AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING;
 
             await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         }
@@ -137,13 +138,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
 
         var appDetails = await this._portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
-
         var mailParams = new Dictionary<string, string>
             {
                 { "appProviderName", appDetails.providerName},
                 { "appName", appDetails.appName }
             };
-        await mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        await _mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -181,13 +181,17 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task UnsubscribeCompanyAppSubscriptionAsync(Guid appId, string userId)
     {
         var companyId = await GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
-        var appExists = await this._portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false);
-        if (!appExists)
+        if (!await this._portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false))
         {
             throw new NotFoundException($"App '{appId}' does not exist.");
         }
 
-        await this._portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);
+        var subscription = await this._portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().FindAsync(companyId, appId).ConfigureAwait(false);
+        if (subscription is null)
+        {
+            throw new ArgumentException($"There is no active subscription for company '{companyId}' and app '{appId}'");
+        }
+        subscription.AppSubscriptionStatusId = AppSubscriptionStatusId.INACTIVE;
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -195,29 +199,25 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<Guid> CreateAppAsync(AppInputModel appInputModel)
     {
         // Add app to db
-        var appEntity = new PortalBackend.PortalEntities.Entities.App(Guid.NewGuid(), appInputModel.Provider, DateTimeOffset.UtcNow)
-        {
-            Name = appInputModel.Title,
-            MarketingUrl = appInputModel.ProviderUri,
-            AppUrl = appInputModel.AppUri,
-            ThumbnailUrl = appInputModel.LeadPictureUri,
-            ContactEmail = appInputModel.ContactEmail,
-            ContactNumber = appInputModel.ContactNumber,
-            ProviderCompanyId = appInputModel.ProviderCompanyId,
-            AppStatusId = PortalBackend.PortalEntities.Enums.AppStatusId.CREATED
-        };
-        this._portalRepositories.GetInstance<IAppRepository>().AddApp(appEntity);
+        var appEntity = this._portalRepositories.GetInstance<IAppRepository>().CreateApp(Guid.NewGuid(), appInputModel.Provider);
+        appEntity.Name = appInputModel.Title;
+        appEntity.MarketingUrl = appInputModel.ProviderUri;
+        appEntity.AppUrl = appInputModel.AppUri;
+        appEntity.ThumbnailUrl = appInputModel.LeadPictureUri;
+        appEntity.ContactEmail = appInputModel.ContactEmail;
+        appEntity.ContactNumber = appInputModel.ContactNumber;
+        appEntity.ProviderCompanyId = appInputModel.ProviderCompanyId;
+        appEntity.AppStatusId = AppStatusId.CREATED;
 
-        var appLicenseEntity = new AppLicense(Guid.NewGuid(), appInputModel.Price);
-        this._portalRepositories.GetInstance<IAppLicensesRepository>()
-            .AddAppLicenses(appLicenseEntity);
-        this._portalRepositories.GetInstance<IAppAssignedLicensesRepository>()
-            .AddAppAssignedLicense(new AppAssignedLicense(appEntity.Id, appLicenseEntity.Id));
-        this._portalRepositories.GetInstance<IAppAssignedUseCasesRepository>()
+        var appLicense = this._portalRepositories.GetInstance<IAppRepository>()
+            .CreateAppLicenses(appInputModel.Price);
+        this._portalRepositories.GetInstance<IAppRepository>()
+            .AddAppAssignedLicense(appEntity.Id, appLicense.Id);
+        this._portalRepositories.GetInstance<IAppRepository>()
             .AddUseCases(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
-        this._portalRepositories.GetInstance<IAppDescriptionsRepository>()
+        this._portalRepositories.GetInstance<IAppRepository>()
             .AddAppDescriptions(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-        this._portalRepositories.GetInstance<IAppLanguagesRepository>()
+        this._portalRepositories.GetInstance<IAppRepository>()
             .AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);

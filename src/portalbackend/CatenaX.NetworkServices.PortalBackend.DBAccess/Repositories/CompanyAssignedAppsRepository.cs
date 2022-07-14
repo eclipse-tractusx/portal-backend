@@ -41,20 +41,8 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     }
 
     /// <inheritdoc />
-    public async Task UpdateSubscriptionStatusAsync(Guid companyId, Guid appId, AppSubscriptionStatusId statusId)
-    {
-        var subscription = await this.GetActiveSubscriptionByCompanyAndAppIdAsync(companyId, appId).ConfigureAwait(false);
-        if (subscription is null)
-        {
-            throw new ArgumentException($"There is no active subscription for company '{companyId}' and app '{appId}'", nameof(subscription));
-        }
-
-        subscription.AppSubscriptionStatusId = AppSubscriptionStatusId.INACTIVE;
-    }
-
-    /// <inheritdoc />
-    public void AddCompanyAssignedApp(CompanyAssignedApp companyAssignedApp) =>
-        this._context.CompanyAssignedApps.Add(companyAssignedApp);
+    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId) =>
+        this._context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId)).Entity;
 
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)> GetCompanySubscribedAppSubscriptionStatusesForCompanyUntrackedAsync(Guid companyId) =>
@@ -82,9 +70,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             })
             .ToAsyncEnumerable();
 
-    private async Task<CompanyAssignedApp?> GetActiveSubscriptionByCompanyAndAppIdAsync(Guid companyId, Guid appId)
-    {
-        return await this._context.CompanyAssignedApps
+    public async Task<CompanyAssignedApp?> GetActiveSubscriptionByCompanyAndAppIdAsync(Guid companyId, Guid appId) =>
+        await this._context.CompanyAssignedApps
             .SingleOrDefaultAsync(x => x.CompanyId == companyId && x.AppId == appId && x.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE);
-    }
 }
