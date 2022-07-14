@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -49,13 +50,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null) => 
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null) =>
         this._portalRepositories.GetInstance<IAppRepository>().GetAllActiveAppsAsync(languageShortName);
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) => 
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) =>
         this._portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
-        
+
     /// <inheritdoc/>
     public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
     {
@@ -148,11 +149,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task ActivateCompanyAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId)
     {
-        
-        var isExistingApp = await this._portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false); 
+
+        var isExistingApp = await this._portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false);
         if(!isExistingApp)
         {
-            throw new ArgumentException("App with provided ID does not exist.");
+            throw new NotFoundException($"App {appId} does not exist.");
         }
 
         var companyId = await this.GetCompanyIdByIamUserIdAsync(userId).ConfigureAwait(false);
@@ -161,7 +162,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetInstance<ICompanyRepository>()
             .CheckIsMemberOfCompanyProvidingAppUntrackedAsync(companyId, appId)
             .ConfigureAwait(false);
-        
+
         if(!isMemberOfCompanyProvidingApp)
         {
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
@@ -183,7 +184,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var appExists = await this._portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false);
         if (!appExists)
         {
-            throw new ArgumentException($"Parameters are invalid: app for id '{appId}' does not exist.", nameof(appId));
+            throw new NotFoundException($"App '{appId}' does not exist.");
         }
 
         await this._portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().UpdateSubscriptionStatusAsync(companyId, appId, AppSubscriptionStatusId.INACTIVE).ConfigureAwait(false);

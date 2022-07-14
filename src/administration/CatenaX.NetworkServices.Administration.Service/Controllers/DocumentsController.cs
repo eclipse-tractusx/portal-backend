@@ -36,6 +36,7 @@ public class DocumentsController : ControllerBase
     [HttpGet]
     [Route("{documentId}")]
     [Authorize(Roles = "view_documents")]
+    [Produces("application/pdf")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromQuery] Guid documentId)
     {
