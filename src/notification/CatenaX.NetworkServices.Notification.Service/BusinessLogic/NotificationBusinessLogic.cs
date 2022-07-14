@@ -107,13 +107,13 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
 
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        var notificationDetails = await notificationRepository.GetByIdAndUserIdUntrackedAsync(notificationId, companyUserId).ConfigureAwait(false);
+        if (!await _portalRepositories.GetInstance<INotificationRepository>()
+                .CheckExistsByIdAndUserIdAsync(notificationId, companyUserId).ConfigureAwait(false))
+        {
+            throw new NotFoundException("Notification does not exist.");
+        }
 
-        if (notificationDetails is null) throw new NotFoundException("Notification does not exist.");
-
-        var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationDetails.Id);
-        _portalRepositories.Attach(notification);
+        var notification =_portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId));
         notification.ReadStatusId = notificationStatusId;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

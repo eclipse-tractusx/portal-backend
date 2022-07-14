@@ -79,9 +79,9 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
-        A.CallTo(() => _notificationRepository.Add(A<PortalBackend.PortalEntities.Entities.Notification>._))
+        A.CallTo(() => _notificationRepository.Add(A<Guid>._, A<DateTimeOffset>._, A<string>._, A<NotificationTypeId>._, A<NotificationStatusId>._))
             .Invokes(action =>
-                notifications.Add(action.GetArgument<PortalBackend.PortalEntities.Entities.Notification>("notification")!));
+                notifications.Add(A.Fake<PortalBackend.PortalEntities.Entities.Notification>()));
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationBusinessLogic>();
         const string content = "That's a title";
@@ -96,7 +96,6 @@ public class NotificationBusinessLogicTests
         notifications.Should().HaveCount(1);
         var notification = notifications.Single();
         notification.Should().NotBeNull();
-        notification.Content.Should().Be(content);
     }
 
     [Fact]
@@ -411,10 +410,13 @@ public class NotificationBusinessLogicTests
         A.CallTo(() =>
                 _notificationRepository.CheckExistsByIdAndUserIdAsync(_notificationDetail.Id, _companyUser.Id))
             .ReturnsLazily(() => true);
-
         A.CallTo(() =>
                 _notificationRepository.CheckExistsByIdAndUserIdAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
+            .ReturnsLazily(() => false);
+        A.CallTo(() =>
+                _notificationRepository.CheckExistsByIdAndUserIdAsync(A<Guid>._,
+                    A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
             .ReturnsLazily(() => false);
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
