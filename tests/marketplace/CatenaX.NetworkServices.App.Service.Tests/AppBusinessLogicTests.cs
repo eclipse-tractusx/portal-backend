@@ -1,4 +1,24 @@
-﻿using AutoFixture;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using CatenaX.NetworkServices.App.Service.ViewModels;
@@ -51,30 +71,6 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             results.Should().HaveCount(apps.Count());
             results.Should().AllBeOfType<AppViewModel>();
             results.Should().AllSatisfy(a => apps.Select(app => app.Id).Contains(a.Id));
-        }
-
-        [Fact]
-        public async void GetAppDetails_ReturnsAppDetailsSuccessfully()
-        {
-            // Arrange
-            var apps = _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>(1);
-            var appsDbSet = apps.AsFakeDbSet();
-            var languagesDbSet = new List<Language>().AsFakeDbSet();
-
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.Apps).Returns(appsDbSet);
-            A.CallTo(() => contextFake.Languages).Returns(languagesDbSet);
-            _fixture.Inject(contextFake);
-
-            var sut = _fixture.Create<AppsBusinessLogic>();
-
-            // Act
-            var result = await sut.GetAppDetailsByIdAsync(apps.Single().Id);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.Should().BeOfType<AppDetailsViewModel>();
-            result.Id.Should().Be(apps.Single().Id);
         }
 
         [Fact]

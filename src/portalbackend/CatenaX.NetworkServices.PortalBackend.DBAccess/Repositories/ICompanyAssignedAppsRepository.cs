@@ -14,4 +14,12 @@ public interface ICompanyAssignedAppsRepository
     /// <param name="appId">Id of the app.</param>
     /// <param name="statusId">The new status of the subscription.</param>
     public Task UpdateSubscriptionStatusAsync(Guid companyId, Guid appId, AppSubscriptionStatusId statusId);
+
+    /// <summary>
+    /// Checks if the company assigned app exists
+    /// </summary>
+    /// <param name="appId">Id of the application</param>
+    /// <param name="companyId">Id of the company</param>
+    /// <returns>Returns <c>true</c> if an CompanyAssignedApp exists, otherwise <c>false</c>.</returns>
+    public Task<bool> ExistsByAppAndCompanyIdAsync(Guid appId, Guid companyId);
 }

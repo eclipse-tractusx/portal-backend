@@ -17,10 +17,11 @@ public class CompanyAssignedApp
     /// <param name="appId">App id.</param>
     /// <param name="companyId">Company id.</param>
     /// <param name="appSubscriptionStatusId">app subscription status.</param>
-    public CompanyAssignedApp(Guid appId, Guid companyId) : this()
+    public CompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId) : this()
     {
         AppId = appId;
         CompanyId = companyId;
+        AppSubscriptionStatusId = appSubscriptionStatusId;
     }
 
     /// <summary>
