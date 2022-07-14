@@ -117,7 +117,7 @@ public class AppRepository : IAppRepository
             });
 
     /// <inheritdoc />
-    public async Task<AppDetailsData> GetDetailsByIdAsync(Guid appId, Guid? companyId, string? languageShortName)
+    public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? iamUserId, string? languageShortName)
     {
        var app = await _context.Apps.AsNoTracking()
             .Where(a => a.Id == appId)
@@ -141,9 +141,9 @@ public class AppRepository : IAppRepository
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
                 Tags = a.Tags.Select(t => t.Name),
-                IsPurchased = companyId == null ?
+                IsPurchased = iamUserId == null ?
                     (bool?)null :
-                    a.Companies.Any(c => c.Id == companyId),
+                    a.Companies.Any(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 Languages = a.SupportedLanguages.Select(l => l.ShortName)
             })
             .SingleAsync().ConfigureAwait(false);
@@ -177,18 +177,18 @@ public class AppRepository : IAppRepository
         _context.AppAssignedLicenses.Add(new AppAssignedLicense(appId, appLicenseId)).Entity;
 
     /// <inheritdoc />
-    public void AddUseCases(IEnumerable<AppAssignedUseCase> useCases) =>
-        _context.AppAssignedUseCases.AddRange(useCases);
-
-    /// <inheritdoc />
-    public void AddAppDescriptions(IEnumerable<AppDescription> appDescriptions) =>
-        _context.AppDescriptions.AddRange(appDescriptions);
-
-    /// <inheritdoc />
-    public void AddAppLanguages(IEnumerable<AppLanguage> appLanguages) =>
-        _context.AppLanguages.AddRange(appLanguages);
-
-    /// <inheritdoc />
     public CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId) =>
         _context.CompanyUserAssignedAppFavourites.Add(new CompanyUserAssignedAppFavourite(appId, companyUserId)).Entity;
+
+    /// <inheritdoc />
+    public void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases) =>
+        _context.AppAssignedUseCases.AddRange(appUseCases.Select(s => new AppAssignedUseCase(s.appId, s.useCaseId)));
+
+    /// <inheritdoc />
+    public void AddAppDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
+        _context.AppDescriptions.AddRange(appDescriptions.Select(s => new AppDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionLong)));
+
+    /// <inheritdoc />
+    public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
+        _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
 }

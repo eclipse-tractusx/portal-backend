@@ -54,10 +54,6 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new ApplicationRepository(_dbContext));
         }
-        if (repositoryType == typeof(IAppUserRepository))
-        {
-            return To<RepositoryType>(new AppUserRepository(_dbContext));
-        }
         if (repositoryType == typeof(ICompanyAssignedAppsRepository))
         {
             return To<RepositoryType>(new CompanyAssignedAppsRepository(_dbContext));

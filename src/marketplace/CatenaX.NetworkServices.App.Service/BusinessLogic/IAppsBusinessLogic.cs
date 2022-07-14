@@ -20,7 +20,6 @@
 
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -78,21 +77,21 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <returns>Async enumberable of user's company's subscribed apps' statuses.</returns>
-    public Task<IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public Task<IAsyncEnumerable<AppCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
     /// <param name="userId">ID of the user that initiated app subscription for their company.</param>
-    public Task AddCompanyAppSubscriptionAsync(Guid appId, string userId);
+    public Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string userId);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
@@ -100,14 +99,14 @@ public interface IAppsBusinessLogic
     /// <param name="appId">ID of the pending app to be activated.</param>
     /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
     /// <param name="userId">IAM ID of the user requesting the activation.</param>
-    public Task ActivateCompanyAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId);
+    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId);
 
     /// <summary>
     /// Unsubscribes an app for the current users company.
     /// </summary>
     /// <param name="appId">ID of the app to unsubscribe from.</param>
     /// <param name="userId">ID of the user that initiated app unsubscription for their company.</param>
-    public Task UnsubscribeCompanyAppSubscriptionAsync(Guid appId, string userId);
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string userId);
 
     /// <summary>
     /// Creates an application and returns its generated ID.

@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -34,26 +34,26 @@ public interface ICompanyAssignedAppsRepository
     /// </summary>
     /// <param name="appId">Id of the assigned app</param>
     /// <param name="companyId">Id of the company</param>
-    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId);
+    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId);
+
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="companyId"></param>
-    IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)> GetCompanySubscribedAppSubscriptionStatusesForCompanyUntrackedAsync(Guid companyId);
-
-    /// <summary>
-    /// Finds the company assigned app with the company id and app id
-    /// </summary>
-    /// <param name="companyId">id of the company</param>
-    /// <param name="appId">id of the app</param>
-    /// <returns>Returns the found app or null</returns>
-    ValueTask<CompanyAssignedApp?> FindAsync(Guid companyId, Guid appId);
+    /// <param name="iamUserId"></param>
+    IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
     /// <summary>
     /// Gets the provided app subscription statuses for the user and given company
     /// </summary>
-    /// <param name="companyId">Id of the company</param>
+    /// <param name="iamUserId">Id of user of the Providercompany</param>
     /// <returns>Returns a IAsyncEnumerable of the found <see cref="AppCompanySubscriptionStatusData"/></returns>
-    IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(Guid companyId);
+    IAsyncEnumerable<AppCompanySubscriptionStatusData> GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
+
+    Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
+    
+    Task<(CompanyAssignedApp? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
+
+    Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
 }
