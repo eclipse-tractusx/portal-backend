@@ -20,8 +20,8 @@
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -41,32 +41,65 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     }
 
     /// <inheritdoc />
-    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId) =>
-        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId)).Entity;
+    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId ) =>
+        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
+
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
+        _context.CompanyAssignedApps
+            .AsNoTracking()
+            .Where(app => app.AppId == appId
+                && app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE
+                && app.Company!.CompanyUsers!.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .SelectMany(app => app.Company!.CompanyUsers);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)> GetCompanySubscribedAppSubscriptionStatusesForCompanyUntrackedAsync(Guid companyId) =>
-        _context.CompanyAssignedApps.AsNoTracking()
-            .Where(s => s.CompanyId == companyId)
-            .Select(s => ((Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus))
-                new ValueTuple<Guid, AppSubscriptionStatusId>(s.AppId, s.AppSubscriptionStatusId))
+    public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
+        _context.IamUsers.AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyAssignedApps)
+            .Select(s => new AppWithSubscriptionStatus(s.AppId, s.AppSubscriptionStatusId))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public ValueTask<CompanyAssignedApp?> FindAsync(Guid companyId, Guid appId) =>
-        _context.CompanyAssignedApps.FindAsync(companyId, appId);
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(Guid companyId) =>
+    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
         _context.CompanyAssignedApps.AsNoTracking()
-            .Where(s => s.App!.ProviderCompanyId == companyId)
+            .Where(s => s.App!.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
             .GroupBy(s => s.AppId)
             .Select(g => new AppCompanySubscriptionStatusData
             {
                 AppId = g.Key,
                 CompanySubscriptionStatuses = g.Select(s => 
-                    new CompanySubscriptionStatusData(s.CompanyId,s.AppSubscriptionStatusId))
-                    .ToList()
+                    new CompanySubscriptionStatusData(s.CompanyId, s.AppSubscriptionStatusId))
             })
             .ToAsyncEnumerable();
+    
+    /// <inheritdoc />
+    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+        _context.Apps
+            .Where(app => app.Id == appId)
+            .Select(app => ((CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)) new (
+                app!.CompanyAssignedApps.Where(assignedApp => assignedApp.CompanyId == companyId).SingleOrDefault(),
+                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(CompanyAssignedApp? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId) =>
+        _context.Apps
+            .Where(app => app.Id == appId)
+            .Select(app => ((CompanyAssignedApp? companyAssignedApp, bool _)) new (
+                app!.CompanyAssignedApps.Where(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)).SingleOrDefault(),
+                true
+            ))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId) =>
+        _context.IamUsers
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser.CompanyUser!.Company)
+            .Select(company => ((Guid companyId, CompanyAssignedApp?)) new (
+                company!.Id,
+                company.CompanyAssignedApps.Where(assignedApp => assignedApp.AppId == appId).SingleOrDefault()
+            ))
+            .SingleOrDefaultAsync();
 }

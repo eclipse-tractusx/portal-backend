@@ -21,6 +21,7 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
 using System;
@@ -67,7 +68,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _appRepository.AddAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == companyUser.Id))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _appRepository.CreateAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == companyUser.Id))).MustHaveHappenedOnceExactly();
             A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         }
 
@@ -103,13 +104,14 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var providerContactEmail = "email@provider.com";
             var (companyUser, iamUser) = CreateTestUserPair();
 
-            A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(iamUser.UserEntityId))
-                .Returns(companyUser.CompanyId);
+            A.CallTo(() => _companyAssignedAppsRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUser.UserEntityId))
+                .Returns(((Guid companyId, CompanyAssignedApp? companyAssignedApp)) new (companyUser.CompanyId, null));
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING))
+                .Returns(new CompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING));
             A.CallTo(() => _appRepository.GetAppProviderDetailsAsync(appId))
-                .Returns(((string appName, string providerName, string providerContactEmail))new ValueTuple<string, string, string>(appName, providerName, providerContactEmail));
+                .Returns(((string appName, string providerName, string providerContactEmail)) new (appName, providerName, providerContactEmail));
             A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
-            A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             _fixture.Inject(_portalRepositories);
             var mailingService = A.Fake<IMailingService>();
             _fixture.Inject(mailingService);
@@ -117,10 +119,10 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var sut = _fixture.Create<AppsBusinessLogic>();
 
             // Act
-            await sut.AddCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
+            await sut.AddOwnCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<AppSubscriptionStatusId>._)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
         }
 

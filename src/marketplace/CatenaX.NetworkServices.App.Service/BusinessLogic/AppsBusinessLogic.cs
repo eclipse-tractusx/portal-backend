@@ -58,15 +58,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
-    public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? userId = null, string? languageShortName = null)
-    {
-        var companyId = userId == null ?
-            (Guid?)null :
-            await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-        return await _portalRepositories.GetInstance<IAppRepository>()
-            .GetDetailsByIdAsync(appId, companyId, languageShortName)
-            .ConfigureAwait(false);
-    }
+    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? iamUserId = null, string? languageShortName = null) =>
+        _portalRepositories.GetInstance<IAppRepository>()
+            .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId) =>
@@ -105,37 +99,42 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId)
-    {
-        var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        return _portalRepositories
-            .GetInstance<ICompanyAssignedAppsRepository>()
-            .GetCompanySubscribedAppSubscriptionStatusesForCompanyUntrackedAsync(companyId);
-    }
+    public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId) =>
+        _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()
+            .GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId);
 
     /// <inheritdoc/>
-    public async Task<IAsyncEnumerable<AppCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId)
-    {
-        var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        return _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()
-            .GetCompanyProvidedAppSubscriptionStatusesForUserAsync(companyId);
-    }
+    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId) =>
+        _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()
+            .GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(iamUserId);
 
     /// <inheritdoc/>
-    public async Task AddCompanyAppSubscriptionAsync(Guid appId, string userId)
+    public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
-        try
+        var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
+
+        var companyAppSubscriptionData = await companyAssignedAppRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
+        if (companyAppSubscriptionData == default)
         {
-            var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-            var companyAssignedApp = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().CreateCompanyAssignedApp(appId, companyId);
+            throw new ArgumentException($"user {iamUserId} is not assigned with a company");
+        }
+
+        var (companyId, companyAssignedApp) = companyAppSubscriptionData;
+
+        if (companyAssignedApp == null)
+        {
+            companyAssignedApp = companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING);
+        }
+        else
+        {
+            if(companyAssignedApp.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE || companyAssignedApp.AppSubscriptionStatusId == AppSubscriptionStatusId.PENDING)
+            {
+                throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
+            }
             companyAssignedApp.AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING;
-
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
-        catch (DbUpdateException)
-        {
-            throw new ArgumentException("Parameters are invalid or app is already subscribed to.");
-        }
+        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
         var mailParams = new Dictionary<string, string>
@@ -147,29 +146,23 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task ActivateCompanyAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId)
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
     {
+        var assignedAppData = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, iamUserId).ConfigureAwait(false);
 
-        var isExistingApp = await _portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false);
-        if(!isExistingApp)
+        if(assignedAppData == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-
-        var isMemberOfCompanyProvidingApp = await _portalRepositories
-            .GetInstance<ICompanyRepository>()
-            .CheckIsMemberOfCompanyProvidingAppUntrackedAsync(companyId, appId)
-            .ConfigureAwait(false);
+        var (subscription, isMemberOfCompanyProvidingApp) = assignedAppData;
 
         if(!isMemberOfCompanyProvidingApp)
         {
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
-        var subscription = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().FindAsync(companyId, appId).ConfigureAwait(false);
-        if (subscription is null || subscription.AppSubscriptionStatusId != PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING)
+        if (subscription == null || subscription.AppSubscriptionStatusId != PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING)
         {
             throw new ArgumentException("No pending subscription for provided parameters existing.");
         }
@@ -178,18 +171,20 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task UnsubscribeCompanyAppSubscriptionAsync(Guid appId, string userId)
+    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
-        var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-        if (!await _portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(appId).ConfigureAwait(false))
+        var assignedAppData = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetCompanyAssignedAppDataForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
+
+        if(assignedAppData == default)
         {
-            throw new NotFoundException($"App '{appId}' does not exist.");
+            throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var subscription = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().FindAsync(companyId, appId).ConfigureAwait(false);
-        if (subscription is null)
+        var (subscription, _) = assignedAppData;
+
+        if (subscription == null)
         {
-            throw new ArgumentException($"There is no active subscription for company '{companyId}' and app '{appId}'");
+            throw new ArgumentException($"There is no active subscription for user '{iamUserId}' and app '{appId}'");
         }
         subscription.AppSubscriptionStatusId = AppSubscriptionStatusId.INACTIVE;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -214,9 +209,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         var appLicense = appRepository.CreateAppLicenses(appInputModel.Price);
         appRepository.CreateAppAssignedLicense(appEntity.Id, appLicense.Id);
-        appRepository.AddUseCases(appInputModel.UseCaseIds.Select(uc => new AppAssignedUseCase(appEntity.Id, uc)));
-        appRepository.AddAppDescriptions(appInputModel.Descriptions.Select(d => new AppDescription(appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-        appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c => new AppLanguage(appEntity.Id, c)));
+        appRepository.AddAppAssignedUseCases(appInputModel.UseCaseIds.Select(uc =>
+            ((Guid appId, Guid useCaseId)) new (appEntity.Id, uc)));
+        appRepository.AddAppDescriptions(appInputModel.Descriptions.Select(d =>
+            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+        appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c =>
+            ((Guid appId, string languageShortName)) new (appEntity.Id, c)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

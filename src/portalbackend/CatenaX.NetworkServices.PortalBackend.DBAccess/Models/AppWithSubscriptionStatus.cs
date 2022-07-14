@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,28 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-/// <summary>
-/// View model containing an app id and connected company subscription statuses.
-/// </summary>
-public class AppCompanySubscriptionStatusData
-{
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    public AppCompanySubscriptionStatusData()
-    {
-        CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
-    }
-
-    /// <summary>
-    /// Id of the app.
-    /// </summary>
-    public Guid AppId { get; set; }
-
-    /// <summary>
-    /// Subscription statuses of subscribing companies.
-    /// </summary>
-    public IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses { get; set; }
-}
+public record AppWithSubscriptionStatus(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus);
