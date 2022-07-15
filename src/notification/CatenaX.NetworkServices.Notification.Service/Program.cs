@@ -53,7 +53,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 }
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+    .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)); });
 
 builder.Services.AddSwaggerGen(c => { c.SwaggerDoc(VERSION, new OpenApiInfo {Title = TAG, Version = VERSION}); });
 
