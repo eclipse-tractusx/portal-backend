@@ -30,14 +30,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(identityProviderData.Alias).ConfigureAwait(false);
                     yield return new IdentityProviderDetails(
                         identityProviderData.Id,
+                        identityProviderData.Alias,
                         identityProviderData.CategoryId,
                         identityProviderDataOIDC.DisplayName,
                         identityProviderDataOIDC.RedirectUrl,
-                        identityProviderDataOIDC.ClientId,
                         identityProviderDataOIDC.Enabled)
                         {
                             oidc = new IdentityProviderDetailsOIDC(
                                 identityProviderDataOIDC.AuthorizationUrl,
+                                identityProviderDataOIDC.ClientId,
                                 identityProviderDataOIDC.ClientAuthMethod)
                         };
                     break;
@@ -45,10 +46,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(identityProviderData.Alias).ConfigureAwait(false);
                     yield return new IdentityProviderDetails(
                         identityProviderData.Id,
+                        identityProviderData.Alias,
                         identityProviderData.CategoryId,
                         identityProviderDataSAML.DisplayName,
                         identityProviderDataSAML.RedirectUrl,
-                        identityProviderDataSAML.ClientId,
                         identityProviderDataSAML.Enabled)
                         {
                             saml = new IdentityProviderDetailsSAML(
@@ -94,10 +95,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return new IdentityProviderDetails(
                     identityProvider.Id,
+                    alias,
                     identityProviderCategory,
                     companyName,
                     identityProviderDataSAML.RedirectUrl,
-                    alias,
                     identityProviderDataSAML.Enabled)
                     {
                         saml = new IdentityProviderDetailsSAML(
@@ -108,13 +109,14 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
                 return new IdentityProviderDetails(
                     identityProvider.Id,
+                    alias,
                     identityProviderCategory,
                     companyName,
                     identityProviderDataOIDC.RedirectUrl,
-                    alias,
                     identityProviderDataOIDC.Enabled)
                     {
                         oidc = new IdentityProviderDetailsOIDC(
+                            identityProviderDataOIDC.ClientId,
                             identityProviderDataOIDC.AuthorizationUrl,
                             identityProviderDataOIDC.ClientAuthMethod)
                     };
@@ -145,14 +147,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
                 return new IdentityProviderDetails(
                     identityProviderId,
+                    alias,
                     category,
                     details.displayName,
                     identityProviderDataOIDC.RedirectUrl,
-                    alias,
                     identityProviderDataOIDC.Enabled)
                     {
                         oidc = new IdentityProviderDetailsOIDC(
                             identityProviderDataOIDC.AuthorizationUrl,
+                            identityProviderDataOIDC.ClientId,
                             identityProviderDataOIDC.ClientAuthMethod)
                     };
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
@@ -164,10 +167,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return new IdentityProviderDetails(
                     identityProviderId,
+                    alias,
                     category,
                     details.displayName,
                     identityProviderDataSAML.RedirectUrl,
-                    alias,
                     identityProviderDataSAML.Enabled)
                     {
                         saml = new IdentityProviderDetailsSAML(
@@ -176,6 +179,44 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     };
             default:
                 throw new ArgumentException($"identityProvider {identityProviderId} category cannot be updated");
+        }
+    }
+
+    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync(IEnumerable<string> aliase, string iamUserId)
+    {
+        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDataUntracked(iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var invalidAliase = aliase.Except(identityProviderData.Select(identityProvider => identityProvider.Alias));
+        if (invalidAliase.Count() > 0)
+        {
+            throw new ArgumentException($"invalid identityProvider aliase: [{String.Join(", ", invalidAliase)}]",nameof(aliase));
+        }
+
+        await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
+            .GetOwnCompanyUserQuery(iamUserId)
+            .Select(companyUser =>
+                ((Guid, string?, string?, string?, string?)) new (
+                    companyUser.Id,
+                    companyUser.Firstname,
+                    companyUser.Lastname,
+                    companyUser.Email,
+                    companyUser.IamUser!.UserEntityId))
+            .ToAsyncEnumerable())
+        {
+            if (userEntityId != null)
+            {
+                var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false);
+                yield return new UserIdentityProviderData(
+                    companyUserId,
+                    firstName,
+                    lastName,
+                    email,
+                    linkDatas.Select(linkData => new UserIdentityProviderLinkData(
+                        linkData.alias,
+                        linkData.userId,
+                        linkData.userName))
+                );
+            }
         }
     }
 }
