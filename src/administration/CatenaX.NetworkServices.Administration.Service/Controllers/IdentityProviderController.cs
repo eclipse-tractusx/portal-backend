@@ -41,4 +41,8 @@ public class IdentityProviderController : ControllerBase
     public Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
         this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProvider(identityProviderId, details, iamUserId));
 
+    [HttpGet]
+    [Route("owncompany/users")]
+    public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync([FromQuery] IEnumerable<string> aliase) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUserIdentityProviderDataAsync(aliase, iamUserId));
 }

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.Administration.Service.Models;
 
-public record IdentityProviderDetails(Guid identityProviderId, IdentityProviderCategoryId identityProviderCategoryId, string displayName, string redirectUrl, string clientId, bool enabled)
+public record IdentityProviderDetails(Guid identityProviderId, string alias, IdentityProviderCategoryId identityProviderCategoryId, string displayName, string redirectUrl, bool enabled)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderDetailsOIDC? oidc { get; init; } = null;
@@ -13,6 +13,6 @@ public record IdentityProviderDetails(Guid identityProviderId, IdentityProviderC
     public IdentityProviderDetailsSAML? saml { get; init; } = null;
 }
 
-public record IdentityProviderDetailsOIDC(string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod);
+public record IdentityProviderDetailsOIDC(string authorizationUrl, string clientId, IamIdentityProviderClientAuthMethod clientAuthMethod);
 
 public record IdentityProviderDetailsSAML(string serviceProviderEntityId, string singleSignOnServiceUrl);
