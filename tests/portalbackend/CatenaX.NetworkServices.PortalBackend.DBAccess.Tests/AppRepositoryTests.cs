@@ -86,7 +86,7 @@ public class AppRepositoryTests
         var sut = _fixture.Create<AppRepository>();
 
         // Act
-        var result = await sut.GetDetailsByIdAsync(apps.Single().Id, null, null);
+        var result = await sut.GetAppDetailsByIdAsync(apps.Single().Id, null, null);
 
         // Assert
         result.Should().NotBeNull();
