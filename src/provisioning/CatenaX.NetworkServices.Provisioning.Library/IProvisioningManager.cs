@@ -27,6 +27,8 @@ public interface IProvisioningManager
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
-    Task<(string DisplayName, string RedirectUrl, bool Enabled, string AuthorizationUrl, string ClientId, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias);
-    Task<(string DisplayName, string RedirectUrl, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias);
+    Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias);
+    Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string? secret = null);
+    Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias);
+    Task UpdateCentralIdentityProviderDataSAMLAsync(string alias, string displayName, bool enabled, string entityId, string singleSignOnServiceUrl);
 }
