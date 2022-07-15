@@ -84,12 +84,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ArgumentException($"Location {connectorInputModel.Location} does not exist", nameof(location));
         }
 
-        if (!await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsByIdAsync(provider).ConfigureAwait(false))
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        if (!await companyRepository.CheckCompanyExistsByIdAsync(provider).ConfigureAwait(false))
         {
             throw new ArgumentException($"Company {connectorInputModel.Provider} does not exist", nameof(provider));
         }
 
-        if (provider != host && host.HasValue && !await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsByIdAsync(host.Value).ConfigureAwait(false))
+        if (provider != host && host.HasValue && !await companyRepository.CheckCompanyExistsByIdAsync(host.Value).ConfigureAwait(false))
         {
             throw new ArgumentException($"Company {host} does not exist", nameof(host));
         }
@@ -116,7 +117,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         try
         {
             createdConnector = await _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnectorAsync(connector).ConfigureAwait(false);
-            var bpn = (await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
+            var bpn = (await companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
