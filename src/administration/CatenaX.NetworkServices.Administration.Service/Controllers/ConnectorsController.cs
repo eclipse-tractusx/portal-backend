@@ -73,7 +73,7 @@ public class ConnectorsController : ControllerBase
     /// <returns>View model of the created connector.</returns>
     /// <remarks>Example: POST: /api/administration/connectors</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
-    /// <response code="400">Provided connector does not respect database constraints.</response>
+    /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
