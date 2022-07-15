@@ -18,7 +18,7 @@ public class AppUserRepository : IAppUserRepository
         _dbContext.CompanyAssignedApps
             .AsNoTracking()
             .Where(app => app.AppId == appId
-                && app.Company!.CompanyStatusId == CompanyStatusId.ACTIVE
+                && app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE
                 && app.Company!.CompanyUsers!.Any(user => user.IamUser!.UserEntityId == iamUserId))
             .SelectMany(app => app.Company!.CompanyUsers);
 }
