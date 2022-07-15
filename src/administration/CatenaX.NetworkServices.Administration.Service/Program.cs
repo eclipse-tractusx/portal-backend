@@ -61,7 +61,7 @@ builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 
 builder.Services.AddControllers()
                 .AddJsonOptions(options => {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
                 });
 
 builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
