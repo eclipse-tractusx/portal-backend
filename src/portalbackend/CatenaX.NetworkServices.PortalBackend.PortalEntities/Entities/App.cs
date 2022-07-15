@@ -32,6 +32,7 @@ public class App
         AppDescriptions = new HashSet<AppDescription>();
         AppDetailImages = new HashSet<AppDetailImage>();
         Companies = new HashSet<Company>();
+        CompanyAssignedApps = new HashSet<CompanyAssignedApp>();
         IamClients = new HashSet<IamClient>();
         AppLicenses = new HashSet<AppLicense>();
         UseCases = new HashSet<UseCase>();
@@ -83,6 +84,7 @@ public class App
     public virtual AppStatus? AppStatus{ get; set; }
     public virtual ICollection<AppTag> Tags { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
+    public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
     public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
