@@ -250,30 +250,28 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 applications.OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
                     .Take(take)
-                    .Select(application => new CompanyApplicationWithCompanyUserDetails(
-                        application.ApplicationStatusId,
-                        application.DateCreated,
-                        application.Company!.Name)
+                    .Select(application => new
                     {
-                        FirstName = application.Invitations
-                            .Select(invitation => invitation.CompanyUser)
-                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                                && companyUser!.Firstname != null)
-                            .Select(companyUser => companyUser!.Firstname)
-                            .FirstOrDefault(),
-                        LastName = application.Invitations
-                            .Select(invitation => invitation.CompanyUser)
-                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                                && companyUser!.Lastname != null)
-                            .Select(companyUser => companyUser!.Lastname)
-                            .FirstOrDefault(),
-                        Email = application.Invitations
-                            .Select(invitation => invitation.CompanyUser)
-                            .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                                && companyUser!.Email != null)
-                            .Select(companyUser => companyUser!.Email)
-                            .FirstOrDefault()
+                        Application = application,
+                        CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
+                    .Where(companyUser =>
+                        companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                        && companyUser.Firstname != null
+                        && companyUser.Lastname != null
+                        && companyUser.Email != null
+                    )
+                    .FirstOrDefault()
+                    })
+                    .Select(s => new CompanyApplicationWithCompanyUserDetails(
+                        s.Application.ApplicationStatusId,
+                        s.Application.DateCreated,
+                        s.Application.Company!.Name)
+                    {
+                        FirstName = s.CompanyUser!.Firstname,
+                        LastName = s.CompanyUser.Lastname,
+                        Email = s.CompanyUser.Email
                     })
                     .AsAsyncEnumerable()));
+
     }
 }
