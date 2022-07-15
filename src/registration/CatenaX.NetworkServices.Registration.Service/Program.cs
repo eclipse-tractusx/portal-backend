@@ -21,8 +21,9 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Framework.Cors;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -37,17 +38,15 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
+builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
+
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-    c.OperationFilter<SwaggerFileOperationFilter>();
-});
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {
@@ -133,6 +132,8 @@ if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configura
 }
 
 app.UseRouting();
+
+app.UseCors(CorsExtensions.AllowSpecificOrigins);
 
 app.UseMiddleware<GeneralHttpErrorHandler>();
 app.UseAuthentication();

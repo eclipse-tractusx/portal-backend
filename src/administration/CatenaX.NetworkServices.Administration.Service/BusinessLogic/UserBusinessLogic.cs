@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.Administration.Service.Models;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
@@ -180,42 +200,46 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
         }
 
-        public IAsyncEnumerable<CompanyUserData> GetOwnCompanyUserDatasAsync(
+        public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
             string adminUserId,
+            int page, 
+            int size,
             Guid? companyUserId = null,
             string? userEntityId = null,
             string? firstName = null,
             string? lastName = null,
-            string? email = null,
-            CompanyUserStatusId? status = null)
+            string? email = null
+            )
         {
-            if (!companyUserId.HasValue
-                && String.IsNullOrWhiteSpace(userEntityId)
-                && String.IsNullOrWhiteSpace(firstName)
-                && String.IsNullOrWhiteSpace(lastName)
-                && String.IsNullOrWhiteSpace(email)
-                && !status.HasValue)
-            {
-                throw new ArgumentNullException("not all of userEntityId, companyUserId, firstName, lastName, email, status may be null");
-            }
-            return _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
+           
+            var companyUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
                 adminUserId,
                 companyUserId,
                 userEntityId,
                 firstName,
                 lastName,
-                email,
-                status)
-                .AsNoTracking()
-                .Select(companyUser => new CompanyUserData(
+                email
+            );
+            return Pagination.CreateResponseAsync<CompanyUserData>(
+                page,
+                size,
+                _settings.ApplicationsMaxPageSize,
+                (int skip, int take) => new Pagination.AsyncSource<CompanyUserData>(
+                    companyUsers.CountAsync(),
+                    companyUsers.OrderByDescending(companyUser => companyUser.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(companyUser => new CompanyUserData(
+                    companyUser.IamUser!.UserEntityId,
                     companyUser.Id,
                     companyUser.CompanyUserStatusId)
                 {
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
-                    Email = companyUser.Email
+                    Email = companyUser.Email,
+                    Roles = companyUser.UserRoles.Select(userRole => userRole.UserRoleText)
                 })
-                .AsAsyncEnumerable();
+                .AsAsyncEnumerable()));
         }
 
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
@@ -232,7 +256,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 var language = await _portalDBAccess.GetLanguageAsync(languageShortName);
                 if (language == null)
                 {
-                    throw new NotFoundException($"language {languageShortName} does not exist");
+                    throw new ArgumentException($"language {languageShortName} does not exist");
                 }
             }
             await foreach (var roles in _portalDBAccess.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
@@ -336,7 +360,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var userData = await _userRepository.GetUserWithIdpAsync(iamUserId).ConfigureAwait(false);
             if (userData == null)
             {
-                throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
+                throw new NotFoundException($"iamUser {iamUserId} is not a shared idp user");
             }
             if (userData.CompanyUser.Id != companyUserId)
             {
@@ -354,8 +378,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
             if (iamIdpAlias == null)
             {
-                throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
+                throw new NotFoundException($"iamUser {adminUserId} is not a shared idp user");
             }
+
             await foreach (var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
                 var success = false;
@@ -459,9 +484,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
-            var appUsers = _portalRepositories.GetInstance<IAppUserRepository>().GetCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
 
             return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,
@@ -520,7 +545,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     };
 
                 var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
-           
+
                 foreach (var roleWithId in userRoleWithIds)
                 {
                     if (assignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
