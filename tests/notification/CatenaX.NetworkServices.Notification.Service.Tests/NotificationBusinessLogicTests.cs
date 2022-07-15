@@ -385,7 +385,7 @@ public class NotificationBusinessLogicTests
             .ReturnsLazily(() => Task.FromResult(true));
         A.CallTo(() => _userRepository.IsUserWithIdExisting(A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
             .ReturnsLazily(() => Task.FromResult(false));
-        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserIdUntrackedAsync(iamuser.UserEntityId))
+        A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(iamuser.UserEntityId))
             .ReturnsLazily(() => Task.FromResult(companyUser.Id));
         A.CallTo(() =>
                 _notificationRepository.GetByIdAndUserIdUntrackedAsync(_notificationDetail.Id, _companyUser.Id))

@@ -254,6 +254,11 @@ public class PortalDbContext : DbContext
                     {
                         j.HasKey(e => new { e.AppId, e.UseCaseId });
                     });
+
+            entity.HasMany(p => p.CompanyAssignedApps)
+                .WithOne(d => d.App)
+                .HasForeignKey(d => d.AppId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<AppDescription>(entity =>
@@ -317,6 +322,11 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyAssignedRoles)
                 .WithOne(d => d.Company!)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasMany(p => p.CompanyAssignedApps)
+                .WithOne(d => d.Company)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
