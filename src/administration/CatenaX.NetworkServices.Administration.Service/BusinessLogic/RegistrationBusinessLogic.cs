@@ -50,17 +50,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _mailingService = mailingService;
     }
 
-    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid? applicationId)
+    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
     {
-        if (!applicationId.HasValue)
+        if (applicationId == default)
         {
             throw new ArgumentNullException("applicationId must not be null");
         }
 
-        var companyWithAddress = await _applicationRepository.GetCompanyWithAdressUntrackedAsync(applicationId.Value).ConfigureAwait(false);
+        var companyWithAddress = await _applicationRepository.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
-            throw new NotFoundException($"no company found for applicationId {applicationId.Value}");
+            throw new NotFoundException($"no company found for applicationId {applicationId}");
         }
         return companyWithAddress;
     }
@@ -103,14 +103,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public async Task<bool> ApprovePartnerRequest(Guid? applicationId)
+    public async Task<bool> ApprovePartnerRequest(Guid applicationId)
     {
-        if (!applicationId.HasValue)
+        if (applicationId == default)
         {
             throw new ArgumentNullException("applicationId must not be null");
         }
 
-        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId.Value).ConfigureAwait(false);
+        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -132,7 +132,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
-        await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId.Value).ConfigureAwait(false))
+        await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
         {
             assignedRoles  = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
             
@@ -154,7 +154,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
-        await PostRegistrationWelcomeEmailAsync(applicationId.Value).ConfigureAwait(false);
+        await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
         if (assignedRoles != null)
         {
@@ -192,14 +192,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
-    public async Task<bool> DeclinePartnerRequest(Guid? applicationId)
+    public async Task<bool> DeclinePartnerRequest(Guid applicationId)
     {
-        if (!applicationId.HasValue)
+        if (applicationId == default)
         {
             throw new ArgumentNullException("applicationId must not be null");
         }
 
-        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId.Value).ConfigureAwait(false);
+        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
         {
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", "applicationId");
@@ -208,7 +208,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.REJECTED;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(applicationId.Value).ConfigureAwait(false);
+        await PostRegistrationCancelEmailAsync(applicationId).ConfigureAwait(false);
         return true;
     }
 
