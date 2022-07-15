@@ -35,4 +35,10 @@ public class IdentityProviderController : ControllerBase
     [Route("owncompany/identityproviders")]
     public Task<IdentityProviderDetails> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
         this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProvider(protocol, iamUserId));
+
+    [HttpPost]
+    [Route("owncompany/identityproviders/{identityProviderId}")]
+    public Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
+        this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProvider(identityProviderId, details, iamUserId));
+
 }

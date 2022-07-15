@@ -173,29 +173,51 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Where(r => r.Composite == true).Select(x => x.Name);
         }
 
-        public async Task<(string DisplayName, string RedirectUrl, bool Enabled, string AuthorizationUrl, string ClientId, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias)
+        public async Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
-            return ((string DisplayName, string RedirectUrl, bool Enabled, string AuthorizationUrl, string ClientId, IamIdentityProviderClientAuthMethod ClientAuthMethod))
+            return ((string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod))
                 new (identityProvider.DisplayName,
                     redirectUri,
+                    identityProvider.Config.ClientId,
                     identityProvider.Enabled ?? false,
                     identityProvider.Config.AuthorizationUrl,
-                    identityProvider.Config.ClientId,
                     IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod));
         }
 
-        public async Task<(string DisplayName, string RedirectUrl, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias)
+        public async Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string? secret = null)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            identityProvider.DisplayName = displayName;
+            identityProvider.Enabled = enabled;
+            identityProvider.Config.AuthorizationUrl = authorizationUrl;
+            identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
+            identityProvider.Config.ClientSecret = secret;
+            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+        }
+
+        public async Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
-            return ((string DisplayName, string RedirectUrl, bool Enabled, string EntityId, string SingleSignOnServiceUrl))
+            return ((string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl))
                 new (identityProvider.DisplayName,
                     redirectUri,
+                    identityProvider.Config.ClientId,
                     identityProvider.Enabled ?? false,
                     identityProvider.Config.EntityId,
                     identityProvider.Config.SingleSignOnServiceUrl);
+        }
+
+        public async Task UpdateCentralIdentityProviderDataSAMLAsync(string alias, string displayName, bool enabled, string entityId, string singleSignOnServiceUrl)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            identityProvider.DisplayName = displayName;
+            identityProvider.Enabled = enabled;
+            identityProvider.Config.EntityId = entityId;
+            identityProvider.Config.SingleSignOnServiceUrl = singleSignOnServiceUrl;
+            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }
     }
 }

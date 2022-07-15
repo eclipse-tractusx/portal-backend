@@ -41,6 +41,18 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 idpAlias,
                 identityProvider.Id)).Entity;
 
+    public Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+        _context.IdentityProviders
+            .Where(identityProvider => identityProvider.Id == identityProviderId)
+            .Select(identityProvider =>
+                ((string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)) new (
+                    identityProvider.IamIdentityProvider!.IamIdpAlias,
+                    identityProvider.IdentityProviderCategoryId,
+                    identityProvider.Companies.Any(
+                        company => company.CompanyUsers.Any(
+                            companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
+            .SingleOrDefaultAsync();
+
     public IAsyncEnumerable<(Guid Id, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderDataUntracked(string iamUserId) =>
         _context.IamUsers
             .AsNoTracking()
