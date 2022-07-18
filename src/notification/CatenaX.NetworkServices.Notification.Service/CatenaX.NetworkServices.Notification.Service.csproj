@@ -25,12 +25,15 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <DockerfileContext>..\..\..</DockerfileContext>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <UserSecretsId>53be9d36-5a45-441f-8f48-772ae6e64ca2</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj" />
         <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
+        <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Swagger\CatenaX.NetworkServices.Framework.Swagger.csproj" />
         <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />
         <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Factory\CatenaX.NetworkServices.Keycloak.Factory.csproj" />
         <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />

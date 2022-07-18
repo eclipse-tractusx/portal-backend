@@ -70,7 +70,7 @@ public class NotificationRepository : INotificationRepository
 
         return query
             .Select(x => new NotificationDetailData(x.Id, x.Content, x.DueDate, x.NotificationTypeId, x.ReadStatusId))
-            .AsAsyncEnumerable();
+            .ToAsyncEnumerable();
     }
 
     /// <inheritdoc />
