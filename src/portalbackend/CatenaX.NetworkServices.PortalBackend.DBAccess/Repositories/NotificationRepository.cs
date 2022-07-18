@@ -41,8 +41,8 @@ public class NotificationRepository : INotificationRepository
     }
 
     /// <inheritdoc />
-    public Notification Add(Guid receiverUserId, DateTimeOffset dateTimeOffset, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId) =>
-        _dbContext.Add(new Notification(Guid.NewGuid(), receiverUserId, dateTimeOffset, content, notificationTypeId, readStatusId)).Entity;
+    public Notification Add(Guid receiverUserId, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId) =>
+        _dbContext.Add(new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, content, notificationTypeId, readStatusId)).Entity;
 
     /// <inheritdoc />
     public IAsyncEnumerable<NotificationDetailData> GetAllAsDetailsByUserIdUntracked(Guid companyUserId,

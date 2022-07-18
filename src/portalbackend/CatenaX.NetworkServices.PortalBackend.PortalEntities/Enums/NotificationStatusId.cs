@@ -18,11 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 /// <summary>
 /// Possible status of a notification
 /// </summary>
+[DataContract]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum NotificationStatusId : int
 {
     /// <summary>

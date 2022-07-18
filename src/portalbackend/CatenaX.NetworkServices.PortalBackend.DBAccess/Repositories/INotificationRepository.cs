@@ -37,7 +37,7 @@ public interface INotificationRepository
     /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="readStatusId">id of the notification status</param>
-    Notification Add(Guid receiverUserId, DateTimeOffset dateTimeOffset, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId);
+    Notification Add(Guid receiverUserId, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId);
 
     /// <summary>
     ///     Gets all Notifications for a specific user
