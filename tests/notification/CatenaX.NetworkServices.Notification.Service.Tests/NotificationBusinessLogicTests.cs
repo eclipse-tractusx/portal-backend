@@ -79,7 +79,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
-        A.CallTo(() => _notificationRepository.Add(A<Guid>._, A<DateTimeOffset>._, A<string>._, A<NotificationTypeId>._, A<NotificationStatusId>._))
+        A.CallTo(() => _notificationRepository.Add(A<Guid>._, A<string>._, A<NotificationTypeId>._, A<NotificationStatusId>._))
             .Invokes(action =>
                 notifications.Add(A.Fake<PortalBackend.PortalEntities.Entities.Notification>()));
         _fixture.Inject(_portalRepositories);
@@ -88,7 +88,7 @@ public class NotificationBusinessLogicTests
 
         // Act
         var result = await sut.CreateNotification(
-            new NotificationCreationData(DateTimeOffset.Now, content, NotificationTypeId.INFO,
+            new NotificationCreationData(content, NotificationTypeId.INFO,
                 NotificationStatusId.UNREAD), _companyUser.Id);
 
         // Assert
@@ -96,56 +96,6 @@ public class NotificationBusinessLogicTests
         notifications.Should().HaveCount(1);
         var notification = notifications.Single();
         notification.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task CreateNotification_WithInvalidNotificationType_ThrowsArgumentException()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
-
-        // Act
-        try
-        {
-            await sut.CreateNotification(
-                new NotificationCreationData(DateTimeOffset.Now, "That's a title",
-                    (NotificationTypeId) 666, NotificationStatusId.UNREAD), _companyUser.Id);
-        }
-        catch (ArgumentException e)
-        {
-            // Assert
-            e.ParamName.Should().Be("notificationTypeId");
-            return;
-        }
-
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CreateNotification_WithInvalidNotificationStatus_ThrowsArgumentException()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
-
-        // Act
-        try
-        {
-            await sut.CreateNotification(
-                new NotificationCreationData(DateTimeOffset.Now, "That's a title",
-                    NotificationTypeId.INFO, (NotificationStatusId) 666), _companyUser.Id);
-        }
-        catch (ArgumentException e)
-        {
-            // Assert
-            e.ParamName.Should().Be("notificationStatusId");
-            return;
-        }
-
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
     }
 
     [Fact]
@@ -159,7 +109,7 @@ public class NotificationBusinessLogicTests
         try
         {
             await sut.CreateNotification(
-                new NotificationCreationData(DateTimeOffset.Now, "That's a title",
+                new NotificationCreationData("That's a title",
                     NotificationTypeId.INFO, NotificationStatusId.UNREAD), Guid.NewGuid());
         }
         catch (ArgumentException e)

@@ -47,16 +47,10 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             throw new ArgumentException("User does not exist", nameof(companyUserId));
 
         var notificationId = Guid.NewGuid();
-        var (dateTimeOffset, content, notificationTypeId, notificationStatusId, dueData, creatorUserId) =
+        var (content, notificationTypeId, notificationStatusId, dueData, creatorUserId) =
             creationData;
 
-        if (!Enum.IsDefined(typeof(NotificationTypeId), notificationTypeId.ToString()))
-            throw new ArgumentException("notificationType does not exist.", nameof(notificationTypeId));
-
-        if (!Enum.IsDefined(typeof(NotificationStatusId), notificationStatusId.ToString()))
-            throw new ArgumentException("notificationStatus does not exist.", nameof(notificationStatusId));
-
-        var notification = _portalRepositories.GetInstance<INotificationRepository>().Add(companyUserId, dateTimeOffset, content, notificationTypeId, notificationStatusId);
+        var notification = _portalRepositories.GetInstance<INotificationRepository>().Add(companyUserId, content, notificationTypeId, notificationStatusId);
         notification.DueDate = dueData;
         notification.CreatorUserId = creatorUserId;
 
@@ -73,12 +67,6 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
 
-        if (typeId.HasValue && !Enum.IsDefined(typeof(NotificationTypeId), typeId.Value.ToString()))
-            throw new ArgumentException("notificationType does not exist.", nameof(typeId));
-
-        if (statusId.HasValue && !Enum.IsDefined(typeof(NotificationStatusId), statusId.Value.ToString()))
-            throw new ArgumentException("notificationStatus does not exist.", nameof(statusId));
-
         return _portalRepositories.GetInstance<INotificationRepository>()
             .GetAllAsDetailsByUserIdUntracked(companyUserId, statusId, typeId);
     }
@@ -90,9 +78,6 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             .GetCompanyIdForIamUserUntrackedAsync(userId)
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
-
-        if (statusId.HasValue && !Enum.IsDefined(typeof(NotificationStatusId), statusId.Value.ToString()))
-            throw new ArgumentException("notificationStatus does not exist.", nameof(statusId));
 
         return await _portalRepositories.GetInstance<INotificationRepository>()
             .GetNotificationCountAsync(companyUserId, statusId)
