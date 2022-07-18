@@ -33,11 +33,12 @@ public interface INotificationRepository
     ///     Adds the given notification to the persistence layer.
     /// </summary>
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
-    /// <param name="dateTimeOffset">Teh datetime for the notification</param>
     /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="readStatusId">id of the notification status</param>
-    Notification Add(Guid receiverUserId, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId);
+    /// <param name="setOptionalParameter">Optional Action to set the notifications optional properties</param>
+    Notification Add(Guid receiverUserId, string content, NotificationTypeId notificationTypeId,
+        NotificationStatusId readStatusId, Action<Notification>? setOptionalParameter = null);
 
     /// <summary>
     ///     Gets all Notifications for a specific user
