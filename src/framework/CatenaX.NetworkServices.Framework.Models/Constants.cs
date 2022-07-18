@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Framework.Models;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-
-public interface IRegistrationBusinessLogic
+/// <summary>
+/// Provides constant values
+/// </summary>
+public static class Constants
 {
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(Guid applicationId);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size);
+    /// <summary>
+    /// Default value for an Error String
+    /// </summary>
+    public const string ErrorString = "ERROR";
+    
+    /// <summary>
+    /// The default language
+    /// </summary>
+    public const string DefaultLanguage = "en";
 }

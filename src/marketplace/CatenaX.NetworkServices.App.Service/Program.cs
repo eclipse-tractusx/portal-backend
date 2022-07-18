@@ -29,11 +29,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Framework.Cors;
 
 var VERSION = "v2";
@@ -54,13 +53,9 @@ builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    }); ;
-builder.Services.AddSwaggerGen(c => { 
-    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
+    });
 
-    var filePath = Path.Combine(System.AppContext.BaseDirectory, Assembly.GetExecutingAssembly()?.FullName?.Split(',')[0] + ".xml");
-    c.IncludeXmlComments(filePath);
-});
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {
@@ -82,8 +77,7 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                     .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions", options));
 
-builder.Services.AddTransient<IAppRepository, AppRepository>();
-builder.Services.AddTransient<ICompanyAssignedAppsRepository, CompanyAssignedAppsRepository>();
+builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();

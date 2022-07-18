@@ -27,6 +27,8 @@
     <UserSecretsId>ad1c79a3-a042-4d59-8924-475f8ff4c37a</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Swagger\CatenaX.NetworkServices.Framework.Swagger.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj" />
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.Template\CatenaX.NetworkServices.Mailing.Template.csproj" />
