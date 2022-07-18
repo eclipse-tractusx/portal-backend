@@ -43,19 +43,23 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationDetailData> CreateNotification(NotificationCreationData creationData, Guid companyUserId)
     {
+
         if (!await _portalRepositories.GetInstance<IUserRepository>().IsUserWithIdExisting(companyUserId))
             throw new ArgumentException("User does not exist", nameof(companyUserId));
 
         var notificationId = Guid.NewGuid();
-        var (content, notificationTypeId, notificationStatusId, dueData, creatorUserId) =
+        var (content, notificationTypeId, notificationStatusId, dueDate, creatorUserId) =
             creationData;
 
-        var notification = _portalRepositories.GetInstance<INotificationRepository>().Add(companyUserId, content, notificationTypeId, notificationStatusId);
-        notification.DueDate = dueData;
-        notification.CreatorUserId = creatorUserId;
+        Action<PortalBackend.PortalEntities.Entities.Notification> setupOptionalParameter = notification =>
+        {
+            notification.DueDate = dueDate;
+            notification.CreatorUserId = creatorUserId;
+        };
+        var notification = _portalRepositories.GetInstance<INotificationRepository>().Add(companyUserId, content, notificationTypeId, notificationStatusId, setupOptionalParameter);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return new NotificationDetailData(notificationId, content, dueData, notificationTypeId, notificationStatusId);
+        return new NotificationDetailData(notificationId, content, dueDate, notificationTypeId, notificationStatusId);
     }
 
     /// <inheritdoc />
