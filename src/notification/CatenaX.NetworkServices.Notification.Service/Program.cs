@@ -24,6 +24,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
@@ -55,7 +56,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)); });
 
-builder.Services.AddSwaggerGen(c => { c.SwaggerDoc(VERSION, new OpenApiInfo {Title = TAG, Version = VERSION}); });
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {

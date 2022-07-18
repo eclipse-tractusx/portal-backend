@@ -67,7 +67,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         NotificationStatusId? statusId, NotificationTypeId? typeId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyIdForIamUserUntrackedAsync(iamUserId)
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
 
@@ -79,7 +79,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public async Task<int> GetNotificationCount(string userId, NotificationStatusId? statusId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyIdForIamUserUntrackedAsync(userId)
+            .GetCompanyUserIdForIamUserUntrackedAsync(userId)
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
 
@@ -92,7 +92,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public async Task SetNotificationToRead(string userId, Guid notificationId, NotificationStatusId notificationStatusId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyIdForIamUserUntrackedAsync(userId)
+            .GetCompanyUserIdForIamUserUntrackedAsync(userId)
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
 
@@ -111,7 +111,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public async Task DeleteNotification(string userId, Guid notificationId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyIdForIamUserUntrackedAsync(userId)
+            .GetCompanyUserIdForIamUserUntrackedAsync(userId)
             .ConfigureAwait(false);
         if (companyUserId == default) throw new ForbiddenException($"iamUserId {userId} is not assigned");
 
