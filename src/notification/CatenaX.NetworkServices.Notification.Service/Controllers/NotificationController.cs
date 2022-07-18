@@ -61,7 +61,7 @@ public class NotificationController : ControllerBase
     /// <response code="400">UserId not found or the NotificationType or NotificationStatus don't exist.</response>
     [HttpPost]
     [Route("{companyUserId}")]
-    // [Authorize(Roles = "view_notifications")]
+    [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromRoute] Guid companyUserId,
@@ -82,7 +82,7 @@ public class NotificationController : ControllerBase
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     /// <response code="403">User is not assigned.</response>
     [HttpGet]
-    // [Authorize(Roles = "view_notifications")]
+    [Authorize(Roles = "view_notifications")]
     [Route("", Name = nameof(GetNotifications))]
     [ProducesResponseType(typeof(ICollection<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -105,7 +105,7 @@ public class NotificationController : ControllerBase
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpGet]
     [Route("count")]
-    // [Authorize(Roles = "view_notifications")]
+    [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -125,7 +125,7 @@ public class NotificationController : ControllerBase
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpPut]
     [Route("{notificationId:guid}/read")]
-    // [Authorize(Roles = "view_notifications")]
+    [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] NotificationStatusId notificationStatusId = NotificationStatusId.READ)
@@ -145,7 +145,7 @@ public class NotificationController : ControllerBase
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpDelete]
     [Route("{notificationId:guid}")]
-    // [Authorize(Roles = "view_notifications")]
+    [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
