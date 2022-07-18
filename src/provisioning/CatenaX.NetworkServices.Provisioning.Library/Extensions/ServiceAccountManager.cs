@@ -35,7 +35,7 @@ public partial class ProvisioningManager
                 serviceAccountUser.Id,
                 await GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false));
         }
-        catch(NotFoundException nfe)
+        catch(EntityNotFoundException nfe)
         {
             throw new Exception(nfe?.Message);
         }

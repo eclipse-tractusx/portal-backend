@@ -23,7 +23,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                         return (client.Id, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, client.Id).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name)));
                 }
             }
-            catch(NotFoundException)
+            catch(EntityNotFoundException)
             {
                 return (client?.Id, Enumerable.Empty<Role>());
             }

@@ -62,7 +62,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             var user = await _SharedIdp.GetUserAsync(realm, userId).ConfigureAwait(false);
             if (user == null)
             {
-                throw new NotFoundException($"userId {userId} not found in shared realm {realm}");
+                throw new EntityNotFoundException($"userId {userId} not found in shared realm {realm}");
             }
             user.FirstName = firstName;
             user.LastName = lastName;

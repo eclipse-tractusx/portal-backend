@@ -30,7 +30,7 @@ namespace CatenaX.NetworkServices.Keycloak.Factory.Utils
                 switch (call.HttpStatus)
                 {
                     case HttpStatusCode.NotFound:
-                        throw new NotFoundException(message, call.Exception);
+                        throw new EntityNotFoundException(message, call.Exception);
 
                     case HttpStatusCode.BadRequest:
                         throw new ArgumentException(message, call.Exception);

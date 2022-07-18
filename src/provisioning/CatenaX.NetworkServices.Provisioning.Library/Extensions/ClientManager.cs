@@ -30,7 +30,7 @@ public partial class ProvisioningManager
         var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         if (client == null)
         {
-            throw new NotFoundException($"failed to retrieve central client {internalClientId}");
+            throw new EntityNotFoundException($"failed to retrieve central client {internalClientId}");
         }
         client.Name = config.Name;
         client.ClientAuthenticatorType = IamClientAuthMethodToInternal(config.IamClientAuthMethod);
@@ -53,7 +53,7 @@ public partial class ProvisioningManager
         var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         if (credentials == null)
         {
-            throw new NotFoundException($"credentials of client {internalClientId} not found in keycloak");
+            throw new EntityNotFoundException($"credentials of client {internalClientId} not found in keycloak");
         }
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
@@ -67,7 +67,7 @@ public partial class ProvisioningManager
         var credentials = await _CentralIdp.GenerateClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         if (credentials == null)
         {
-            throw new NotFoundException($"credentials of client {internalClientId} not found in keycloak");
+            throw new EntityNotFoundException($"credentials of client {internalClientId} not found in keycloak");
         }
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
@@ -82,7 +82,7 @@ public partial class ProvisioningManager
             .SingleOrDefault();
         if (client == null)
         {
-            throw new NotFoundException($"failed to retrieve central client {clientId}");
+            throw new EntityNotFoundException($"failed to retrieve central client {clientId}");
         }
         return client;
     }
