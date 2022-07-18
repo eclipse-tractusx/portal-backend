@@ -268,8 +268,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
 
             var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
-            await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
+            try
+            {
+                await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                throw ex;
+            }
+            
             foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(user.AssignedBusinessPartnerNumbers))
             {
                 businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerToAdd);
@@ -304,10 +311,18 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             var companyUser = userData.CompanyUser;
             var iamIdpAlias = userData.IamIdpAlias;
-            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
-            if (userIdShared == null)
+            string userIdShared = string.Empty;
+            try
             {
-                throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
+                userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+                if (userIdShared == null)
+                {
+                    throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
+                }
+            }
+            catch (EntityNotFoundException ex)
+            {
+                throw ex;
             }
             if (!await _provisioningManager.UpdateSharedRealmUserAsync(
                 iamIdpAlias,
@@ -381,7 +396,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         private async Task<bool> DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
         {
-            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            string userIdShared = string.Empty;
+            try
+            {
+                userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            }
+            catch (EntityNotFoundException ex)
+            {
+                throw ex;
+            }
             if (userIdShared != null
                 && (await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false))
                 && (await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false))) //TODO doesn't handle the case where user is both shared and own idp user
@@ -451,10 +474,18 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
-                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
-                    if (!updatedPassword)
+                    bool updatedPassword = false;
+                    try
                     {
-                        throw new Exception("password reset failed");
+                        updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                        if (!updatedPassword)
+                        {
+                            throw new Exception("password reset failed");
+                        }
+                    }
+                    catch (EntityNotFoundException ex)
+                    {
+                        throw ex;
                     }
                     return updatedPassword;
                 }

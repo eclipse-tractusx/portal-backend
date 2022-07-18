@@ -132,11 +132,20 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async Task AddBpnAttributetoUserAsync(string userId, IEnumerable<string> bpns)
         {
-            var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
-            if (user == null)
+            User user;
+            try
             {
-                throw new Exception($"failed to retrieve central user {userId}");
+                user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+                if (user == null)
+                {
+                    throw new Exception($"failed to retrieve central user {userId}");
+                }
             }
+            catch (EntityNotFoundException ex)
+            {
+                throw ex;
+            }
+            
             user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
             user.Attributes[_Settings.MappedBpnAttribute] = (user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
                 ? existingBpns.Concat(bpns).Distinct()
@@ -149,12 +158,21 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)
         {
-            var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
-            if (providerUserId == null)
+            string providerUserId = string.Empty;
+            try
             {
-                throw new ArgumentOutOfRangeException($"userId {userId} is not linked to shared realm {realm}");
+                providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
+                if (providerUserId == null)
+                {
+                    throw new ArgumentOutOfRangeException($"userId {userId} is not linked to shared realm {realm}");
+                }
             }
-            return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD",1)).ConfigureAwait(false);
+            catch (EntityNotFoundException ex)
+            {
+               throw ex;
+            }
+
+            return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
