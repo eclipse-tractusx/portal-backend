@@ -63,7 +63,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <response code="415">Only PDF files are supported.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
+        [Consumes("multipart/form-data")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
