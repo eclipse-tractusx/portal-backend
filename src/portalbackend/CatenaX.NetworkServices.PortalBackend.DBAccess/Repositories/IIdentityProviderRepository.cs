@@ -12,4 +12,5 @@ public interface IIdentityProviderRepository
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, string iamUserId);
     IAsyncEnumerable<(Guid Id, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderDataUntracked(string iamUserId);
+    Task<(string? UserEntityId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, IdentityProviderCategoryId CategoryId)> IdentityProviders, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, string alias, string iamUserId);
 }

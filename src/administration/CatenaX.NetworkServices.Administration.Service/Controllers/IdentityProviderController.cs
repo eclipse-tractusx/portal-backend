@@ -36,13 +36,33 @@ public class IdentityProviderController : ControllerBase
     public Task<IdentityProviderDetails> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
         this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProvider(protocol, iamUserId));
 
+    [HttpGet]
+    [Route("owncompany/identityproviders/{identityProviderId}")]
+    public Task<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProvider(identityProviderId, iamUserId));
+
     [HttpPost]
     [Route("owncompany/identityproviders/{identityProviderId}")]
     public Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
         this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProvider(identityProviderId, details, iamUserId));
 
+    [HttpDelete]
+    [Route("owncompany/identityproviders/{identityProviderId}")]
+    public Task DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
+        this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyIdentityProvider(identityProviderId, iamUserId));
+
     [HttpGet]
     [Route("owncompany/users")]
     public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync([FromQuery] IEnumerable<string> aliase) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUserIdentityProviderDataAsync(aliase, iamUserId));
+
+    [HttpPut]
+    [Route("owncompany/users/{companyUserId}/identityprovider/{alias}")]
+    public Task<UserIdentityProviderData> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] string alias, [FromBody] UserLinkData userLinkData) =>
+        this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyUserIdentityProviderDataAsync(companyUserId, alias, userLinkData, iamUserId));
+
+    [HttpDelete]
+    [Route("owncompany/users/{companyUserId}/identityprovider/{alias}")]
+    public Task<UserIdentityProviderData> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] string alias) =>
+        this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, alias, iamUserId));
 }

@@ -126,19 +126,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Select(g => g.Name);
         }
 
-        public async Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId) =>
-            (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
-                .Where(federatedIdentity => federatedIdentity.IdentityProvider == identityProvider)
-                .SingleOrDefault()?.UserId;
-
-        public async Task<IEnumerable<(string alias, string userId, string userName)>> GetProviderUserLinkDataForCentralUserIdAsync(IEnumerable<string> identityProviders, string userId) =>
-            (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
-                .Where(federatedIdentity => identityProviders.Any(identityProvider => federatedIdentity.IdentityProvider == identityProvider))
-                .Select(federatedIdentity =>
-                    ((string alias, string userId, string userName)) new (
-                        federatedIdentity.IdentityProvider,
-                        federatedIdentity.UserId,
-                        federatedIdentity.UserName));
         public async Task<string> SetupClientAsync(string redirectUrl)
         {
             var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
