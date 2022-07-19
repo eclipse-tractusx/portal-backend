@@ -18,16 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public interface IRegistrationBusinessLogic
-{
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(Guid applicationId);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size);
-}
+public record AppWithSubscriptionStatus(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus);

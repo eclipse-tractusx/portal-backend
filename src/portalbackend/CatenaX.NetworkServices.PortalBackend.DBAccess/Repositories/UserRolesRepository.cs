@@ -74,4 +74,11 @@ public class UserRolesRepository : IUserRolesRepository
             }
         }
     }
+
+     public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(userRole => userRole.IamClient!.ClientClientId == keyCloakClientId)
+            .Select(userRole => userRole.UserRoleText)
+            .AsAsyncEnumerable();
 }
