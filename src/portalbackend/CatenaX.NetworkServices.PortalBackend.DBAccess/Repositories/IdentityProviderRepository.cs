@@ -64,4 +64,17 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 identityProvider.IamIdentityProvider!.IamIdpAlias
             ))
             .ToAsyncEnumerable();
+
+    public Task<(string? UserEntityId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, IdentityProviderCategoryId CategoryId)> IdentityProviders, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, string alias, string iamUserId) =>
+        _context.CompanyUsers
+            .AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser => ((string? UserEntityId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, IdentityProviderCategoryId CategoryId)> IdentityProviders, bool IsSameCompany)) new (
+                companyUser.IamUser!.UserEntityId,
+                companyUser.Firstname,
+                companyUser.Lastname,
+                companyUser.Email,
+                companyUser!.Company!.IdentityProviders.Select(identityProvider => ((string alias, IdentityProviderCategoryId categoryId)) new (identityProvider.IamIdentityProvider!.IamIdpAlias, identityProvider.IdentityProviderCategoryId)),
+                companyUser.Company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
 }

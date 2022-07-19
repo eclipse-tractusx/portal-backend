@@ -115,6 +115,14 @@ public partial class ProvisioningManager
         }
     }
 
+    public async Task DeleteCentralIdentityProviderAsync(string alias)
+    {
+        if (! await _CentralIdp.DeleteIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
+        {
+            throw new Exception($"failed to delete central identityprovider {alias}");
+        }
+    }
+
     private async Task EnableCentralIdentityProviderAsync(string alias)
     {
         var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);

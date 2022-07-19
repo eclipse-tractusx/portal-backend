@@ -91,37 +91,34 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         switch (protocol)
         {
-            case IamIdentityProviderProtocol.SAML:
-                var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
-                return new IdentityProviderDetails(
-                    identityProvider.Id,
-                    alias,
-                    identityProviderCategory,
-                    companyName,
-                    identityProviderDataSAML.RedirectUrl,
-                    identityProviderDataSAML.Enabled)
-                    {
-                        saml = new IdentityProviderDetailsSAML(
-                            identityProviderDataSAML.EntityId,
-                            identityProviderDataSAML.SingleSignOnServiceUrl)
-                    };
             case IamIdentityProviderProtocol.OIDC:
-                var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
-                return new IdentityProviderDetails(
-                    identityProvider.Id,
-                    alias,
-                    identityProviderCategory,
-                    companyName,
-                    identityProviderDataOIDC.RedirectUrl,
-                    identityProviderDataOIDC.Enabled)
-                    {
-                        oidc = new IdentityProviderDetailsOIDC(
-                            identityProviderDataOIDC.ClientId,
-                            identityProviderDataOIDC.AuthorizationUrl,
-                            identityProviderDataOIDC.ClientAuthMethod)
-                    };
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProvider.Id, alias).ConfigureAwait(false);
+            case IamIdentityProviderProtocol.SAML:
+                return await GetCentralIdentityProviderDetailsSAMLAsync(identityProvider.Id, alias).ConfigureAwait(false);
             default:
                 throw new ArgumentException($"unexcepted value of protocol: {protocol.ToString()}", nameof(protocol));
+        }
+    }
+
+    public async Task<IdentityProviderDetails> GetOwnCompanyIdentityProvider(Guid identityProviderId, string iamUserId)
+    {
+        var (alias, category, isOwnCompany) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        if (!isOwnCompany)
+        {
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+        }
+        if (alias == null)
+        {
+            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+        }
+        switch(category)
+        {
+            case IdentityProviderCategoryId.KEYCLOAK_OIDC:
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias).ConfigureAwait(false);
+            case IdentityProviderCategoryId.KEYCLOAK_SAML:
+                return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"identityProvider {identityProviderId} category cannot be updated");
         }
     }
 
@@ -145,19 +142,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(alias, details.displayName, details.enabled, details.oidc.authorizationUrl, details.oidc.clientAuthMethod, details.oidc.secret).ConfigureAwait(false);
                 var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
-                return new IdentityProviderDetails(
-                    identityProviderId,
-                    alias,
-                    category,
-                    details.displayName,
-                    identityProviderDataOIDC.RedirectUrl,
-                    identityProviderDataOIDC.Enabled)
-                    {
-                        oidc = new IdentityProviderDetailsOIDC(
-                            identityProviderDataOIDC.AuthorizationUrl,
-                            identityProviderDataOIDC.ClientId,
-                            identityProviderDataOIDC.ClientAuthMethod)
-                    };
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 if(details.saml == null)
                 {
@@ -165,21 +150,125 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(alias, details.displayName, details.enabled, details.saml.serviceProviderEntityId, details.saml.singleSignOnServiceUrl).ConfigureAwait(false);
                 var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
-                return new IdentityProviderDetails(
-                    identityProviderId,
-                    alias,
-                    category,
-                    details.displayName,
-                    identityProviderDataSAML.RedirectUrl,
-                    identityProviderDataSAML.Enabled)
-                    {
-                        saml = new IdentityProviderDetailsSAML(
-                            identityProviderDataSAML.EntityId,
-                            identityProviderDataSAML.SingleSignOnServiceUrl)
-                    };
+                return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
                 throw new ArgumentException($"identityProvider {identityProviderId} category cannot be updated");
         }
+    }
+
+    public async Task DeleteOwnCompanyIdentityProvider(Guid identityProviderId, string iamUserId)
+    {
+        var (alias, category, isOwnCompany) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        if (!isOwnCompany)
+        {
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+        }
+        if (alias == null)
+        {
+            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+        }
+        await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+    }
+
+    private async Task<IdentityProviderDetails> GetCentralIdentityProviderDetailsOIDCAsync(Guid identityProviderId, string alias)
+    {
+        var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
+        return new IdentityProviderDetails(
+            identityProviderId,
+            alias,
+            IdentityProviderCategoryId.KEYCLOAK_OIDC,
+            identityProviderDataOIDC.DisplayName,
+            identityProviderDataOIDC.RedirectUrl,
+            identityProviderDataOIDC.Enabled)
+            {
+                oidc = new IdentityProviderDetailsOIDC(
+                    identityProviderDataOIDC.AuthorizationUrl,
+                    identityProviderDataOIDC.ClientId,
+                    identityProviderDataOIDC.ClientAuthMethod)
+            };
+    }
+    private async Task<IdentityProviderDetails> GetCentralIdentityProviderDetailsSAMLAsync(Guid identityProviderId, string alias)
+    {
+        var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
+        return new IdentityProviderDetails(
+            identityProviderId,
+            alias,
+            IdentityProviderCategoryId.KEYCLOAK_SAML,
+            identityProviderDataSAML.DisplayName,
+            identityProviderDataSAML.RedirectUrl,
+            identityProviderDataSAML.Enabled)
+            {
+                saml = new IdentityProviderDetailsSAML(
+                    identityProviderDataSAML.EntityId,
+                    identityProviderDataSAML.SingleSignOnServiceUrl)
+            };
+    }
+
+
+    public async Task<UserIdentityProviderData> CreateOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, string alias, UserLinkData userLinkData, string iamUserId)
+    {
+        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, alias, iamUserId).ConfigureAwait(false);
+        if (userAliasData == default)
+        {
+            throw new NotFoundException($"companyUserId {companyUserId} does not exist");
+        }
+        if (userAliasData.UserEntityId == null)
+        {
+            throw new Exception($"companyUserId {companyUserId} is not linked to keycloak");
+        }
+        if (!userAliasData.IdentityProviders.Any(identityProviderData => identityProviderData.Alias == alias))
+        {
+            throw new NotFoundException($"identityProvider alias {alias} not found in company of user {companyUserId}" );
+        }
+        if (!userAliasData.IsSameCompany)
+        {
+            throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
+        }
+        await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userAliasData.UserEntityId, alias, userLinkData.userId, userLinkData.userName).ConfigureAwait(false);
+        var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userAliasData.IdentityProviders.Select(identityProviderData => identityProviderData.Alias), userAliasData.UserEntityId).ConfigureAwait(false);
+        return new UserIdentityProviderData(
+                companyUserId,
+                userAliasData.FirstName,
+                userAliasData.LastName,
+                userAliasData.Email,
+                linkDatas.Select(linkData => new UserIdentityProviderLinkData(
+                    linkData.Alias,
+                    linkData.UserId,
+                    linkData.UserName))
+            );
+    }
+
+    public async Task<UserIdentityProviderData> DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, string alias, string iamUserId)
+    {
+        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, alias, iamUserId).ConfigureAwait(false);
+        if (userAliasData == default)
+        {
+            throw new NotFoundException($"companyUserId {companyUserId} does not exist");
+        }
+        if (userAliasData.UserEntityId == null)
+        {
+            throw new Exception($"companyUserId {companyUserId} is not linked to keycloak");
+        }
+        if (!userAliasData.IdentityProviders.Any(identityProviderData => identityProviderData.Alias == alias))
+        {
+            throw new NotFoundException($"identityProvider alias {alias} not found in company of user {companyUserId}" );
+        }
+        if (!userAliasData.IsSameCompany)
+        {
+            throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
+        }
+        await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userAliasData.UserEntityId, alias);
+        var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userAliasData.IdentityProviders.Select(identityProviderData => identityProviderData.Alias), userAliasData.UserEntityId).ConfigureAwait(false);
+        return new UserIdentityProviderData(
+                companyUserId,
+                userAliasData.FirstName,
+                userAliasData.LastName,
+                userAliasData.Email,
+                linkDatas.Select(linkData => new UserIdentityProviderLinkData(
+                    linkData.Alias,
+                    linkData.UserId,
+                    linkData.UserName))
+            );
     }
 
     public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync(IEnumerable<string> aliase, string iamUserId)
@@ -212,9 +301,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     lastName,
                     email,
                     linkDatas.Select(linkData => new UserIdentityProviderLinkData(
-                        linkData.alias,
-                        linkData.userId,
-                        linkData.userName))
+                        linkData.Alias,
+                        linkData.UserId,
+                        linkData.UserName))
                 );
             }
         }
