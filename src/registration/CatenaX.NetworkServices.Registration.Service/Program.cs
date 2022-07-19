@@ -21,6 +21,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
 
@@ -45,11 +46,7 @@ builder.Services.AddControllers()
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-    c.OperationFilter<SwaggerFileOperationFilter>();
-});
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {

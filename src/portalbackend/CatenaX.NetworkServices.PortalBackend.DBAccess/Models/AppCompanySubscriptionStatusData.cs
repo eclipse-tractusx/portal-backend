@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-
-public interface IRegistrationBusinessLogic
+/// <summary>
+/// View model containing an app id and connected company subscription statuses.
+/// </summary>
+public class AppCompanySubscriptionStatusData
 {
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(Guid applicationId);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size);
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    public AppCompanySubscriptionStatusData()
+    {
+        CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
+    }
+
+    /// <summary>
+    /// Id of the app.
+    /// </summary>
+    public Guid AppId { get; set; }
+
+    /// <summary>
+    /// Subscription statuses of subscribing companies.
+    /// </summary>
+    public IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses { get; set; }
 }
