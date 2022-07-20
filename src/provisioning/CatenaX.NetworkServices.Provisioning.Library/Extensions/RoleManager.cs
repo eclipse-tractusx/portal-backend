@@ -1,4 +1,4 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using Keycloak.Net.Models.Roles;
 using Keycloak.Net.Models.Clients;
 
@@ -23,7 +23,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                         return (client.Id, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, client.Id).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name)));
                 }
             }
-            catch(EntityNotFoundException)
+            catch(KeycloakEntityNotFoundException)
             {
                 return (client?.Id, Enumerable.Empty<Role>());
             }

@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -150,7 +151,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     await _provisioningManager.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
                 }
-                catch (EntityNotFoundException exception)
+                catch (KeycloakEntityNotFoundException exception)
                 {
                     throw exception;
                 }

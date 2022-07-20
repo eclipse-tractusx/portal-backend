@@ -1,4 +1,4 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 
@@ -35,7 +35,7 @@ public partial class ProvisioningManager
                 serviceAccountUser.Id,
                 await GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false));
         }
-        catch(EntityNotFoundException nfe)
+        catch(KeycloakEntityNotFoundException nfe)
         {
             throw new Exception(nfe?.Message);
         }

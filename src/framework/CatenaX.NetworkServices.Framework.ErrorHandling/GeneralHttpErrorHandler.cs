@@ -78,14 +78,6 @@ public class GeneralHttpErrorHandler
                     null);
                 _logger.LogInformation(error.Message);
             }
-            else if (error is EntityNotFoundException)
-            {
-                errorResponse = CreateErrorResponse(
-                    HttpStatusCode.InternalServerError,
-                    error,
-                    null);
-                _logger.LogInformation(error.Message);
-            }
             else
             {
                 errorResponse = CreateErrorResponse(
