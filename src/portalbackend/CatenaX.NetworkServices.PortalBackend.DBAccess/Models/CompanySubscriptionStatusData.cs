@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public interface IRegistrationBusinessLogic
-{
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(Guid applicationId);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size);
-}
+/// <summary>
+/// View model containing the ID of a company and its app subscription status in a specific context.
+/// </summary>
+public record CompanySubscriptionStatusData(Guid CompanyId, AppSubscriptionStatusId AppSubscriptionStatus);

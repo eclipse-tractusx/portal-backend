@@ -63,7 +63,9 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <response code="415">Only PDF files are supported.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
+        [Consumes("multipart/form-data")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
@@ -127,30 +129,18 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         }
 
         /// <summary>
-        /// Returns a list of composite names
+        /// Get all composite client roles
         /// </summary>
-        /// <returns>Returns a list of composite names</returns>
+        /// <returns>all composite client roles</returns>
         /// <remarks>Example: Get: /api/registration/rolesComposite</remarks>
-        /// <response code="200">Returns a list of composite names</response>
+        /// <response code="200">returns all composite client roles</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("rolesComposite")]
-        [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetClientRolesComposite()
-        {
-            try
-            {
-                var result = await _registrationBusinessLogic.GetClientRolesCompositeAsync().ConfigureAwait(false);
-                return Ok(result.ToList());
-
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-            }
-        }
-
+        [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
+        public IAsyncEnumerable<string> GetClientRolesComposite() =>
+            _registrationBusinessLogic.GetClientRolesCompositeAsync();
+            
         /// <summary>
         /// Gets the applications with each status
         /// </summary>

@@ -48,8 +48,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _portalRepositories = portalRepositories;
         }
 
-        public Task<IEnumerable<string>> GetClientRolesCompositeAsync() =>
-            _provisioningManager.GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
+        public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
+            _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
         public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token) =>
             _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
