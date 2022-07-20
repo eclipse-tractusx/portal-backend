@@ -1,4 +1,4 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net.Models.Users;
 using System.Text.Json;
@@ -62,7 +62,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             var user = await _SharedIdp.GetUserAsync(realm, userId).ConfigureAwait(false);
             if (user == null)
             {
-                throw new EntityNotFoundException($"userId {userId} not found in shared realm {realm}");
+                throw new KeycloakEntityNotFoundException($"userId {userId} not found in shared realm {realm}");
             }
             user.FirstName = firstName;
             user.LastName = lastName;

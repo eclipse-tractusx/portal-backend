@@ -1,4 +1,4 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
@@ -142,7 +142,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                     throw new Exception($"failed to retrieve central user {userId}");
                 }
             }
-            catch (EntityNotFoundException ex)
+            catch (KeycloakEntityNotFoundException ex)
             {
                 throw ex;
             }
@@ -168,7 +168,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                     throw new ArgumentOutOfRangeException($"userId {userId} is not linked to shared realm {realm}");
                 }
             }
-            catch (EntityNotFoundException ex)
+            catch (KeycloakEntityNotFoundException ex)
             {
                throw ex;
             }

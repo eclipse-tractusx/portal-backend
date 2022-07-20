@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -292,7 +293,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
             }
-            catch (EntityNotFoundException ex)
+            catch (KeycloakEntityNotFoundException ex)
             {
                 throw ex;
             }
@@ -340,7 +341,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
                 }
             }
-            catch (EntityNotFoundException ex)
+            catch (KeycloakEntityNotFoundException ex)
             {
                 throw ex;
             }
@@ -422,7 +423,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
             }
-            catch (EntityNotFoundException ex)
+            catch (KeycloakEntityNotFoundException ex)
             {
                 throw ex;
             }
@@ -504,7 +505,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                             throw new Exception("password reset failed");
                         }
                     }
-                    catch (EntityNotFoundException ex)
+                    catch (KeycloakEntityNotFoundException ex)
                     {
                         throw ex;
                     }
