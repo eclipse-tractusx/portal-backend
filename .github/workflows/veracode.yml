@@ -349,4 +349,4 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Notification.Service.dll'
+          include: 'CatenaX.NetworkServices.Notification.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
