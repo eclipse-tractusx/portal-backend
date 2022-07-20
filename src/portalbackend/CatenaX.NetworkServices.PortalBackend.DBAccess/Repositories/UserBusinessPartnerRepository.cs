@@ -41,13 +41,9 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new CompanyUserBusinessPartnerNumbersDetails(
                 companyUser.IamUser!.UserEntityId,
-                companyUser.CompanyUserAssignedBusinessPartners.Where(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefault()
+                companyUser.CompanyUserAssignedBusinessPartners!
+                    .Where(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefault(),
+                    companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
             ))
             .SingleOrDefaultAsync();
-
-    public Task<bool> IsAdminUserAndCompanyUserHavingSameCompanyId(Guid companyUserId, string adminUserId) =>
-    _dbContext.IamUsers
-        .Where(iamUser => iamUser.UserEntityId == adminUserId)
-        .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyUsers)
-        .AnyAsync(user => user.Id == companyUserId);
 }

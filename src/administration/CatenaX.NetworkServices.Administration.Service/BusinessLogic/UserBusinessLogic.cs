@@ -571,16 +571,16 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         {
             var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-            var validUsers = await userBusinessPartnerRepository.IsAdminUserAndCompanyUserHavingSameCompanyId(companyUserId, adminUserId);
-            if (!validUsers)
-            {
-                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} does not belongs to same company");
-            }
-
             var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
+            
             if (userWithBpn == null || userWithBpn.AssignedBusinessPartnerNumbers == null || userWithBpn.UserEntityId == null)
             {
                 throw new NotFoundException($"user {companyUserId} not found in company of {adminUserId}");
+            }
+            
+            if (!userWithBpn.IsValidUser)
+            {
+                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} does not belongs to same company");
             }
 
             userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartnerNumbers);
