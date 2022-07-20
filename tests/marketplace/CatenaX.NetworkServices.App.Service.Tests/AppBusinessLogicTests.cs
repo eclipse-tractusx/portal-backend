@@ -21,18 +21,20 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using CatenaX.NetworkServices.App.Service.ViewModels;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.Tests.Shared;
+using FluentAssertions;
 using Xunit;
 
 namespace CatenaX.NetworkServices.App.Service.Tests
@@ -40,82 +42,31 @@ namespace CatenaX.NetworkServices.App.Service.Tests
     public class AppBusinessLogicTests
     {
         private readonly IFixture _fixture;
+        private readonly IPortalRepositories _portalRepositories;
+        private readonly IAppRepository _appRepository;
+        private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
+        private readonly IUserRepository _userRepository;
 
         public AppBusinessLogicTests()
         {
             _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+            _portalRepositories = A.Fake<IPortalRepositories>();
+            _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
+            _appRepository = A.Fake<IAppRepository>();
+            _userRepository = A.Fake<IUserRepository>();
         }
 
         [Fact]
-        public async void GetAllActiveApps_ReturnsReleasedAppsSuccessfully()
-        {
-            // Arrange
-            var apps = _fixture.Build<PortalBackend.PortalEntities.Entities.App>()
-                .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
-                .CreateMany();
-            var appsDbSet = apps.AsFakeDbSet();
-            var languagesDbSet = new List<Language>().AsFakeDbSet();
-
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.Apps).Returns(appsDbSet);
-            A.CallTo(() => contextFake.Languages).Returns(languagesDbSet);
-            _fixture.Inject(contextFake);
-
-            var sut = _fixture.Create<AppsBusinessLogic>();
-
-            // Act
-            var results = await sut.GetAllActiveAppsAsync().ToListAsync();
-
-            // Assert
-            results.Should().NotBeNullOrEmpty();
-            results.Should().HaveCount(apps.Count());
-            results.Should().AllBeOfType<AppViewModel>();
-            results.Should().AllSatisfy(a => apps.Select(app => app.Id).Contains(a.Id));
-        }
-
-        [Fact]
-        public async void GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
-        {
-            // Arrange
-            var favouriteApps = _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>();
-            var (companyUser, iamUser) = CreateTestUserPair();
-            foreach (var app in favouriteApps)
-            {
-                companyUser.Apps.Add(app);
-            }
-            var iamUsersFakeDbSet = new List<IamUser>{ iamUser }.AsFakeDbSet();
-
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.IamUsers).Returns(iamUsersFakeDbSet);
-            _fixture.Inject(contextFake);
-
-            var sut = _fixture.Create<AppsBusinessLogic>();
-
-            // Act
-            var results = await sut.GetAllFavouriteAppsForUserAsync(iamUser.UserEntityId).ToListAsync();
-
-            // Assert
-            results.Should().NotBeNullOrEmpty();
-            results.Should().HaveCount(favouriteApps.Count());
-            results.Should().AllSatisfy(a => favouriteApps.Select(app => app.Id).Contains(a));
-        }
-
-        [Fact]
-        public async void AddFavouriteAppForUser_ExecutesSuccessfully()
+        public async Task AddFavouriteAppForUser_ExecutesSuccessfully()
         {
             // Arrange
             var appId = _fixture.Create<Guid>();
-            var appFavourites = new List<CompanyUserAssignedAppFavourite>();
-            var appFavouritesFakeDbSet = appFavourites.AsFakeDbSet();
-
             var (companyUser, iamUser) = CreateTestUserPair();
-            var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
-
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.CompanyUsers).Returns(companyUsersFakeDbSet);
-            A.CallTo(() => contextFake.CompanyUserAssignedAppFavourites).Returns(appFavouritesFakeDbSet);
-            A.CallTo(() => contextFake.SaveChangesAsync(A<CancellationToken>._)).ReturnsLazily(_ => Task.FromResult(appFavourites.Count()));
-            _fixture.Inject(contextFake);
+            A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
+                .Returns(companyUser.Id);
+            A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
+            A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+            _fixture.Inject(_portalRepositories);
 
             var sut = _fixture.Create<AppsBusinessLogic>();
 
@@ -123,30 +74,21 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            appFavourites.Should().NotBeNullOrEmpty();
-            appFavourites.Should().HaveCount(1);
-            appFavourites.Single().AppId.Should().Be(appId);
-            appFavourites.Single().CompanyUserId.Should().Be(companyUser.Id);
+            A.CallTo(() => _appRepository.CreateAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == companyUser.Id))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         }
 
         [Fact]
-        public async void RemoveFavouriteAppForUser_ExecutesSuccessfully()
+        public async Task RemoveFavouriteAppForUser_ExecutesSuccessfully()
         {
             // Arrange
             var (companyUser, iamUser) = CreateTestUserPair();
-            var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
             var appId = _fixture.Create<Guid>();
-            var appFavourites = new List<CompanyUserAssignedAppFavourite> { 
-                new CompanyUserAssignedAppFavourite(appId, companyUser.Id)
-            };
-            var appFavouritesFakeDbSet = appFavourites.AsFakeDbSet();
-
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.CompanyUsers).Returns(companyUsersFakeDbSet);
-            A.CallTo(() => contextFake.CompanyUserAssignedAppFavourites).Returns(appFavouritesFakeDbSet);
-            A.CallTo(() => contextFake.SaveChangesAsync(A<CancellationToken>._)).ReturnsLazily(_ => Task.FromResult(1));
-            _fixture.Inject(contextFake);
+            A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
+                .Returns(companyUser.Id);
+            A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+            _fixture.Inject(_portalRepositories);
 
             var sut = _fixture.Create<AppsBusinessLogic>();
 
@@ -154,81 +96,40 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.RemoveFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => appFavouritesFakeDbSet.Remove(
-                A<CompanyUserAssignedAppFavourite>
-                .That.Matches(f => f.AppId == appId && f.CompanyUserId == companyUser.Id)
-            ))
-            .MustHaveHappenedOnceExactly();
+            A.CallTo(() => _portalRepositories.Remove(A<CompanyUserAssignedAppFavourite>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         }
 
         [Fact]
-        public async void AddCompanyAppSubscription_ExecutesSuccessfully()
+        public async Task AddCompanyAppSubscription_ExecutesSuccessfully()
         {
             // Arrange
             var appId = _fixture.Create<Guid>();
-            var appSubscriptions = new List<CompanyAssignedApp>();
-            var appSubscriptionsFakeDbSet = appSubscriptions.AsFakeDbSet();
-
+            var appName = "Test App";
+            var providerName = "New Provider";
+            var providerContactEmail = "email@provider.com";
             var (companyUser, iamUser) = CreateTestUserPair();
-            var companyUsersFakeDbSet = new List<CompanyUser> { companyUser }.AsFakeDbSet();
 
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.CompanyUsers).Returns(companyUsersFakeDbSet);
-            A.CallTo(() => contextFake.CompanyAssignedApps).Returns(appSubscriptionsFakeDbSet);
-            A.CallTo(() => contextFake.SaveChangesAsync(A<CancellationToken>._)).ReturnsLazily(_ => Task.FromResult(appSubscriptions.Count()));
-            _fixture.Inject(contextFake);
+            A.CallTo(() => _companyAssignedAppsRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUser.UserEntityId))
+                .Returns(((Guid companyId, CompanyAssignedApp? companyAssignedApp)) new (companyUser.CompanyId, null));
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING))
+                .Returns(new CompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING));
+            A.CallTo(() => _appRepository.GetAppProviderDetailsAsync(appId))
+                .Returns(((string appName, string providerName, string providerContactEmail)) new (appName, providerName, providerContactEmail));
+            A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
+            A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
+            _fixture.Inject(_portalRepositories);
+            var mailingService = A.Fake<IMailingService>();
+            _fixture.Inject(mailingService);
 
             var sut = _fixture.Create<AppsBusinessLogic>();
 
             // Act
-            await sut.AddCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
+            await sut.AddOwnCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            appSubscriptions.Should().NotBeNullOrEmpty();
-            appSubscriptions.Should().HaveCount(1);
-            appSubscriptions.Single().AppId.Should().Be(appId);
-            appSubscriptions.Single().CompanyId.Should().Be(companyUser.CompanyId);
-        }
-
-        [Fact]
-        public async void GetBusinessApps_ReturnsAppListSuccessfully()
-        {
-            // Arrange
-            var expectedApp = _fixture.Create<PortalBackend.PortalEntities.Entities.App>();
-            var (companyUser, iamUser) = CreateTestUserPair();
-            companyUser.Company!.BoughtApps.Add(expectedApp);
-            foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
-            {
-                companyUser.Company.BoughtApps.Add(app);
-            }
-
-            var iamClient = _fixture.Create<IamClient>();
-            iamClient.Apps.Add(expectedApp);
-            foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
-            {
-                iamClient.Apps.Add(app);
-            }
-
-            foreach (var role in _fixture.Build<UserRole>().With(r => r.IamClient, iamClient).CreateMany())
-            {
-                companyUser.UserRoles.Add(role);
-            }
-
-            var iamUserFakeDbSet = new List<IamUser>() { iamUser }.AsFakeDbSet();
-
-            var contextFake = A.Fake<PortalDbContext>();
-            A.CallTo(() => contextFake.IamUsers).Returns(iamUserFakeDbSet);
-            _fixture.Inject(contextFake);
-
-            var sut = _fixture.Create<AppsBusinessLogic>();
-
-            // Act
-            var result = await sut.GetAllUserUserBusinessAppsAsync(iamUser.UserEntityId).ToListAsync();
-
-            // Assert
-            result.Should().NotBeNullOrEmpty();
-            result.Should().HaveCount(1);
-            result.Single().Id.Should().Be(expectedApp.Id);
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<AppSubscriptionStatusId>._)).MustHaveHappened(1, Times.Exactly);
+            A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
         }
 
         private (CompanyUser, IamUser) CreateTestUserPair()

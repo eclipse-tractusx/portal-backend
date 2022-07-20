@@ -20,36 +20,13 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.App.Service.ViewModels;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// View model of an application's detailed data.
 /// </summary>
-public class AppDetailsViewModel
+public record AppDetailsData(string Title, string LeadPictureUri, string ProviderUri, string Provider, string LongDescription, string Price)
 {
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="title">Title.</param>
-    /// <param name="leadPictureUri">Lead picture URI.</param>
-    /// <param name="providerUri">Provider URI.</param>
-    /// <param name="provider">Provider.</param>
-    /// <param name="longDescription">Long description.</param>
-    /// <param name="price">Price.</param>
-    public AppDetailsViewModel(string title, string leadPictureUri, string providerUri, string provider, string longDescription, string price)
-    {
-        Title = title;
-        LeadPictureUri = leadPictureUri;
-        DetailPictureUris = new List<string>();
-        ProviderUri = providerUri;
-        Provider = provider;
-        UseCases = new List<string>();
-        LongDescription = longDescription;
-        Price = price;
-        Tags = new List<string>();
-        Languages = new List<string>();
-    }
-
     /// <summary>
     /// ID of the app.
     /// </summary>
@@ -58,27 +35,27 @@ public class AppDetailsViewModel
     /// <summary>
     /// Title or name of the app.
     /// </summary>
-    public string Title { get; set; }
+    public string Title { get; set; } = Title;
 
     /// <summary>
     /// Uri to app's lead picture.
     /// </summary>
-    public string LeadPictureUri { get; set; }
+    public string LeadPictureUri { get; set; } = LeadPictureUri;
 
     /// <summary>
     /// List of URIs to app's secondary pictures.
     /// </summary>
-    public IEnumerable<string> DetailPictureUris { get; set; }
+    public IEnumerable<string> DetailPictureUris { get; set; } = new List<string>();
 
     /// <summary>
     /// Uri to provider's marketing presence.
     /// </summary>
-    public string ProviderUri { get; set; }
+    public string ProviderUri { get; set; } = ProviderUri;
 
     /// <summary>
     /// Provider of the app.
     /// </summary>
-    public string Provider { get; set; }
+    public string Provider { get; set; } = Provider;
 
     /// <summary>
     /// Email address of the app's primary contact.
@@ -93,30 +70,30 @@ public class AppDetailsViewModel
     /// <summary>
     /// Names of the app's use cases.
     /// </summary>
-    public IEnumerable<string> UseCases { get; set; }
+    public IEnumerable<string> UseCases { get; set; } = new List<string>();
 
     /// <summary>
     /// Long description of the app.
     /// </summary>
-    public string LongDescription { get; set; }
+    public string LongDescription { get; set; } = LongDescription;
 
     /// <summary>
     /// Pricing information of the app.
     /// </summary>
-    public string Price { get; set; }
+    public string Price { get; set; } = Price;
 
     /// <summary>
     /// Tags assigned to application.
     /// </summary>
-    public IEnumerable<string> Tags { get; set; }
+    public IEnumerable<string> Tags { get; set; } = new List<string>();
 
     /// <summary>
-    /// Status of the app subscription
+    /// Whether app has been purchased by the user's company.
     /// </summary>
-    public AppSubscriptionStatusId IsSubscribed { get; set; }
+    public AppSubscriptionStatusId? IsSubscribed { get; set; }
 
     /// <summary>
     /// Languages that the app is available in.
     /// </summary>
-    public IEnumerable<string> Languages { get; set; }
+    public IEnumerable<string> Languages { get; set; } = new List<string>();
 }

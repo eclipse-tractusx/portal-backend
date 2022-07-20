@@ -287,7 +287,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Route("owncompany/apps/{appId}/users")]
         [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
         public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
-            this.WithIamUserId(iamUserId => _logic.GetCompanyAppUsersAsync(appId,iamUserId, page, size));
+            this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(appId,iamUserId, page, size));
 
         /// <summary>
         /// Adds a user role
