@@ -150,9 +150,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     await _provisioningManager.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
                 }
-                catch (EntityNotFoundException ex)
+                catch (EntityNotFoundException exception)
                 {
-                    throw ex;
+                    throw exception;
                 }
             }
         }
