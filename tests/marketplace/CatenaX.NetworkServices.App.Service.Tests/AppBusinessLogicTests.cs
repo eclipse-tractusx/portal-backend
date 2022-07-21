@@ -115,7 +115,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING))
                 .Returns(new CompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING));
             A.CallTo(() => _appRepository.GetAppProviderDetailsAsync(appId))
-                .Returns(((string appName, string providerName, string providerContactEmail)) new (appName, providerName, providerContactEmail));
+                .Returns(new AppProviderDetailsData(appName, providerName, providerContactEmail));
             A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
             _fixture.Inject(_portalRepositories);
