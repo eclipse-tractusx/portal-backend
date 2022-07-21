@@ -1,4 +1,4 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net.Models.Users;
 using System.Text.Json;
@@ -60,10 +60,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public async Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
         {
             var user = await _SharedIdp.GetUserAsync(realm, userId).ConfigureAwait(false);
-            if (user == null)
-            {
-                throw new NotFoundException($"userId {userId} not found in shared realm {realm}");
-            }
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Email = email;
