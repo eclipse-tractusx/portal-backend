@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
@@ -88,7 +90,7 @@ public record AppDetailsData(string Title, string LeadPictureUri, string Provide
     /// <summary>
     /// Whether app has been purchased by the user's company.
     /// </summary>
-    public bool? IsSubscribed { get; set; }
+    public AppSubscriptionStatusId? IsSubscribed { get; set; }
 
     /// <summary>
     /// Languages that the app is available in.
