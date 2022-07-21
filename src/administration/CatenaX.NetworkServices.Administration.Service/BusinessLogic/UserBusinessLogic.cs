@@ -566,5 +566,38 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             return new UserRoleMessage(success, warning);
         }
+    
+        public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
+        {
+            var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+            var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
+            
+            if (userWithBpn == default)
+            {
+                throw new NotFoundException($"user {companyUserId} does not exist");
+            }
+
+            if (userWithBpn.AssignedBusinessPartner == null)
+            {
+                throw new NotFoundException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
+            }
+
+            if (userWithBpn.UserEntityId == null)
+            {
+                throw new Exception($"user {companyUserId} is not associated with a user in keycloak");
+            }
+
+            if (!userWithBpn.IsValidUser)
+            {
+                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} do not belong to same company");
+            }
+
+            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartner);
+          
+            await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
     }
 }

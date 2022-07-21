@@ -314,5 +314,23 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
+
+        /// <summary>
+        /// Delete BPN assigned to user from DB and Keycloack.
+        /// </summary>
+        /// <param name="companyUserId" example="4f06431c-25ae-40ad-9cac-9dee8fe4754d">ID of the company user to be deleted.</param>
+        /// <param name="businessPartnerNumber" example="CAXSDUMMYTESTCX1">BPN to be deleted.</param>
+        /// <remarks>Example: DELETE: /api/administration/user/owncompany/users/4f06431c-25ae-40ad-9cac-9dee8fe4754d/userBusinessPartnerNumbers/CAXSDUMMYTESTCX1</remarks>
+        /// <response code="200">Empty response on success.</response>
+        /// <response code="403">ForbiddenException if both users does not belongs to same company</response>
+        /// <response code="404">Record not found.</response>
+        [HttpDelete]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
+            this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
     }
 }
