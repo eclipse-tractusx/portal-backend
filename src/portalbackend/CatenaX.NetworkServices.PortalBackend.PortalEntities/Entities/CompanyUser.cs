@@ -78,6 +78,6 @@ public class CompanyUser
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
-    public virtual ICollection<Notification> Notifications { get; private set; }
+    public virtual ICollection<Notification> Notifications { get; set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
 }
