@@ -56,9 +56,9 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Notifications
             .AsNoTracking()
             .Where(notification =>
-                notification.Receiver!.IamUser!.UserEntityId == iamUserId
-                && statusId.HasValue ? notification.ReadStatusId == statusId.Value : true
-                && typeId.HasValue ? notification.NotificationTypeId == typeId.Value : true)
+                (notification.Receiver!.IamUser!.UserEntityId == iamUserId)
+                && (statusId.HasValue ? notification.ReadStatusId == statusId.Value : true)
+                && (typeId.HasValue ? notification.NotificationTypeId == typeId.Value : true))
             .Select(notification => new NotificationDetailData(
                 notification.Id,
                 notification.Content,
@@ -85,9 +85,7 @@ public class NotificationRepository : INotificationRepository
             .Select(companyUser => ((bool IsUserExisting, int Count)) new (
                 true,
                 companyUser.Notifications
-                    .Where(notification =>
-                        statusId.HasValue ? notification.ReadStatusId == statusId.Value : true)
-                    .Count()))
+                    .Count(notification => statusId.HasValue ? notification.ReadStatusId == statusId.Value : true)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

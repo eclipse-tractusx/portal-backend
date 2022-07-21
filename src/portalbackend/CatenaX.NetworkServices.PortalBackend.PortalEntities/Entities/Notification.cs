@@ -83,7 +83,7 @@ public class Notification
     public Guid? CreatorUserId { get; set; }
 
     // Navigation properties
-    public virtual CompanyUser? Receiver { get; private set; }
+    public virtual CompanyUser? Receiver { get; set; }
     public virtual NotificationType? NotificationType { get; private set; }
     public virtual NotificationStatus? ReadStatus { get; private set; }
     public virtual CompanyUser? Creator { get; private set; }
