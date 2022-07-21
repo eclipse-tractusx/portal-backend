@@ -289,15 +289,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
 
             var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-            try
-            {
-                await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
-            }
-            catch (KeycloakEntityNotFoundException ex)
-            {
-                throw ex;
-            }
-            
+            await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
             foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(user.AssignedBusinessPartnerNumbers))
             {
                 businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerToAdd);
@@ -332,18 +324,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
             var companyUser = userData.CompanyUser;
             var iamIdpAlias = userData.IamIdpAlias;
-            string userIdShared = string.Empty;
-            try
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            if (userIdShared == null)
             {
-                userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
-                if (userIdShared == null)
-                {
-                    throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
-                }
-            }
-            catch (KeycloakEntityNotFoundException ex)
-            {
-                throw ex;
+                throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
             }
             if (!await _provisioningManager.UpdateSharedRealmUserAsync(
                 iamIdpAlias,
@@ -418,15 +402,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         private async Task<bool> DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
         {
-            string userIdShared = string.Empty;
-            try
-            {
-                userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
-            }
-            catch (KeycloakEntityNotFoundException ex)
-            {
-                throw ex;
-            }
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
             if (userIdShared != null
                 && (await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false))
                 && (await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false))) //TODO doesn't handle the case where user is both shared and own idp user
@@ -496,18 +472,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
-                    bool updatedPassword = false;
-                    try
+                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                    if (!updatedPassword)
                     {
-                        updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
-                        if (!updatedPassword)
-                        {
-                            throw new Exception("password reset failed");
-                        }
-                    }
-                    catch (KeycloakEntityNotFoundException ex)
-                    {
-                        throw ex;
+                        throw new Exception("password reset failed");
                     }
                     return updatedPassword;
                 }

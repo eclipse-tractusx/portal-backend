@@ -60,10 +60,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
         public async Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
         {
             var user = await _SharedIdp.GetUserAsync(realm, userId).ConfigureAwait(false);
-            if (user == null)
-            {
-                throw new KeycloakEntityNotFoundException($"userId {userId} not found in shared realm {realm}");
-            }
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Email = email;
