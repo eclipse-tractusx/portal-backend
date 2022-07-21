@@ -573,19 +573,29 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
             
-            if (userWithBpn == null || userWithBpn.AssignedBusinessPartnerNumbers == null || userWithBpn.UserEntityId == null)
+            if (userWithBpn == default)
             {
-                throw new NotFoundException($"user {companyUserId} not found in company of {adminUserId}");
-            }
-            
-            if (!userWithBpn.IsValidUser)
-            {
-                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} does not belongs to same company");
+                throw new NotFoundException($"user {companyUserId} does not exist");
             }
 
-            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartnerNumbers);
+            if (userWithBpn.AssignedBusinessPartner == null)
+            {
+                throw new NotFoundException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
+            }
+
+            if (userWithBpn.UserEntityId == null)
+            {
+                throw new Exception($"user {companyUserId} is not associated with a user in keycloak");
+            }
+
+            if (!userWithBpn.IsValidUser)
+            {
+                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} do not belong to same company");
+            }
+
+            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartner);
           
-            await _provisioningManager.DeleteOwnUserBusinessPartnerNumbersAsync(userWithBpn.UserEntityId.ToString(),userWithBpn.AssignedBusinessPartnerNumbers.BusinessPartnerNumber).ConfigureAwait(false);
+            await _provisioningManager.DeleteOwnUserBusinessPartnerNumbersAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
 
             return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
