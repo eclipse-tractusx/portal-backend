@@ -147,14 +147,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             if (!userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
             {
                 userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
-                try
-                {
-                    await _provisioningManager.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
-                }
-                catch (KeycloakEntityNotFoundException exception)
-                {
-                    throw exception;
-                }
+                await _provisioningManager.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
             }
         }
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
