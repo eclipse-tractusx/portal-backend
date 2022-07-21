@@ -40,7 +40,7 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId">ID of the app.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<(string appName, string providerName, string providerContactEmail)> GetAppProviderDetailsAsync(Guid appId);
+    public Task<AppProviderDetailsData> GetAppProviderDetailsAsync(Guid appId);
 
     /// <summary>
     /// Get Client Name by App Id

@@ -137,12 +137,26 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        if(new []{ appDetails.AppName, appDetails.ProviderName, appDetails.ProviderContactEmail }.Any(d => d is null))
+        {
+            var nullProperties = new List<string>();
+            if (appDetails.AppName is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.AppName)}");
+            }
+            if(appDetails.ProviderContactEmail is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.ProviderContactEmail)}");
+            }
+            throw new Exception($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+        }
+
         var mailParams = new Dictionary<string, string>
             {
-                { "appProviderName", appDetails.providerName},
-                { "appName", appDetails.appName }
+                { "appProviderName", appDetails.ProviderName},
+                { "appName", appDetails.AppName }
             };
-        await _mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        await _mailingService.SendMails(appDetails.ProviderContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
