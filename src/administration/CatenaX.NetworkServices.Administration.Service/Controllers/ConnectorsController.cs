@@ -60,7 +60,7 @@ public class ConnectorsController : ControllerBase
     /// </remarks>
     /// <response code="200">Returns a list of all of the current user's company's connectors.</response>
     [HttpGet]
-    [Route("")]
+    [Route("", Name = nameof(GetCompanyConnectorsForCurrentUserAsync))]
     [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorViewModel>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorViewModel>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
@@ -77,12 +77,12 @@ public class ConnectorsController : ControllerBase
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
-    [Authorize(Roles = "add_connectors")]
+    // [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
-        CreatedAtRoute(string.Empty, await _businessLogic.CreateConnectorAsync(connectorInputModel, Request.Headers.Authorization.First().Substring("Bearer ".Length)));
+        CreatedAtRoute(nameof(GetCompanyConnectorsForCurrentUserAsync), await _businessLogic.CreateConnectorAsync(connectorInputModel, Request.Headers.Authorization.First().Substring("Bearer ".Length)));
 
     /// <summary>
     /// Removes a connector from persistence layer by id.
