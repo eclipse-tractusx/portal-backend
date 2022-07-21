@@ -40,7 +40,7 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId">ID of the app.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<(string appName, string providerName, string providerContactEmail)> GetAppProviderDetailsAsync(Guid appId);
+    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId);
 
     /// <summary>
     /// Get Client Name by App Id
@@ -70,7 +70,7 @@ public interface IAppRepository
     /// <param name="iamUserId">OPTIONAL: iamUserId of the company the calling user belongs to</param>
     /// <param name="languageShortName">OPTIONAL: language shortName</param>
     /// <returns>Returns the details of the application</returns>
-    Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? iamUserId, string? languageShortName);
+    Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName);
 
     /// <summary>
     /// Adds an <see cref="AppLicense"/> to the database

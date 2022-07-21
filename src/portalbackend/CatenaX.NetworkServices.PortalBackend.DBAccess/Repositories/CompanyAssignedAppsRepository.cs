@@ -68,11 +68,11 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .Select(g => new AppCompanySubscriptionStatusData
             {
                 AppId = g.Key,
-                CompanySubscriptionStatuses = g.Select(s => 
+                CompanySubscriptionStatuses = g.Select(s =>
                     new CompanySubscriptionStatusData(s.CompanyId, s.AppSubscriptionStatusId))
             })
             .ToAsyncEnumerable();
-    
+
     /// <inheritdoc />
     public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Apps
@@ -99,7 +99,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .Select(iamUser => iamUser.CompanyUser!.Company)
             .Select(company => ((Guid companyId, CompanyAssignedApp?)) new (
                 company!.Id,
-                company.CompanyAssignedApps.Where(assignedApp => assignedApp.AppId == appId).SingleOrDefault()
+                company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId)
             ))
             .SingleOrDefaultAsync();
 }
