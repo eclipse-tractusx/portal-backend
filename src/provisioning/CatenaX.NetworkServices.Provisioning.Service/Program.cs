@@ -18,12 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Cors;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
+using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
+using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,10 +37,6 @@ using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.Framework.Swagger;
-using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
-using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;

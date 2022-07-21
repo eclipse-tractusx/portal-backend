@@ -149,12 +149,16 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <response code="200">The business partner number have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
         /// <response code="404">User is not existing.</response>
+        /// <response code="500">Internal Server Error.</response>
+        /// <response code="502">Bad Gateway Service Error.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
             this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, iamUserId));
 
@@ -184,12 +188,15 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <response code="400">Maximum amount of password resets reached. Password reset function is locked for the user for a certain time.</response>
         /// <response code="404">User id not found.</response>
         /// <response code="500">Internal Server Error, e.g. the password reset failed.</response>
+        /// <response code="502">Bad Gateway Service Error.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/resetPassword")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
