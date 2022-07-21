@@ -88,12 +88,16 @@ public class RegistrationController : ControllerBase
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
     /// <response code="404">Application ID not found.</response>
+    /// <response code="500">Internal Server Error.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPut]
     [Authorize(Roles = "approve_new_partner")]
     [Route("application/{applicationId}/approveRequest")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
             _logic.ApprovePartnerRequest(applicationId);
 

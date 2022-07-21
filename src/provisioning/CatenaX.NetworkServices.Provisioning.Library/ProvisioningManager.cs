@@ -1,8 +1,9 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net;
+using Keycloak.Net.Models.Users;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
@@ -180,7 +181,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             {
                 throw new ArgumentOutOfRangeException($"userId {userId} is not linked to shared realm {realm}");
             }
-            return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD",1)).ConfigureAwait(false);
+            return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
