@@ -50,6 +50,13 @@ public interface IAppRepository
     Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId);
 
     /// <summary>
+    /// Get Client Id by App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <returns>Client Id</returns>
+    Task<Guid> GetAppAssignedClientIdToFetchUserRolesUntrackedAsync(Guid appId);
+
+    /// <summary>
     /// Adds an app to the database
     /// </summary>
     /// <param name="id">Id of the app</param>

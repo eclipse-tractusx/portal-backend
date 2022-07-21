@@ -82,6 +82,13 @@ public class AppRepository : IAppRepository
             .Select(appClient => appClient.IamClient!.ClientClientId)
             .SingleOrDefaultAsync();
 
+     /// <inheritdoc/>
+    public Task<Guid> GetAppAssignedClientIdToFetchUserRolesUntrackedAsync(Guid appId) =>
+        _context.AppAssignedClients.AsNoTracking()
+            .Where(appClient => appClient.AppId == appId)
+            .Select(appClient => appClient.IamClientId)
+            .SingleOrDefaultAsync();
+
     /// <inheritdoc />
     public App CreateApp(Guid id, string provider) =>
         _context.Apps.Add(new App(id, provider, DateTimeOffset.UtcNow)).Entity;
