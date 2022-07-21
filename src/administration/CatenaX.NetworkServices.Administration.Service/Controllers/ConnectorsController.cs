@@ -23,6 +23,7 @@ using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,11 +61,20 @@ public class ConnectorsController : ControllerBase
     /// </remarks>
     /// <response code="200">Returns a list of all of the current user's company's connectors.</response>
     [HttpGet]
-    [Route("", Name = nameof(GetCompanyConnectorsForCurrentUserAsync))]
+    [Route("")]
     [Authorize(Roles = "view_connectors")]
-    [ProducesResponseType(typeof(Pagination.Response<ConnectorViewModel>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<ConnectorViewModel>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(iamUserId, page, size));
+    [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<ConnectorData>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorDatasForIamUserAsyncEnum(iamUserId, page, size));
+
+    [HttpGet]
+    [Route("{connectorId}", Name = nameof(GetCompanyConnectorByIdForCurrentUserAsync))]
+    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ConnectorData> GetCompanyConnectorByIdForCurrentUserAsync([FromRoute] Guid connectorId) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetCompanyConnectorDataForIdIamUserAsync(connectorId, iamUserId));
 
     /// <summary>
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
@@ -77,12 +87,15 @@ public class ConnectorsController : ControllerBase
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
-    // [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ActionResult<ConnectorViewModel>), StatusCodes.Status201Created)]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ActionResult<ConnectorData>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<ConnectorViewModel>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel) =>
-        CreatedAtRoute(nameof(GetCompanyConnectorsForCurrentUserAsync), await _businessLogic.CreateConnectorAsync(connectorInputModel, Request.Headers.Authorization.First().Substring("Bearer ".Length)));
+    public async Task<ActionResult<ConnectorData>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
+    {
+        var connectorData = await this.WithBearerToken(token => _businessLogic.CreateConnectorAsync(connectorInputModel, token)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
+    }
 
     /// <summary>
     /// Removes a connector from persistence layer by id.

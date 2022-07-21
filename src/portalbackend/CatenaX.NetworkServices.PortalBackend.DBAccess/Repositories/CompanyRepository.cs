@@ -89,6 +89,6 @@ public class CompanyRepository : ICompanyRepository
             .ContainsAsync(appId);
 
     /// <inheritdoc />
-    public async Task<bool> CheckCompanyExistsByIdAsync(Guid id) =>
-        await _context.Companies.AnyAsync(x => x.Id == id);
+    public Task<bool> CheckCompanyExistsByIdAsync(Guid id) =>
+        _context.Companies.AnyAsync(x => x.Id == id);
 }
