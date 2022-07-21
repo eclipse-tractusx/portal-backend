@@ -101,22 +101,19 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (!Enum.IsDefined(typeof(ConnectorStatusId), status.ToString()))
             throw new ArgumentException("ConnectorStatusId does not exist.", nameof(status));
 
-        var connector = new Connector(Guid.NewGuid(), name, location.ToUpper(), connectorUrl)
-        {
-            ProviderId = provider,
-            HostId = host,
-            TypeId = type,
-            StatusId = status
-        };
-
         Connector createdConnector;
         HttpResponseMessage response;
 
-        await using var transaction = await _portalRepositories.BeginTransactionAsync().ConfigureAwait(false);
-
         try
         {
-            createdConnector = await _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnectorAsync(connector).ConfigureAwait(false);
+            createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnectorAsync(name, location.ToUpper(), connectorUrl,
+                (connector) =>
+                {
+                    connector.ProviderId = provider;
+                    connector.HostId = host;
+                    connector.TypeId = type;
+                    connector.StatusId = status;
+                });
             var bpn = (await companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -134,7 +131,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
         }
         
-        await transaction.CommitAsync();
+        await _portalRepositories.SaveAsync();
 
         return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
         {

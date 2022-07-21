@@ -29,18 +29,11 @@ public class ConnectorsRepository : IConnectorsRepository
     }
 
     /// <inheritdoc/>
-    public async Task<Connector> CreateConnectorAsync(Connector connector)
+    public Connector CreateConnectorAsync(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields)
     {
-        try
-        {
-            var createdConnector = _context.Connectors.Add(connector);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-            return createdConnector.Entity;
-        }
-        catch (DbUpdateException)
-        {
-            throw new ArgumentException("Provided connector does not respect database constraints.", nameof(connector));
-        }
+        var connector = new Connector(Guid.NewGuid(), name, location, connectorUrl);
+        setupOptionalFields?.Invoke(connector);
+        return _context.Connectors.Add(connector).Entity;
     }
 
     /// <inheritdoc/>

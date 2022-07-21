@@ -196,7 +196,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
 
-        var appEntity = appRepository.CreateApp(Guid.NewGuid(), appInputModel.Provider);
+        var appEntity = appRepository.CreateApp(appInputModel.Provider);
 
         appEntity.Name = appInputModel.Title;
         appEntity.MarketingUrl = appInputModel.ProviderUri;

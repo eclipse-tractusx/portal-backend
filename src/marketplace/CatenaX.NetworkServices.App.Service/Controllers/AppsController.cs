@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.App.Service.Controllers;
 
@@ -88,7 +89,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid.</response>
     /// <response code="404">App not found.</response>
     [HttpGet]
-    [Route("{appId}")]
+    [Route("{appId}", Name = nameof(GetAppDetailsByIdAsync))]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(AppDetailsData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -107,8 +108,11 @@ public class AppsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel) =>
-        CreatedAtRoute(string.Empty, await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false));
+    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
+    {
+        var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {serviceAccountId = appId}, appId);
+    }
 
     /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
