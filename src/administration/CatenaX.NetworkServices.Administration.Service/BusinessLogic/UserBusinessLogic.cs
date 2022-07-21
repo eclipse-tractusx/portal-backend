@@ -484,27 +484,35 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public async Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
-            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+            if (companyId == default)
+            {
+                throw new NotFoundException($"user {iamUserId} is not associated with any company");
+            }
 
-            return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
+            var appAssignedClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdToFetchUserRolesUntrackedAsync(appId).ConfigureAwait(false);
+
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, companyId,appAssignedClientId);
+
+            return await Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,
                 size,
                 15,
                 (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
                     appUsers.CountAsync(),
-                    appUsers.OrderBy(companyUser => companyUser.Id)
+                    appUsers.OrderBy(companyUserAssignedRoles => companyUserAssignedRoles!.CompanyUser!.Id)
                         .Skip(skip)
                         .Take(take)
-                        .Select(companyUser => new CompanyAppUserDetails(
-                            companyUser.Id,
-                            companyUser.CompanyUserStatusId,
-                            companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                        .Select(companyUserAssignedRoles => new CompanyAppUserDetails(
+                            companyUserAssignedRoles.CompanyUser!.Id,
+                            companyUserAssignedRoles.CompanyUser!.CompanyUserStatusId,
+                            companyUserAssignedRoles.CompanyUser!.UserRoles!.Select(userRole => userRole.UserRoleText))
                         {
-                            FirstName = companyUser.Firstname,
-                            LastName = companyUser.Lastname,
-                            Email = companyUser.Email
+                            FirstName = companyUserAssignedRoles.CompanyUser!.Firstname,
+                            LastName = companyUserAssignedRoles.CompanyUser!.Lastname,
+                            Email = companyUserAssignedRoles.CompanyUser!.Email
                         }).AsAsyncEnumerable()));
         }
 
