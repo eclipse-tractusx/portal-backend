@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -51,19 +52,19 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ConnectorViewModel>> GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(string iamUserId, int page, int size)
+    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatasForIamUserAsyncEnum(string iamUserId, int page, int size)
     {
         var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForIamUser(iamUserId);
 
         return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
-            new Pagination.AsyncSource<ConnectorViewModel>
+            new Pagination.AsyncSource<ConnectorData>
             (
                 connectors.CountAsync(),
                 connectors.OrderByDescending(connector => connector.Name)
                     .Skip(skip)
                     .Take(take)
                     .Select(c => 
-                        new ConnectorViewModel(c.Name, c.Location!.Alpha2Code)
+                        new ConnectorData(c.Name, c.Location!.Alpha2Code)
                         {
                             Id = c.Id,
                             Status = c.Status!.Id,
@@ -74,8 +75,22 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         );
     }
 
+    public async Task<ConnectorData> GetCompanyConnectorDataForIdIamUserAsync(Guid connectorId, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForIamUser(connectorId, iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"connector {connectorId} does not exist");
+        }
+        if (!result.IsProviderUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not permitted to access connector {connectorId}");
+        }
+        return result.ConnectorData;
+    }
+
     /// <inheritdoc/>
-    public async Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
     {
         var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
@@ -133,7 +148,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         
         await _portalRepositories.SaveAsync();
 
-        return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
         {
             Id = createdConnector.Id,
             Status = createdConnector.StatusId,
