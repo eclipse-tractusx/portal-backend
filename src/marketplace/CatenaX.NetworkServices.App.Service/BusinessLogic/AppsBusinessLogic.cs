@@ -111,6 +111,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
+        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        if (appDetails is null)
+        {
+            throw new ArgumentException($"App {appId} does not exist", nameof(appId));
+        }
+
         var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
 
         var companyAppSubscriptionData = await companyAssignedAppRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
@@ -136,7 +142,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
         if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
         {
             var nullProperties = new List<string>();
