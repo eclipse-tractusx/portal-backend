@@ -29,11 +29,8 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
     public CompanyUserAssignedBusinessPartner RemoveCompanyUserAssignedBusinessPartner(CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner) =>
         _dbContext.Remove(companyUserAssignedBusinessPartner).Entity;
 
-    public CompanyUserAssignedBusinessPartner RemoveCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
-        _dbContext.Remove(CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber)).Entity;
-
     public Task<(string? UserEntityId, CompanyUserAssignedBusinessPartner? AssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber) =>
-      _dbContext.CompanyUsers
+        _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => ((string? UserEntityId, CompanyUserAssignedBusinessPartner? AssignedBusinessPartner, bool IsValidUser)) new (
