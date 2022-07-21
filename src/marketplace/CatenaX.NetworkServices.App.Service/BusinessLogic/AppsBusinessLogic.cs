@@ -58,7 +58,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? iamUserId = null, string? languageShortName = null) =>
+    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null) =>
         _portalRepositories.GetInstance<IAppRepository>()
             .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName);
 
@@ -111,6 +111,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
+        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        if (appDetails == null)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+
         var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
 
         var companyAppSubscriptionData = await companyAssignedAppRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
@@ -133,16 +139,29 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             }
             companyAssignedApp.AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING;
         }
-        
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
+        {
+            var nullProperties = new List<string>();
+            if (appDetails.AppName is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.AppName)}");
+            }
+            if(appDetails.ProviderContactEmail is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.ProviderContactEmail)}");
+            }
+            throw new Exception($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+        }
+
         var mailParams = new Dictionary<string, string>
             {
-                { "appProviderName", appDetails.providerName},
-                { "appName", appDetails.appName }
+                { "appProviderName", appDetails.ProviderName},
+                { "appName", appDetails.AppName }
             };
-        await _mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        await _mailingService.SendMails(appDetails.ProviderContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
