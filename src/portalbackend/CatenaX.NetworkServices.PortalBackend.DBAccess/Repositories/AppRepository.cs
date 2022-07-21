@@ -46,12 +46,12 @@ public class AppRepository : IAppRepository
         _context.Apps.AnyAsync(x => x.Id == appId);
 
     ///<inheritdoc/>
-    public async Task<AppProviderDetailsData> GetAppProviderDetailsAsync(Guid appId) =>
-        await _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
+    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId) =>
+        _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
             c.Name,
             c.Provider,
             c.ContactEmail
-        )).SingleAsync();
+        )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
     public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>

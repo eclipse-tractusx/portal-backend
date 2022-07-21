@@ -99,7 +99,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .Select(iamUser => iamUser.CompanyUser!.Company)
             .Select(company => ((Guid companyId, CompanyAssignedApp?)) new (
                 company!.Id,
-                company.CompanyAssignedApps.Where(assignedApp => assignedApp.AppId == appId).SingleOrDefault()
+                company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId)
             ))
             .SingleOrDefaultAsync();
 }
