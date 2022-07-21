@@ -326,11 +326,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <response code="404">Record not found.</response>
         [HttpDelete]
         [Authorize(Roles = "modify_user_account")]
-        [Route("owncompany/users/{companyUserId}/userBusinessPartnerNumbers/{businessPartnerNumber}")]
+        [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
-           this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
+            this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
     }
 }
