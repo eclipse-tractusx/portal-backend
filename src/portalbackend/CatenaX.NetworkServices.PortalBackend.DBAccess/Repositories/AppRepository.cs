@@ -83,8 +83,12 @@ public class AppRepository : IAppRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public App CreateApp(string provider) =>
-        _context.Apps.Add(new App(Guid.NewGuid(), provider, DateTimeOffset.UtcNow)).Entity;
+    public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
+    {
+        var app = _context.Apps.Add(new App(Guid.NewGuid(), provider, DateTimeOffset.UtcNow)).Entity;
+        setOptionalParameters?.Invoke(app);
+        return app;
+    }
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>

@@ -54,7 +54,7 @@ public interface IAppRepository
     /// </summary>
     /// <param name="id">Id of the app</param>
     /// <param name="provider">Provider of the app</param>
-    App CreateApp(string provider);
+    App CreateApp(string provider, Action<App>? setOptionalParameters = null);
 
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
