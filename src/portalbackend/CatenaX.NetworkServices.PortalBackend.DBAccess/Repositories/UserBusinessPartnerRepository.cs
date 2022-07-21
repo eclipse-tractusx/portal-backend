@@ -1,4 +1,3 @@
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -33,17 +32,14 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
     public CompanyUserAssignedBusinessPartner RemoveCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
         _dbContext.Remove(CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber)).Entity;
 
-    public Task<CompanyUserBusinessPartnerNumbersDetails?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber) =>
-      _dbContext.IamUsers
+    public Task<(string? UserEntityId, CompanyUserAssignedBusinessPartner? AssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber) =>
+      _dbContext.CompanyUsers
             .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == adminUserId)
-            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyUsers)
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new CompanyUserBusinessPartnerNumbersDetails(
+            .Select(companyUser => ((string? UserEntityId, CompanyUserAssignedBusinessPartner? AssignedBusinessPartner, bool IsValidUser)) new (
                 companyUser.IamUser!.UserEntityId,
-                companyUser.CompanyUserAssignedBusinessPartners!
-                    .Where(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber).SingleOrDefault(),
-                    companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
+                companyUser.CompanyUserAssignedBusinessPartners!.SingleOrDefault(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber),
+                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
             ))
             .SingleOrDefaultAsync();
 }
