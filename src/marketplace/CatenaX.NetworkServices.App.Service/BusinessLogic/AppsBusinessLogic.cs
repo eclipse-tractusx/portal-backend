@@ -137,7 +137,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
-        if(new []{ appDetails.AppName, appDetails.ProviderContactEmail }.Any(d => d is null))
+        if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
         {
             var nullProperties = new List<string>();
             if (appDetails.AppName is null)
