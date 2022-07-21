@@ -595,7 +595,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartner);
           
-            await _provisioningManager.DeleteOwnUserBusinessPartnerNumbersAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
+            await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
 
             return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
