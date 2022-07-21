@@ -1,4 +1,4 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Keycloak.Net.Models.Clients;
@@ -28,10 +28,6 @@ public partial class ProvisioningManager
     public async Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config)
     {
         var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        if (client == null)
-        {
-            throw new NotFoundException($"failed to retrieve central client {internalClientId}");
-        }
         client.Name = config.Name;
         client.ClientAuthenticatorType = IamClientAuthMethodToInternal(config.IamClientAuthMethod);
         if (! await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false))
@@ -51,10 +47,6 @@ public partial class ProvisioningManager
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
     {
         var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        if (credentials == null)
-        {
-            throw new NotFoundException($"credentials of client {internalClientId} not found in keycloak");
-        }
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
             {
@@ -65,10 +57,6 @@ public partial class ProvisioningManager
     public async Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId)
     {
         var credentials = await _CentralIdp.GenerateClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        if (credentials == null)
-        {
-            throw new NotFoundException($"credentials of client {internalClientId} not found in keycloak");
-        }
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
             {
@@ -80,10 +68,6 @@ public partial class ProvisioningManager
     {
         var client = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
             .SingleOrDefault();
-        if (client == null)
-        {
-            throw new NotFoundException($"failed to retrieve central client {clientId}");
-        }
         return client;
     }
 

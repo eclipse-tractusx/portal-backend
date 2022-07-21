@@ -46,7 +46,7 @@ public class AppRepositoryTests
     }
 
     [Fact]
-    public async void GetAllActiveApps_ReturnsReleasedAppsSuccessfully()
+    public async Task GetAllActiveApps_ReturnsReleasedAppsSuccessfully()
     {
         // Arrange
         var apps = _fixture.Build<App>()
@@ -70,9 +70,9 @@ public class AppRepositoryTests
         results.Should().AllBeOfType<AppData>();
         results.Should().AllSatisfy(a => apps.Select(app => app.Id).Contains(a.Id));
     }
-    
+
     [Fact]
-    public async void GetAppDetails_ReturnsAppDetailsSuccessfully()
+    public async Task GetAppDetails_ReturnsAppDetailsSuccessfully()
     {
         // Arrange
         var apps = _fixture.CreateMany<App>(1);
@@ -86,7 +86,7 @@ public class AppRepositoryTests
         var sut = _fixture.Create<AppRepository>();
 
         // Act
-        var result = await sut.GetAppDetailsByIdAsync(apps.Single().Id, null, null);
+        var result = await sut.GetAppDetailsByIdAsync(apps.Single().Id, Guid.NewGuid().ToString(), null);
 
         // Assert
         result.Should().NotBeNull();

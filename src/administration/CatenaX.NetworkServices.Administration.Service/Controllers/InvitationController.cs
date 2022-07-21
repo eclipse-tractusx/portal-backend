@@ -36,10 +36,14 @@ public class InvitationController : ControllerBase
     /// </remarks>
     /// <response code="200">Successfully executed the invitation.</response>
     /// <response code="400">Missing mandatory input values (e.g. email, organization name, etc.)</response>
+    /// <response code="500">Internal Server Error.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
         _logic.ExecuteInvitation(invitationData);
 }
