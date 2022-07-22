@@ -62,7 +62,7 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc/>
-    public Connector CreateConnectorAsync(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields)
+    public Connector CreateConnector(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields)
     {
         var connector = new Connector(Guid.NewGuid(), name, location, connectorUrl);
         setupOptionalFields?.Invoke(connector);
