@@ -49,7 +49,7 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(bpn, "DE", "DE", connectorInputModel.ConnectorUrl,
             "connector", bpn, bpn, "BPNL000000000000");
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel);
+        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
