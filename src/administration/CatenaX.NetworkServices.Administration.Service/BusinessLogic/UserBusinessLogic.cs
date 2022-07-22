@@ -484,11 +484,11 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public async Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
             var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
 
-            return await Pagination.CreateResponseAsync<CompanyAppUserDetails>(
+            return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,
                 size,
                 15,
@@ -497,15 +497,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     appUsers.OrderBy(companyUser => companyUser.Id)
                         .Skip(skip)
                         .Take(take)
-                         .Select(companyUser => new CompanyAppUserDetails(
+                        .Select(companyUser => new CompanyAppUserDetails(
                             companyUser.Id,
                             companyUser.CompanyUserStatusId,
                             companyUser.UserRoles!.Where(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId)).Select(userRole => userRole.UserRoleText))
-                         {
-                             FirstName = companyUser.Firstname,
-                             LastName = companyUser.Lastname,
-                             Email = companyUser.Email
-                         }).AsAsyncEnumerable()));
+                        {
+                            FirstName = companyUser.Firstname,
+                            LastName = companyUser.Lastname,
+                            Email = companyUser.Email
+                        }).AsAsyncEnumerable()));
         }
 
         public async Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
