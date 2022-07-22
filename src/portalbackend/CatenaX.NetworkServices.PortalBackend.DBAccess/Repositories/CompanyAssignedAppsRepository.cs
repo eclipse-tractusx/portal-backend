@@ -44,16 +44,12 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId ) =>
         _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
 
-    public IQueryable<CompanyUserAssignedRole> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, Guid companyId,Guid iamClientId) =>
-        _context.CompanyUsers
+    public IQueryable<CompanyUserAssignedRole> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
+       _context.CompanyUserAssignedRoles
             .AsNoTracking()
-            .Where(companyUser => companyUser.Company!.Id == companyId
-                && companyUser.Company!.CompanyAssignedApps
-                    .Any(app => app.AppId == appId 
-                        && app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
-                && companyUser.CompanyUserAssignedRoles!
-                   .Any(userRole => userRole.UserRole!.IamClientId == iamClientId))
-                   .SelectMany(companyUser => companyUser.CompanyUserAssignedRoles);
+            .Where(assignedRole => assignedRole.UserRole!.IamClient!.Apps.Any(app => app.Id == appId)
+                && assignedRole.CompanyUser!.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
+
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>

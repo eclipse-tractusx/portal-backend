@@ -486,15 +486,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
-            var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-            if (companyId == default)
-            {
-                throw new NotFoundException($"user {iamUserId} is not associated with any company");
-            }
-
-            var appAssignedClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdToFetchUserRolesUntrackedAsync(appId).ConfigureAwait(false);
-
-            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, companyId,appAssignedClientId);
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
 
             return await Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,
