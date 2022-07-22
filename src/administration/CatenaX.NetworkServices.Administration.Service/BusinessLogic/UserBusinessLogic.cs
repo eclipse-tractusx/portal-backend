@@ -494,18 +494,18 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 15,
                 (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
                     appUsers.CountAsync(),
-                    appUsers.OrderBy(companyUserAssignedRoles => companyUserAssignedRoles!.CompanyUser!.Id)
+                    appUsers.OrderBy(companyUser => companyUser.Id)
                         .Skip(skip)
                         .Take(take)
-                        .Select(companyUserAssignedRoles => new CompanyAppUserDetails(
-                            companyUserAssignedRoles.CompanyUser!.Id,
-                            companyUserAssignedRoles.CompanyUser!.CompanyUserStatusId,
-                            companyUserAssignedRoles.CompanyUser!.UserRoles!.Select(userRole => userRole.UserRoleText))
-                        {
-                            FirstName = companyUserAssignedRoles.CompanyUser!.Firstname,
-                            LastName = companyUserAssignedRoles.CompanyUser!.Lastname,
-                            Email = companyUserAssignedRoles.CompanyUser!.Email
-                        }).AsAsyncEnumerable()));
+                         .Select(companyUser => new CompanyAppUserDetails(
+                            companyUser.Id,
+                            companyUser.CompanyUserStatusId,
+                            companyUser.UserRoles!.Where(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId)).Select(userRole => userRole.UserRoleText))
+                         {
+                             FirstName = companyUser.Firstname,
+                             LastName = companyUser.Lastname,
+                             Email = companyUser.Email
+                         }).AsAsyncEnumerable()));
         }
 
         public async Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)

@@ -44,11 +44,11 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId ) =>
         _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
 
-    public IQueryable<CompanyUserAssignedRole> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
-       _context.CompanyUserAssignedRoles
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
+        _context.CompanyUsers
             .AsNoTracking()
-            .Where(assignedRole => assignedRole.UserRole!.IamClient!.Apps.Any(app => app.Id == appId)
-                && assignedRole.CompanyUser!.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
+            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
+                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
 
 
     /// <inheritdoc />
