@@ -23,10 +23,8 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Headers;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
@@ -38,6 +36,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IConnectorsSdFactoryService _connectorsSdFactoryService;
     private readonly ConnectorsSettings _settings;
 
     /// <summary>
@@ -45,10 +44,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Access to the needed repositories</param>
     /// <param name="options">The options</param>
-    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options)
+    /// <param name="connectorsSdFactoryService">Access to the connectorsSdFactory</param>
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, IConnectorsSdFactoryService connectorsSdFactoryService)
     {
         _portalRepositories = portalRepositories;
         _settings = options.Value;
+        _connectorsSdFactoryService = connectorsSdFactoryService;
     }
 
     /// <inheritdoc/>
@@ -116,36 +117,17 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (!Enum.IsDefined(typeof(ConnectorStatusId), status.ToString()))
             throw new ArgumentException("ConnectorStatusId does not exist.", nameof(status));
 
-        Connector createdConnector;
-        HttpResponseMessage response;
+        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name, location.ToUpper(), connectorUrl,
+            (connector) =>
+            {
+                connector.ProviderId = provider;
+                connector.HostId = host;
+                connector.TypeId = type;
+                connector.StatusId = status;
+            });
+        var bpn = (await companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
+        await _connectorsSdFactoryService.RegisterConnector(connectorInputModel, accessToken, bpn);
 
-        try
-        {
-            createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnectorAsync(name, location.ToUpper(), connectorUrl,
-                (connector) =>
-                {
-                    connector.ProviderId = provider;
-                    connector.HostId = host;
-                    connector.TypeId = type;
-                    connector.StatusId = status;
-                });
-            var bpn = (await companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
-            var requestModel = new ConnectorSdFactoryRequestModel(bpn, "DE", "DE", connectorInputModel.ConnectorUrl, "connector", bpn, bpn, "BPNL000000000000");
-            response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
-        }
-        
         await _portalRepositories.SaveAsync();
 
         return new ConnectorData(createdConnector.Name, createdConnector.LocationId)

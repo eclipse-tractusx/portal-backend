@@ -130,6 +130,7 @@ builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian
 builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();
 
 builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
+    .AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 

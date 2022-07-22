@@ -45,7 +45,7 @@ public interface IConnectorsRepository
     /// <param name="connectorUrl">Url of the connector to create.</param>
     /// <param name="setupOptionalFields">Action to setup optional fields.</param>
     /// <returns>Created and persisted connector.</returns>
-    Connector CreateConnectorAsync(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields);
+    Connector CreateConnector(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields);
 
     /// <summary>
     /// Removes a connector from persistence layer by id.
