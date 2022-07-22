@@ -52,7 +52,11 @@ public class NotificationBusinessLogicTests
 
     public NotificationBusinessLogicTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
         var (companyUser, iamuser) = CreateTestUserPair();
         _companyUser = companyUser;
         _iamUser = iamuser;

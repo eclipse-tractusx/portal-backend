@@ -49,6 +49,10 @@ public class NotificationRespotitoryTests
     public NotificationRespotitoryTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _companyUserId = Guid.NewGuid();
         _iamUserId = Guid.NewGuid().ToString();
         _contextFake = A.Fake<PortalDbContext>();
