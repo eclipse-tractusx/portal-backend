@@ -27,9 +27,14 @@ using FakeItEasy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.Tests.Shared;
+using FluentAssertions;
 using Xunit;
 
 namespace CatenaX.NetworkServices.App.Service.Tests
@@ -56,7 +61,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         }
 
         [Fact]
-        public async void AddFavouriteAppForUser_ExecutesSuccessfully()
+        public async Task AddFavouriteAppForUser_ExecutesSuccessfully()
         {
             // Arrange
             var appId = _fixture.Create<Guid>();
@@ -66,7 +71,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             _fixture.Inject(_portalRepositories);
-            
+
             var sut = _fixture.Create<AppsBusinessLogic>();
 
             // Act
@@ -78,7 +83,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         }
 
         [Fact]
-        public async void RemoveFavouriteAppForUser_ExecutesSuccessfully()
+        public async Task RemoveFavouriteAppForUser_ExecutesSuccessfully()
         {
             // Arrange
             var (companyUser, iamUser) = CreateTestUserPair();
@@ -100,7 +105,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         }
 
         [Fact]
-        public async void AddCompanyAppSubscription_ExecutesSuccessfully()
+        public async Task AddCompanyAppSubscription_ExecutesSuccessfully()
         {
             // Arrange
             var appId = _fixture.Create<Guid>();
@@ -114,7 +119,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING))
                 .Returns(new CompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING));
             A.CallTo(() => _appRepository.GetAppProviderDetailsAsync(appId))
-                .Returns(((string appName, string providerName, string providerContactEmail)) new (appName, providerName, providerContactEmail));
+                .Returns(new AppProviderDetailsData(appName, providerName, providerContactEmail));
             A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
             _fixture.Inject(_portalRepositories);
