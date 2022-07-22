@@ -50,7 +50,6 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
                 && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
 
-
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
         _context.IamUsers.AsNoTracking()

@@ -258,11 +258,6 @@ public class PortalDbContext : DbContext
                 .WithOne(d => d.App)
                 .HasForeignKey(d => d.AppId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasMany(p => p.AppAssignedClients)
-                .WithOne(d => d.App)
-                .HasForeignKey(d => d.AppId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<AppDescription>(entity =>
