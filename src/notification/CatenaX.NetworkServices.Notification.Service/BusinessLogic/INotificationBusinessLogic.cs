@@ -31,9 +31,11 @@ public interface INotificationBusinessLogic
     /// <summary>
     ///     Creates a new Notification with the given data
     /// </summary>
+    /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="creationData">The data for the creation of the notification.</param>
     /// <param name="companyUserId">Id of the company user the notification is intended for.</param>
-    Task<NotificationDetailData> CreateNotificationAsync(NotificationCreationData creationData, Guid companyUserId);
+    Task<NotificationDetailData> CreateNotificationAsync(string iamUserId, NotificationCreationData creationData,
+        Guid companyUserId);
 
     /// <summary>
     ///     Gets all unread notification for the given user.
