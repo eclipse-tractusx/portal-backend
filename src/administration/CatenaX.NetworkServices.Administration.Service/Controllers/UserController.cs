@@ -148,12 +148,16 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <response code="200">The business partner number have been added successfully.</response>
         /// <response code="400">Business Partner Numbers must not exceed 20 characters.</response>
         /// <response code="404">User is not existing.</response>
+        /// <response code="500">Internal Server Error.</response>
+        /// <response code="502">Bad Gateway Service Error.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
             this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, iamUserId));
 
@@ -183,12 +187,15 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <response code="400">Maximum amount of password resets reached. Password reset function is locked for the user for a certain time.</response>
         /// <response code="404">User id not found.</response>
         /// <response code="500">Internal Server Error, e.g. the password reset failed.</response>
+        /// <response code="502">Bad Gateway Service Error.</response>
         [HttpPut]
         [Authorize(Roles = "modify_user_account")]
         [Route("owncompany/users/{companyUserId}/resetPassword")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
@@ -307,5 +314,23 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
             this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
+
+        /// <summary>
+        /// Delete BPN assigned to user from DB and Keycloack.
+        /// </summary>
+        /// <param name="companyUserId" example="4f06431c-25ae-40ad-9cac-9dee8fe4754d">ID of the company user to be deleted.</param>
+        /// <param name="businessPartnerNumber" example="CAXSDUMMYTESTCX1">BPN to be deleted.</param>
+        /// <remarks>Example: DELETE: /api/administration/user/owncompany/users/4f06431c-25ae-40ad-9cac-9dee8fe4754d/userBusinessPartnerNumbers/CAXSDUMMYTESTCX1</remarks>
+        /// <response code="200">Empty response on success.</response>
+        /// <response code="403">ForbiddenException if both users does not belongs to same company</response>
+        /// <response code="404">Record not found.</response>
+        [HttpDelete]
+        [Authorize(Roles = "modify_user_account")]
+        [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
+            this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
     }
 }
