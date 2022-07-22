@@ -111,7 +111,7 @@ public class AppsController : ControllerBase
     public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
     {
         var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {serviceAccountId = appId}, appId);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
     }
 
     /// <summary>
