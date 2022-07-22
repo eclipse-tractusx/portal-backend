@@ -67,7 +67,7 @@ public class NotificationController : ControllerBase
     public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromRoute] Guid companyUserId,
         [FromBody] NotificationCreationData data)
     {
-        var notificationDetailData = await _logic.CreateNotificationAsync(data, companyUserId).ConfigureAwait(false);
+        var notificationDetailData = this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId));
         return CreatedAtRoute(nameof(GetNotification), new { notificationId = notificationDetailData.Id }, notificationDetailData);
     }
 

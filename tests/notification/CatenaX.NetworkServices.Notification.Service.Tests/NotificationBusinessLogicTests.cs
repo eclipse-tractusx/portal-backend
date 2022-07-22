@@ -91,7 +91,7 @@ public class NotificationBusinessLogicTests
         const string content = "That's a title";
 
         // Act
-        var result = await sut.CreateNotificationAsync(
+        var result = await sut.CreateNotificationAsync(_iamUser.UserEntityId,
             new NotificationCreationData(content, NotificationTypeId.INFO,
                 NotificationStatusId.UNREAD), _companyUser.Id);
 
@@ -112,7 +112,7 @@ public class NotificationBusinessLogicTests
         // Act
         try
         {
-            await sut.CreateNotificationAsync(
+            await sut.CreateNotificationAsync(_iamUser.UserEntityId,
                 new NotificationCreationData("That's a title",
                     NotificationTypeId.INFO, NotificationStatusId.UNREAD), Guid.NewGuid());
         }
@@ -312,10 +312,10 @@ public class NotificationBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamuser)
     {
-        A.CallTo(() => _userRepository.IsUserWithIdExisting(companyUser.Id))
-            .ReturnsLazily(() => Task.FromResult(true));
-        A.CallTo(() => _userRepository.IsUserWithIdExisting(A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => Task.FromResult(false));
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamuser.UserEntityId, companyUser.Id))
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>{new (_companyUser.Id, true), new (_companyUser.Id, false)}.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamuser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>().ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(iamuser.UserEntityId))
             .ReturnsLazily(() => Task.FromResult(companyUser.Id));
         A.CallTo(() =>

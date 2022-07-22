@@ -41,12 +41,15 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<NotificationDetailData> CreateNotificationAsync(NotificationCreationData creationData, Guid companyUserId)
+    public async Task<NotificationDetailData> CreateNotificationAsync(string iamUserId,
+        NotificationCreationData creationData, Guid companyUserId)
     {
-        if (!await _portalRepositories.GetInstance<IUserRepository>().IsUserWithIdExisting(companyUserId))
+        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(iamUserId, companyUserId).ToListAsync().ConfigureAwait(false);
+
+        if (users.All(x => x.CompanyUserId != companyUserId))
             throw new ArgumentException("User does not exist", nameof(companyUserId));
 
-        var (content, notificationTypeId, notificationStatusId, dueDate, creatorUserId) =
+        var (content, notificationTypeId, notificationStatusId, dueDate) =
             creationData;
 
         var notification = _portalRepositories.GetInstance<INotificationRepository>().Create(
@@ -57,7 +60,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             notification => 
             {
                 notification.DueDate = dueDate;
-                notification.CreatorUserId = creatorUserId;
+                notification.CreatorUserId = users.Single(x => x.iamUser).CompanyUserId;
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

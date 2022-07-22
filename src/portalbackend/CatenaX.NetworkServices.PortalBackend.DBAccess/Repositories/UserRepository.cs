@@ -256,6 +256,8 @@ public class UserRepository : IUserRepository
             )).AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public async Task<bool> IsUserWithIdExisting(Guid companyUserId) =>
-        await _dbContext.CompanyUsers.AnyAsync(x => x.Id == companyUserId);
+    public IAsyncEnumerable<(Guid CompanyUserId, bool iamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId) =>
+        _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
+            .Select(companyUser => ((Guid CompanyUserId, bool iamUser)) new (companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
+            .ToAsyncEnumerable();
 }

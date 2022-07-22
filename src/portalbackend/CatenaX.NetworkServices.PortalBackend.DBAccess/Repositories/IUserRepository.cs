@@ -73,9 +73,11 @@ public interface IUserRepository
     IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
 
     /// <summary>
-    /// Checks whether a user with the given company User Id exists.
+    /// Gets the company user ids and checks if its the given iamUser
     /// </summary>
+    /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="companyUserId">The id of the company user to check in the persistence layer.</param>
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    Task<bool> IsUserWithIdExisting(Guid companyUserId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool iamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
+        Guid companyUserId);
 }

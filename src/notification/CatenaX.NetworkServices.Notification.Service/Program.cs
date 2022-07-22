@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
