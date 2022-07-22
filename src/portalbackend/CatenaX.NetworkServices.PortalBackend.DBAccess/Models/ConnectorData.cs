@@ -21,23 +21,47 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
+/// View model for connectors.
 /// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Type">Connector type.</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="Provider">Providing company's ID..</param>
-/// <param name="Host">Hosting company's ID.</param>
-public record ConnectorInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
-    Guid Provider,
-    Guid? Host);
+public class ConnectorData
+{
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="name">Name.</param>
+    /// <param name="location">Location.</param>
+    public ConnectorData(string name, string location)
+    {
+        Name = name;
+        Location = location;
+    }
+
+    /// <summary>
+    /// ID of the connector.
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
+    /// Name of the connector.
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Connector type.
+    /// </summary>
+    public ConnectorTypeId Type { get; set; }
+
+    /// <summary>
+    /// Country code of the connector's location.
+    /// </summary>
+    [StringLength(2, MinimumLength = 2)]
+    public string Location { get; set; }
+
+    /// <summary>
+    /// Connector status.
+    /// </summary>
+    public ConnectorStatusId Status { get; set; }
+}
