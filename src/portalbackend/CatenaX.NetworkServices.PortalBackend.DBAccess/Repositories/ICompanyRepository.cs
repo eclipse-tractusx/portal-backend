@@ -36,20 +36,14 @@ public interface ICompanyRepository
     Company CreateCompany(string companyName);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
-    /// <summary>
-    /// Retrieves company entity from persistence layer.
-    /// </summary>
-    /// <param name="companyId">Id of the company to retrieve.</param>
-    /// <returns>Requested company entity or null if it does not exist.</returns>
-    ValueTask<Company?> GetCompanyByIdAsync(Guid companyId);
 
     Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
-    
+
     /// <summary>
-    /// Checks if the given company provides the given app
+    /// Checks an set of CompanyIds for existence and returns the associated BusinessPartnerNumber if requested
     /// </summary>
     /// <param name="companyId">Id of the company to check</param>
-    /// <param name="appId">Id of the app to check</param>
-    /// <returns>Returns <c>true</c> if the company is providing the application</returns>
-    Task<bool> CheckIsMemberOfCompanyProvidingAppUntrackedAsync(Guid companyId, Guid appId);
+    /// <param name="bpnRequested">whether the assigned businessPartnerNumber should be returned</param>
+    /// <returns>(CompanyId, BusinessPartnerNumber) for any company that exists</returns>
+    IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters);
 }

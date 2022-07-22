@@ -215,28 +215,29 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
 
-        var appEntity = appRepository.CreateApp(Guid.NewGuid(), appInputModel.Provider);
+        var appId = appRepository.CreateApp(appInputModel.Provider, app =>
+        {
+            app.Name = appInputModel.Title;
+            app.MarketingUrl = appInputModel.ProviderUri;
+            app.AppUrl = appInputModel.AppUri;
+            app.ThumbnailUrl = appInputModel.LeadPictureUri;
+            app.ContactEmail = appInputModel.ContactEmail;
+            app.ContactNumber = appInputModel.ContactNumber;
+            app.ProviderCompanyId = appInputModel.ProviderCompanyId;
+            app.AppStatusId = AppStatusId.CREATED;
+        }).Id;
 
-        appEntity.Name = appInputModel.Title;
-        appEntity.MarketingUrl = appInputModel.ProviderUri;
-        appEntity.AppUrl = appInputModel.AppUri;
-        appEntity.ThumbnailUrl = appInputModel.LeadPictureUri;
-        appEntity.ContactEmail = appInputModel.ContactEmail;
-        appEntity.ContactNumber = appInputModel.ContactNumber;
-        appEntity.ProviderCompanyId = appInputModel.ProviderCompanyId;
-        appEntity.AppStatusId = AppStatusId.CREATED;
-
-        var appLicense = appRepository.CreateAppLicenses(appInputModel.Price);
-        appRepository.CreateAppAssignedLicense(appEntity.Id, appLicense.Id);
+        var licenseId = appRepository.CreateAppLicenses(appInputModel.Price).Id;
+        appRepository.CreateAppAssignedLicense(appId, licenseId);
         appRepository.AddAppAssignedUseCases(appInputModel.UseCaseIds.Select(uc =>
-            ((Guid appId, Guid useCaseId)) new (appEntity.Id, uc)));
+            ((Guid appId, Guid useCaseId)) new (appId, uc)));
         appRepository.AddAppDescriptions(appInputModel.Descriptions.Select(d =>
-            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c =>
-            ((Guid appId, string languageShortName)) new (appEntity.Id, c)));
+            ((Guid appId, string languageShortName)) new (appId, c)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        return appEntity.Id;
+        return appId;
     }
 }
