@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CatenaX.NetworkServices.Mailing.Template.Attributes
+﻿namespace CatenaX.NetworkServices.Mailing.Template.Attributes
 {
     /// <summary>
     /// Attribute used for adding path metadata to a member.
