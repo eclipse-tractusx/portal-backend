@@ -54,15 +54,15 @@ public class Notification
     /// <param name="dateCreated">The creation date</param>
     /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
-    /// <param name="readStatusId">id of the notification status</param>
-    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, string content, NotificationTypeId notificationTypeId, NotificationStatusId readStatusId)
+    /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
+    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, string content, NotificationTypeId notificationTypeId, bool isRead)
     {
         Id = id;
         ReceiverUserId = receiverUserId;
         DateCreated = dateCreated;
         Content = content;
         NotificationTypeId = notificationTypeId;
-        ReadStatusId = readStatusId;
+        IsRead = isRead;
     }
 
     public Guid Id { get; private set; }
@@ -75,8 +75,7 @@ public class Notification
 
     public NotificationTypeId NotificationTypeId { get; private set; }
     
-    public NotificationStatusId ReadStatusId { get; set; }
-
+    public bool IsRead { get; set; }
 
     public DateTimeOffset? DueDate { get; set; }
 
@@ -85,6 +84,5 @@ public class Notification
     // Navigation properties
     public virtual CompanyUser? Receiver { get; set; }
     public virtual NotificationType? NotificationType { get; private set; }
-    public virtual NotificationStatus? ReadStatus { get; private set; }
     public virtual CompanyUser? Creator { get; private set; }
 }

@@ -74,7 +74,7 @@ public class NotificationRespotitoryTests
         var sut = _fixture.Create<NotificationRepository>();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, NotificationStatusId.UNREAD, null).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, false, null).ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -92,7 +92,7 @@ public class NotificationRespotitoryTests
         var sut = _fixture.Create<NotificationRepository>();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, NotificationStatusId.READ, null).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, null).ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -110,7 +110,7 @@ public class NotificationRespotitoryTests
         var sut = _fixture.Create<NotificationRepository>();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, NotificationStatusId.READ, NotificationTypeId.INFO).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, NotificationTypeId.INFO).ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -128,7 +128,7 @@ public class NotificationRespotitoryTests
         var sut = _fixture.Create<NotificationRepository>();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, NotificationStatusId.READ, NotificationTypeId.ACTION).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, NotificationTypeId.ACTION).ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -151,7 +151,7 @@ public class NotificationRespotitoryTests
         var sut = _fixture.Create<NotificationRepository>();
 
         // Act
-        var results = await sut.GetNotificationCountForIamUserAsync(_iamUserId, NotificationStatusId.READ);
+        var results = await sut.GetNotificationCountForIamUserAsync(_iamUserId, true);
 
         // Assert
         results.Count.Should().Be(_readNotifications.Count);
@@ -184,7 +184,7 @@ public class NotificationRespotitoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationStatusId.READ)
+            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true)
             {
                 Receiver = companyUser
             });
@@ -192,7 +192,7 @@ public class NotificationRespotitoryTests
 
         for (var i = 0; i < 2; i++)
         {
-            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationStatusId.UNREAD)
+            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false)
             {
                 Receiver = companyUser
             });
