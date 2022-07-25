@@ -1,5 +1,11 @@
 ﻿using CatenaX.NetworkServices.Mailing.Template;
 
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
 
 namespace CatenaX.NetworkServices.Mailing.SendMail
 {

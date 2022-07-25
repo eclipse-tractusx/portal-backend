@@ -27,6 +27,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
+using FakeItEasy.Sdk;
 using FluentAssertions;
 using Xunit;
 

@@ -1,8 +1,11 @@
 ﻿
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace CatenaX.NetworkServices.Registration.Service.BPN
 {

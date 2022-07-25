@@ -1,4 +1,6 @@
-﻿namespace CatenaX.NetworkServices.Registration.Service.BPN.Model
+﻿using System.Collections.Generic;
+
+namespace CatenaX.NetworkServices.Registration.Service.BPN.Model
 {
     public class PaginatedFetchBusinessPartner
     {

@@ -1,6 +1,8 @@
 using CatenaX.NetworkServices.Mailing.Template.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CatenaX.NetworkServices.Mailing.Template
 {

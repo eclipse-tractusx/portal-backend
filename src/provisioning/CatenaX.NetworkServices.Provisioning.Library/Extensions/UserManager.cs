@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net.Models.Users;
 using System.Text.Json;

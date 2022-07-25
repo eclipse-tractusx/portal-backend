@@ -8,6 +8,7 @@ using Keycloak.Net.Models.Clients;
 using Keycloak.Net.Models.ClientScopes;
 using Keycloak.Net.Models.Common;
 using Keycloak.Net.Models.Roles;
+using Keycloak.Net.Models.Root;
 using Keycloak.Net.Models.Users;
 
 namespace Keycloak.Net

@@ -32,6 +32,9 @@ using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.Tests.Shared;
+using FluentAssertions;
 using Xunit;
 
 namespace CatenaX.NetworkServices.App.Service.Tests

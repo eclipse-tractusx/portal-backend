@@ -2,6 +2,7 @@
 using Keycloak.Net.Models.AuthorizationPermissions;
 using Keycloak.Net.Models.AuthorizationScopes;
 using Keycloak.Net.Models.Clients;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AuthorizationResource = Keycloak.Net.Models.AuthorizationResources.AuthorizationResource;

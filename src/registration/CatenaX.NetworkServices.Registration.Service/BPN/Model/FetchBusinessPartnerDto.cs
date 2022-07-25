@@ -1,4 +1,8 @@
-﻿namespace CatenaX.NetworkServices.Registration.Service.BPN.Model
+﻿using CatenaX.NetworkServices.Registration.Service.BPN.Model;
+
+using System;
+
+namespace CatenaX.NetworkServices.Registration.Service.BPN.Model
 {
     public class FetchBusinessPartnerDto
     {
