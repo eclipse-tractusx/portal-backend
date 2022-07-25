@@ -41,11 +41,11 @@ public interface INotificationBusinessLogic
     ///     Gets all unread notification for the given user.
     /// </summary>
     /// <param name="iamUserId">The id of the current user</param>
-    /// <param name="statusId">OPTIONAL: The status of the notifications</param>
+    /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <returns>Returns a collection of the users notification</returns>
     IAsyncEnumerable<NotificationDetailData> GetNotificationsAsync(string iamUserId,
-        NotificationStatusId? statusId, NotificationTypeId? typeId);
+        bool? isRead, NotificationTypeId? typeId);
 
     /// <summary>
     ///     Gets a specific notification for the given user.
@@ -59,17 +59,17 @@ public interface INotificationBusinessLogic
     /// Gets the notification account for the given user
     /// </summary>
     /// <param name="iamUserId">Id of the current user</param>
-    /// <param name="statusId">OPTIONAL: Status of the notifications that should be considered</param>
+    /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
-    Task<int> GetNotificationCountAsync(string iamUserId, NotificationStatusId? statusId);
+    Task<int> GetNotificationCountAsync(string iamUserId, bool? isRead);
 
     /// <summary>
     /// Sets the status of the notification with the given id to read
     /// </summary>
     /// <param name="iamUserId">Id of the notification receiver</param>
     /// <param name="notificationId">Id of the notification</param>
-    /// <param name="notificationStatusId">Id of the notification status</param>
-    Task SetNotificationStatusAsync(string iamUserId, Guid notificationId, NotificationStatusId notificationStatusId);
+    /// <param name="isRead">Read or unread</param>
+    Task SetNotificationStatusAsync(string iamUserId, Guid notificationId, bool isRead);
 
     /// <summary>
     /// Deletes the given notification

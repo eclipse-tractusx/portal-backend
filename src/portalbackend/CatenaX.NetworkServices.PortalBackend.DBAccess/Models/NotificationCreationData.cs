@@ -27,6 +27,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// </summary>
 /// <param name="Content">The notifications message</param>
 /// <param name="NotificationTypeId">The notifications type</param>
-/// <param name="ReadStatusId">The notifications status</param>
+/// <param name="IsRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
 /// <param name="DueDate">OPTIONAL: The notifications due date</param>
-public record NotificationCreationData(string Content, NotificationTypeId  NotificationTypeId, NotificationStatusId ReadStatusId, DateTimeOffset? DueDate = null);
+public record NotificationCreationData(string Content, NotificationTypeId  NotificationTypeId, bool IsRead, DateTimeOffset? DueDate = null);

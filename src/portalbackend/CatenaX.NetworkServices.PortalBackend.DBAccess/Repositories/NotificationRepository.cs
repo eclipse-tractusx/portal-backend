@@ -42,29 +42,29 @@ public class NotificationRepository : INotificationRepository
 
     /// <inheritdoc />
     public Notification Create(Guid receiverUserId, string content, NotificationTypeId notificationTypeId,
-        NotificationStatusId readStatusId, Action<Notification>? setOptionalParameters = null)
+        bool isRead, Action<Notification>? setOptionalParameters = null)
     {
         var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, content,
-            notificationTypeId, readStatusId);
+            notificationTypeId, isRead);
         setOptionalParameters?.Invoke(notification);
 
         return _dbContext.Add(notification).Entity;
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, NotificationStatusId? statusId, NotificationTypeId? typeId) =>
+    public IAsyncEnumerable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId) =>
         _dbContext.Notifications
             .AsNoTracking()
             .Where(notification =>
                 (notification.Receiver!.IamUser!.UserEntityId == iamUserId)
-                && (statusId.HasValue ? notification.ReadStatusId == statusId.Value : true)
+                && (isRead.HasValue ? notification.IsRead == isRead.Value : true)
                 && (typeId.HasValue ? notification.NotificationTypeId == typeId.Value : true))
             .Select(notification => new NotificationDetailData(
                 notification.Id,
                 notification.Content,
                 notification.DueDate,
                 notification.NotificationTypeId,
-                notification.ReadStatusId))
+                notification.IsRead))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -74,18 +74,18 @@ public class NotificationRepository : INotificationRepository
             .Where(notification => notification.Id == notificationId)
             .Select(notification => ((bool IsUserReceiver, NotificationDetailData NotificationDetailData)) new (
                 notification.Receiver!.IamUser!.UserEntityId == iamUserId,
-                new NotificationDetailData(notification.Id, notification.Content, notification.DueDate, notification.NotificationTypeId, notification.ReadStatusId)))
+                new NotificationDetailData(notification.Id, notification.Content, notification.DueDate, notification.NotificationTypeId, notification.IsRead)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsUserExisting, int Count)> GetNotificationCountForIamUserAsync(string iamUserId, NotificationStatusId? statusId) =>
+    public Task<(bool IsUserExisting, int Count)> GetNotificationCountForIamUserAsync(string iamUserId, bool? isRead) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
             .Select(companyUser => ((bool IsUserExisting, int Count)) new (
                 true,
                 companyUser.Notifications
-                    .Count(notification => statusId.HasValue ? notification.ReadStatusId == statusId.Value : true)))
+                    .Count(notification => isRead.HasValue ? notification.IsRead == isRead.Value : true)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

@@ -69,9 +69,9 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
     /// <inheritdoc />
     public IAsyncEnumerable<NotificationDetailData> GetNotificationsAsync(string iamUserId,
-        NotificationStatusId? statusId, NotificationTypeId? typeId) =>
+        bool? isRead, NotificationTypeId? typeId) =>
         _portalRepositories.GetInstance<INotificationRepository>()
-            .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, statusId, typeId);
+            .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId);
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId)
@@ -89,9 +89,9 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<int> GetNotificationCountAsync(string iamUserId, NotificationStatusId? statusId)
+    public async Task<int> GetNotificationCountAsync(string iamUserId, bool? isRead)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForIamUserAsync(iamUserId, statusId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForIamUserAsync(iamUserId, isRead).ConfigureAwait(false);
         if (result == default)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
@@ -100,7 +100,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task SetNotificationStatusAsync(string iamUserId, Guid notificationId, NotificationStatusId notificationStatusId)
+    public async Task SetNotificationStatusAsync(string iamUserId, Guid notificationId, bool isRead)
     {
         var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndIamUserIdAsync(notificationId, iamUserId).ConfigureAwait(false);
         if (result == default || !result.IsNotificationExisting)
@@ -112,7 +112,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not the receiver of the notification");
         }
         var notification =_portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId));
-        notification.ReadStatusId = notificationStatusId;
+        notification.IsRead = isRead;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

@@ -60,7 +60,7 @@ public class NotificationBusinessLogicTests
         var (companyUser, iamuser) = CreateTestUserPair();
         _companyUser = companyUser;
         _iamUser = iamuser;
-        _notificationDetail = new NotificationDetailData(Guid.NewGuid(), "Test Message", null, NotificationTypeId.INFO, NotificationStatusId.UNREAD);
+        _notificationDetail = new NotificationDetailData(Guid.NewGuid(), "Test Message", null, NotificationTypeId.INFO, false);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _notificationRepository = A.Fake<INotificationRepository>();
@@ -83,7 +83,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
-        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<string>._, A<NotificationTypeId>._, A<NotificationStatusId>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>>._))
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<string>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>>._))
             .Invokes(action =>
                 notifications.Add(A.Fake<PortalBackend.PortalEntities.Entities.Notification>()));
         _fixture.Inject(_portalRepositories);
@@ -93,7 +93,7 @@ public class NotificationBusinessLogicTests
         // Act
         var result = await sut.CreateNotificationAsync(_iamUser.UserEntityId,
             new NotificationCreationData(content, NotificationTypeId.INFO,
-                NotificationStatusId.UNREAD), _companyUser.Id);
+                false), _companyUser.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -114,7 +114,7 @@ public class NotificationBusinessLogicTests
         {
             await sut.CreateNotificationAsync(_iamUser.UserEntityId,
                 new NotificationCreationData("That's a title",
-                    NotificationTypeId.INFO, NotificationStatusId.UNREAD), Guid.NewGuid());
+                    NotificationTypeId.INFO, false), Guid.NewGuid());
         }
         catch (ArgumentException e)
         {
@@ -139,7 +139,7 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, NotificationStatusId.UNREAD, null);
+        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, false, null);
 
         // Assert
         (await result.CountAsync()).Should().Be(await _unreadNotificationDetails.CountAsync());
@@ -153,7 +153,7 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, NotificationStatusId.READ, null);
+        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, true, null);
 
         // Assert
         (await result.CountAsync()).Should().Be(await _readNotificationDetails.CountAsync());
@@ -185,7 +185,7 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        await sut.SetNotificationStatusAsync(_iamUser.UserEntityId, _notificationDetail.Id, NotificationStatusId.READ);
+        await sut.SetNotificationStatusAsync(_iamUser.UserEntityId, _notificationDetail.Id, true);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -203,7 +203,7 @@ public class NotificationBusinessLogicTests
         // Act
         try
         {
-            await sut.SetNotificationStatusAsync(notExistingUserId, randomNotificationId, NotificationStatusId.READ);
+            await sut.SetNotificationStatusAsync(notExistingUserId, randomNotificationId, true);
         }
         catch (NotFoundException e)
         {
@@ -227,7 +227,7 @@ public class NotificationBusinessLogicTests
         // Act
         try
         {
-            await sut.SetNotificationStatusAsync(iamUserId, _notificationDetail.Id, NotificationStatusId.READ);
+            await sut.SetNotificationStatusAsync(iamUserId, _notificationDetail.Id, true);
         }
         catch (ForbiddenException e)
         {
@@ -327,11 +327,11 @@ public class NotificationBusinessLogicTests
             .Returns(((bool, NotificationDetailData)) default);
 
         A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, NotificationStatusId.UNREAD,
+                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false,
                     null))
             .Returns(_unreadNotificationDetails);
         A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, NotificationStatusId.READ,
+                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true,
                     null))
             .Returns(_readNotificationDetails);
         A.CallTo(() =>

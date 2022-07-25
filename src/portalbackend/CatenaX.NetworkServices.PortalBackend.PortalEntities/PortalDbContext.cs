@@ -677,23 +677,11 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CreatorUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.ReadStatus)
-                .WithMany(p => p!.Notifications)
-                .HasForeignKey(d => d.ReadStatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            
             entity.HasOne(d => d.NotificationType)
                 .WithMany(p => p!.Notifications)
                 .HasForeignKey(d => d.NotificationTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-
-        modelBuilder.Entity<NotificationStatus>()
-            .HasData(
-                Enum.GetValues(typeof(NotificationStatusId))
-                    .Cast<NotificationStatusId>()
-                    .Select(e => new NotificationStatus(e))
-            );
 
         modelBuilder.Entity<NotificationType>()
             .HasData(

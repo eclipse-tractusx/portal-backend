@@ -74,7 +74,7 @@ public class NotificationController : ControllerBase
     /// <summary>
     ///     Gets all notifications for the logged in user
     /// </summary>
-    /// <param name="notificationStatusId">OPTIONAL: Status of the notifications</param>
+    /// <param name="isRead">OPTIONAL: Filter for read or unread notifications</param>
     /// <param name="notificationTypeId">OPTIONAL: Type of the notifications</param>
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <remarks>Example: Get: /api/notification/</remarks>
@@ -86,8 +86,8 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ICollection<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<NotificationDetailData> GetNotifications(
-        [FromQuery] NotificationStatusId? notificationStatusId, [FromQuery] NotificationTypeId? notificationTypeId, [FromQuery] bool onlyDueDate = false) =>
-        this.WithIamUserId(userId => _logic.GetNotificationsAsync(userId, notificationStatusId, notificationTypeId));
+        [FromQuery] bool? isRead, [FromQuery] NotificationTypeId? notificationTypeId, [FromQuery] bool onlyDueDate = false) =>
+        this.WithIamUserId(userId => _logic.GetNotificationsAsync(userId, isRead, notificationTypeId));
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -110,7 +110,7 @@ public class NotificationController : ControllerBase
     /// <summary>
     /// Gets the notification count for the current logged in user
     /// </summary>
-    /// <param name="statusId" example="1">OPTIONAL: Id of the notification status</param>
+    /// <param name="isRead" example="true">OPTIONAL: Filter for read or unread notifications</param>
     /// <returns>the count of unread notifications</returns>
     /// <remarks>Example: Get: /api/notification/count</remarks>
     /// <remarks>Example: Get: /api/notification/count?statusId=1</remarks>
@@ -123,14 +123,14 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public Task<int> NotificationCount([FromQuery] NotificationStatusId? statusId) =>
-        this.WithIamUserId((iamUser) => _logic.GetNotificationCountAsync(iamUser, statusId));
+    public Task<int> NotificationCount([FromQuery] bool? isRead) =>
+        this.WithIamUserId((iamUser) => _logic.GetNotificationCountAsync(iamUser, isRead));
 
     /// <summary>
-    /// Changes the read status of a notification to <see cref="NotificationStatusId.READ"/>
+    /// Changes the read status of a notification
     /// </summary>
     /// <param name="notificationId" example="f22f2b57-426a-4ac3-b3af-7924a1c61590">OPTIONAL: Id of the notification status</param>
-    /// <param name="notificationStatusId" example="1">OPTIONAL: Id of the notification status</param>
+    /// <param name="isRead" example="false">OPTIONAL: <c>true</c> if the notification is read, otherwise <c>false</c></param>
     /// <returns>Return NoContent</returns>
     /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590</remarks>
     /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590?statusId=1</remarks>
@@ -142,9 +142,9 @@ public class NotificationController : ControllerBase
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] NotificationStatusId notificationStatusId = NotificationStatusId.READ)
+    public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await this.WithIamUserId(userId => this._logic.SetNotificationStatusAsync(userId, notificationId, notificationStatusId));
+        await this.WithIamUserId(userId => this._logic.SetNotificationStatusAsync(userId, notificationId, isRead));
         return NoContent();
     }
 
