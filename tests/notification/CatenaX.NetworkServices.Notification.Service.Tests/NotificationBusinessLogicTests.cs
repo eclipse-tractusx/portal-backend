@@ -83,7 +83,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
-        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<string>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>>._))
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>>._))
             .Invokes(action =>
                 notifications.Add(A.Fake<PortalBackend.PortalEntities.Entities.Notification>()));
         _fixture.Inject(_portalRepositories);

@@ -54,13 +54,13 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
         var notification = _portalRepositories.GetInstance<INotificationRepository>().Create(
             companyUserId,
-            content,
             notificationTypeId,
             notificationStatusId,
             notification => 
             {
                 notification.DueDate = dueDate;
                 notification.CreatorUserId = users.Single(x => x.iamUser).CompanyUserId;
+                notification.Content = content;
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
