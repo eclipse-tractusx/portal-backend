@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;

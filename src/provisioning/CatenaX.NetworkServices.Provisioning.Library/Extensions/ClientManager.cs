@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Keycloak.Net.Models.Clients;

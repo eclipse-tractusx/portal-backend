@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System.Collections.Generic;
 
 namespace CatenaX.NetworkServices.Registration.Service.Model
 {

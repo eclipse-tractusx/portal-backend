@@ -1,3 +1,4 @@
+using System.Collections;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <summary>
 /// Model for Company and Iam User
