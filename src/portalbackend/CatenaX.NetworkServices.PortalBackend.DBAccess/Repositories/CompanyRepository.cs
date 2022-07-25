@@ -59,10 +59,6 @@ public class CompanyRepository : ICompanyRepository
                 DateTimeOffset.UtcNow
             )).Entity;
 
-    /// <inheritdoc/>
-    public ValueTask<Company?> GetCompanyByIdAsync(Guid companyId) =>
-        _context.Companies.FindAsync(companyId);
-
     public Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
         _context.IamUsers
             .AsNoTracking()
@@ -90,9 +86,12 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<bool> CheckIsMemberOfCompanyProvidingAppUntrackedAsync(Guid companyId, Guid appId) =>
-        _context.Companies.AsNoTracking()
-            .Where(c => c.Id == companyId)
-            .SelectMany(c => c.ProvidedApps.Select(a => a.Id))
-            .ContainsAsync(appId);
+    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters) =>
+        _context.Companies
+            .AsNoTracking()
+            .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
+            .Select(company => ((Guid CompanyId, string? BusinessPartnerNumber)) new (
+                company.Id,
+                parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).Contains(company.Id) ? company.BusinessPartnerNumber : null
+            )).AsAsyncEnumerable();
 }

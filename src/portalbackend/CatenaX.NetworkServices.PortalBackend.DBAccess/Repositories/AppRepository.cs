@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -45,35 +46,12 @@ public class AppRepository : IAppRepository
         _context.Apps.AnyAsync(x => x.Id == appId);
 
     ///<inheritdoc/>
-    public async Task<(string appName, string providerName, string providerContactEmail)> GetAppProviderDetailsAsync(Guid appId)
-    {
-        var appDetails = await _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new
-        {
+    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId) =>
+        _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
             c.Name,
             c.Provider,
             c.ContactEmail
-        }).SingleAsync();
-
-        if(new []{ appDetails.Name, appDetails.Provider, appDetails.ContactEmail }.Any(d => d is null))
-        {
-            var nullProperties = new List<string>();
-            if (appDetails.Name is null)
-            {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.Name)}");
-            }
-            if (appDetails.Provider is null)
-            {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.Provider)}");
-            }
-            if(appDetails.ContactEmail is null)
-            {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.ContactEmail)}");
-            }
-            throw new Exception($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
-        }
-
-        return (appName: appDetails.Name!, providerName: appDetails.Provider!, providerContactEmail: appDetails.ContactEmail!);
-    }
+        )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
     public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
@@ -83,8 +61,12 @@ public class AppRepository : IAppRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public App CreateApp(Guid id, string provider) =>
-        _context.Apps.Add(new App(id, provider, DateTimeOffset.UtcNow)).Entity;
+    public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
+    {
+        var app = _context.Apps.Add(new App(Guid.NewGuid(), provider, DateTimeOffset.UtcNow)).Entity;
+        setOptionalParameters?.Invoke(app);
+        return app;
+    }
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
@@ -117,7 +99,7 @@ public class AppRepository : IAppRepository
             });
 
     /// <inheritdoc />
-    public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? iamUserId, string? languageShortName)
+    public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName)
     {
        var app = await _context.Apps.AsNoTracking()
             .Where(a => a.Id == appId)
@@ -141,9 +123,10 @@ public class AppRepository : IAppRepository
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
                 Tags = a.Tags.Select(t => t.Name),
-                IsPurchased = iamUserId == null ?
-                    (bool?)null :
-                    a.Companies.Any(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
+                IsPurchased = a.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                    .SelectMany(company => company.CompanyAssignedApps.Where(x => x.AppId == appId))
+                    .Select(x => x.AppSubscriptionStatusId)
+                    .FirstOrDefault(),
                 Languages = a.SupportedLanguages.Select(l => l.ShortName)
             })
             .SingleAsync().ConfigureAwait(false);

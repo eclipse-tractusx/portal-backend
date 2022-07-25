@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.App.Service.Controllers;
 
@@ -73,7 +74,7 @@ public class AppsController : ControllerBase
     [Route("business")]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<BusinessAppData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppsForCurrentUserAsync() =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetAllUserUserBusinessAppsAsync(userId));
 
@@ -88,7 +89,7 @@ public class AppsController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid.</response>
     /// <response code="404">App not found.</response>
     [HttpGet]
-    [Route("{appId}")]
+    [Route("{appId}", Name = nameof(GetAppDetailsByIdAsync))]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(AppDetailsData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -107,8 +108,11 @@ public class AppsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel) =>
-        CreatedAtRoute(string.Empty, await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false));
+    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
+    {
+        var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
+    }
 
     /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
@@ -196,11 +200,13 @@ public class AppsController : ControllerBase
     /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
     /// <response code="204">App was successfully subscribed to.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If appId does not exist.</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
     [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, userId)).ConfigureAwait(false);

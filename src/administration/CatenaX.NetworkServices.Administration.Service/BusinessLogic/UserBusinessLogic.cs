@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -288,7 +289,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
 
             var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
             await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
             foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(user.AssignedBusinessPartnerNumbers))
             {
@@ -500,7 +500,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         .Select(companyUser => new CompanyAppUserDetails(
                             companyUser.Id,
                             companyUser.CompanyUserStatusId,
-                            companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                            companyUser.UserRoles!.Where(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId)).Select(userRole => userRole.UserRoleText))
                         {
                             FirstName = companyUser.Firstname,
                             LastName = companyUser.Lastname,
@@ -565,6 +565,39 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
             return new UserRoleMessage(success, warning);
+        }
+    
+        public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
+        {
+            var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+            var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
+            
+            if (userWithBpn == default)
+            {
+                throw new NotFoundException($"user {companyUserId} does not exist");
+            }
+
+            if (userWithBpn.AssignedBusinessPartner == null)
+            {
+                throw new NotFoundException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
+            }
+
+            if (userWithBpn.UserEntityId == null)
+            {
+                throw new Exception($"user {companyUserId} is not associated with a user in keycloak");
+            }
+
+            if (!userWithBpn.IsValidUser)
+            {
+                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} do not belong to same company");
+            }
+
+            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartner);
+          
+            await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
     }
 }

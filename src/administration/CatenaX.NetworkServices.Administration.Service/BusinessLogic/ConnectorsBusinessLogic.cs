@@ -1,11 +1,32 @@
-﻿using CatenaX.NetworkServices.Administration.Service.Models;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Headers;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -14,35 +35,37 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 /// </summary>
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
-    private readonly IConnectorsRepository _repository;
-    private readonly ICompanyRepository _companyRepository;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IConnectorsSdFactoryService _connectorsSdFactoryService;
     private readonly ConnectorsSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="connectorsRepository">Connectors repository.</param>
-    public ConnectorsBusinessLogic(IConnectorsRepository connectorsRepository, ICompanyRepository companyRepository, IOptions<ConnectorsSettings> options)
+    /// <param name="portalRepositories">Access to the needed repositories</param>
+    /// <param name="options">The options</param>
+    /// <param name="connectorsSdFactoryService">Access to the connectorsSdFactory</param>
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, IConnectorsSdFactoryService connectorsSdFactoryService)
     {
-        this._repository = connectorsRepository;
-        this._companyRepository = companyRepository;
-        this._settings = options.Value;
+        _portalRepositories = portalRepositories;
+        _settings = options.Value;
+        _connectorsSdFactoryService = connectorsSdFactoryService;
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ConnectorViewModel>> GetAllCompanyConnectorViewModelsForIamUserAsyncEnum(string iamUserId, int page, int size)
+    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatasForIamUserAsyncEnum(string iamUserId, int page, int size)
     {
-        var connectors = _repository.GetAllCompanyConnectorsForIamUser(iamUserId);
+        var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForIamUser(iamUserId);
 
         return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
-            new Pagination.AsyncSource<ConnectorViewModel>
+            new Pagination.AsyncSource<ConnectorData>
             (
                 connectors.CountAsync(),
                 connectors.OrderByDescending(connector => connector.Name)
                     .Skip(skip)
                     .Take(take)
                     .Select(c => 
-                        new ConnectorViewModel(c.Name, c.Location!.Alpha2Code)
+                        new ConnectorData(c.Name, c.Location!.Alpha2Code)
                         {
                             Id = c.Id,
                             Status = c.Status!.Id,
@@ -53,44 +76,75 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         );
     }
 
-    /// <inheritdoc/>
-    public async Task<ConnectorViewModel> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
+    public async Task<ConnectorData> GetCompanyConnectorDataForIdIamUserAsync(Guid connectorId, string iamUserId)
     {
-        var connector = new Connector(Guid.NewGuid(), connectorInputModel.Name, connectorInputModel.Location, connectorInputModel.ConnectorUrl)
+        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForIamUser(connectorId, iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
-            ProviderId = connectorInputModel.Provider,
-            HostId = connectorInputModel.Host,
-            TypeId = connectorInputModel.Type,
-            StatusId = connectorInputModel.Status
-        };
-
-        Connector createdConnector;
-        HttpResponseMessage response;
-        using var transaction = await _repository.BeginTransactionAsync();
-
-        try
-        {
-            createdConnector = await _repository.CreateConnectorAsync(connector).ConfigureAwait(false);
-            var bpn = (await _companyRepository.GetCompanyByIdAsync(connectorInputModel.Provider))!.BusinessPartnerNumber!;
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
-            var requestModel = new ConnectorSdFactoryRequestModel(bpn, "DE", "DE", connectorInputModel.ConnectorUrl, "connector", bpn, bpn, "BPNL000000000000");
-            response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel);
+            throw new NotFoundException($"connector {connectorId} does not exist");
         }
-        catch (Exception)
+        if (!result.IsProviderUser)
         {
-            throw;
+            throw new ForbiddenException($"user {iamUserId} is not permitted to access connector {connectorId}");
+        }
+        return result.ConnectorData;
+    }
+
+    /// <inheritdoc/>
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
+    {
+        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
+
+        if (!Enum.IsDefined(typeof(ConnectorTypeId), type.ToString()))
+            throw new ArgumentException("ConnectorTypeId does not exist.", nameof(type));
+
+        if (!Enum.IsDefined(typeof(ConnectorStatusId), status.ToString()))
+            throw new ArgumentException("ConnectorStatusId does not exist.", nameof(status));
+
+        if (!await _portalRepositories.GetInstance<ICountryRepository>()
+                .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
+        {
+            throw new ArgumentException($"Location {location} does not exist", nameof(location));
         }
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
-        }
-        
-        await transaction.CommitAsync();
+        var companyDatas = await _portalRepositories.GetInstance<ICompanyRepository>().GetConnectorCreationCompanyDataAsync(
+            provider == host || !host.HasValue
+                ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new (provider, true), 1)
+                : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host, false) }.AsEnumerable()
+            )
+            .ToListAsync().ConfigureAwait(false);
 
-        return new ConnectorViewModel(createdConnector.Name, createdConnector.LocationId)
+        if (!companyDatas.Any(data => data.CompanyId == provider))
+        {
+            throw new ArgumentException($"Company {provider} does not exist", nameof(provider));
+        }
+
+        if (provider != host && host.HasValue && !companyDatas.Any(data => data.CompanyId == host))
+        {
+            throw new ArgumentException($"Company {host} does not exist", nameof(host));
+        }
+
+        var providerBusinessPartnerNumber = companyDatas.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
+
+        if (providerBusinessPartnerNumber == null)
+        {
+            throw new Exception($"provider company {provider} has no businessPartnerNumber assigned");
+        }
+
+        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name, location.ToUpper(), connectorUrl,
+            (connector) =>
+            {
+                connector.ProviderId = provider;
+                connector.HostId = host;
+                connector.TypeId = type;
+                connector.StatusId = status;
+            });
+
+        await _connectorsSdFactoryService.RegisterConnector(connectorInputModel, accessToken, providerBusinessPartnerNumber).ConfigureAwait(false);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
         {
             Id = createdConnector.Id,
             Status = createdConnector.StatusId,
@@ -101,6 +155,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// <inheritdoc/>
     public async Task DeleteConnectorAsync(Guid connectorId)
     {
-        await _repository.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId).ConfigureAwait(false);
     }
 }
