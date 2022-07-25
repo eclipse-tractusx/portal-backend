@@ -107,7 +107,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"dateCreated\": \"2022-07-01T12:33:16.013Z\",\r\n  \"content\": \"{ \\\"title\\\": \\\"this is a test message\\\", \\\"message\\\": \\\"test message for the notification\\\" }\",\r\n  \"notificationTypeId\": \"INFO\",\r\n  \"readStatusId\": \"UNREAD\"\r\n}",
+					"raw": "{\r\n  \"dateCreated\": \"2022-07-01T12:33:16.013Z\",\r\n  \"content\": \"{ \\\"title\\\": \\\"this is a test message\\\", \\\"message\\\": \\\"test message for the notification\\\" }\",\r\n  \"notificationTypeId\": \"INFO\",\r\n  \"isRead\": false\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -115,7 +115,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/notification/ddca4f0c-0853-460f-a0d0-81fcfd5020cf",
+					"raw": "https://localhost:5001/api/notification/3f28d393-2e51-433a-b823-566d691bb02c",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -124,7 +124,7 @@
 					"path": [
 						"api",
 						"notification",
-						"ddca4f0c-0853-460f-a0d0-81fcfd5020cf"
+						"3f28d393-2e51-433a-b823-566d691bb02c"
 					]
 				}
 			},
@@ -160,10 +160,15 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"dateCreated\": \"2022-07-01T12:33:16.013Z\",\r\n  \"content\": \"{ \\\"title\\\": \\\"this is a test message\\\", \\\"message\\\": \\\"test message for the notification\\\" }\",\r\n  \"notificationTypeId\": \"INFO\",\r\n  \"readStatusId\": \"UNREAD\",\r\n  \"dueDate\": \"2022-07-01T12:33:16.013Z\"\r\n}"
+					"raw": "{\r\n  \"dateCreated\": \"2022-07-01T12:33:16.013Z\",\r\n  \"content\": \"{ \\\"title\\\": \\\"this is a test message\\\", \\\"message\\\": \\\"test message for the notification\\\" }\",\r\n  \"notificationTypeId\": \"INFO\",\r\n  \"isRead\": false,\r\n  \"dueDate\": \"2022-07-01T12:33:16.013Z\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/notification/c96e3b89-904d-4a89-904c-797df48845a4",
+					"raw": "https://localhost:5001/api/notification/e93ec4cd-5536-44b2-9f37-d85f629a03ea",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -172,7 +177,7 @@
 					"path": [
 						"api",
 						"notification",
-						"c96e3b89-904d-4a89-904c-797df48845a4"
+						"e93ec4cd-5536-44b2-9f37-d85f629a03ea"
 					]
 				}
 			},
@@ -194,7 +199,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/notification",
+					"raw": "https://localhost:5001/api/notification?notificationTypeId=2&isRead=false",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -203,6 +208,16 @@
 					"path": [
 						"api",
 						"notification"
+					],
+					"query": [
+						{
+							"key": "notificationTypeId",
+							"value": "2"
+						},
+						{
+							"key": "isRead",
+							"value": "false"
+						}
 					]
 				}
 			},
@@ -255,7 +270,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/notification/count?statusId=1",
+					"raw": "https://localhost:5001/api/notification/count?isRead=false",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -268,8 +283,8 @@
 					],
 					"query": [
 						{
-							"key": "statusId",
-							"value": "1"
+							"key": "isRead",
+							"value": "false"
 						}
 					]
 				}
@@ -292,7 +307,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/notification?notificationStatusId=1",
+					"raw": "https://localhost:5001/api/notification?isRead=false",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -304,8 +319,8 @@
 					],
 					"query": [
 						{
-							"key": "notificationStatusId",
-							"value": "1"
+							"key": "isRead",
+							"value": "false"
 						}
 					]
 				}
@@ -328,7 +343,7 @@
 				"method": "PUT",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/notification/{{notificationId}}/read",
+					"raw": "https://localhost:5001/api/notification/{{notificationId}}/read?isRead=true",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -339,6 +354,12 @@
 						"notification",
 						"{{notificationId}}",
 						"read"
+					],
+					"query": [
+						{
+							"key": "isRead",
+							"value": "true"
+						}
 					]
 				}
 			},
