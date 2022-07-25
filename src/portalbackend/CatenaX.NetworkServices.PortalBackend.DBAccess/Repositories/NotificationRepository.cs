@@ -41,10 +41,10 @@ public class NotificationRepository : INotificationRepository
     }
 
     /// <inheritdoc />
-    public Notification Create(Guid receiverUserId, string content, NotificationTypeId notificationTypeId,
+    public Notification Create(Guid receiverUserId, NotificationTypeId notificationTypeId,
         bool isRead, Action<Notification>? setOptionalParameters = null)
     {
-        var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, content,
+        var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,
             notificationTypeId, isRead);
         setOptionalParameters?.Invoke(notification);
 

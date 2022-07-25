@@ -184,7 +184,7 @@ public class NotificationRespotitoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true)
+            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true)
             {
                 Receiver = companyUser
             });
@@ -192,7 +192,7 @@ public class NotificationRespotitoryTests
 
         for (var i = 0; i < 2; i++)
         {
-            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, "Test", i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false)
+            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false)
             {
                 Receiver = companyUser
             });

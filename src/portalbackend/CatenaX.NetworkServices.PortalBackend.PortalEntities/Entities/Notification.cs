@@ -27,13 +27,11 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 /// </summary>
 public class Notification
 {
-
     /// <summary>
-    /// Internal constuctor, only needed for EF
+    /// Only needed for ef core
     /// </summary>
     private Notification()
     {
-        Content = null!;
     }
 
     /// <summary>
@@ -43,7 +41,6 @@ public class Notification
     public Notification(Guid id)
     {
         Id = id;
-        Content = null!;
     }
 
     /// <summary>
@@ -55,12 +52,11 @@ public class Notification
     /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, string content, NotificationTypeId notificationTypeId, bool isRead)
+    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
     {
         Id = id;
         ReceiverUserId = receiverUserId;
         DateCreated = dateCreated;
-        Content = content;
         NotificationTypeId = notificationTypeId;
         IsRead = isRead;
     }
@@ -71,7 +67,7 @@ public class Notification
     
     public DateTimeOffset DateCreated { get; private set; }
 
-    public string Content { get; private set; }
+    public string? Content { get; set; }
 
     public NotificationTypeId NotificationTypeId { get; private set; }
     
