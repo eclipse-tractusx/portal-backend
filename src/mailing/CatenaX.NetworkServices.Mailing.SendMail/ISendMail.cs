@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace CatenaX.NetworkServices.Mailing.SendMail
 {
     public interface ISendMail

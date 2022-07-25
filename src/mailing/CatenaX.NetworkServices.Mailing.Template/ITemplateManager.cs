@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using CatenaX.NetworkServices.Mailing.Template.Model;
 
 namespace CatenaX.NetworkServices.Mailing.Template
