@@ -18,26 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
+/// Service to handle communication with the connectors sd factory
 /// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Type">Connector type.</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="Provider">Providing company's ID..</param>
-/// <param name="Host">Hosting company's ID.</param>
-public record ConnectorInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
-    Guid Provider,
-    Guid? Host);
+public interface IConnectorsSdFactoryService
+{
+    /// <summary>
+    /// Registers the Connector at the connectorsSdFactory
+    /// </summary>
+    /// <param name="connectorInputModel">the connector input model</param>
+    /// <param name="accessToken">the access token</param>
+    /// <param name="bpn">the bpn</param>
+    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+    Task RegisterConnector(ConnectorInputModel connectorInputModel, string accessToken, string bpn);
+}

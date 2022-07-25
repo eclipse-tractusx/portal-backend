@@ -45,12 +45,10 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
         _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
 
     public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
-        _context.CompanyAssignedApps
+        _context.CompanyUsers
             .AsNoTracking()
-            .Where(app => app.AppId == appId
-                && app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE
-                && app.Company!.CompanyUsers!.Any(user => user.IamUser!.UserEntityId == iamUserId))
-            .SelectMany(app => app.Company!.CompanyUsers);
+            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
+                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
@@ -68,11 +66,11 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .Select(g => new AppCompanySubscriptionStatusData
             {
                 AppId = g.Key,
-                CompanySubscriptionStatuses = g.Select(s => 
+                CompanySubscriptionStatuses = g.Select(s =>
                     new CompanySubscriptionStatusData(s.CompanyId, s.AppSubscriptionStatusId))
             })
             .ToAsyncEnumerable();
-    
+
     /// <inheritdoc />
     public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Apps
@@ -99,7 +97,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .Select(iamUser => iamUser.CompanyUser!.Company)
             .Select(company => ((Guid companyId, CompanyAssignedApp?)) new (
                 company!.Id,
-                company.CompanyAssignedApps.Where(assignedApp => assignedApp.AppId == appId).SingleOrDefault()
+                company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId)
             ))
             .SingleOrDefaultAsync();
 }

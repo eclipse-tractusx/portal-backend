@@ -18,26 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
-
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
+/// Data Object for the AppProvider Details
 /// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Type">Connector type.</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="Provider">Providing company's ID..</param>
-/// <param name="Host">Hosting company's ID.</param>
-public record ConnectorInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
-    Guid Provider,
-    Guid? Host);
+/// <param name="AppName">Name of the app</param>
+/// <param name="ProviderName">Name of the provider</param>
+/// <param name="ProviderContactEmail">Contact email of the provider</param>
+public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail);

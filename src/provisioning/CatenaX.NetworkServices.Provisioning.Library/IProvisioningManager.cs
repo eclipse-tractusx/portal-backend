@@ -28,6 +28,7 @@ public interface IProvisioningManager
     Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId);
     Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
+    Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias);

@@ -58,7 +58,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string? iamUserId = null, string? languageShortName = null) =>
+    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null) =>
         _portalRepositories.GetInstance<IAppRepository>()
             .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName);
 
@@ -111,6 +111,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
+        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        if (appDetails == null)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+
         var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
 
         var companyAppSubscriptionData = await companyAssignedAppRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
@@ -133,16 +139,29 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             }
             companyAssignedApp.AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING;
         }
-        
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
+        {
+            var nullProperties = new List<string>();
+            if (appDetails.AppName is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.AppName)}");
+            }
+            if(appDetails.ProviderContactEmail is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.ProviderContactEmail)}");
+            }
+            throw new Exception($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+        }
+
         var mailParams = new Dictionary<string, string>
             {
-                { "appProviderName", appDetails.providerName},
-                { "appName", appDetails.appName }
+                { "appProviderName", appDetails.ProviderName},
+                { "appName", appDetails.AppName }
             };
-        await _mailingService.SendMails(appDetails.providerContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        await _mailingService.SendMails(appDetails.ProviderContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -196,28 +215,29 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
 
-        var appEntity = appRepository.CreateApp(Guid.NewGuid(), appInputModel.Provider);
+        var appId = appRepository.CreateApp(appInputModel.Provider, app =>
+        {
+            app.Name = appInputModel.Title;
+            app.MarketingUrl = appInputModel.ProviderUri;
+            app.AppUrl = appInputModel.AppUri;
+            app.ThumbnailUrl = appInputModel.LeadPictureUri;
+            app.ContactEmail = appInputModel.ContactEmail;
+            app.ContactNumber = appInputModel.ContactNumber;
+            app.ProviderCompanyId = appInputModel.ProviderCompanyId;
+            app.AppStatusId = AppStatusId.CREATED;
+        }).Id;
 
-        appEntity.Name = appInputModel.Title;
-        appEntity.MarketingUrl = appInputModel.ProviderUri;
-        appEntity.AppUrl = appInputModel.AppUri;
-        appEntity.ThumbnailUrl = appInputModel.LeadPictureUri;
-        appEntity.ContactEmail = appInputModel.ContactEmail;
-        appEntity.ContactNumber = appInputModel.ContactNumber;
-        appEntity.ProviderCompanyId = appInputModel.ProviderCompanyId;
-        appEntity.AppStatusId = AppStatusId.CREATED;
-
-        var appLicense = appRepository.CreateAppLicenses(appInputModel.Price);
-        appRepository.CreateAppAssignedLicense(appEntity.Id, appLicense.Id);
+        var licenseId = appRepository.CreateAppLicenses(appInputModel.Price).Id;
+        appRepository.CreateAppAssignedLicense(appId, licenseId);
         appRepository.AddAppAssignedUseCases(appInputModel.UseCaseIds.Select(uc =>
-            ((Guid appId, Guid useCaseId)) new (appEntity.Id, uc)));
+            ((Guid appId, Guid useCaseId)) new (appId, uc)));
         appRepository.AddAppDescriptions(appInputModel.Descriptions.Select(d =>
-            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appEntity.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c =>
-            ((Guid appId, string languageShortName)) new (appEntity.Id, c)));
+            ((Guid appId, string languageShortName)) new (appId, c)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        return appEntity.Id;
+        return appId;
     }
 }
