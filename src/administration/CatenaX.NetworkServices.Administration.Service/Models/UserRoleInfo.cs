@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Text.Json.Serialization;
 namespace CatenaX.NetworkServices.Administration.Service.Models;
 
