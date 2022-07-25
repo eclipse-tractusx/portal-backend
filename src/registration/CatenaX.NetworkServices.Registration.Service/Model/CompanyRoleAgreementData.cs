@@ -1,5 +1,4 @@
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.Registration.Service.Model

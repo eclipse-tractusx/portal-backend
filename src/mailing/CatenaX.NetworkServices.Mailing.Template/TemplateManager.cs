@@ -2,10 +2,6 @@ using CatenaX.NetworkServices.Mailing.Template.Attributes;
 using CatenaX.NetworkServices.Mailing.Template.Enums;
 using CatenaX.NetworkServices.Mailing.Template.Model;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
