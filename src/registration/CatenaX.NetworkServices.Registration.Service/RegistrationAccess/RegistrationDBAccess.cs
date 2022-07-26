@@ -1,7 +1,5 @@
 ﻿using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Registration.Service.Model;
-using Microsoft.EntityFrameworkCore;
-
 using Dapper;
 
 namespace CatenaX.NetworkServices.Registration.Service.RegistrationAccess
