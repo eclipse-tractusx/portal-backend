@@ -67,7 +67,7 @@ public class NotificationController : ControllerBase
     public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromRoute] Guid companyUserId,
         [FromBody] NotificationCreationData data)
     {
-        var notificationDetailData = this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId));
+        var notificationDetailData = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetNotification), new { notificationId = notificationDetailData.Id }, notificationDetailData);
     }
 
@@ -144,7 +144,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await this.WithIamUserId(userId => this._logic.SetNotificationStatusAsync(userId, notificationId, isRead));
+        await this.WithIamUserId(userId => _logic.SetNotificationStatusAsync(userId, notificationId, isRead)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -165,7 +165,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
-        await this.WithIamUserId(userId => this._logic.DeleteNotificationAsync(userId, notificationId));
+        await this.WithIamUserId(userId => _logic.DeleteNotificationAsync(userId, notificationId)).ConfigureAwait(false);
         return NoContent();
     }
 }

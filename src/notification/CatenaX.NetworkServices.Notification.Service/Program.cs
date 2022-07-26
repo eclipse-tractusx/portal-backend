@@ -20,8 +20,6 @@
 
 #region
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Swagger;
@@ -37,7 +35,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json.Serialization;
 
 #endregion
 
