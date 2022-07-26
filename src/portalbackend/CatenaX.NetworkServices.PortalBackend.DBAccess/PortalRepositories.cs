@@ -20,7 +20,6 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
 
@@ -34,9 +33,14 @@ public class PortalRepositories : IPortalRepositories
     }
 
     /// <inheritdoc />
-    public TEntity Attach<TEntity>(TEntity entity)
+    public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null)
         where TEntity : class
-        => _dbContext.Attach(entity).Entity;
+    {
+        var attachedEntity = _dbContext.Attach(entity).Entity;
+        setOptionalParameters?.Invoke(attachedEntity);
+
+        return attachedEntity;
+    }
 
     /// <inheritdoc />
     public TEntity Remove<TEntity>(TEntity entity)
@@ -87,6 +91,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new IdentityProviderRepository(_dbContext));
         }
+        if (repositoryType == typeof(INotificationRepository))
+        {
+            return To<RepositoryType>(new NotificationRepository(_dbContext));
+        }
         if (repositoryType == typeof(IServiceAccountsRepository))
         {
             return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
@@ -107,8 +115,6 @@ public class PortalRepositories : IPortalRepositories
     }
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
-
-    public Task<IDbContextTransaction> BeginTransactionAsync() => _dbContext.Database.BeginTransactionAsync();
 
     private static T To<T>(dynamic value) => (T) value;
 }

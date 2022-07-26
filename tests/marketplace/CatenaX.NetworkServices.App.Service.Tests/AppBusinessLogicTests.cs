@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -46,6 +47,10 @@ namespace CatenaX.NetworkServices.App.Service.Tests
         public AppBusinessLogicTests()
         {
             _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+            _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+                .ForEach(b => _fixture.Behaviors.Remove(b));
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
             _portalRepositories = A.Fake<IPortalRepositories>();
             _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
             _appRepository = A.Fake<IAppRepository>();

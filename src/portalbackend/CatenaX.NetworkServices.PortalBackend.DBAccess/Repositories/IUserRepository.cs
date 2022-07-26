@@ -44,7 +44,7 @@ public interface IUserRepository
     /// <param name="userId">the iam userid the company user should be searched for.</param>
     /// <returns>Returns the id of the CompanyUser</returns>
     Task<Guid> GetCompanyUserIdForIamUserUntrackedAsync(string userId);
-    
+
     /// <summary>
     /// Get the IdpName ,UserId and Role Ids by CompanyUser and AdminUser Id
     /// </summary>
@@ -57,7 +57,7 @@ public interface IUserRepository
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
-    
+
     /// <summary>
     /// GGets all apps for the give user from the persistence layer.
     /// </summary>
@@ -66,9 +66,18 @@ public interface IUserRepository
     IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId);
 
     /// <summary>
-    /// Gets all business app data for the given userId 
+    /// Gets all business app data for the given userId
     /// </summary>
     /// <param name="userId">Id of the user to get the app data for.</param>
     /// <returns>Returns an IAsyncEnumerable of <see cref="BusinessAppData"/></returns>
     IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
+
+    /// <summary>
+    /// Gets the company user ids and checks if its the given iamUser
+    /// </summary>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="companyUserId">The id of the company user to check in the persistence layer.</param>
+    /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
+        Guid companyUserId);
 }
