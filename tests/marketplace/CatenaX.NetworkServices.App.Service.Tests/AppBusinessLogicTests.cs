@@ -26,15 +26,11 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.Tests.Shared;
-using FluentAssertions;
 using Xunit;
 
 namespace CatenaX.NetworkServices.App.Service.Tests
