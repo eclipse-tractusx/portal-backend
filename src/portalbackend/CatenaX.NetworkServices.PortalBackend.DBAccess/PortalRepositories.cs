@@ -103,6 +103,10 @@ public class PortalRepositories : IPortalRepositories
         {
             return To<RepositoryType>(new UserRolesRepository(_dbContext));
         }
+        if (repositoryType == typeof(IStaticDataRepository))
+        {
+            return To<RepositoryType>(new StaticDataRepository(_dbContext));
+        }
         throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));
     }
 
