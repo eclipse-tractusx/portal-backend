@@ -80,4 +80,17 @@ public interface IUserRepository
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
     IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
         Guid companyUserId);
+
+    /// <summary>
+    /// Gets the id of the CX Admin
+    /// </summary>
+    /// <returns>Returns the id of the CX Admin</returns>
+    Task<Guid> GetCxAdminIdAsync();
+
+    /// <summary>
+    /// Gets the id of the company admin for the given company
+    /// </summary>
+    /// <param name="companyId">Id of the company to retrieve the user id</param>
+    /// <returns>Returns the Id of the Company Admin</returns>
+    Task<Guid> GetCompanyAdminIdAsync(Guid companyId);
 }
