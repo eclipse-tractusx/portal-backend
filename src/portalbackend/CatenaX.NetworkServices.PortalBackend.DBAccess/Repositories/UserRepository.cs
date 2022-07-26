@@ -260,4 +260,18 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
             .Select(companyUser => ((Guid CompanyUserId, bool IsIamUser)) new (companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<Guid> GetCxAdminIdAsync() =>
+        _dbContext.CompanyUsers
+            .Where(x => x.Company!.Name == Constants.CatenaXCompanyName && x.Lastname == Constants.CxAdminUsername)
+            .Select(x => x.Id)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<Guid> GetCompanyAdminIdAsync(Guid companyId) =>
+        _dbContext.CompanyUsers
+            .Where(x => x.CompanyId == companyId && x.UserRoles.Any(x => x.UserRoleText == Constants.CompanyAdminRole))
+            .Select(x => x.Id)
+            .SingleOrDefaultAsync();
 }
