@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
