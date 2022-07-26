@@ -18,35 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+
+namespace CatenaX.NetworkServices.Framework.Notifications;
 
 /// <summary>
-/// Provides constant values
+///     Business logic to work with the notifications
 /// </summary>
-public static class Constants
+public interface INotificationService
 {
     /// <summary>
-    /// Default value for an Error String
+    ///     Creates a new internal triggered Notification.
     /// </summary>
-    public const string ErrorString = "ERROR";
-    
-    /// <summary>
-    /// The default language
-    /// </summary>
-    public const string DefaultLanguage = "en";
+    /// <param name="receiverId">Id of the company user that should receive the notifications</param>
+    /// <returns>Returns information of the created notification</returns>
+    Task CreateWelcomeNotifications(Guid receiverId);
 
     /// <summary>
-    /// Company Name for Catena-X
+    ///     Creates a new Notification with the given data
     /// </summary>
-    public const string CatenaXCompanyName = "Catena-X";
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="creationData">The data for the creation of the notification.</param>
+    /// <param name="receiverId">Id of the company user the notification is intended for.</param>
+    Task<NotificationDetailData> CreateNotificationAsync(string iamUserId, NotificationCreationData creationData,
+        Guid receiverId);
 
-    /// <summary>
-    /// Name of the CX Admin
-    /// </summary>
-    public const string CxAdminUsername = "CX Admin";
-
-    /// <summary>
-    /// Name of the Company Admin role
-    /// </summary>
-    public const string CompanyAdminRole = "Company Admin";
 }

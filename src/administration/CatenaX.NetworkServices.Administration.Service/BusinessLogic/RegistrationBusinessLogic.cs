@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -40,7 +41,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
-    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService)
+    private readonly INotificationService _notifcationService;
+
+    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService, INotificationService notifcationService)
     {
         _portalRepositories = portalRepositories;
         _applicationRepository = portalRepositories.GetInstance<IApplicationRepository>();
@@ -48,6 +51,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _provisioningManager = provisioningManager;
         _custodianService = custodianService;
         _mailingService = mailingService;
+        _notifcationService = notifcationService;
     }
 
     public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
@@ -132,7 +136,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
-        await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
+        var invitedUserData = _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false);
+        await foreach (var userData in invitedUserData)
         {
             assignedRoles  = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
             
@@ -167,6 +172,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 throw new Exception($"inconsistend data, roles not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
             }
         }
+
+        var companyAdminId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyAdminIdAsync(companyApplication.CompanyId).ConfigureAwait(false);
+        await _notifcationService.CreateWelcomeNotifications(companyAdminId).ConfigureAwait(false);
         return true;
     }
 
