@@ -22,6 +22,7 @@
 
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
@@ -88,6 +89,7 @@ builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformatio
 builder.Services.AddTransient<IKeycloakFactory, KeycloakFactory>()
     .ConfigureKeycloakSettingsMap(builder.Configuration.GetSection("Keycloak"));
 
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>();
 builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 

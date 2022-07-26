@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Notifications\CatenaX.NetworkServices.Framework.Notifications.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Swagger\CatenaX.NetworkServices.Framework.Swagger.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj" />
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
