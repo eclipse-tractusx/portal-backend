@@ -299,7 +299,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <remarks>Example: Post: /api/registration/submitregistration</remarks>
         /// <response code="200">Successfully submitted the registration</response>
         [HttpPost]
-        [Authorize(Roles = "submit_registration")]
+        // [Authorize(Roles = "submit_registration")]
         [Route("application/{applicationId}/submitRegistration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
