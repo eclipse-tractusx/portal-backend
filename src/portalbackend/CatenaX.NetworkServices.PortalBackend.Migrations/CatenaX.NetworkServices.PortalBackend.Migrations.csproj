@@ -25,6 +25,7 @@
     <None Update="secrets\appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Remove="efbundle.exe" />
   </ItemGroup>
 
 </Project>
