@@ -59,7 +59,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             notification => 
             {
                 notification.DueDate = dueDate;
-                notification.CreatorUserId = users.Single(x => x.iamUser).CompanyUserId;
+                notification.CreatorUserId = users.Single(x => x.IsIamUser).CompanyUserId;
                 notification.Content = content;
             });
 
@@ -102,22 +102,25 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task SetNotificationStatusAsync(string iamUserId, Guid notificationId, bool isRead)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndIamUserIdAsync(notificationId, iamUserId).ConfigureAwait(false);
-        if (result == default || !result.IsNotificationExisting)
+        await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
+
+        _portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId), notification => 
         {
-            throw new NotFoundException($"Notification {notificationId} does not exist.");
-        }
-        if (!result.IsUserReceiver)
-        {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not the receiver of the notification");
-        }
-        var notification =_portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId));
-        notification.IsRead = isRead;
+            notification.IsRead = isRead;
+        });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task DeleteNotificationAsync(string iamUserId, Guid notificationId)
+    {
+        await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
+
+        _portalRepositories.Remove(new PortalBackend.PortalEntities.Entities.Notification(notificationId));
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task CheckNotificationExistsAndIamUserIsReceiver(Guid notificationId, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndIamUserIdAsync(notificationId, iamUserId).ConfigureAwait(false);
         if (result == default || !result.IsNotificationExisting)
@@ -128,9 +131,5 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not the receiver of the notification");
         }
-
-        var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId);
-        _portalRepositories.Remove(notification);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
