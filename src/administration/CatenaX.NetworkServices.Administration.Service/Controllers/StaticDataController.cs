@@ -56,7 +56,7 @@ public class StaticDataController : ControllerBase
     /// <response code="200">Returns a list of all of the use case data.</response>
     [HttpGet]
     [Authorize(Roles = "view_use_cases")]
-    [Route("app")]
+    [Route("usecases")]
     [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UseCaseData> GetUseCases() =>
         _logic.GetAllUseCase();
