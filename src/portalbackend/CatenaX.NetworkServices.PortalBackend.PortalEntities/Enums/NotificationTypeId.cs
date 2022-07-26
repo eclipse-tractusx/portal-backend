@@ -18,29 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public interface IPortalRepositories
+/// <summary>
+/// Possible types of a notification
+/// </summary>
+public enum NotificationTypeId : int
 {
     /// <summary>
-    /// Attaches the given Entity to the database
+    /// Notification is just an information for the user
     /// </summary>
-    /// <param name="entity">the entity that should be attached to the database</param>
-    /// <typeparam name="TEntity">Type of the entity</typeparam>
-    /// <returns>Returns the attached entity</returns>
-    TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null)
-        where TEntity : class;
-
+    INFO = 1,
+    
     /// <summary>
-    /// Removes the given entity from the database
+    /// Notification requires the user to take some kind of action
     /// </summary>
-    /// <param name="entity">the entity that should be removed to the database</param>
-    /// <typeparam name="TEntity">Type of the entity</typeparam>
-    /// <returns>Returns the attached entity</returns>
-    TEntity Remove<TEntity>(TEntity entity)
-        where TEntity : class;
-
-    public T GetInstance<T>();
-
-    public Task<int> SaveAsync();
+    ACTION = 2
 }
