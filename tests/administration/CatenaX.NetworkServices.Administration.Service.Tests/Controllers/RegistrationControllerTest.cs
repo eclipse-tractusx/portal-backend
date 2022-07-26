@@ -1,12 +1,10 @@
 using AutoFixture;
 using FakeItEasy;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using CatenaX.NetworkServices.Administration.Service.Controllers;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using Microsoft.Extensions.Logging;
 
 namespace CatenaX.NetworkServices.Administration.Service.Tests
 {
