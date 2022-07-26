@@ -34,6 +34,7 @@ using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 namespace CatenaX.NetworkServices.Administration.Service.Tests
@@ -52,6 +53,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
         private readonly IRegistrationBusinessLogic _logic;
         private readonly IOptions<RegistrationSettings> _options;
         private readonly RegistrationSettings _settings;
+        private readonly NotificationService _notificationService;
 
         public RegistrationBusinessLogicTest()
         {
@@ -69,13 +71,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             _custodianService = A.Fake<ICustodianService>();
             _options = A.Fake<IOptions<RegistrationSettings>>();
             _settings = A.Fake<RegistrationSettings>();
+            _notificationService = A.Fake<NotificationService>();
 
             A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
             A.CallTo(() => _options.Value).Returns(_settings);
 
-            _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _provisioningManager, _custodianService, _mailingService);
+            _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _provisioningManager, _custodianService, _mailingService, _notificationService);
         }
         [Fact]
         public async Task Test3()

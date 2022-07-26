@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -99,7 +100,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
-            _logic.ApprovePartnerRequest(applicationId);
+        _logic.ApprovePartnerRequest(applicationId);
 
     /// <summary>
     /// Decline the Partner Registration Request
