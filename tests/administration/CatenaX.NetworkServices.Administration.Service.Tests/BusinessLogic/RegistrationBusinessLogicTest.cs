@@ -53,7 +53,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
         private readonly IRegistrationBusinessLogic _logic;
         private readonly IOptions<RegistrationSettings> _options;
         private readonly RegistrationSettings _settings;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
         public RegistrationBusinessLogicTest()
         {
@@ -71,7 +71,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             _custodianService = A.Fake<ICustodianService>();
             _options = A.Fake<IOptions<RegistrationSettings>>();
             _settings = A.Fake<RegistrationSettings>();
-            _notificationService = A.Fake<NotificationService>();
+            _notificationService = A.Fake<INotificationService>();
 
             A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
@@ -167,6 +167,9 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
 
             A.CallTo(() => _custodianService.CreateWallet(businessPartnerNumber, companyName))
                 .Returns(Task.CompletedTask);
+
+            A.CallTo(() => _notificationService.CreateWelcomeNotificationsForCompany(company.Id))
+                .ReturnsLazily(() => Task.CompletedTask);
 
             //Act
             var result = await _logic.ApprovePartnerRequest(id).ConfigureAwait(false);

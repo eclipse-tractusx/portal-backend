@@ -8,12 +8,31 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220726145010_CPLP-1247-AddWelcomNotificationStatus")]
-    partial class CPLP1247AddWelcomNotificationStatus
+    [Migration("20220727075415_CPLP-1247-ExtendNotificationTypes")]
+    partial class CPLP1247ExtendNotificationTypes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -3631,7 +3650,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         new
                         {
                             Id = 3,
-                            Label = "WELCOME_WELCOME"
+                            Label = "WELCOME"
                         },
                         new
                         {
@@ -3652,6 +3671,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 7,
                             Label = "WELCOME_APP_MARKETPLACE"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "APP_SUBSCRIPTION_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "APP_SUBSCRIPTION_ACTIVATION"
                         });
                 });
 
