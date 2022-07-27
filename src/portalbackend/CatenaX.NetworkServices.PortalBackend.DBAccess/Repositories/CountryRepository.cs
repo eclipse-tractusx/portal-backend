@@ -31,7 +31,7 @@ public class CountryRepository : ICountryRepository
     /// Creates an instance of <see cref="CountryRepository"/>
     /// </summary>
     /// <param name="portalDbContext">The database</param>
-    private CountryRepository(PortalDbContext portalDbContext)
+    public CountryRepository(PortalDbContext portalDbContext)
     {
         _portalDbContext = portalDbContext;
     }

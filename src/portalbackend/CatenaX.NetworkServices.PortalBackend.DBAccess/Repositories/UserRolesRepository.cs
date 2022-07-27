@@ -9,7 +9,7 @@ public class UserRolesRepository : IUserRolesRepository
 {
     private readonly PortalDbContext _dbContext;
 
-    private UserRolesRepository(PortalDbContext portalDbContext)
+    public UserRolesRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }

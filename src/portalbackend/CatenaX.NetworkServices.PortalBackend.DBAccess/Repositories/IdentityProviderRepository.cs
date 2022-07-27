@@ -13,7 +13,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     /// Constructor.
     /// </summary>
     /// <param name="portalDbContext">Portal DB context.</param>
-    private IdentityProviderRepository(PortalDbContext portalDbContext)
+    public IdentityProviderRepository(PortalDbContext portalDbContext)
     {
         _context = portalDbContext;
     }

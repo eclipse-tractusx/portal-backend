@@ -35,7 +35,7 @@ public class NotificationRepository : INotificationRepository
     ///     Creates a new instance of <see cref="NotificationRepository" />
     /// </summary>
     /// <param name="dbContext">Access to the database</param>
-    private NotificationRepository(PortalDbContext dbContext)
+    public NotificationRepository(PortalDbContext dbContext)
     {
         _dbContext = dbContext;
     }

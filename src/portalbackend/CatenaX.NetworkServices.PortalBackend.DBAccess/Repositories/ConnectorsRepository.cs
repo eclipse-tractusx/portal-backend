@@ -35,7 +35,7 @@ public class ConnectorsRepository : IConnectorsRepository
     /// Constructor.
     /// </summary>
     /// <param name="portalDbContext">PortalDb context.</param>
-    private ConnectorsRepository(PortalDbContext portalDbContext)
+    public ConnectorsRepository(PortalDbContext portalDbContext)
     {
         this._context = portalDbContext;
     }

@@ -10,7 +10,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
 {
     private readonly PortalDbContext _dbContext;
 
-    private ServiceAccountRepository(PortalDbContext portalDbContext)
+    public ServiceAccountRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }
