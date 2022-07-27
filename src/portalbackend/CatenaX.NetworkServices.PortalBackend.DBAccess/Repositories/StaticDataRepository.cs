@@ -20,7 +20,6 @@
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -34,17 +33,15 @@ public class StaticDataRepository : IStaticDataRepository
     /// Constructor
     /// </summary>
     /// <param name="portalDbContext">PortalDb context.</param>
-    private StaticDataRepository(PortalDbContext portalDbContext)
+    public StaticDataRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseData> GetAllUseCase()
-    =>
+    public IAsyncEnumerable<UseCaseData> GetAllUseCase() =>
         _dbContext.UseCases
             .AsNoTracking()
             .Select(s => new UseCaseData(s.Id, s.Name, s.Shortname))
             .ToAsyncEnumerable();
-    
 }

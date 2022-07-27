@@ -61,7 +61,7 @@ public class PortalRepositories : IPortalRepositories
             repository = (RepositoryType?)
                 Activator.CreateInstance(
                     _types[typeof(RepositoryType)],
-                    BindingFlags.Instance | BindingFlags.NonPublic,
+                    BindingFlags.Instance | BindingFlags.Public,
                     null,
                     new [] { _dbContext },
                     null
@@ -86,6 +86,4 @@ public class PortalRepositories : IPortalRepositories
         => _dbContext.Remove(entity).Entity;
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
-
-    private static T To<T>(dynamic value) => (T) value;
 }

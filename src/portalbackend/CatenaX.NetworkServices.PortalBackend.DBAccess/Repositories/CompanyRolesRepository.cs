@@ -10,7 +10,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
 {
     private readonly PortalDbContext _dbContext;
 
-    private CompanyRolesRepository(PortalDbContext portalDbContext)
+    public CompanyRolesRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }

@@ -35,7 +35,7 @@ public class AppRepository : IAppRepository
     /// Constructor.
     /// </summary>
     /// <param name="portalDbContext">PortalDb context.</param>
-    private AppRepository(PortalDbContext portalDbContext)
+    public AppRepository(PortalDbContext portalDbContext)
     {
         this._context = portalDbContext;
     }
