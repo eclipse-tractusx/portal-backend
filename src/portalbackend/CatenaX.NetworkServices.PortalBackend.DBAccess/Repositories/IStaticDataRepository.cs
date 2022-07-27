@@ -33,11 +33,12 @@ public interface IStaticDataRepository
     /// Retrieves all Use Case.
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="UseCaseData"/></returns>
-    IAsyncEnumerable<UseCaseData?> GetAllUseCase();
+    IAsyncEnumerable<UseCaseData> GetAllUseCase();
     
     /// <summary>
     /// Retrieves all Language.
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
-    IAsyncEnumerable<LanguageData?> GetAllLanguage();
+    IAsyncEnumerable<LanguageData> GetAllLanguage();
+    
 }

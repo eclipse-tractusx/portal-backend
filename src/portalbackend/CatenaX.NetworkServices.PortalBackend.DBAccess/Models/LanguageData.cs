@@ -60,4 +60,5 @@ public class LanguageData
     /// <value>languageShortNameEn</value>
     [JsonPropertyName("languageShortNameEn")]
     public string LongNameEn { get; set; }
+    
 }

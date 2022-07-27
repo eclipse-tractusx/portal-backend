@@ -31,11 +31,12 @@ public interface IStaticDataBusinessLogic
     /// Get all Use Case.
     /// </summary>
     /// <returns>AsyncEnumerable of the result Use Case</returns>
-    IAsyncEnumerable<UseCaseData?> GetAllUseCase();
+    IAsyncEnumerable<UseCaseData> GetAllUseCase();
 
     /// <summary>
     /// Get all Language.
     /// </summary>
     /// <returns>AsyncEnumerable of the result Language</returns>
-    IAsyncEnumerable<LanguageData?> GetAllLanguage();
+    IAsyncEnumerable<LanguageData> GetAllLanguage();
+
 }
