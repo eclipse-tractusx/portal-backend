@@ -32,7 +32,7 @@ public interface INotificationService
     /// </summary>
     /// <param name="companyId">Id of the company the admin should be retrieved</param>
     /// <returns>Returns information of the created notification</returns>
-    Task CreateWelcomeNotificationsForCompany(Guid companyId);
+    Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId);
 
     /// <summary>
     ///     Creates a new Notification with the given data

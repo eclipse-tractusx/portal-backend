@@ -172,7 +172,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             }
         }
 
-        await _notifcationService.CreateWelcomeNotificationsForCompany(companyApplication.CompanyId).ConfigureAwait(false);
+        await _notifcationService.CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
         return true;
     }
 
