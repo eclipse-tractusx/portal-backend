@@ -22,7 +22,7 @@ name: Sonarcloud
 on:
   push:
     branches:
-      - feature/CPLP-1281-sonarcloud-workflow-3
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
