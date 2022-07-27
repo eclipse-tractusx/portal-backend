@@ -30,15 +30,9 @@ public interface INotificationService
     /// <summary>
     ///     Creates a new internal triggered Notification.
     /// </summary>
-<<<<<<< HEAD
     /// <param name="companyId">Id of the company the admin should be retrieved</param>
     /// <returns>Returns information of the created notification</returns>
-    Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId);
-=======
-    /// <param name="receiverId">Id of the company user that should receive the notifications</param>
-    /// <returns>Returns information of the created notification</returns>
-    Task CreateWelcomeNotifications(Guid receiverId);
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
+    Task CreateWelcomeNotificationsForCompany(Guid companyId);
 
     /// <summary>
     ///     Creates a new Notification with the given data

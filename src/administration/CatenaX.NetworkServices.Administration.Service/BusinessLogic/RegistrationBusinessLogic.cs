@@ -136,8 +136,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
-        var invitedUserData = _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false);
-        await foreach (var userData in invitedUserData)
+        await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
         {
             assignedRoles  = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
             
@@ -173,12 +172,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             }
         }
 
-<<<<<<< HEAD
-        await _notifcationService.CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
-=======
-        var companyAdminId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyAdminIdAsync(companyApplication.CompanyId).ConfigureAwait(false);
-        await _notifcationService.CreateWelcomeNotifications(companyAdminId).ConfigureAwait(false);
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
+        await _notifcationService.CreateWelcomeNotificationsForCompany(companyApplication.CompanyId).ConfigureAwait(false);
         return true;
     }
 

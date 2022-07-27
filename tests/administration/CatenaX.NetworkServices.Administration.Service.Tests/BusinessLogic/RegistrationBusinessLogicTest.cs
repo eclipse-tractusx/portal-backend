@@ -53,11 +53,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
         private readonly IRegistrationBusinessLogic _logic;
         private readonly IOptions<RegistrationSettings> _options;
         private readonly RegistrationSettings _settings;
-<<<<<<< HEAD
         private readonly INotificationService _notificationService;
-=======
-        private readonly NotificationService _notificationService;
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 
         public RegistrationBusinessLogicTest()
         {
@@ -75,11 +71,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             _custodianService = A.Fake<ICustodianService>();
             _options = A.Fake<IOptions<RegistrationSettings>>();
             _settings = A.Fake<RegistrationSettings>();
-<<<<<<< HEAD
             _notificationService = A.Fake<INotificationService>();
-=======
-            _notificationService = A.Fake<NotificationService>();
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 
             A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
@@ -176,7 +168,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             A.CallTo(() => _custodianService.CreateWallet(businessPartnerNumber, companyName))
                 .Returns(Task.CompletedTask);
 
-            A.CallTo(() => _notificationService.CreateWelcomeNotificationsForCompanyAsync(company.Id))
+            A.CallTo(() => _notificationService.CreateWelcomeNotificationsForCompany(company.Id))
                 .ReturnsLazily(() => Task.CompletedTask);
 
             //Act

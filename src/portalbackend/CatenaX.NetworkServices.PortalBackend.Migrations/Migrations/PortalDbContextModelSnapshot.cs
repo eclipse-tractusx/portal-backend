@@ -3629,11 +3629,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         new
                         {
                             Id = 3,
-<<<<<<< HEAD
                             Label = "WELCOME"
-=======
-                            Label = "WELCOME_WELCOME"
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
                         },
                         new
                         {
@@ -3654,7 +3650,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 7,
                             Label = "WELCOME_APP_MARKETPLACE"
-<<<<<<< HEAD
                         },
                         new
                         {
@@ -3665,8 +3660,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 9,
                             Label = "APP_SUBSCRIPTION_ACTIVATION"
-=======
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
                         });
                 });
 

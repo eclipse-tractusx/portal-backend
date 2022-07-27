@@ -82,23 +82,9 @@ public interface IUserRepository
         Guid companyUserId);
 
     /// <summary>
-<<<<<<< HEAD
     /// Gets the id of the company admin for the given company and the id of the catena x admin
     /// </summary>
     /// <param name="companyId">Id of the company to retrieve the user id</param>
     /// <returns>Returns the Id of the user and identifier whether the user is the catena x admin or a company admin</returns>
     IAsyncEnumerable<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> GetCatenaAndCompanyAdminIdAsync(Guid companyId);
-=======
-    /// Gets the id of the CX Admin
-    /// </summary>
-    /// <returns>Returns the id of the CX Admin</returns>
-    Task<Guid> GetCxAdminIdAsync();
-
-    /// <summary>
-    /// Gets the id of the company admin for the given company
-    /// </summary>
-    /// <param name="companyId">Id of the company to retrieve the user id</param>
-    /// <returns>Returns the Id of the Company Admin</returns>
-    Task<Guid> GetCompanyAdminIdAsync(Guid companyId);
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 }

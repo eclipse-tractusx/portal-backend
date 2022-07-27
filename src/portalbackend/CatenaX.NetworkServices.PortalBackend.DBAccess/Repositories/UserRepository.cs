@@ -270,16 +270,10 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<Guid> GetCxAdminIdAsync() =>
+    public IAsyncEnumerable<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> GetCatenaAndCompanyAdminIdAsync(Guid companyId) =>
         _dbContext.CompanyUsers
-            .Where(x => x.Company!.Name == Constants.CatenaXCompanyName && x.Lastname == Constants.CxAdminUsername)
-            .Select(x => x.Id)
-            .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public Task<Guid> GetCompanyAdminIdAsync(Guid companyId) =>
-        _dbContext.CompanyUsers
-            .Where(x => x.CompanyId == companyId && x.UserRoles.Any(x => x.UserRoleText == Constants.CompanyAdminRole))
-            .Select(x => x.Id)
-            .SingleOrDefaultAsync();
+            .Where(x => (x.Company!.Name == Constants.CatenaXCompanyName && x.Lastname == Constants.CxAdminUsername) ||
+                        (x.CompanyId == companyId && x.UserRoles.Any(x => x.UserRoleText == Constants.CompanyAdminRole)))
+            .Select(x => ((Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)) new (x.Id, x.Lastname == Constants.CxAdminUsername, x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == Constants.CompanyAdminRole)))
+            .ToAsyncEnumerable();
 }
