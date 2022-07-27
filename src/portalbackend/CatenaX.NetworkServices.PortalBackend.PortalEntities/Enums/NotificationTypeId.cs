@@ -38,7 +38,7 @@ public enum NotificationTypeId : int
     /// <summary>
     /// Welcome message
     /// </summary>
-    WELCOME_WELCOME = 3,
+    WELCOME = 3,
 
     /// <summary>
     /// Welcome use case explination
@@ -56,7 +56,17 @@ public enum NotificationTypeId : int
     WELCOME_CONNECTOR_REGISTRATION = 6,
 
     /// <summary>
-    ///  Welcome - link to apps
+    /// Welcome - link to apps
     /// </summary>
-    WELCOME_APP_MARKETPLACE = 7
+    WELCOME_APP_MARKETPLACE = 7,
+
+    /// <summary>
+    /// New App Subscription was requested
+    /// </summary>
+    APP_SUBSCRIPTION_REQUEST = 8,
+
+    /// <summary>
+    /// New App Subscription was activated
+    /// </summary>
+    APP_SUBSCRIPTION_ACTIVATION = 9,
 }

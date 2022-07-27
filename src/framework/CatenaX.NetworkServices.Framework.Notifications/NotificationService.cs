@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -40,26 +41,33 @@ public class NotificationService : INotificationService
     }
 
     /// <inheritdoc />
-    public async Task CreateWelcomeNotifications(Guid receiverId)
+    public async Task CreateWelcomeNotificationsForCompany(Guid companyId)
     {
+        var userIds = await _portalRepositories.GetInstance<IUserRepository>().GetCatenaAndCompanyAdminIdAsync(companyId).ToListAsync().ConfigureAwait(false);
+        if (userIds.All(x => !x.IsCatenaXAdmin))
+        {
+            throw new NotFoundException("No CatenaX Admin found");
+        }
 
-        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCxAdminIdAsync().ConfigureAwait(false);
+        if (userIds.All(x => !x.IsCompanyAdmin))
+        {
+            throw new NotFoundException($"No Company Admin found for company {companyId}");
+        }
 
         foreach (var typeId in new[] {
-                     NotificationTypeId.WELCOME_WELCOME,
+                     NotificationTypeId.WELCOME,
                      NotificationTypeId.WELCOME_USE_CASES,
                      NotificationTypeId.WELCOME_SERVICE_PROVIDER,
                      NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION,
                      NotificationTypeId.WELCOME_APP_MARKETPLACE,
                  })
         {
-            _portalRepositories.GetInstance<INotificationRepository>().Create(receiverId, typeId, false,
+            _portalRepositories.GetInstance<INotificationRepository>().Create(userIds.Single(x => x.IsCompanyAdmin).CompanyUserId, typeId, false,
                 notification =>
                 {
-                    notification.CreatorUserId = creatorId;
+                    notification.CreatorUserId = userIds.Single(x => x.IsCatenaXAdmin).CompanyUserId;
                 });
         }
-
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -88,6 +96,6 @@ public class NotificationService : INotificationService
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return new NotificationDetailData(notification.Id, content, dueDate, notificationTypeId, notificationStatusId);
+        return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notificationStatusId, content, dueDate);
     }
 }
