@@ -15,7 +15,7 @@ public class DocumentRepository : IDocumentRepository
     /// Constructor.
     /// </summary>
     /// <param name="dbContext">PortalDb context.</param>
-    public DocumentRepository(PortalDbContext dbContext)
+    private DocumentRepository(PortalDbContext dbContext)
     {
         this._dbContext = dbContext;
     }

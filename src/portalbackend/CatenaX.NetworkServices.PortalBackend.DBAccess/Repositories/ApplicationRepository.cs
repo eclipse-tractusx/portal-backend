@@ -10,7 +10,7 @@ public class ApplicationRepository : IApplicationRepository
 {
     private readonly PortalDbContext _dbContext;
 
-    public ApplicationRepository(PortalDbContext portalDbContext)
+    private ApplicationRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }

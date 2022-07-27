@@ -34,7 +34,7 @@ public class StaticDataRepository : IStaticDataRepository
     /// Constructor
     /// </summary>
     /// <param name="portalDbContext">PortalDb context.</param>
-    public StaticDataRepository(PortalDbContext portalDbContext)
+    private StaticDataRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }

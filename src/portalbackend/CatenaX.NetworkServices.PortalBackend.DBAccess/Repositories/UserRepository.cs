@@ -36,7 +36,7 @@ public class UserRepository : IUserRepository
     /// Constructor
     /// </summary>
     /// <param name="portalDbContext">PortalDb context.</param>
-    public UserRepository(PortalDbContext portalDbContext)
+    private UserRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }
