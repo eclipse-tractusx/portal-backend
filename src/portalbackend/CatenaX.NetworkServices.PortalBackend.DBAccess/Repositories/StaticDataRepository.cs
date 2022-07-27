@@ -40,7 +40,7 @@ public class StaticDataRepository : IStaticDataRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<UseCaseData?> GetAllUseCase()
+    public IAsyncEnumerable<UseCaseData> GetAllUseCase()
     =>
         _dbContext.UseCases
             .AsNoTracking()
@@ -48,7 +48,7 @@ public class StaticDataRepository : IStaticDataRepository
             .ToAsyncEnumerable();
     
     /// <inheritdoc />
-    public IAsyncEnumerable<LanguageData?> GetAllLanguage()
+    public IAsyncEnumerable<LanguageData> GetAllLanguage()
     =>
         _dbContext.Languages
             .AsNoTracking()
