@@ -35,7 +35,7 @@ public class CompanyRepository : ICompanyRepository
     /// Constructor.
     /// </summary>
     /// <param name="portalDbContext">Portal DB context.</param>
-    public CompanyRepository(PortalDbContext portalDbContext)
+    private CompanyRepository(PortalDbContext portalDbContext)
     {
         _context = portalDbContext;
     }

@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-public class ServiceAccountRepository : IServiceAccountsRepository
+public class ServiceAccountRepository : IServiceAccountRepository
 {
     private readonly PortalDbContext _dbContext;
 
-    public ServiceAccountRepository(PortalDbContext portalDbContext)
+    private ServiceAccountRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }

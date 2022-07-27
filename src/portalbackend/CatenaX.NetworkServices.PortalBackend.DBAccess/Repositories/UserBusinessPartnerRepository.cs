@@ -8,7 +8,7 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
 {
     private readonly PortalDbContext _dbContext;
 
-    public UserBusinessPartnerRepository(PortalDbContext portalDbContext)
+    private UserBusinessPartnerRepository(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
     }

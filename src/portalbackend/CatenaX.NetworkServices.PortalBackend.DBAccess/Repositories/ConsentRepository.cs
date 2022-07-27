@@ -12,7 +12,7 @@ public class ConsentRepository : IConsentRepository
     /// Creates an instance of <see cref="ConsentRepository"/>
     /// </summary>
     /// <param name="portalDbContext">The database</param>
-    public ConsentRepository(PortalDbContext portalDbContext)
+    private ConsentRepository(PortalDbContext portalDbContext)
     {
         _portalDbContext = portalDbContext;
     }
