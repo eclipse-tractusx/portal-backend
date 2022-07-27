@@ -41,7 +41,7 @@ public class NotificationService : INotificationService
     }
 
     /// <inheritdoc />
-    public async Task CreateWelcomeNotificationsForCompany(Guid companyId)
+    public async Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId)
     {
         var userIds = await _portalRepositories.GetInstance<IUserRepository>().GetCatenaAndCompanyAdminIdAsync(companyId).ToListAsync().ConfigureAwait(false);
         if (userIds.All(x => !x.IsCatenaXAdmin))
