@@ -168,7 +168,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
             A.CallTo(() => _custodianService.CreateWallet(businessPartnerNumber, companyName))
                 .Returns(Task.CompletedTask);
 
-            A.CallTo(() => _notificationService.CreateWelcomeNotificationsForCompany(company.Id))
+            A.CallTo(() => _notificationService.CreateWelcomeNotificationsForCompanyAsync(company.Id))
                 .ReturnsLazily(() => Task.CompletedTask);
 
             //Act
