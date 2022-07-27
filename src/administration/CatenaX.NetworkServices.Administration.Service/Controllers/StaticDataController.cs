@@ -60,4 +60,19 @@ public class StaticDataController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UseCaseData> GetUseCases() =>
         _logic.GetAllUseCase();
+    
+    /// <summary>
+    /// Retrieves all Language
+    /// </summary>
+    /// <returns>AsyncEnumerable of Language Data</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/staticdata/languagetags
+    /// </remarks>
+    /// <response code="200">Returns a list of all of the Language data.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_app_language")]
+    [Route("languagetags")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<LanguageData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<LanguageData> GetLanguages() =>
+        _logic.GetAllLanguage();
 }
