@@ -90,6 +90,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Invitation> Invitations { get; set; } = default!;
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
+    public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -665,6 +666,34 @@ public class PortalDbContext : DbContext
 
             entity.HasData(StaticPortalData.Languages);
         });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(x => x.DueDate)
+                .IsRequired(false);
+
+            entity.HasOne(d => d.Receiver)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.ReceiverUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Creator)
+                .WithMany(p => p!.CreatedNotifications)
+                .HasForeignKey(d => d.CreatorUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.NotificationType)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.NotificationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NotificationType>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationTypeId))
+                    .Cast<NotificationTypeId>()
+                    .Select(e => new NotificationType(e))
+            );
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
 

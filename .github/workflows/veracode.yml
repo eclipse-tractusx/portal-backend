@@ -21,8 +21,8 @@
 name: "Veracode"
 
 on:
-  # push:
-  #   branches: [ main ]
+  #  push:
+  #    branches: [ feature/CPLP-1134-db-notification ]
   # pull_request:
   # The branches below must be a subset of the branches above
   # branches: [ main ]
@@ -305,3 +305,48 @@ jobs:
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'CatenaX.NetworkServices.Maintenance.App.dll'
+
+  analyze-notification-service:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore src/notification/CatenaX.NetworkServices.Notification.Service
+
+      - name: Build and publish
+        run: |
+          cd src/notification/CatenaX.NetworkServices.Notification.Service
+          dotnet build --no-restore
+          dotnet publish -c Debug  -p:PublishDir=.\publish
+
+      - name: "Bundle files to scan"
+        run: >
+          zip -r portal-backend-notification.zip
+          src/notification/CatenaX.NetworkServices.Notification.Service/.publish
+          -x
+          src/notification/CatenaX.NetworkServices.Notification.Service/.publish/CatenaX.NetworkServices.Notification.Service
+
+      - name: Run Veracode Upload And Scan
+        uses: veracode/veracode-uploadandscan-action@0.2.1
+        with:
+          # Specify Veracode application name
+          appname: "Portal-Backend_Notification-Service"
+          createprofile: true
+          teams: 'portal'
+          # Specify path to upload
+          filepath: "portal-backend-notification.zip"
+          vid: "${{ secrets.ORG_VERACODE_API_ID }}"
+          vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
+          include: 'CatenaX.NetworkServices.Notification.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
