@@ -47,4 +47,12 @@ public class StaticDataRepository : IStaticDataRepository
             .Select(s => new UseCaseData(s.Id, s.Name, s.Shortname))
             .ToAsyncEnumerable();
     
+    /// <inheritdoc />
+    public IAsyncEnumerable<LanguageData?> GetAllLanguage()
+    =>
+        _dbContext.Languages
+            .AsNoTracking()
+            .Select(s => new LanguageData(s.ShortName, s.LongNameDe, s.LongNameEn))
+            .ToAsyncEnumerable();
+    
 }

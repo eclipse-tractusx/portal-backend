@@ -40,8 +40,12 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<UseCaseData?> GetAllUseCase()
-    {
-       return  this._portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
-    }
+    public IAsyncEnumerable<UseCaseData?> GetAllUseCase() =>
+         this._portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
+
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<LanguageData?> GetAllLanguage() =>
+         this._portalRepositories.GetInstance<IStaticDataRepository>().GetAllLanguage();
+    
 }
