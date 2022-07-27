@@ -38,11 +38,7 @@ public enum NotificationTypeId : int
     /// <summary>
     /// Welcome message
     /// </summary>
-<<<<<<< HEAD
     WELCOME = 3,
-=======
-    WELCOME_WELCOME = 3,
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 
     /// <summary>
     /// Welcome use case explination
@@ -60,7 +56,6 @@ public enum NotificationTypeId : int
     WELCOME_CONNECTOR_REGISTRATION = 6,
 
     /// <summary>
-<<<<<<< HEAD
     /// Welcome - link to apps
     /// </summary>
     WELCOME_APP_MARKETPLACE = 7,
@@ -74,9 +69,4 @@ public enum NotificationTypeId : int
     /// New App Subscription was activated
     /// </summary>
     APP_SUBSCRIPTION_ACTIVATION = 9,
-=======
-    ///  Welcome - link to apps
-    /// </summary>
-    WELCOME_APP_MARKETPLACE = 7
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 }

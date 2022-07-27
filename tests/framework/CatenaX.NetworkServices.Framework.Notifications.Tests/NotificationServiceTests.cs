@@ -89,7 +89,7 @@ public class NotificationServiceTests
         var sut = _fixture.Create<NotificationService>();
 
         // Act
-        await sut.CreateWelcomeNotificationsForCompanyAsync(_companyUser.CompanyId);
+        await sut.CreateWelcomeNotificationsForCompany(_companyUser.CompanyId);
 
         // Assert
         notifications.Should().HaveCount(5);
@@ -111,7 +111,7 @@ public class NotificationServiceTests
         // Act
         try
         {
-            await sut.CreateWelcomeNotificationsForCompanyAsync(Guid.NewGuid());
+            await sut.CreateWelcomeNotificationsForCompany(Guid.NewGuid());
         }
         catch (NotFoundException e)
         {
@@ -134,7 +134,7 @@ public class NotificationServiceTests
         // Act
         try
         {
-            await sut.CreateWelcomeNotificationsForCompanyAsync(NoExistingAdminCompanyId);
+            await sut.CreateWelcomeNotificationsForCompany(NoExistingAdminCompanyId);
         }
         catch (NotFoundException e)
         {
