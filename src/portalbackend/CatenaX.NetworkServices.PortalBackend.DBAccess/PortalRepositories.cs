@@ -52,18 +52,23 @@ public class PortalRepositories : IPortalRepositories
         _dbContext = portalDbContext;
     }
 
-    public RepositoryType GetInstance<RepositoryType>() =>
-        (RepositoryType)(
-            _types[typeof(RepositoryType)]
-                .GetConstructor(
+    public RepositoryType GetInstance<RepositoryType>()
+    {
+        RepositoryType? repository = default;
+
+        if (_types.TryGetValue(typeof(RepositoryType), out Type? type))
+        {
+            repository = (RepositoryType?)
+                Activator.CreateInstance(
+                    _types[typeof(RepositoryType)],
                     BindingFlags.Instance | BindingFlags.NonPublic,
                     null,
-                    CallingConventions.HasThis,
-                    new Type[1] { typeof(PortalDbContext) },
+                    new [] { _dbContext },
                     null
-                )
-                ?.Invoke(new [] { _dbContext })
-                ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType)));
+                );
+        }
+        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType)));
+    }
 
     /// <inheritdoc />
     public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null)
