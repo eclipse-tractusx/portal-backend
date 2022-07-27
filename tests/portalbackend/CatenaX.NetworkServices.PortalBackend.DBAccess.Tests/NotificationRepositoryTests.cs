@@ -76,10 +76,11 @@ public class NotificationRepositoryTests
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, false, null).ToListAsync();
 
         // Assert
+        var unreadNotificationIds = _unreadNotifications.Select(notification => notification.Id).ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(_unreadNotifications.Count);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _unreadNotifications.Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(unreadNotificationIds);
     }
 
     [Fact]
@@ -93,11 +94,12 @@ public class NotificationRepositoryTests
         // Act
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, null).ToListAsync();
 
+        var readNotificationIds = _readNotifications.Select(notification => notification.Id).ToList();
         // Assert
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(_readNotifications.Count);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     [Fact]
@@ -112,10 +114,14 @@ public class NotificationRepositoryTests
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, NotificationTypeId.INFO).ToListAsync();
 
         // Assert
+        var readNotificationIds = _readNotifications
+            .Where(x => x.NotificationTypeId == NotificationTypeId.INFO)
+            .Select(x => x.Id)
+            .ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(1);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Where(y => y.NotificationTypeId == NotificationTypeId.INFO).Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     [Fact]
@@ -130,10 +136,13 @@ public class NotificationRepositoryTests
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, NotificationTypeId.ACTION).ToListAsync();
 
         // Assert
+        var readNotificationIds = _readNotifications
+            .Where(x => x.NotificationTypeId == NotificationTypeId.ACTION)
+            .Select(x => x.Id).ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(2);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Where(y => y.NotificationTypeId == NotificationTypeId.ACTION).Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     #endregion
