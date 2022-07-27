@@ -119,6 +119,7 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
+builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
@@ -128,10 +129,7 @@ builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
-builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();
-
-builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
-                .AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
+builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
