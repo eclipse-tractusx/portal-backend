@@ -23,7 +23,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
-
+        <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
@@ -45,8 +45,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\notification\CatenaX.NetworkServices.Notification.Service\CatenaX.NetworkServices.Notification.Service.csproj" />
-      <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
+        <ProjectReference Include="..\..\..\src\framework\CatenaX.NetworkServices.Framework.Notifications\CatenaX.NetworkServices.Framework.Notifications.csproj" />
+        <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
+        <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
     </ItemGroup>
 
 </Project>
