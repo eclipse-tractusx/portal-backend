@@ -35,6 +35,7 @@ env:
   IMAGE_NAME_MARKETPLACE_APP: ${{ github.repository }}_marketplace-app-service
   IMAGE_NAME_PORTAL_MIGRATIONS: ${{ github.repository }}_portal-migrations
   IMAGE_NAME_MAINTENANCE: ${{ github.repository }}_maintenance-service
+  IMAGE_NAME_NOTIFICATION: ${{ github.repository }}_notification-service
 
 jobs:
   administration-service-release:
@@ -257,4 +258,41 @@ jobs:
           pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ steps.git-tag.outputs.git-version }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  notification-service-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Get tag name
+        id: git-tag
+        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: docker/Dockerfile-notification-service
+          pull: true
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ steps.git-tag.outputs.git-version }}
           labels: ${{ steps.meta.outputs.labels }}

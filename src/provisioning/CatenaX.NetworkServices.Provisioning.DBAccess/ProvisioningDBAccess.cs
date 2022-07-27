@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Keycloak.Net.Models.OpenIDConfiguration;
 
 namespace CatenaX.NetworkServices.Provisioning.Library

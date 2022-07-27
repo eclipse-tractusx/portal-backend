@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace CatenaX.NetworkServices.Mailing.SendMail
+﻿namespace CatenaX.NetworkServices.Mailing.SendMail
 {
     public interface IMailingService
     {
