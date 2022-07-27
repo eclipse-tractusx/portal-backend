@@ -41,7 +41,7 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<UseCaseData?> GetAllUseCase() =>
+    public IAsyncEnumerable<UseCaseData> GetAllUseCase() =>
          this._portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
     
 }

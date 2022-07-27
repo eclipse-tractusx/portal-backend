@@ -31,5 +31,6 @@ public interface IStaticDataBusinessLogic
     /// Get all Use Case.
     /// </summary>
     /// <returns>AsyncEnumerable of the result Use Case</returns>
-    IAsyncEnumerable<UseCaseData?> GetAllUseCase();
+    IAsyncEnumerable<UseCaseData> GetAllUseCase();
+
 }

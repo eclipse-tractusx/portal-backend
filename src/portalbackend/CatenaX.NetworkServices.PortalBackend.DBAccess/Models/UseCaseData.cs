@@ -17,6 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+
 using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -59,4 +60,5 @@ public class UseCaseData
     /// <value></value>
     [JsonPropertyName("shortname")]
     public string ShortName { get; set; }
+    
 }
