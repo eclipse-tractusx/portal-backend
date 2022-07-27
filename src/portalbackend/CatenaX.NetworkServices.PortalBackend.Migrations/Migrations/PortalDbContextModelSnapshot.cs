@@ -3629,7 +3629,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         new
                         {
                             Id = 3,
-                            Label = "WELCOME_WELCOME"
+                            Label = "WELCOME"
                         },
                         new
                         {
@@ -3650,6 +3650,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 7,
                             Label = "WELCOME_APP_MARKETPLACE"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "APP_SUBSCRIPTION_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "APP_SUBSCRIPTION_ACTIVATION"
                         });
                 });
 
