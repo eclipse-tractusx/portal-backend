@@ -264,8 +264,8 @@ public class UserRepository : IUserRepository
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> GetCatenaAndCompanyAdminIdAsync(Guid companyId) =>
         _dbContext.CompanyUsers
-            .Where(x => (x.Company!.Name == Constants.CatenaXCompanyName && x.Lastname == Constants.CxAdminUsername) ||
-                        (x.CompanyId == companyId && x.UserRoles.Any(x => x.UserRoleText == Constants.CompanyAdminRole)))
-            .Select(x => ((Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)) new ValueTuple<Guid, bool, bool>(x.Id, x.Lastname == Constants.CxAdminUsername, x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == Constants.CompanyAdminRole)))
+            .Where(x => (x.Company!.Name == Constants.CatenaXCompanyName && x.UserRoles.Any(y => y.UserRoleText == Constants.CxAdminRolename)) ||
+                        (x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == Constants.CompanyAdminRole)))
+            .Select(x => ((Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)) new ValueTuple<Guid, bool, bool>(x.Id, x.UserRoles.Any(y => y.UserRoleText == Constants.CxAdminRolename), x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == Constants.CompanyAdminRole)))
             .ToAsyncEnumerable();
 }

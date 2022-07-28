@@ -20,9 +20,11 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
@@ -35,6 +37,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class UserRepositoryTests
 {
+    private static readonly Guid CatenaXCompanyId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
 
@@ -49,7 +52,7 @@ public class UserRepositoryTests
     }
 
     [Fact]
-    public async void GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
+    public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
     {
         // Arrange
         var favouriteApps = _fixture.CreateMany<App>(10);
@@ -75,20 +78,20 @@ public class UserRepositoryTests
     }
     
     [Fact]
-    public async void GetBusinessApps_ReturnsAppListSuccessfully()
+    public async Task GetBusinessApps_ReturnsAppListSuccessfully()
     {
         // Arrange
-        var expectedApp = _fixture.Create<PortalBackend.PortalEntities.Entities.App>();
+        var expectedApp = _fixture.Create<App>();
         var (companyUser, iamUser) = CreateTestUserPair();
         companyUser.Company!.BoughtApps.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
+        foreach (var app in _fixture.CreateMany<App>())
         {
             companyUser.Company.BoughtApps.Add(app);
         }
 
         var iamClient = _fixture.Create<IamClient>();
         iamClient.Apps.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
+        foreach (var app in _fixture.CreateMany<App>())
         {
             iamClient.Apps.Add(app);
         }
@@ -114,6 +117,65 @@ public class UserRepositoryTests
         result.Single().Id.Should().Be(expectedApp.Id);
     }
 
+    [Fact]
+    public async Task GetCatenaAndCompanyAdminIdAsync_WithMultipleCompanyAdmins_ReturnsExpectedAmount()
+    {
+        // Arrange
+        var (companyUser, _) = CreateTestUserPair();
+        CreateFakeContext(companyUser.CompanyId, false, 2);
+
+        var sut = _fixture.Create<UserRepository>();
+
+        // Act
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId).ToListAsync();
+
+        // Assert
+        result.Should().NotBeNullOrEmpty();
+        result.Should().HaveCount(2);
+        result.Where(x => x.IsCompanyAdmin).Should().HaveCount(2);
+        result.Where(x => x.IsCatenaXAdmin).Should().HaveCount(0);
+    }
+
+    [Fact]
+    public async Task GetCatenaAndCompanyAdminIdAsync_WithMultipleCompanyAdminsAndCatenaXAdmin_ReturnsExpectedAmount()
+    {
+        // Arrange
+        var (companyUser, _) = CreateTestUserPair();
+        CreateFakeContext(companyUser.CompanyId, true, 2);
+
+        var sut = _fixture.Create<UserRepository>();
+
+        // Act
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId).ToListAsync();
+
+        // Assert
+        result.Should().NotBeNullOrEmpty();
+        result.Should().HaveCount(3);
+        result.Where(x => x.IsCompanyAdmin).Should().HaveCount(2);
+        result.Where(x => x.IsCatenaXAdmin).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetCatenaAndCompanyAdminIdAsync_WithOnlyCatenaXAdmin_ReturnsExpectedAmount()
+    {
+        // Arrange
+        var (companyUser, _) = CreateTestUserPair();
+        CreateFakeContext(companyUser.CompanyId, true, 0);
+
+        var sut = _fixture.Create<UserRepository>();
+
+        // Act
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId).ToListAsync();
+
+        // Assert
+        result.Should().NotBeNullOrEmpty();
+        result.Should().HaveCount(1);
+        result.Where(x => x.IsCompanyAdmin).Should().HaveCount(0);
+        result.Where(x => x.IsCatenaXAdmin).Should().HaveCount(1);
+    }
+
+    #region Setup
+
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()
@@ -125,4 +187,48 @@ public class UserRepositoryTests
         companyUser.IamUser = iamUser;
         return (companyUser, iamUser);
     }
+
+    private void CreateFakeContext(Guid companyId, bool withCatenaXAdmin, int companyAdminCount)
+    {
+        var catenaCompany = new Company(Guid.NewGuid(), Constants.CatenaXCompanyName, CompanyStatusId.ACTIVE,
+            DateTimeOffset.UtcNow);
+
+        var catenaXAdminRole = new UserRole(Guid.NewGuid(), Constants.CxAdminRolename, Guid.NewGuid());
+        var companyAdminRole = new UserRole(Guid.NewGuid(), Constants.CompanyAdminRole, Guid.NewGuid());
+        var rolesDbSet = new List<UserRole>
+        {
+            catenaXAdminRole,
+            companyAdminRole
+        };
+        var companyUsers = companyAdminCount > 0 ?
+            _fixture.Build<CompanyUser>()
+                .With(x => x.CompanyId, companyId)
+                .With(x => x.UserRoles, new List<UserRole>{ companyAdminRole})
+                .CreateMany(companyAdminCount)
+                .ToList() :
+            new List<CompanyUser>();
+        var companyUserRoles = companyUsers
+            .Select(companyUser => new CompanyUserAssignedRole(companyUser.Id, companyAdminRole.Id))
+            .ToList();
+
+        if(withCatenaXAdmin)
+        {
+            var catenaAdmin = new CompanyUser(Guid.NewGuid(), CatenaXCompanyId, CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
+            {
+                Lastname = Constants.CxAdminRolename,
+                Company = catenaCompany,
+                UserRoles = { catenaXAdminRole }
+            };
+            companyUsers.Add(catenaAdmin);
+            companyUserRoles.Add(new CompanyUserAssignedRole(catenaAdmin.Id, catenaXAdminRole.Id));
+        }
+
+        A.CallTo(() => _contextFake.Companies).Returns(new List<Company> { catenaCompany }.AsFakeDbSet());
+        A.CallTo(() => _contextFake.UserRoles).Returns(rolesDbSet.AsFakeDbSet());
+        A.CallTo(() => _contextFake.CompanyUsers).Returns(companyUsers.AsFakeDbSet());
+        A.CallTo(() => _contextFake.CompanyUserAssignedRoles).Returns(companyUserRoles.AsFakeDbSet());
+        _fixture.Inject(_contextFake);
+    }
+
+    #endregion
 }

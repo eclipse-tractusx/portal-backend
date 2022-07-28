@@ -43,7 +43,7 @@ public static class Constants
     /// <summary>
     /// Name of the CX Admin
     /// </summary>
-    public const string CxAdminUsername = "CX Admin";
+    public const string CxAdminRolename = "CX Admin";
 
     /// <summary>
     /// Name of the Company Admin role

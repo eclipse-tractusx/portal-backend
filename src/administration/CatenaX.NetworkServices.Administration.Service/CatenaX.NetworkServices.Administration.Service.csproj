@@ -32,12 +32,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SonarQubeSetting Include="sonar.coverage.exclusions">
-      <Value>**/Program.cs</Value>
-    </SonarQubeSetting>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.4" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="PasswordGenerator" Version="2.1.0" />
