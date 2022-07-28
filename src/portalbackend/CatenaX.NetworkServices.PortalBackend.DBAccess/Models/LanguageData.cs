@@ -18,15 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
-
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Model For Language
+/// Model for LanguageData
 /// </summary>
 /// <param name="languageShortName">Language Short Name</param>
-/// <param name="languageLongNameDe">Language Long Name in German</param>
-/// <param name="languageLongNameEn">Language Long Name in English</param>
+/// <param name="languageLongNames">Language Long Name</param>
 /// <returns></returns>
-public record LanguageData(string languageShortName, string languageLongNameDe, string? languageLongNameEn);
+public record LanguageData(string languageShortName, LanguageDataLongNames languageLongNames);
+
+/// <summary>
+/// Model for LanguageDataLongNames
+/// </summary>
+/// <param name="de">German Language</param>
+/// <param name="en">English Language</param>
+/// <returns></returns>
+public record LanguageDataLongNames(string de, string en);
