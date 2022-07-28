@@ -18,7 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+<<<<<<< HEAD
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+=======
+>>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -41,6 +44,7 @@ public class NotificationService : INotificationService
     }
 
     /// <inheritdoc />
+<<<<<<< HEAD
     public async Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId)
     {
         var userIds = await _portalRepositories.GetInstance<IUserRepository>().GetCatenaAndCompanyAdminIdAsync(companyId).ToListAsync().ConfigureAwait(false);
@@ -56,12 +60,22 @@ public class NotificationService : INotificationService
 
         foreach (var typeId in new[] {
                      NotificationTypeId.WELCOME,
+=======
+    public async Task CreateWelcomeNotifications(Guid receiverId)
+    {
+
+        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCxAdminIdAsync().ConfigureAwait(false);
+
+        foreach (var typeId in new[] {
+                     NotificationTypeId.WELCOME_WELCOME,
+>>>>>>> f9d526c (CPLP-1247 add welcome notifications)
                      NotificationTypeId.WELCOME_USE_CASES,
                      NotificationTypeId.WELCOME_SERVICE_PROVIDER,
                      NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION,
                      NotificationTypeId.WELCOME_APP_MARKETPLACE,
                  })
         {
+<<<<<<< HEAD
             _portalRepositories.GetInstance<INotificationRepository>().Create(userIds.Single(x => x.IsCompanyAdmin).CompanyUserId, typeId, false,
                 notification =>
                 {
@@ -69,6 +83,16 @@ public class NotificationService : INotificationService
                 });
         }
 
+=======
+            _portalRepositories.GetInstance<INotificationRepository>().Create(receiverId, typeId, false,
+                notification =>
+                {
+                    notification.CreatorUserId = creatorId;
+                });
+        }
+
+
+>>>>>>> f9d526c (CPLP-1247 add welcome notifications)
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -96,6 +120,10 @@ public class NotificationService : INotificationService
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+<<<<<<< HEAD
         return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notificationStatusId, content, dueDate);
+=======
+        return new NotificationDetailData(notification.Id, content, dueDate, notificationTypeId, notificationStatusId);
+>>>>>>> f9d526c (CPLP-1247 add welcome notifications)
     }
 }

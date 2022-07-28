@@ -3,6 +3,7 @@ using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220726145010_CPLP-1247-AddWelcomNotificationStatus")]
+    partial class CPLP1247AddWelcomNotificationStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3629,11 +3631,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         new
                         {
                             Id = 3,
-<<<<<<< HEAD
-                            Label = "WELCOME"
-=======
                             Label = "WELCOME_WELCOME"
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
                         },
                         new
                         {
@@ -3654,19 +3652,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 7,
                             Label = "WELCOME_APP_MARKETPLACE"
-<<<<<<< HEAD
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Label = "APP_SUBSCRIPTION_REQUEST"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Label = "APP_SUBSCRIPTION_ACTIVATION"
-=======
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
                         });
                 });
 

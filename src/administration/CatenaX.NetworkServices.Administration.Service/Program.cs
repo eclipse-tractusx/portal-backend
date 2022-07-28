@@ -120,7 +120,10 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
+<<<<<<< HEAD
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
+=======
+>>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 builder.Services.AddTransient<INotificationService, NotificationService>();
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
