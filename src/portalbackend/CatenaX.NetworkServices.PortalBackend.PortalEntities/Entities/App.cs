@@ -79,6 +79,8 @@ public class App
 
     public AppStatusId AppStatusId { get; set; }
 
+    public DateTimeOffset? DateLastChanged { get; set; }
+
     // Navigation properties
     public virtual Company? ProviderCompany { get; set; }
     public virtual AppStatus? AppStatus{ get; set; }
