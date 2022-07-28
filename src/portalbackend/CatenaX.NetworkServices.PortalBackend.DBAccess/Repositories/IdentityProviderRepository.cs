@@ -53,6 +53,16 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                             companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
             .SingleOrDefaultAsync();
 
+    public Task<(Guid CompanyId, string Alias, int LinkedCompaniesCount)> GetOwnCompanyIdentityProviderDeletionDataUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+        _context.IdentityProviders
+            .Where(identityProvider => identityProvider.Id == identityProviderId)
+            .Select(identityProvider =>
+                ((Guid CompanyId, string Alias, int LinkedCompaniesCount)) new (
+                    identityProvider.Companies.Where(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)).SingleOrDefault()!.Id,
+                    identityProvider.IamIdentityProvider!.IamIdpAlias,
+                    identityProvider.Companies.Count()))
+            .SingleOrDefaultAsync();
+
     public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderDataUntracked(string iamUserId, IEnumerable<Guid>? identityProviderIds) =>
         _context.IamUsers
             .AsNoTracking()
