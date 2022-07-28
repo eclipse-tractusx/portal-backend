@@ -259,17 +259,6 @@ public class UserRepository : IUserRepository
     public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId) =>
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
             .Select(companyUser => ((Guid CompanyUserId, bool IsIamUser)) new ValueTuple<Guid, bool>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
-<<<<<<< HEAD
-            .ToAsyncEnumerable();
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> GetCatenaAndCompanyAdminIdAsync(Guid companyId) =>
-        _dbContext.CompanyUsers
-            .Where(x => (x.Company!.Name == Constants.CatenaXCompanyName && x.Lastname == Constants.CxAdminUsername) ||
-                        (x.CompanyId == companyId && x.UserRoles.Any(x => x.UserRoleText == Constants.CompanyAdminRole)))
-            .Select(x => ((Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)) new ValueTuple<Guid, bool, bool>(x.Id, x.Lastname == Constants.CxAdminUsername, x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == Constants.CompanyAdminRole)))
-=======
->>>>>>> bad3836 (CPLP-1247 refactor UserRepository)
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
