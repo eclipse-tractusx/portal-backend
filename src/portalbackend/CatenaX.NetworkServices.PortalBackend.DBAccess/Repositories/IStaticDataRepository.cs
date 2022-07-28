@@ -40,5 +40,5 @@ public interface IStaticDataRepository
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
-    
+
 }
