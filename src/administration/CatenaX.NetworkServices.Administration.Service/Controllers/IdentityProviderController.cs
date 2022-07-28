@@ -31,38 +31,67 @@ public class IdentityProviderController : ControllerBase
     public IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProviderDetails() =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProviders(iamUserId));
 
-    [HttpPut]
+    [HttpPost]
     [Route("owncompany/identityproviders")]
-    public Task<IdentityProviderDetails> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
-        this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProvider(protocol, iamUserId));
+    public Task<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
+        this.WithIamUserId(async iamUserId =>
+        {
+            var details = await _businessLogic.CreateOwnCompanyIdentityProvider(protocol, iamUserId).ConfigureAwait(false);
+            return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
+        });
 
     [HttpGet]
-    [Route("owncompany/identityproviders/{identityProviderId}")]
+    [Route("owncompany/identityproviders/{identityProviderId}", Name=nameof(GetOwnCompanyIdentityProvider))]
     public Task<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProvider(identityProviderId, iamUserId));
 
-    [HttpPost]
+    [HttpPut]
     [Route("owncompany/identityproviders/{identityProviderId}")]
     public Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
         this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProvider(identityProviderId, details, iamUserId));
 
     [HttpDelete]
     [Route("owncompany/identityproviders/{identityProviderId}")]
-    public Task DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
-        this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyIdentityProvider(identityProviderId, iamUserId));
+    public Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
+        this.WithIamUserId(async iamUserId =>
+        {
+            await _businessLogic.DeleteOwnCompanyIdentityProvider(identityProviderId, iamUserId).ConfigureAwait(false);
+            return (ActionResult) NoContent();
+        });
 
     [HttpGet]
     [Route("owncompany/users")]
-    public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync([FromQuery] IEnumerable<string> aliase) =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUserIdentityProviderDataAsync(aliase, iamUserId));
+    public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, iamUserId));
+
+    [HttpPost]
+    [Route("owncompany/users/{companyUserId}/identityprovider")]
+    public Task<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData) =>
+        this.WithIamUserId(async iamUserId => 
+        {
+            var linkData = await _businessLogic.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderLinkData, iamUserId).ConfigureAwait(false);
+            return (ActionResult<UserIdentityProviderLinkData>) CreatedAtRoute(
+                nameof(GetOwnCompanyUserIdentityProviderDataAsync),
+                new { companyUserId = companyUserId, identityProviderId = linkData.identityProviderId },
+                linkData);
+        });
 
     [HttpPut]
-    [Route("owncompany/users/{companyUserId}/identityprovider/{alias}")]
-    public Task<UserIdentityProviderData> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] string alias, [FromBody] UserLinkData userLinkData) =>
-        this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyUserIdentityProviderDataAsync(companyUserId, alias, userLinkData, iamUserId));
+    [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
+    public Task<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
+        this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData, iamUserId));
+
+    [HttpGet]
+    [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}", Name = nameof(GetOwnCompanyUserIdentityProviderDataAsync))]
+    public Task<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, iamUserId));
 
     [HttpDelete]
-    [Route("owncompany/users/{companyUserId}/identityprovider/{alias}")]
-    public Task<UserIdentityProviderData> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] string alias) =>
-        this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, alias, iamUserId));
+    [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
+    public Task<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
+        this.WithIamUserId(async iamUserId =>
+        {
+            await _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+            return (ActionResult) NoContent();
+        });
 }
