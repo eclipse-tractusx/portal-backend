@@ -347,7 +347,14 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 companyUser.DateCreated,
                 userData.BusinessPartnerNumbers,
                 companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
+                companyUser.CompanyUserStatusId,
+                companyUser.Company!.CompanyAssignedApps
+                    .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
+                    .Select(app => new CompanyUserAssignedRoleDetails(
+                        app.AppId,
+                        app.App.IamClients.SelectMany(iamClient => iamClient.UserRoles
+                                    .Select(role => role.UserRoleText))
+                    )))
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
