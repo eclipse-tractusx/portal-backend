@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace CatenaX.NetworkServices.Provisioning.Mail
 {
     public interface IUserEmail

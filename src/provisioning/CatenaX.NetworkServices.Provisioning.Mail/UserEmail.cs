@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using Microsoft.Extensions.Options;
 
 using CatenaX.NetworkServices.Mailing.SendMail;
