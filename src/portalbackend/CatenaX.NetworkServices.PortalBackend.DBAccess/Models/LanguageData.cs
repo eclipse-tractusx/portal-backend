@@ -23,42 +23,10 @@ using System.Text.Json.Serialization;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// model for Language.
+/// Model For Language
 /// </summary>
-public class LanguageData
-{
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="languageShortName">Language Short Name</param>
-    /// <param name="longNameDe">Language Long Name in German</param>
-    /// <param name="longNameEn">Language Long Name in English</param>
-    public LanguageData(string languageShortName, string longNameDe, string longNameEn)
-    {
-        ShortName = languageShortName;
-        LongNameDe = longNameDe;
-        LongNameEn = longNameEn;
-    }
-    
-    /// <summary>
-    /// Language Short Name
-    /// </summary>
-    /// <value>languageShortName</value>
-    [JsonPropertyName("languageShortName")]
-    public string ShortName { get; private set; }
-    
-    /// <summary>
-    /// Language Long Name in German
-    /// </summary>
-    /// <value>languageShortNameDe</value>
-    [JsonPropertyName("languageShortNameDe")]
-    public string LongNameDe { get; set; }
-    
-    /// <summary>
-    /// Language Long Name in English
-    /// </summary>
-    /// <value>languageShortNameEn</value>
-    [JsonPropertyName("languageShortNameEn")]
-    public string LongNameEn { get; set; }
-    
-}
+/// <param name="languageShortName">Language Short Name</param>
+/// <param name="languageLongNameDe">Language Long Name in German</param>
+/// <param name="languageLongNameEn">Language Long Name in English</param>
+/// <returns></returns>
+public record LanguageData(string languageShortName, string languageLongNameDe, string? languageLongNameEn);
