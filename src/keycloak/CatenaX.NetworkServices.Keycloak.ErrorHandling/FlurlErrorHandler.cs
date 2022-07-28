@@ -31,6 +31,9 @@ public class FlurlErrorHandler
                 case HttpStatusCode.NotFound:
                     throw new KeycloakEntityNotFoundException(message, call.Exception);
 
+                case HttpStatusCode.Conflict:
+                    throw new KeycloakEntityConflictException(message, call.Exception);
+
                 case HttpStatusCode.BadRequest:
                     throw new ArgumentException(message, call.Exception);
 

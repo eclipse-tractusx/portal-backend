@@ -1,5 +1,6 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -29,7 +30,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                     var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(identityProviderData.Alias).ConfigureAwait(false);
                     yield return new IdentityProviderDetails(
-                        identityProviderData.Id,
+                        identityProviderData.IdentityProviderId,
                         identityProviderData.Alias,
                         identityProviderData.CategoryId,
                         identityProviderDataOIDC.DisplayName,
@@ -45,7 +46,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 case IdentityProviderCategoryId.KEYCLOAK_SAML:
                     var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(identityProviderData.Alias).ConfigureAwait(false);
                     yield return new IdentityProviderDetails(
-                        identityProviderData.Id,
+                        identityProviderData.IdentityProviderId,
                         identityProviderData.Alias,
                         identityProviderData.CategoryId,
                         identityProviderDataSAML.DisplayName,
@@ -205,81 +206,92 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     }
 
 
-    public async Task<UserIdentityProviderData> CreateOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, string alias, UserLinkData userLinkData, string iamUserId)
+    public async Task<UserIdentityProviderLinkData> CreateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, UserIdentityProviderLinkData identityProviderLinkData, string iamUserId)
     {
-        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, alias, iamUserId).ConfigureAwait(false);
-        if (userAliasData == default)
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderLinkData.identityProviderId, iamUserId).ConfigureAwait(false);
+
+        try
         {
-            throw new NotFoundException($"companyUserId {companyUserId} does not exist");
+            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, identityProviderLinkData.userId, identityProviderLinkData.userName).ConfigureAwait(false);
         }
-        if (userAliasData.UserEntityId == null)
+        catch(KeycloakEntityConflictException ce)
         {
-            throw new Exception($"companyUserId {companyUserId} is not linked to keycloak");
+            throw new ConflictException($"identityProviderLink for identityProvider {identityProviderLinkData.identityProviderId} already exists for user {companyUserId}", ce);
         }
-        if (!userAliasData.IdentityProviders.Any(identityProviderData => identityProviderData.Alias == alias))
-        {
-            throw new NotFoundException($"identityProvider alias {alias} not found in company of user {companyUserId}" );
-        }
-        if (!userAliasData.IsSameCompany)
-        {
-            throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
-        }
-        await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userAliasData.UserEntityId, alias, userLinkData.userId, userLinkData.userName).ConfigureAwait(false);
-        var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userAliasData.IdentityProviders.Select(identityProviderData => identityProviderData.Alias), userAliasData.UserEntityId).ConfigureAwait(false);
-        return new UserIdentityProviderData(
-                companyUserId,
-                userAliasData.FirstName,
-                userAliasData.LastName,
-                userAliasData.Email,
-                linkDatas.Select(linkData => new UserIdentityProviderLinkData(
-                    linkData.Alias,
-                    linkData.UserId,
-                    linkData.UserName))
-            );
+        
+        return new UserIdentityProviderLinkData(
+            identityProviderLinkData.identityProviderId,
+            identityProviderLinkData.userId,
+            identityProviderLinkData.userName);
     }
 
-    public async Task<UserIdentityProviderData> DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, string alias, string iamUserId)
+    public async Task<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId)
     {
-        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, alias, iamUserId).ConfigureAwait(false);
-        if (userAliasData == default)
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+
+        try
         {
-            throw new NotFoundException($"companyUserId {companyUserId} does not exist");
+            await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
         }
-        if (userAliasData.UserEntityId == null)
+        catch(KeycloakEntityNotFoundException e)
         {
-            throw new Exception($"companyUserId {companyUserId} is not linked to keycloak");
+            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}", e);
         }
-        if (!userAliasData.IdentityProviders.Any(identityProviderData => identityProviderData.Alias == alias))
-        {
-            throw new NotFoundException($"identityProvider alias {alias} not found in company of user {companyUserId}" );
-        }
-        if (!userAliasData.IsSameCompany)
-        {
-            throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
-        }
-        await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userAliasData.UserEntityId, alias);
-        var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userAliasData.IdentityProviders.Select(identityProviderData => identityProviderData.Alias), userAliasData.UserEntityId).ConfigureAwait(false);
-        return new UserIdentityProviderData(
-                companyUserId,
-                userAliasData.FirstName,
-                userAliasData.LastName,
-                userAliasData.Email,
-                linkDatas.Select(linkData => new UserIdentityProviderLinkData(
-                    linkData.Alias,
-                    linkData.UserId,
-                    linkData.UserName))
-            );
+        await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, userLinkData.userId, userLinkData.userName).ConfigureAwait(false);
+        
+        return new UserIdentityProviderLinkData(
+            identityProviderId,
+            userLinkData.userId,
+            userLinkData.userName);
     }
 
-    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync(IEnumerable<string> aliase, string iamUserId)
+    public async Task<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId)
     {
-        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDataUntracked(iamUserId).ToListAsync().ConfigureAwait(false);
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
 
-        var invalidAliase = aliase.Except(identityProviderData.Select(identityProvider => identityProvider.Alias));
-        if (invalidAliase.Count() > 0)
+        var result = (await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(Enumerable.Repeat(alias,1), userEntityId).ConfigureAwait(false)).SingleOrDefault();
+        if (result == default)
         {
-            throw new ArgumentException($"invalid identityProvider aliase: [{String.Join(", ", invalidAliase)}]",nameof(aliase));
+            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}");
         }
+        return new UserIdentityProviderLinkData(
+            identityProviderId,
+            result.UserId,
+            result.UserName);
+    }
+
+    public async Task DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId)
+    {
+        var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+        try
+        {
+            await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias).ConfigureAwait(false);
+        }
+        catch(KeycloakEntityNotFoundException e)
+        {
+            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}", e);
+        }
+    }
+
+    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid>? identityProviderIds, string iamUserId)
+    {
+        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDataUntracked(iamUserId, identityProviderIds).ToListAsync().ConfigureAwait(false);
+
+        if (identityProviderIds != null)
+        {
+            var invalidIds = identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId));
+            if (invalidIds.Count() > 0)
+            {
+                throw new ArgumentException($"invalid identityProviders: [{String.Join(", ", invalidIds)}] for user {iamUserId}", nameof(identityProviderIds));
+            }
+        }
+
+        var idPerAlias = (identityProviderIds != null
+            ? identityProviderData.Where(data => identityProviderIds.Any(id => id == data.IdentityProviderId))
+            : identityProviderData)
+            .ToDictionary(data => data.Alias, data => data.IdentityProviderId);
+
+        var aliase = idPerAlias.Keys;
 
         await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
             .GetOwnCompanyUserQuery(iamUserId)
@@ -301,11 +313,35 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     lastName,
                     email,
                     linkDatas.Select(linkData => new UserIdentityProviderLinkData(
-                        linkData.Alias,
+                        idPerAlias[linkData.Alias],
                         linkData.UserId,
                         linkData.UserName))
                 );
             }
         }
+    }
+
+    private async Task<(string UserEntityId, string Alias)> GetUserAliasDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId)
+    {
+        var userAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
+        if (userAliasData == default)
+        {
+            throw new NotFoundException($"companyUserId {companyUserId} does not exist");
+        }
+        if (userAliasData.UserEntityId == null)
+        {
+            throw new Exception($"companyUserId {companyUserId} is not linked to keycloak");
+        }
+        if (userAliasData.Alias == null)
+        {
+            throw new NotFoundException($"identityProvider {identityProviderId} not found in company of user {companyUserId}" );
+        }
+        if (!userAliasData.IsSameCompany)
+        {
+            throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
+        }
+        return ((string UserEntityId, string Alias)) new (
+            userAliasData.UserEntityId,
+            userAliasData.Alias);
     }
 }

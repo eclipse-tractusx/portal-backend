@@ -10,7 +10,9 @@ public interface IIdentityProviderBusinessLogic
     Task<IdentityProviderDetails> GetOwnCompanyIdentityProvider(Guid identityProviderId, string iamUserId);
     Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId);
     Task DeleteOwnCompanyIdentityProvider(Guid identityProviderId, string iamUserId);
-    IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUserIdentityProviderDataAsync(IEnumerable<string> aliase, string iamUserId);
-    Task<UserIdentityProviderData> CreateOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, string alias, UserLinkData userLinkData, string iamUserId);
-    Task<UserIdentityProviderData> DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, string alias, string iamUserId);
+    IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid>? identityProviderIds, string iamUserId);
+    Task<UserIdentityProviderLinkData> CreateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, UserIdentityProviderLinkData identityProviderLinkData, string iamUserId);
+    Task<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId);
+    Task<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId);
+    Task DeleteOwnCompanyUserIdentityProviderDataAsync(Guid companyUserId, Guid identityProviderId, string iamUserId);
 }

@@ -53,6 +53,14 @@ public class GeneralHttpErrorHandler
                     null);
                 _logger.LogInformation(error.Message);
             }
+            else if (error is ConflictException)
+            {
+                errorResponse = CreateErrorResponse(
+                    HttpStatusCode.Conflict,
+                    error,
+                    null);
+                _logger.LogInformation(error.Message);
+            }
             else if (error is ForbiddenException)
             {
                 errorResponse = CreateErrorResponse(

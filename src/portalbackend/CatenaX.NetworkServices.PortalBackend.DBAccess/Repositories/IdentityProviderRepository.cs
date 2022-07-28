@@ -53,11 +53,12 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                             companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid Id, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderDataUntracked(string iamUserId) =>
+    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderDataUntracked(string iamUserId, IEnumerable<Guid>? identityProviderIds) =>
         _context.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders)
+            .Where(identityProvider => identityProviderIds != null ? identityProviderIds.Contains(identityProvider.Id) : true)
             .Select(identityProvider => ((Guid Id, IdentityProviderCategoryId CategoryId, string Alias)) new (
                 identityProvider.Id,
                 identityProvider.IdentityProviderCategoryId,
@@ -65,16 +66,16 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             ))
             .ToAsyncEnumerable();
 
-    public Task<(string? UserEntityId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, IdentityProviderCategoryId CategoryId)> IdentityProviders, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, string alias, string iamUserId) =>
+    public Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, string iamUserId) =>
         _context.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => ((string? UserEntityId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, IdentityProviderCategoryId CategoryId)> IdentityProviders, bool IsSameCompany)) new (
+            .Select(companyUser => ((string? UserEntityId, string? Alias, bool IsSameCompany)) new (
                 companyUser.IamUser!.UserEntityId,
-                companyUser.Firstname,
-                companyUser.Lastname,
-                companyUser.Email,
-                companyUser!.Company!.IdentityProviders.Select(identityProvider => ((string alias, IdentityProviderCategoryId categoryId)) new (identityProvider.IamIdentityProvider!.IamIdpAlias, identityProvider.IdentityProviderCategoryId)),
-                companyUser.Company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+                companyUser.Company!.IdentityProviders
+                    .Where(identityProvider => identityProvider.Id == identityProviderId)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    .SingleOrDefault(),
+                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 }
