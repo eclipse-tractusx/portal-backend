@@ -1,6 +1,4 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models

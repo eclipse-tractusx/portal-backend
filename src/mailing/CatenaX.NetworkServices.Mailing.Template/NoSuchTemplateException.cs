@@ -1,5 +1,3 @@
-using System;
-
 namespace CatenaX.NetworkServices.Mailing.Template
 {
     public class NoSuchTemplateException : Exception
