@@ -20,7 +20,6 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using System.Reflection;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
 
@@ -28,23 +27,23 @@ public class PortalRepositories : IPortalRepositories
 {
     private readonly PortalDbContext _dbContext;
 
-    private static readonly IReadOnlyDictionary<Type, Type> _types = new Dictionary<Type, Type> {
-        { typeof(IApplicationRepository), typeof(ApplicationRepository) },
-        { typeof(IAppRepository), typeof(AppRepository) },
-        { typeof(ICompanyAssignedAppsRepository), typeof(CompanyAssignedAppsRepository) },
-        { typeof(ICompanyRepository), typeof(CompanyRepository) },
-        { typeof(ICompanyRolesRepository), typeof(CompanyRolesRepository) },
-        { typeof(IConnectorsRepository), typeof(ConnectorsRepository) },
-        { typeof(IConsentRepository), typeof(ConsentRepository) },
-        { typeof(ICountryRepository), typeof(CountryRepository) },
-        { typeof(IDocumentRepository), typeof(DocumentRepository) },
-        { typeof(IIdentityProviderRepository), typeof(IdentityProviderRepository) },
-        { typeof(INotificationRepository), typeof(NotificationRepository) },
-        { typeof(IServiceAccountRepository), typeof(ServiceAccountRepository) },
-        { typeof(IStaticDataRepository), typeof(StaticDataRepository) },
-        { typeof(IUserBusinessPartnerRepository), typeof(UserBusinessPartnerRepository) },
-        { typeof(IUserRepository), typeof(UserRepository) },
-        { typeof(IUserRolesRepository), typeof(UserRolesRepository) },
+    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+        { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
+        { typeof(IAppRepository), context => new AppRepository(context) },
+        { typeof(ICompanyAssignedAppsRepository), context => new CompanyAssignedAppsRepository(context) },
+        { typeof(ICompanyRepository), context => new CompanyRepository(context) },
+        { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
+        { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
+        { typeof(IConsentRepository), context => new ConsentRepository(context) },
+        { typeof(ICountryRepository), context => new CountryRepository(context) },
+        { typeof(IDocumentRepository), context => new DocumentRepository(context) },
+        { typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
+        { typeof(INotificationRepository), context => new NotificationRepository(context) },
+        { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
+        { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
+        { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
+        { typeof(IUserRepository), context => new UserRepository(context) },
+        { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
     };
 
     public PortalRepositories(PortalDbContext portalDbContext)
@@ -54,18 +53,11 @@ public class PortalRepositories : IPortalRepositories
 
     public RepositoryType GetInstance<RepositoryType>()
     {
-        RepositoryType? repository = default;
+        Object? repository = default;
 
-        if (_types.TryGetValue(typeof(RepositoryType), out Type? type))
+        if (_types.TryGetValue(typeof(RepositoryType), out Func<PortalDbContext, Object>? createFunc))
         {
-            repository = (RepositoryType?)
-                Activator.CreateInstance(
-                    _types[typeof(RepositoryType)],
-                    BindingFlags.Instance | BindingFlags.Public,
-                    null,
-                    new [] { _dbContext },
-                    null
-                );
+            repository = createFunc(_dbContext);
         }
         return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType)));
     }
