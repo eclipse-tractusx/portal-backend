@@ -28,7 +28,6 @@ using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -120,11 +119,8 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
-<<<<<<< HEAD
-builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
-=======
->>>>>>> f9d526c (CPLP-1247 add welcome notifications)
 builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
