@@ -38,9 +38,9 @@ public class StaticDataController : ControllerBase
     private readonly IStaticDataBusinessLogic _logic;
 
     /// <summary>
-    /// 
+    /// Constructor.
     /// </summary>
-    /// <param name="logic"></param>
+    /// <param name="logic">Business Logic</param>
     public StaticDataController(IStaticDataBusinessLogic logic)
     {
         _logic = logic;
@@ -60,4 +60,20 @@ public class StaticDataController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UseCaseData> GetUseCases() =>
         _logic.GetAllUseCase();
+    
+    /// <summary>
+    /// Retrieve all app language tags - short name (2digit) and long name
+    /// </summary>
+    /// <returns>AsyncEnumerable of Language Data</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/staticdata/languagetags
+    /// the "lang" parameter is an optional parameter and if not set "en" will be used
+    /// </remarks>
+    /// <response code="200">Returns a list of all of the Language i.e german and english</response>
+    [HttpGet]
+    [Authorize(Roles = "view_app_language")]
+    [Route("languagetags")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<LanguageData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<LanguageData> GetLanguages() =>
+        _logic.GetAllLanguage();
 }

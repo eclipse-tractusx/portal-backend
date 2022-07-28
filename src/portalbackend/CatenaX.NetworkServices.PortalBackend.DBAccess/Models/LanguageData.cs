@@ -18,24 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using  CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Business logic for handling static data api requests.
+/// Model for LanguageData
 /// </summary>
-public interface IStaticDataBusinessLogic
-{
-    /// <summary>
-    /// Get all Use Case.
-    /// </summary>
-    /// <returns>AsyncEnumerable of the result Use Case</returns>
-    IAsyncEnumerable<UseCaseData> GetAllUseCase();
+/// <param name="languageShortName">Language Short Name</param>
+/// <param name="languageLongNames">Language Long Name</param>
+/// <returns></returns>
+public record LanguageData(string languageShortName, LanguageDataLongNames languageLongNames);
 
-    /// <summary>
-    /// Get all Language.
-    /// </summary>
-    /// <returns>AsyncEnumerable of the result Language</returns>
-    IAsyncEnumerable<LanguageData> GetAllLanguage();
-}
+/// <summary>
+/// Model for LanguageDataLongNames
+/// </summary>
+/// <param name="de">German Language</param>
+/// <param name="en">English Language</param>
+/// <returns></returns>
+public record LanguageDataLongNames(string de, string en);
