@@ -27,6 +27,8 @@
                 <ModulePath>.*\.exe$</ModulePath>
             </Include>
             <Exclude>
+                <ModulePath>.\administration\CatenaX.NetworkServices.Administration.Service\Program.cs</ModulePath>
+                <ModulePath>.\notification\CatenaX.NetworkServices.Notification.Service\Program.cs</ModulePath>
                 <ModulePath>.*CPPUnitTestFramework.*</ModulePath>
             </Exclude>
         </ModulePaths>
@@ -59,18 +61,13 @@
         </Attributes>
         -->
 
-        <!--
-        Match the path of the source files in which each method is defined:
+        <!-- Match the path of the source files in which each method is defined: -->
         <Sources>
             <Exclude>
-                <Source>.*\\atlmfc\\.*</Source>
-                <Source>.*\\vctools\\.*</Source>
-                <Source>.*\\public\\sdk\\.*</Source>
-                <Source>.*\\microsoft sdks\\.*</Source>
-                <Source>.*\\vc\\include\\.*</Source>
+                <Source>.\\administration\\CatenaX.NetworkServices.Administration.Service\\Program.cs</Source>
+                <Source>.\\notification\\CatenaX.NetworkServices.Notification.Service\\Program.cs</Source>
             </Exclude>
         </Sources>
-        -->
 
         <!--
         Match the company name property in the assembly:
