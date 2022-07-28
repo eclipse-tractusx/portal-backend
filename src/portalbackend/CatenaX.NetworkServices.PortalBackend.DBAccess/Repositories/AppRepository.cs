@@ -173,4 +173,19 @@ public class AppRepository : IAppRepository
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<AppDataProvider> GetAppData(string iamUserId) =>
+        _context.Apps
+                 .AsNoTracking()
+                 .Where(app=>app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                 .Select(app => new AppDataProvider
+                 (
+                    app.Id,
+                    app.Name,
+                    app.ThumbnailUrl,
+                    app.Provider,
+                    app.AppStatusId.ToString()
+                 )).AsAsyncEnumerable();
+
 }

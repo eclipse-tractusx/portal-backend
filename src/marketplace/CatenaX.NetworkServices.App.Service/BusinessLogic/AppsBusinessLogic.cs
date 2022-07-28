@@ -240,4 +240,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         return appId;
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<AppDataProvider> GetAppDataAsync(string userId)=>
+        _portalRepositories.GetInstance<IAppRepository>().GetAppData(userId);
+    
+
 }

@@ -252,4 +252,21 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
+    
+    /// <summary>
+    /// Get app data for user own company
+    /// </summary>
+    /// <returns>Collection of app data for user own company</returns>
+    /// <remarks>Example: GET: /api/apps/owncompany/app</remarks>
+    /// <response code="200">Returns the list of apps of current user.</response>
+    /// <response code="400">If sub claim is empty/invalid.</response>
+
+    [HttpGet]
+    [Route("owncompany/app")]
+    [Authorize(Roles = "app_management")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AppDataProvider>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<AppDataProvider> GetAppDataAsync()=>
+        this.WithIamUserId(userId => _appsBusinessLogic.GetAppDataAsync(userId));
+    
 }
