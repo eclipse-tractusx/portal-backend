@@ -80,11 +80,20 @@ public class NotificationServiceTests
     {
         // Arrange
         var notifications = new List<Notification>();
-        A.CallTo(() =>
-                _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
-                    A<Action<Notification>>._))
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
+                A<Action<Notification?>>._))
             .Invokes(x =>
-                notifications.Add(new Notification(Guid.NewGuid(), x.Arguments.Get<Guid>("receiverUserId"), DateTimeOffset.UtcNow, x.Arguments.Get<NotificationTypeId>("notificationTypeId"), x.Arguments.Get<bool>("isRead"))));
+            {
+                var receiverId = x.Arguments.Get<Guid>("receiverUserId");
+                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
+                var isRead = x.Arguments.Get<bool>("isRead");
+                var action = x.Arguments.Get<Action<Notification?>>("setOptionalParameter");
+
+                var notification = new Notification(Guid.NewGuid(), receiverId,
+                    DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                action?.Invoke(notification);
+                notifications.Add(notification);
+            });
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationService>();
 
@@ -102,7 +111,7 @@ public class NotificationServiceTests
     }
 
     [Fact]
-    public async Task CreateWelcomeNotification_WithoutCatenaXAdmin_NotificationsDontGetCreated()
+    public async Task CreateWelcomeNotification_WithoutCatenaXAdmin_ThrowsNotFoundException()
     {
         // Arrange
         _fixture.Inject(_portalRepositories);
@@ -111,12 +120,12 @@ public class NotificationServiceTests
         // Act
         await sut.CreateWelcomeNotificationsForCompanyAsync(Guid.NewGuid());
 
-        // Must not reach that code because of the exception
+        // Assert
         A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._)).MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task CreateWelcomeNotification_WithNoCompanyAdmin_NotificationsDontGetCreated()
+    public async Task CreateWelcomeNotification_WithCompanyAdmin_ThrowsNotFoundException()
     {
         // Arrange
         _fixture.Inject(_portalRepositories);
@@ -125,6 +134,7 @@ public class NotificationServiceTests
         // Act
         await sut.CreateWelcomeNotificationsForCompanyAsync(NoExistingAdminCompanyId);
 
+        // Assert
         A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._)).MustNotHaveHappened();
     }
 
@@ -137,9 +147,20 @@ public class NotificationServiceTests
     {
         // Arrange
         var notifications = new List<Notification>();
-        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._))
-            .Invokes(_ =>
-                notifications.Add(A.Fake<Notification>()));
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
+                A<Action<Notification?>>._))
+            .Invokes(x =>
+            {
+                var receiverId = x.Arguments.Get<Guid>("receiverUserId");
+                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
+                var isRead = x.Arguments.Get<bool>("isRead");
+                var action = x.Arguments.Get<Action<Notification?>>("setOptionalParameter");
+
+                var notification = new Notification(Guid.NewGuid(), receiverId,
+                    DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                action?.Invoke(notification);
+                notifications.Add(notification);
+            });
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationService>();
         const string content = "That's a title";

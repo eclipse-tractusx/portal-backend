@@ -50,6 +50,8 @@ public class NotificationBusinessLogicTests
     private readonly IEnumerable<NotificationDetailData> _unreadNotificationDetails;
     private readonly IUserRepository _userRepository;
 
+    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _addedNotifications = new();
+
     public NotificationBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
