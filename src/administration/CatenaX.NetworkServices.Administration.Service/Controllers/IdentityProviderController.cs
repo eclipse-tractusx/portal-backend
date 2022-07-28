@@ -28,8 +28,10 @@ public class IdentityProviderController : ControllerBase
 
     [HttpGet]
     [Route("owncompany/identityproviders")]
-    public IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProviderDetails() =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProviders(iamUserId));
+    public Task<IEnumerable<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
+        this.WithIamUserId(async iamUserId =>
+            (await _businessLogic.GetOwnCompanyIdentityProviders(iamUserId).ToListAsync().ConfigureAwait(false))
+            .AsEnumerable());
 
     [HttpPost]
     [Route("owncompany/identityproviders")]

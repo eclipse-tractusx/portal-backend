@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Flurl;
 using System.Text.Json;
@@ -32,36 +33,28 @@ public partial class ProvisioningManager
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;
         newIdp.DisplayName = organisationName;
-        if (!await _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp).ConfigureAwait(false))
+        if (! await _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp).ConfigureAwait(false))
         {
-            throw new Exception($"failed to set up central identityprovider {alias} for {organisationName}");
+            throw new KeycloakNoSuccessException($"failed to set up central identityprovider {alias} for {organisationName}");
         }
     }
 
     private async Task UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
     {
         var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
-        if (identityProvider == null)
-        {
-            throw new Exception($"failed to retrieve central identityprovider {alias}");
-        }
         identityProvider.Config.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
         identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
         identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
         identityProvider.Config.JwksUrl = config.JwksUri.ToString();
         if (! await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
         {
-            throw new Exception($"failed to update central identityprovider {alias}");
+            throw new KeycloakNoSuccessException($"failed to update central identityprovider {alias}");
         }
     }
 
     private async Task<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url)
     {
         var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url).ConfigureAwait(false);
-        if (metadata == null || metadata.Count() == 0)
-        {
-            throw new Exception("{url} did return no metadata");
-        }
         var changed = CloneIdentityProvider(identityProvider);
         changed.Config ??= new Config();
         foreach(var (key, value) in metadata)
@@ -97,21 +90,16 @@ public partial class ProvisioningManager
         return changed;
     }
 
-    public async Task<IdentityProvider> GetCentralIdentityProviderAsync(string alias)
+    public Task<IdentityProvider> GetCentralIdentityProviderAsync(string alias)
     {
-        var identityprovider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
-        if (identityprovider == null)
-        {
-            throw new Exception($"failed to retrieve central identityprovider {alias}");
-        }
-        return identityprovider;
+        return _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias);
     }
 
     public async Task UpdateCentralIdentityProviderAsync(string alias, IdentityProvider identityProvider)
     {
         if (! await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
         {
-            throw new Exception($"failed to update config of central identityprovider {alias}");
+            throw new KeycloakNoSuccessException($"failed to update config of central identityprovider {alias}");
         }
     }
 
@@ -119,29 +107,24 @@ public partial class ProvisioningManager
     {
         if (! await _CentralIdp.DeleteIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
         {
-            throw new Exception($"failed to delete central identityprovider {alias}");
+            throw new KeycloakNoSuccessException($"failed to delete central identityprovider {alias}");
         }
     }
 
     private async Task EnableCentralIdentityProviderAsync(string alias)
     {
         var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
-        if (identityProvider != null)
+        identityProvider.Enabled = true;
+        identityProvider.Config.HideOnLoginPage = "false";
+        if (!await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
         {
-            identityProvider.Enabled = true;
-            identityProvider.Config.HideOnLoginPage = "false";
-            if (await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false)) return;
+            throw new KeycloakNoSuccessException($"failed to enable central identityprovider {alias}");
         }
-        throw new Exception($"failed to enable central identityprovider {alias}");
     }
 
     private async Task<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
         var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false);
-        if (openidconfig == null)
-        {
-            throw new Exception($"failed to retrieve central openidconfig");
-        }
         return new Url(openidconfig.Issuer)
             .AppendPathSegment("/broker/")
             .AppendPathSegment(alias)
@@ -152,10 +135,6 @@ public partial class ProvisioningManager
     private async Task<string> GetCentralBrokerEndpointSAMLAsync(string alias)
     {
         var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(false);
-        if (samlDescriptor == null)
-        {
-            throw new Exception($"failed to retrieve central samldescriptor");
-        }
         return new Url(samlDescriptor.EntityId)
             .AppendPathSegment("/broker/")
             .AppendPathSegment(alias)
@@ -178,9 +157,10 @@ public partial class ProvisioningManager
             }
         }).ConfigureAwait(false))
         {
-            throw new Exception($"failed to create tenant-mapper for identityprovider {alias}");
+            throw new KeycloakNoSuccessException($"failed to create tenant-mapper for identityprovider {alias}");
         }
     }
+    
     private async Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName)
     {
         if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
@@ -196,7 +176,7 @@ public partial class ProvisioningManager
             }
         }).ConfigureAwait(false))
         {
-            throw new Exception($"failed to create organisation-mapper for identityprovider {alias}, organisation {organisationName}");
+            throw new KeycloakNoSuccessException($"failed to create organisation-mapper for identityprovider {alias}, organisation {organisationName}");
         }
     }
 
@@ -215,7 +195,7 @@ public partial class ProvisioningManager
             }
         }).ConfigureAwait(false))
         {
-            throw new Exception($"failed to create username-mapper for identityprovider {alias}");
+            throw new KeycloakNoSuccessException($"failed to create username-mapper for identityprovider {alias}");
         }
     }
 
@@ -227,7 +207,7 @@ public partial class ProvisioningManager
         var organisation = mapper?.Config["attribute.value"] as string;
         if (organisation == null)
         {
-            throw new Exception($"unable to retrieve organisation-mapper for {alias}");
+            throw new KeycloakEntityNotFoundException($"unable to retrieve organisation-mapper for {alias}");
         }
         return organisation;
     }

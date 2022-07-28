@@ -3,6 +3,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
@@ -159,16 +160,27 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public async Task DeleteOwnCompanyIdentityProvider(Guid identityProviderId, string iamUserId)
     {
-        var (alias, category, isOwnCompany) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
-        if (!isOwnCompany)
-        {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
-        }
-        if (alias == null)
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDeletionDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        var (companyId, alias, companyCount) = result;
+        if (companyId == default)
+        {
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+        }
+        _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
+        if (companyCount == 1)
+        {
+            if (alias != null)
+            {
+                _portalRepositories.Remove(new IamIdentityProvider(alias, default!));
+                await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            }
+            _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default)));
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     private async Task<IdentityProviderDetails> GetCentralIdentityProviderDetailsOIDCAsync(Guid identityProviderId, string alias)
