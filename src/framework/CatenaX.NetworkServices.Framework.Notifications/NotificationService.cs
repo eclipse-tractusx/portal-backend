@@ -46,28 +46,32 @@ public class NotificationService : INotificationService
         var userIds = await _portalRepositories.GetInstance<IUserRepository>().GetCatenaAndCompanyAdminIdAsync(companyId).ToListAsync().ConfigureAwait(false);
         if (userIds.All(x => !x.IsCatenaXAdmin))
         {
-            throw new NotFoundException("No CatenaX Admin found");
+            return;
         }
 
-        if (userIds.All(x => !x.IsCompanyAdmin))
+        if (!userIds.Any(x => !x.IsCatenaXAdmin && x.IsCompanyAdmin))
         {
-            throw new NotFoundException($"No Company Admin found for company {companyId}");
+            return;
         }
 
-        foreach (var typeId in new[] {
-                     NotificationTypeId.WELCOME,
-                     NotificationTypeId.WELCOME_USE_CASES,
-                     NotificationTypeId.WELCOME_SERVICE_PROVIDER,
-                     NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION,
-                     NotificationTypeId.WELCOME_APP_MARKETPLACE,
-                 })
+        foreach (var receiverUserId in userIds.Where(x => !x.IsCatenaXAdmin && x.IsCompanyAdmin).Select(x => x.CompanyUserId))
         {
-            _portalRepositories.GetInstance<INotificationRepository>().Create(userIds.Single(x => x.IsCompanyAdmin).CompanyUserId, typeId, false,
-                notification =>
-                {
-                    notification.CreatorUserId = userIds.Single(x => x.IsCatenaXAdmin).CompanyUserId;
-                });
+            foreach (var typeId in new[] {
+                         NotificationTypeId.WELCOME,
+                         NotificationTypeId.WELCOME_USE_CASES,
+                         NotificationTypeId.WELCOME_SERVICE_PROVIDER,
+                         NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION,
+                         NotificationTypeId.WELCOME_APP_MARKETPLACE,
+                     })
+            {
+                _portalRepositories.GetInstance<INotificationRepository>().Create(receiverUserId, typeId, false,
+                    notification =>
+                    {
+                        notification.CreatorUserId = userIds.Single(x => x.IsCatenaXAdmin).CompanyUserId;
+                    });
+            }
         }
+
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

@@ -102,49 +102,30 @@ public class NotificationServiceTests
     }
 
     [Fact]
-    public async Task CreateWelcomeNotification_WithoutCatenaXAdmin_ThrowsNotFoundException()
+    public async Task CreateWelcomeNotification_WithoutCatenaXAdmin_NotificationsDontGetCreated()
     {
         // Arrange
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationService>();
 
         // Act
-        try
-        {
-            await sut.CreateWelcomeNotificationsForCompanyAsync(Guid.NewGuid());
-        }
-        catch (NotFoundException e)
-        {
-            // Assert
-            e.Message.Should().Be("No CatenaX Admin found");
-            return;
-        }
+        await sut.CreateWelcomeNotificationsForCompanyAsync(Guid.NewGuid());
 
         // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._)).MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task CreateWelcomeNotification_WithCompanyAdmin_ThrowsNotFoundException()
+    public async Task CreateWelcomeNotification_WithNoCompanyAdmin_NotificationsDontGetCreated()
     {
         // Arrange
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<NotificationService>();
 
         // Act
-        try
-        {
-            await sut.CreateWelcomeNotificationsForCompanyAsync(NoExistingAdminCompanyId);
-        }
-        catch (NotFoundException e)
-        {
-            // Assert
-            e.Message.Should().Be($"No Company Admin found for company {NoExistingAdminCompanyId}");
-            return;
-        }
+        await sut.CreateWelcomeNotificationsForCompanyAsync(NoExistingAdminCompanyId);
 
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._)).MustNotHaveHappened();
     }
 
     #endregion
