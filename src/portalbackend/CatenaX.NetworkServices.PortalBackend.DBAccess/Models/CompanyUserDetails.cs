@@ -5,13 +5,14 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public class CompanyUserDetails
 {
-    public CompanyUserDetails(Guid companyUserId, DateTimeOffset createdAt, IEnumerable<string> businessPartnerNumbers, string companyName, CompanyUserStatusId companyUserStatusId)
+    public CompanyUserDetails(Guid companyUserId, DateTimeOffset createdAt, IEnumerable<string> businessPartnerNumbers, string companyName, CompanyUserStatusId companyUserStatusId,IEnumerable<CompanyUserAssignedRoleDetails> assignedRoles)
     {
         CompanyUserId = companyUserId;
         CreatedAt = createdAt;
         BusinessPartnerNumbers = businessPartnerNumbers;
         CompanyName = companyName;
         CompanyUserStatusId = companyUserStatusId;
+        AssignedRoles = assignedRoles;
     }
 
     [JsonPropertyName("companyUserId")]
@@ -37,4 +38,23 @@ public class CompanyUserDetails
 
     [JsonPropertyName("status")]
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
+
+    [JsonPropertyName("assignedRoles")]
+    public IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles { get; set; }
+}
+
+public class CompanyUserAssignedRoleDetails
+{
+    public CompanyUserAssignedRoleDetails(Guid appId, IEnumerable<string> roles)
+    {
+        AppId = appId;
+        UserRoles = roles;
+    }
+
+    [JsonPropertyName("appId")]
+    public Guid AppId { get; set; }
+
+    [JsonPropertyName("roles")]
+    public IEnumerable<string> UserRoles { get; set; }
+
 }
