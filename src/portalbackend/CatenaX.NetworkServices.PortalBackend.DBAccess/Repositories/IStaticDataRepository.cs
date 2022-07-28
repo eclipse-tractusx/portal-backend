@@ -19,8 +19,6 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -40,5 +38,4 @@ public interface IStaticDataRepository
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
-
 }
