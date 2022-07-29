@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+ 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -42,11 +43,9 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<UseCaseData> GetAllUseCase() =>
-         this._portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
-
+        _portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
 
     /// <inheritdoc/>
     public IAsyncEnumerable<LanguageData> GetAllLanguage() =>
-         this._portalRepositories.GetInstance<IStaticDataRepository>().GetAllLanguage();
-    
+        _portalRepositories.GetInstance<IStaticDataRepository>().GetAllLanguage();  
 }
