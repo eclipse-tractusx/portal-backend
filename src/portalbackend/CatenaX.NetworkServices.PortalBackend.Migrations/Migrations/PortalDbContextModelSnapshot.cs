@@ -3664,6 +3664,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 9,
                             Label = "APP_SUBSCRIPTION_ACTIVATION"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "CONNECTOR_REGISTERED"
                         });
                 });
 
