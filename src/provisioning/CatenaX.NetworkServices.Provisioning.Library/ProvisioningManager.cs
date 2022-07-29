@@ -220,13 +220,14 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                     IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod));
         }
 
-        public async Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string? secret = null)
+        public async Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId, string? secret = null)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;
             identityProvider.Config.AuthorizationUrl = authorizationUrl;
             identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
+            identityProvider.Config.ClientId = clientId;
             identityProvider.Config.ClientSecret = secret;
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }

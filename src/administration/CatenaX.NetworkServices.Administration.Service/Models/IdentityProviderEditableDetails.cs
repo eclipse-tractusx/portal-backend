@@ -12,7 +12,7 @@ public record IdentityProviderEditableDetails(string displayName, string redirec
     public IdentityProviderEditableDetailsSAML? saml { get; init; } = null;
 }
 
-public record IdentityProviderEditableDetailsOIDC(string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod)
+public record IdentityProviderEditableDetailsOIDC(string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? secret { get; init; } = null;
