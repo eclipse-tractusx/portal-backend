@@ -27,8 +27,6 @@
                 <ModulePath>.*\.exe$</ModulePath>
             </Include>
             <Exclude>
-                <ModulePath>.\administration\CatenaX.NetworkServices.Administration.Service\Program.cs</ModulePath>
-                <ModulePath>.\notification\CatenaX.NetworkServices.Notification.Service\Program.cs</ModulePath>
                 <ModulePath>.*CPPUnitTestFramework.*</ModulePath>
             </Exclude>
         </ModulePaths>
@@ -64,8 +62,8 @@
         <!-- Match the path of the source files in which each method is defined: -->
         <Sources>
             <Exclude>
-                <Source>.\\administration\\CatenaX.NetworkServices.Administration.Service\\Program.cs</Source>
-                <Source>.\\notification\\CatenaX.NetworkServices.Notification.Service\\Program.cs</Source>
+                <Source>.*\\administration\\CatenaX.NetworkServices.Administration.Service\\Program.cs</Source>
+                <Source>.*\\notification\\CatenaX.NetworkServices.Notification.Service\\Program.cs</Source>
             </Exclude>
         </Sources>
 

@@ -20,7 +20,6 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -37,6 +36,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class UserRepositoryTests
 {
+    private static string CatenaXCompanyName = "Catena X";
+    private static string CxAdminRolename = "CX Admin";
+    private static string CompanyAdminRole = "Company Admin";
     private static readonly Guid CatenaXCompanyId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
@@ -55,7 +57,7 @@ public class UserRepositoryTests
     public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
     {
         // Arrange
-        var favouriteApps = _fixture.CreateMany<App>(10);
+        var favouriteApps = _fixture.CreateMany<App>(10).ToList();
         var (companyUser, iamUser) = CreateTestUserPair();
         foreach (var app in favouriteApps)
         {
@@ -73,8 +75,9 @@ public class UserRepositoryTests
 
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(favouriteApps.Count());
-        results.Should().AllSatisfy(a => favouriteApps.Select(app => app.Id).Contains(a));
+        results.Should().HaveCount(favouriteApps.Count);
+        var favouriteAppIds = favouriteApps.Select(app => app.Id).ToList();
+        results.Should().BeEquivalentTo(favouriteAppIds);
     }
     
     [Fact]
@@ -127,7 +130,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId).ToListAsync();
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId, CatenaXCompanyName, CxAdminRolename, CompanyAdminRole).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -146,7 +149,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId).ToListAsync();
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId, CatenaXCompanyName, CxAdminRolename, CompanyAdminRole).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -165,7 +168,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId).ToListAsync();
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId, CatenaXCompanyName, CxAdminRolename, CompanyAdminRole).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -190,11 +193,11 @@ public class UserRepositoryTests
 
     private void CreateFakeContext(Guid companyId, bool withCatenaXAdmin, int companyAdminCount)
     {
-        var catenaCompany = new Company(Guid.NewGuid(), Constants.CatenaXCompanyName, CompanyStatusId.ACTIVE,
+        var catenaCompany = new Company(Guid.NewGuid(), CatenaXCompanyName, CompanyStatusId.ACTIVE,
             DateTimeOffset.UtcNow);
 
-        var catenaXAdminRole = new UserRole(Guid.NewGuid(), Constants.CxAdminRolename, Guid.NewGuid());
-        var companyAdminRole = new UserRole(Guid.NewGuid(), Constants.CompanyAdminRole, Guid.NewGuid());
+        var catenaXAdminRole = new UserRole(Guid.NewGuid(), CxAdminRolename, Guid.NewGuid());
+        var companyAdminRole = new UserRole(Guid.NewGuid(), CompanyAdminRole, Guid.NewGuid());
         var rolesDbSet = new List<UserRole>
         {
             catenaXAdminRole,
@@ -215,7 +218,7 @@ public class UserRepositoryTests
         {
             var catenaAdmin = new CompanyUser(Guid.NewGuid(), CatenaXCompanyId, CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
             {
-                Lastname = Constants.CxAdminRolename,
+                Lastname = CxAdminRolename,
                 Company = catenaCompany,
                 UserRoles = { catenaXAdminRole }
             };

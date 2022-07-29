@@ -21,7 +21,6 @@
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -41,9 +40,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
-    private readonly INotificationService _notifcationService;
 
-    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService, INotificationService notifcationService)
+    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
         _applicationRepository = portalRepositories.GetInstance<IApplicationRepository>();
@@ -51,14 +49,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _provisioningManager = provisioningManager;
         _custodianService = custodianService;
         _mailingService = mailingService;
-        _notifcationService = notifcationService;
     }
 
     public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
     {
         if (applicationId == default)
         {
-            throw new ArgumentNullException("applicationId must not be null");
+            throw new ArgumentNullException(nameof(applicationId));
         }
 
         var companyWithAddress = await _applicationRepository.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
@@ -111,7 +108,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (applicationId == default)
         {
-            throw new ArgumentNullException("applicationId must not be null");
+            throw new ArgumentNullException(nameof(applicationId));
         }
 
         var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
@@ -130,9 +127,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var initialRolesData = await userRolesRepository.GetUserRoleDataUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
-        if (initialRolesData.Count() < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        if (initialRolesData.Count < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
         {
-            throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ", clientRoles.Value)}]"))}");
+            throw new UnexpectedConditionException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
@@ -164,37 +161,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
                 .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
-                .Where(clientRoles => clientRoles.roles.Count() > 0);
+                .Where(clientRoles => clientRoles.roles.Any());
 
-            if (unassignedClientRoles.Count() > 0)
+            if (unassignedClientRoles.Any())
             {
-                throw new Exception($"inconsistend data, roles not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
+                throw new UnexpectedConditionException($"inconsistend data, roles not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
             }
         }
 
-        await _notifcationService.CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
-        return true;
-    }
-
-    private async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
-    {
-        await foreach (var user in _applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
-        {
-            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
-
-            if (String.IsNullOrWhiteSpace(user.Email))
-            {
-                throw new ArgumentException($"user {userName} has no assigned email");
-            }
-
-            var mailParameters = new Dictionary<string, string>
-                {
-                    { "userName", !String.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-                    { "companyName", user.CompanyName }
-                };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
-        }
+        await this.CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
         return true;
     }
 
@@ -202,7 +177,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (applicationId == default)
         {
-            throw new ArgumentNullException("applicationId must not be null");
+            throw new ArgumentNullException(nameof(applicationId));
         }
 
         var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
@@ -260,13 +235,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     {
                         Application = application,
                         CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
-                    .Where(companyUser =>
+                    .FirstOrDefault(companyUser =>
                         companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
                         && companyUser.Firstname != null
                         && companyUser.Lastname != null
                         && companyUser.Email != null
                     )
-                    .FirstOrDefault()
                     })
                     .Select(s => new CompanyApplicationWithCompanyUserDetails(
                         s.Application.ApplicationStatusId,
@@ -278,6 +252,59 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         Email = s.CompanyUser.Email
                     })
                     .AsAsyncEnumerable()));
+    }
 
+    /// <inheritdoc />
+    private async Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId)
+    {
+        var userIds = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCatenaAndCompanyAdminIdAsync(companyId, _settings.CatenaXCompanyName, _settings.CxAdminRolename, _settings.CompanyAdminRole)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (userIds.All(x => !x.IsCatenaXAdmin))
+        {
+            return;
+        }
+
+        if (!userIds.Any(x => !x.IsCatenaXAdmin && x.IsCompanyAdmin))
+        {
+            return;
+        }
+
+        foreach (var receiverUserId in userIds.Where(x => !x.IsCatenaXAdmin && x.IsCompanyAdmin).Select(x => x.CompanyUserId))
+        {
+            foreach (var typeId in _settings.WelcomeNotificationTypeIds)
+            {
+                _portalRepositories.GetInstance<INotificationRepository>().Create(receiverUserId, typeId, false,
+                    notification =>
+                    {
+                        notification.CreatorUserId = userIds.Single(x => x.IsCatenaXAdmin).CompanyUserId;
+                    });
+            }
+        }
+
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task PostRegistrationWelcomeEmailAsync(Guid applicationId)
+    {
+        await foreach (var user in _applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
+        {
+            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
+
+            if (String.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ArgumentException($"user {userName} has no assigned email");
+            }
+
+            var mailParameters = new Dictionary<string, string>
+                {
+                    { "userName", !String.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                    { "companyName", user.CompanyName }
+                };
+
+            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+        }
     }
 }

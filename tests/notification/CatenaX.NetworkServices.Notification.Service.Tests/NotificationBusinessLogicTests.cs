@@ -50,8 +50,6 @@ public class NotificationBusinessLogicTests
     private readonly IEnumerable<NotificationDetailData> _unreadNotificationDetails;
     private readonly IUserRepository _userRepository;
 
-    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _addedNotifications = new();
-
     public NotificationBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -76,6 +74,70 @@ public class NotificationBusinessLogicTests
         _notificationDetails = _readNotificationDetails.Concat(_unreadNotificationDetails.ToAsyncEnumerable()).AsAsyncEnumerable();
         SetupRepositories(companyUser, iamUser);
     }
+
+    #region Create Notification
+
+    [Fact]
+    public async Task CreateNotification_WithValidData_ReturnsCorrectDetails()
+    {
+        // Arrange
+        var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
+        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
+                A<Action<PortalBackend.PortalEntities.Entities.Notification?>>._))
+            .Invokes(x =>
+            {
+                var receiverId = x.Arguments.Get<Guid>("receiverUserId");
+                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
+                var isRead = x.Arguments.Get<bool>("isRead");
+                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
+
+                var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
+                    DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                action?.Invoke(notification);
+                notifications.Add(notification);
+            });
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+        const string content = "That's a title";
+
+        // Act
+        var result = await sut.CreateNotificationAsync(_iamUser.UserEntityId,
+            new NotificationCreationData(content, NotificationTypeId.INFO,
+                false), _companyUser.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        notifications.Should().HaveCount(1);
+        var notification = notifications.Single();
+        notification.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateNotification_WithNotExistingCompanyUser_ThrowsArgumentException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<NotificationBusinessLogic>();
+
+        // Act
+        try
+        {
+            await sut.CreateNotificationAsync(_iamUser.UserEntityId,
+                new NotificationCreationData("That's a title",
+                    NotificationTypeId.INFO, false), Guid.NewGuid());
+        }
+        catch (ArgumentException e)
+        {
+            // Assert
+            e.ParamName.Should().Be("receiverId");
+            return;
+        }
+
+        // Must not reach that code because of the exception
+        false.Should().BeTrue();
+    }
+
+    #endregion
 
     #region Get Notifications
 
