@@ -200,6 +200,7 @@ public class UserRepository : IUserRepository
                                           IdentityProviderCategoryId.KEYCLOAK_SHARED))
             .Include(companyUser => companyUser.Company)
             .Include(companyUser => companyUser.IamUser)
+            .AsSplitQuery()
             .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
                 companyUser,
                 companyUser.Company!.IdentityProviders.Where(identityProvider =>
@@ -207,8 +208,14 @@ public class UserRepository : IUserRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()!,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber)
-            ))
+                    assignedPartner.BusinessPartnerNumber),
+                companyUser.Company!.CompanyAssignedApps
+                    .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
+                    .Select(app => new CompanyUserAssignedRoleDetails(
+                        app.AppId,
+                        app.App.IamClients.SelectMany(iamClient => iamClient.UserRoles
+                                    .Select(role => role.UserRoleText))
+                    ))))
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId) =>
