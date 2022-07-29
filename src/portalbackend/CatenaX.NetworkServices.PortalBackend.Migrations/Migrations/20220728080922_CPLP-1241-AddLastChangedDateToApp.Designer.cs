@@ -3,6 +3,7 @@ using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220728080922_CPLP-1241-AddLastChangedDateToApp")]
+    partial class CPLP1241AddLastChangedDateToApp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3629,41 +3631,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 2,
                             Label = "ACTION"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "WELCOME"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "WELCOME_USE_CASES"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "WELCOME_SERVICE_PROVIDER"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "WELCOME_CONNECTOR_REGISTRATION"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Label = "WELCOME_APP_MARKETPLACE"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Label = "APP_SUBSCRIPTION_REQUEST"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Label = "APP_SUBSCRIPTION_ACTIVATION"
                         });
                 });
 
