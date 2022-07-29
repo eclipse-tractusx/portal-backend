@@ -262,10 +262,10 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> GetCatenaAndCompanyAdminIdAsync(Guid companyId, string catenaXCompanyName, string cxAdminRolename, string companyAdminRole) =>
+    public IAsyncEnumerable<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)> GetCatenaAndCompanyAdminIdAsync(Guid companyId, string catenaXCompanyName, string cxAdminRolename, string companyAdminRole) =>
         _dbContext.CompanyUsers
             .Where(x => (x.Company!.Name == catenaXCompanyName && x.UserRoles.Any(y => y.UserRoleText == cxAdminRolename)) ||
                         (x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == companyAdminRole)))
-            .Select(x => ((Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)) new ValueTuple<Guid, bool, bool>(x.Id, x.UserRoles.Any(y => y.UserRoleText == cxAdminRolename), x.CompanyId == companyId && x.UserRoles.Any(y => y.UserRoleText == companyAdminRole)))
+            .Select(x => ((Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)) new ValueTuple<Guid, bool, IEnumerable<string>>(x.Id, x.Company!.Name == catenaXCompanyName, x.UserRoles.Select(y => y.UserRoleText)))
             .ToAsyncEnumerable();
 }
