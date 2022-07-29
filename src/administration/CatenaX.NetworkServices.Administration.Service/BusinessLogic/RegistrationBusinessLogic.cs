@@ -261,24 +261,24 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .GetCatenaAndCompanyAdminIdAsync(companyId, _settings.CatenaXCompanyName, _settings.CxAdminRolename, _settings.CompanyAdminRole)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (userIds.All(x => !x.IsCatenaXAdmin))
+        if (!userIds.Any(x => x.CompanyIsCatena && x.RoleNames.Any(y => y == _settings.CxAdminRolename)))
         {
             return;
         }
 
-        if (!userIds.Any(x => !x.IsCatenaXAdmin && x.IsCompanyAdmin))
+        if (!userIds.Any(x => x.RoleNames.All(y => y != _settings.CxAdminRolename) && x.RoleNames.Any(y => y == _settings.CompanyAdminRole)))
         {
             return;
         }
 
-        foreach (var receiverUserId in userIds.Where(x => !x.IsCatenaXAdmin && x.IsCompanyAdmin).Select(x => x.CompanyUserId))
+        foreach (var receiverUserId in userIds.Where(x => x.RoleNames.All(y => y != _settings.CxAdminRolename) && x.RoleNames.Any(y => y == _settings.CompanyAdminRole)).Select(x => x.CompanyUserId))
         {
             foreach (var typeId in _settings.WelcomeNotificationTypeIds)
             {
                 _portalRepositories.GetInstance<INotificationRepository>().Create(receiverUserId, typeId, false,
                     notification =>
                     {
-                        notification.CreatorUserId = userIds.Single(x => x.IsCatenaXAdmin).CompanyUserId;
+                        notification.CreatorUserId = userIds.Single(x => x.CompanyIsCatena && x.RoleNames.Any(y => y == _settings.CxAdminRolename)).CompanyUserId;
                     });
             }
         }

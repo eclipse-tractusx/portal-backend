@@ -135,8 +135,8 @@ public class UserRepositoryTests
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(2);
-        result.Where(x => x.IsCompanyAdmin).Should().HaveCount(2);
-        result.Where(x => x.IsCatenaXAdmin).Should().HaveCount(0);
+        result.Where(x => x.RoleNames.Any(y => y == CompanyAdminRole)).Should().HaveCount(2);
+        result.Where(x => x.RoleNames.Any(y => y == CxAdminRolename)).Should().HaveCount(0);
     }
 
     [Fact]
@@ -154,8 +154,8 @@ public class UserRepositoryTests
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(3);
-        result.Where(x => x.IsCompanyAdmin).Should().HaveCount(2);
-        result.Where(x => x.IsCatenaXAdmin).Should().HaveCount(1);
+        result.Where(x => x.RoleNames.Any(y => y == CompanyAdminRole)).Should().HaveCount(2);
+        result.Where(x => x.RoleNames.Any(y => y == CxAdminRolename)).Should().HaveCount(1);
     }
 
     [Fact]
@@ -173,8 +173,8 @@ public class UserRepositoryTests
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(1);
-        result.Where(x => x.IsCompanyAdmin).Should().HaveCount(0);
-        result.Where(x => x.IsCatenaXAdmin).Should().HaveCount(1);
+        result.Where(x => x.RoleNames.Any(y => y == CompanyAdminRole)).Should().HaveCount(0);
+        result.Where(x => x.RoleNames.Any(y => y == CxAdminRolename)).Should().HaveCount(1);
     }
 
     #region Setup
@@ -206,10 +206,14 @@ public class UserRepositoryTests
         var companyUsers = companyAdminCount > 0 ?
             _fixture.Build<CompanyUser>()
                 .With(x => x.CompanyId, companyId)
-                .With(x => x.UserRoles, new List<UserRole>{ companyAdminRole})
                 .CreateMany(companyAdminCount)
                 .ToList() :
             new List<CompanyUser>();
+        foreach (var companyUser in companyUsers)
+        {
+            companyUser.UserRoles.Add(companyAdminRole);
+        }
+
         var companyUserRoles = companyUsers
             .Select(companyUser => new CompanyUserAssignedRole(companyUser.Id, companyAdminRole.Id))
             .ToList();

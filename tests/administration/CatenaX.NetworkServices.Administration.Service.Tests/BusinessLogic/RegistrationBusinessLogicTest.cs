@@ -206,7 +206,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         public async Task ApprovePartnerRequest_WithDefaultApplicationId_ThrowsArgumentNullException()
         {
             //Act
-            async Task Action() => await _logic.ApprovePartnerRequest(default);
+            async Task Action() => await _logic.ApprovePartnerRequest(Guid.Empty);
             // Assert
             var ex = await Assert.ThrowsAsync<ArgumentNullException>(Action);
             ex.ParamName.Should().Be("applicationId");
@@ -331,25 +331,25 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             {
                 A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName,
                         _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                    .Returns(new List<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)>
-                        {new(CompanyUserId1, true, false), new(CompanyUserId1, false, true)}.ToAsyncEnumerable());
+                    .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)>
+                        {new(CompanyUserId1, true, new[] { _settings.CxAdminRolename }), new(CompanyUserId1, false, new[] { _settings.CompanyAdminRole })}.ToAsyncEnumerable());
             }
             else if (withCompanyAdmin)
             {
                 A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName,
                         _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                .Returns(new List<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> { new (CompanyUserId1, false, true) }.ToAsyncEnumerable());
+                .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)> { new (CompanyUserId1, false, new[] { _settings.CompanyAdminRole }) }.ToAsyncEnumerable());
             }
             else if (withCatenaXAdmin)
             {
                 A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName,
                         _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                    .Returns(new List<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> { new (CompanyUserId1, true, false) }.ToAsyncEnumerable());
+                    .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)> { new (CompanyUserId1, true, new[] { _settings.CxAdminRolename }) }.ToAsyncEnumerable());
             }
             else
             {
                 A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName, _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                    .Returns(new List<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)>().ToAsyncEnumerable());
+                    .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)>().ToAsyncEnumerable());
             }
 
             A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
@@ -365,7 +365,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                     action?.Invoke(notification);
                     _notifications.Add(notification);
                 });
-
         }
 
         #endregion
