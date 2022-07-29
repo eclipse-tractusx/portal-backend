@@ -3,6 +3,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.EntityFrameworkCore;
+using CatenaX.NetworkServices.Framework.Models;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -92,6 +93,16 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 role.Agreements);
         }
     }
+
+     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
+        _dbContext.CompanyRoles
+                .AsNoTracking()
+                .Select(companyRole => new CompanyRolesDetails(
+                    companyRole.Label,
+                    languageShortName == null ?
+                    companyRole.CompanyRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == Constants.DefaultLanguage)!.Description :
+                    companyRole.CompanyRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+                )).AsAsyncEnumerable();
 
     public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
         _dbContext.Agreements

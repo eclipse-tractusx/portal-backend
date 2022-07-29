@@ -352,5 +352,19 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
          public Task<RegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
             this.WithIamUserId(iamUserId => 
                 _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));
+
+        /// <summary>
+        /// Gets the company roles and roles description
+        /// </summary>
+        /// <param name="lang" example="en">Optional two character language specifier for the roles description. Will be empty if not provided.</param>
+        /// <returns>Returns the Company roles and roles description</returns>
+        /// <remarks>Example: Get: /api/registration/company/companyRoles</remarks>
+        /// <response code="200">Returns the Company roles data</response>
+        [HttpGet]
+        [Authorize(Roles = "view_company_roles")]
+        [Route("company/companyRoles")]
+        [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
+        public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
+            _registrationBusinessLogic.GetCompanyRolesAsync(languageShortName);
     }
 }
