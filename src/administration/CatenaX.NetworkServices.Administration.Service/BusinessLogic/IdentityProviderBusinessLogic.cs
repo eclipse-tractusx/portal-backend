@@ -29,20 +29,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             {
                 case IdentityProviderCategoryId.KEYCLOAK_SHARED:
                 case IdentityProviderCategoryId.KEYCLOAK_OIDC:
-                    var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(identityProviderData.Alias).ConfigureAwait(false);
-                    yield return new IdentityProviderDetails(
-                        identityProviderData.IdentityProviderId,
-                        identityProviderData.Alias,
-                        identityProviderData.CategoryId,
-                        identityProviderDataOIDC.DisplayName,
-                        identityProviderDataOIDC.RedirectUrl,
-                        identityProviderDataOIDC.Enabled)
-                        {
-                            oidc = new IdentityProviderDetailsOIDC(
-                                identityProviderDataOIDC.AuthorizationUrl,
-                                identityProviderDataOIDC.ClientId,
-                                identityProviderDataOIDC.ClientAuthMethod)
-                        };
+                    yield return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.CategoryId).ConfigureAwait(false);
                     break;
                 case IdentityProviderCategoryId.KEYCLOAK_SAML:
                     var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(identityProviderData.Alias).ConfigureAwait(false);
@@ -94,7 +81,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         switch (protocol)
         {
             case IamIdentityProviderProtocol.OIDC:
-                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProvider.Id, alias).ConfigureAwait(false);
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProvider.Id, alias, IdentityProviderCategoryId.KEYCLOAK_OIDC).ConfigureAwait(false);
             case IamIdentityProviderProtocol.SAML:
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProvider.Id, alias).ConfigureAwait(false);
             default:
@@ -116,7 +103,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         switch(category)
         {
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
-                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias).ConfigureAwait(false);
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias, category).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
@@ -149,10 +136,11 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     details.oidc.authorizationUrl,
                     details.oidc.clientAuthMethod,
                     details.oidc.clientId,
-                    details.oidc.secret)
+                    details.oidc.secret,
+                    details.oidc.signatureAlgorithm)
                     .ConfigureAwait(false);
                 var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
-                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias).ConfigureAwait(false);
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias, category).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 if(details.saml == null)
                 {
@@ -168,7 +156,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
-                throw new ArgumentException($"identityProvider {identityProviderId} category cannot be updated");
+                throw new ArgumentException($"identityProvider {identityProviderId} category {category} cannot be updated");
         }
     }
 
@@ -197,13 +185,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task<IdentityProviderDetails> GetCentralIdentityProviderDetailsOIDCAsync(Guid identityProviderId, string alias)
+    private async Task<IdentityProviderDetails> GetCentralIdentityProviderDetailsOIDCAsync(Guid identityProviderId, string alias, IdentityProviderCategoryId categoryId)
     {
         var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
         return new IdentityProviderDetails(
             identityProviderId,
             alias,
-            IdentityProviderCategoryId.KEYCLOAK_OIDC,
+            categoryId,
             identityProviderDataOIDC.DisplayName,
             identityProviderDataOIDC.RedirectUrl,
             identityProviderDataOIDC.Enabled)
@@ -212,6 +200,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     identityProviderDataOIDC.AuthorizationUrl,
                     identityProviderDataOIDC.ClientId,
                     identityProviderDataOIDC.ClientAuthMethod)
+                    {
+                        signatureAlgorithm = identityProviderDataOIDC.SignatureAlgorithm
+                    }
             };
     }
     private async Task<IdentityProviderDetails> GetCentralIdentityProviderDetailsSAMLAsync(Guid identityProviderId, string alias)

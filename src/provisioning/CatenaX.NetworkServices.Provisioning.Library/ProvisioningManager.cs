@@ -207,21 +207,46 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Where(r => r.Composite == true).Select(x => x.Name);
         }
 
-        public async Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod)> GetCentralIdentityProviderDataOIDCAsync(string alias)
+        public async Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm)> GetCentralIdentityProviderDataOIDCAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
-            return ((string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod))
+            return ((string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm))
                 new (identityProvider.DisplayName,
                     redirectUri,
                     identityProvider.Config.ClientId,
                     identityProvider.Enabled ?? false,
                     identityProvider.Config.AuthorizationUrl,
-                    IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod));
+                    IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
+                    identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
         }
 
-        public async Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId, string? secret = null)
+        public async Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId, string? secret = null, IamIdentityProviderSignatureAlgorithm? signatureAlgorithm = null)
         {
+            if(secret == null)
+            {
+                switch(clientAuthMethod)
+                {
+                    case IamIdentityProviderClientAuthMethod.SECRET_BASIC:
+                    case IamIdentityProviderClientAuthMethod.SECRET_POST:
+                    case IamIdentityProviderClientAuthMethod.SECRET_JWT:
+                        throw new ArgumentException($"secret must not be null for clientAuthMethod {clientAuthMethod.ToString()}");
+                    default:
+                        break;
+                }
+            }
+            if(!signatureAlgorithm.HasValue)
+            {
+                switch(clientAuthMethod)
+                {
+                    case IamIdentityProviderClientAuthMethod.SECRET_JWT:
+                    case IamIdentityProviderClientAuthMethod.JWT:
+                        throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {clientAuthMethod.ToString()}");
+                    default:
+                        break;
+                }
+            }
+
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;
@@ -229,6 +254,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
             identityProvider.Config.ClientId = clientId;
             identityProvider.Config.ClientSecret = secret;
+            identityProvider.Config.ClientAssertionSigningAlg = signatureAlgorithm?.ToString();
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }
 

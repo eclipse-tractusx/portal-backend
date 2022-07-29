@@ -13,6 +13,10 @@ public record IdentityProviderDetails(Guid identityProviderId, string alias, Ide
     public IdentityProviderDetailsSAML? saml { get; init; } = null;
 }
 
-public record IdentityProviderDetailsOIDC(string authorizationUrl, string clientId, IamIdentityProviderClientAuthMethod clientAuthMethod);
+public record IdentityProviderDetailsOIDC(string authorizationUrl, string clientId, IamIdentityProviderClientAuthMethod clientAuthMethod)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
+}
 
 public record IdentityProviderDetailsSAML(string serviceProviderEntityId, string singleSignOnServiceUrl);

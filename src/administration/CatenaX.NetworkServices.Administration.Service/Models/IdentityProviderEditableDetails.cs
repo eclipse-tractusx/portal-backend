@@ -16,6 +16,9 @@ public record IdentityProviderEditableDetailsOIDC(string authorizationUrl, IamId
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? secret { get; init; } = null;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
 }
 
 public record IdentityProviderEditableDetailsSAML(string serviceProviderEntityId, string singleSignOnServiceUrl);
