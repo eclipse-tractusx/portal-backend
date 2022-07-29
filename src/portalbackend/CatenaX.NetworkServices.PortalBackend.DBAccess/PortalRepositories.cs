@@ -27,9 +27,39 @@ public class PortalRepositories : IPortalRepositories
 {
     private readonly PortalDbContext _dbContext;
 
+    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+        { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
+        { typeof(IAppRepository), context => new AppRepository(context) },
+        { typeof(ICompanyAssignedAppsRepository), context => new CompanyAssignedAppsRepository(context) },
+        { typeof(ICompanyRepository), context => new CompanyRepository(context) },
+        { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
+        { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
+        { typeof(IConsentRepository), context => new ConsentRepository(context) },
+        { typeof(ICountryRepository), context => new CountryRepository(context) },
+        { typeof(IDocumentRepository), context => new DocumentRepository(context) },
+        { typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
+        { typeof(INotificationRepository), context => new NotificationRepository(context) },
+        { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
+        { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
+        { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
+        { typeof(IUserRepository), context => new UserRepository(context) },
+        { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
+    };
+
     public PortalRepositories(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
+    }
+
+    public RepositoryType GetInstance<RepositoryType>()
+    {
+        Object? repository = default;
+
+        if (_types.TryGetValue(typeof(RepositoryType), out Func<PortalDbContext, Object>? createFunc))
+        {
+            repository = createFunc(_dbContext);
+        }
+        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType)));
     }
 
     /// <inheritdoc />
@@ -47,78 +77,5 @@ public class PortalRepositories : IPortalRepositories
         where TEntity : class
         => _dbContext.Remove(entity).Entity;
 
-    public RepositoryType GetInstance<RepositoryType>()
-    {
-        var repositoryType = typeof(RepositoryType);
-
-        if (repositoryType == typeof(IAppRepository))
-        {
-            return To<RepositoryType>(new AppRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IApplicationRepository))
-        {
-            return To<RepositoryType>(new ApplicationRepository(_dbContext));
-        }
-        if (repositoryType == typeof(ICompanyAssignedAppsRepository))
-        {
-            return To<RepositoryType>(new CompanyAssignedAppsRepository(_dbContext));
-        }
-        if (repositoryType == typeof(ICompanyRepository))
-        {
-            return To<RepositoryType>(new CompanyRepository(_dbContext));
-        }
-        if (repositoryType == typeof(ICompanyRolesRepository))
-        {
-            return To<RepositoryType>(new CompanyRolesRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IConnectorsRepository))
-        {
-            return To<RepositoryType>(new ConnectorsRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IConsentRepository))
-        {
-            return To<RepositoryType>(new ConsentRepository(_dbContext));
-        }
-        if (repositoryType == typeof(ICountryRepository))
-        {
-            return To<RepositoryType>(new CountryRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IDocumentRepository))
-        {
-            return To<RepositoryType>(new DocumentRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IIdentityProviderRepository))
-        {
-            return To<RepositoryType>(new IdentityProviderRepository(_dbContext));
-        }
-        if (repositoryType == typeof(INotificationRepository))
-        {
-            return To<RepositoryType>(new NotificationRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IServiceAccountsRepository))
-        {
-            return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IUserBusinessPartnerRepository))
-        {
-            return To<RepositoryType>(new UserBusinessPartnerRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IUserRepository))
-        {
-            return To<RepositoryType>(new UserRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IUserRolesRepository))
-        {
-            return To<RepositoryType>(new UserRolesRepository(_dbContext));
-        }
-        if (repositoryType == typeof(IStaticDataRepository))
-        {
-            return To<RepositoryType>(new StaticDataRepository(_dbContext));
-        }
-        throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));
-    }
-
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
-
-    private static T To<T>(dynamic value) => (T) value;
 }

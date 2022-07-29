@@ -38,5 +38,4 @@ public interface IStaticDataBusinessLogic
     /// </summary>
     /// <returns>AsyncEnumerable of the result Language</returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
-
 }
