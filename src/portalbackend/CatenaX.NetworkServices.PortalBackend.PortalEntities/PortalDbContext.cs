@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -93,6 +95,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
 
+    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -299,6 +304,13 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        modelBuilder.Entity<AuditOperation>()
+            .HasData(
+                Enum.GetValues(typeof(AuditOperationId))
+                    .Cast<AuditOperationId>()
+                    .Select(e => new AuditOperation(e))
+            );
+
         modelBuilder.Entity<Company>(entity =>
         {
             entity.HasMany(p => p.CompanyRoles)
@@ -491,8 +503,29 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
-        });
 
+            entity.ToTable("company_users");
+        });
+        
+        modelBuilder.Entity<AuditCompanyUser>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.Company);
+            x.Ignore(x => x.IamUser);
+            x.Ignore(x => x.Consents);
+            x.Ignore(x => x.Documents);
+            x.Ignore(x => x.Invitations);
+            x.Ignore(x => x.Apps);
+            x.Ignore(x => x.UserRoles);
+            x.Ignore(x => x.CompanyUserAssignedRoles);
+            x.Ignore(x => x.CompanyUserAssignedBusinessPartners);
+            x.Ignore(x => x.Notifications);
+            x.Ignore(x => x.CreatedNotifications);
+
+            x.ToTable("audit_company_users");
+        });
+        
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
             .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 

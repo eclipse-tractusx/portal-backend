@@ -209,7 +209,11 @@ public class NotificationRespotitoryTests
             IamUser = new IamUser(_iamUserId, _companyUserId)
         };
 
-        companyUser.Notifications = _notifications;
+        foreach (var notification in _notifications)
+        {
+            companyUser.Notifications.Add(notification);
+        }
+
         A.CallTo(() => _contextFake.CompanyUsers).Returns(new List<CompanyUser>{companyUser}.AsFakeDbSet());
     }
 }

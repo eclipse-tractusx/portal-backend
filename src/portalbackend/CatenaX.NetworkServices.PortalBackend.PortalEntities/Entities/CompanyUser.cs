@@ -20,10 +20,11 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUser
+public class CompanyUser : IAuditable
 {
     private CompanyUser()
     {
@@ -38,7 +39,8 @@ public class CompanyUser
         CreatedNotifications = new HashSet<Notification>();
     }
     
-    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) : this()
+    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) 
+        : this()
     {
         Id = id;
         DateCreated = dateCreated;
@@ -46,11 +48,9 @@ public class CompanyUser
         CompanyUserStatusId = companyUserStatusId;
     }
 
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
     public DateTimeOffset DateCreated { get; private set; }
-
-    public DateTimeOffset? DateLastChanged { get; set; }
 
     [MaxLength(255)]
     public string? Email { get; set; }
@@ -67,6 +67,12 @@ public class CompanyUser
 
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
+    /// <inheritdoc />
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    /// <inheritdoc />
+    public Guid? LastEditorId { get; set; }
+
     // Navigation properties
     public virtual Company? Company { get; set; }
     public virtual IamUser? IamUser { get; set; }
@@ -78,6 +84,6 @@ public class CompanyUser
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
-    public virtual ICollection<Notification> Notifications { get; set; }
+    public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
 }
