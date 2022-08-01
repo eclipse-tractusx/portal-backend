@@ -252,4 +252,22 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Creates an app according to request model
+    /// </summary>
+    /// <param name="appRequestModel">Request model for app creation.</param>
+    /// <returns>ID of created application.</returns> 
+     /// <remarks>Example: POST: /api/apps/createapp</remarks>
+    /// <response code="201">Returns created app's ID.</response>
+    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
+    [HttpPost]
+    [Route("createapp")]
+    [Authorize(Roles = "add_app")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
+    {
+        var appId = await _appsBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
+    }
 }

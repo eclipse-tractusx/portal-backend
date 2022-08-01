@@ -240,4 +240,44 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         return appId;
     }
+    
+    /// <inheritdoc/>
+    public async Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
+    {
+        if (appRequestModel.Descriptions.Select(x => x.LanguageCode) == null)
+        {
+            throw new NotFoundException($"Language Code does not exist"); 
+        }
+        if (appRequestModel.UseCaseIds == null)
+        {
+            throw new NotFoundException($"Use Case does not exist"); 
+        }
+        if(appRequestModel.ProviderCompanyId == null)
+        {
+            throw new NotFoundException($"Company Id  does not exist"); 
+        }
+        // Add app to db
+        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
+
+        var appId = appRepository.CreateApp(appRequestModel.Provider, app =>
+        {
+            app.Name = appRequestModel.Title;
+            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
+            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
+            app.AppStatusId = AppStatusId.CREATED;
+        }).Id;
+
+        appRepository.AddAppDescriptions(appRequestModel.Descriptions.Select(d =>
+            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+        appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
+            ((Guid appId, string languageShortName)) new (appId, c)));
+        appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
+            ((Guid appId, Guid useCaseId)) new (appId, uc)));
+        var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
+        appRepository.CreateAppAssignedLicense(appId, licenseId);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+        return appId;
+    }
 }
