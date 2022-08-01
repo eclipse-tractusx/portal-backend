@@ -102,7 +102,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         var parameters = provider == host || !host.HasValue
             ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(provider, true), 1)
-            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host, false) }.AsEnumerable();
+            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host.Value, false) }.AsEnumerable();
         var companyData = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetConnectorCreationCompanyDataAsync(parameters)
