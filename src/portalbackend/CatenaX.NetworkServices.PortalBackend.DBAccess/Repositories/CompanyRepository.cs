@@ -82,8 +82,9 @@ public class CompanyRepository : ICompanyRepository
         _context.Companies
             .AsNoTracking()
             .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
-            .Select(company => ((Guid CompanyId, string? BusinessPartnerNumber)) new (
+            .AsAsyncEnumerable()
+            .Select(company => ((Guid CompanyId, string? BusinessPartnerNumber)) new ValueTuple<Guid, string?>(
                 company.Id,
                 parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).Contains(company.Id) ? company.BusinessPartnerNumber : null
-            )).AsAsyncEnumerable();
+            ));
 }
