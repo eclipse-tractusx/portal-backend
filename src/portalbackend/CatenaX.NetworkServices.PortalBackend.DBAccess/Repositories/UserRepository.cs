@@ -102,8 +102,10 @@ public class UserRepository : IUserRepository
                     .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
                     .Select(app => new CompanyUserAssignedRoleDetails(
                         app.AppId,
-                        app.App.IamClients.SelectMany(iamClient => iamClient.UserRoles
-                                    .Select(role => role.UserRoleText))
+                        app.App.IamClients
+                        .SelectMany(iamClient => iamClient.UserRoles
+                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                            .Select(role => role.UserRoleText))
                     ))
                     )
             {
@@ -180,8 +182,10 @@ public class UserRepository : IUserRepository
                     .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
                     .Select(app => new CompanyUserAssignedRoleDetails(
                         app.AppId,
-                        app.App.IamClients.SelectMany(iamClient => iamClient.UserRoles
-                                    .Select(role => role.UserRoleText))
+                        app.App.IamClients
+                        .SelectMany(iamClient => iamClient.UserRoles
+                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                            .Select(role => role.UserRoleText))
                     ))
                     )
             {
@@ -213,8 +217,10 @@ public class UserRepository : IUserRepository
                     .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
                     .Select(app => new CompanyUserAssignedRoleDetails(
                         app.AppId,
-                        app.App.IamClients.SelectMany(iamClient => iamClient.UserRoles
-                                    .Select(role => role.UserRoleText))
+                        app.App.IamClients
+                        .SelectMany(iamClient => iamClient.UserRoles
+                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                            .Select(role => role.UserRoleText))
                     ))))
             .SingleOrDefaultAsync();
 
