@@ -41,9 +41,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.Swagger;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Newtonsoft.Json.Serialization;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
