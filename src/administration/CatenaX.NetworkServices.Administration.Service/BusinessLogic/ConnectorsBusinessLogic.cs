@@ -26,7 +26,6 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -104,22 +103,22 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var parameters = provider == host || !host.HasValue
             ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(provider, true), 1)
             : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host, false) }.AsEnumerable();
-        var companyDatas = await _portalRepositories
+        var companyData = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetConnectorCreationCompanyDataAsync(parameters)
             .ToListAsync().ConfigureAwait(false);
 
-        if (companyDatas.All(data => data.CompanyId != provider))
+        if (companyData.All(data => data.CompanyId != provider))
         {
             throw new UnexpectedConditionException($"Company {provider} does not exist");
         }
 
-        if (provider != host && host.HasValue && companyDatas.All(data => data.CompanyId != host))
+        if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
         {
             throw new UnexpectedConditionException($"Company {host} does not exist");
         }
 
-        var providerBusinessPartnerNumber = companyDatas.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
+        var providerBusinessPartnerNumber = companyData.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
 
         if (providerBusinessPartnerNumber == null)
         {
