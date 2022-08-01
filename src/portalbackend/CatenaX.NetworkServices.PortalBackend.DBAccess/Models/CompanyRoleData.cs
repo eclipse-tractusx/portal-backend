@@ -6,10 +6,15 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
     /// <summary>
     /// Basic model for company role agreements data
     /// </summary>
-    public record CompanyRoleData([property: JsonPropertyName("companyRole")] CompanyRoleId companyRoleId, [property: JsonPropertyName("descriptions")] IDictionary<string, string> companyRoleDescriptions, [property: JsonPropertyName("agreementIds")] IEnumerable<Guid> agreementIds);
+    public record CompanyRoleData(
+        [property: JsonPropertyName("companyRole")] CompanyRoleId CompanyRoleId,
+        [property: JsonPropertyName("descriptions")] IDictionary<string, string> CompanyRoleDescriptions,
+        [property: JsonPropertyName("agreementIds")] IEnumerable<Guid> AgreementIds);
 
     /// <summary>
     /// Basic model for company role data needed to display company roles with description.
     /// </summary>
-    public record CompanyRolesDetails([property: JsonPropertyName("companyRole")] string companyRole, [property: JsonPropertyName("roleDescription")] string roleDescription);
+    public record CompanyRolesDetails(
+        [property: JsonPropertyName("companyRole")] string CompanyRole,
+        [property: JsonPropertyName("roleDescription")] string RoleDescription);
 }

@@ -82,7 +82,9 @@ public class CompanyRolesRepository : ICompanyRolesRepository
             .Select(companyRole => new
             {
                 Id = companyRole.Id,
-                Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new { ShortName = description.LanguageShortName, Description = description.Description }),
+                Descriptions = companyRole.CompanyRoleDescriptions.Select(description => new {
+                    ShortName = description.LanguageShortName,
+                    Description = description.Description }),
                 Agreements = companyRole.AgreementAssignedCompanyRoles.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             })
             .AsAsyncEnumerable())
@@ -94,15 +96,14 @@ public class CompanyRolesRepository : ICompanyRolesRepository
         }
     }
 
-     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
+    public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
         _dbContext.CompanyRoles
-                .AsNoTracking()
-                .Select(companyRole => new CompanyRolesDetails(
-                    companyRole.Label,
-                    languageShortName == null ?
-                    companyRole.CompanyRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == Constants.DefaultLanguage)!.Description :
-                    companyRole.CompanyRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
-                )).AsAsyncEnumerable();
+            .AsNoTracking()
+            .Select(companyRole => new CompanyRolesDetails(
+                companyRole.Label,
+                companyRole.CompanyRoleDescriptions.SingleOrDefault(desc =>
+                    desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description
+            )).AsAsyncEnumerable();
 
     public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
         _dbContext.Agreements
