@@ -108,7 +108,7 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/k8s-helm-example/actions/workflows/administration-service-image-update.yml/dispatches \
+            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/administration-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"feature/CPLP-1074_auto_image_update","inputs":{"updated-image":"IMAGE_FULL"}}' \
