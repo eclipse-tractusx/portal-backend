@@ -14,4 +14,5 @@ public interface ICompanyRolesRepository
     Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
     IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
     IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
+    IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null);
 }
