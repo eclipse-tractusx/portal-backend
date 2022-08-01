@@ -356,7 +356,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         /// <summary>
         /// Gets the company roles and roles description
         /// </summary>
-        /// <param name="lang" example="en">Optional two character language specifier for the roles description. Will be empty if not provided.</param>
+        /// <param name="languageShortName" example="en">Optional two character language specifier for the roles description. Will be empty if not provided.</param>
         /// <returns>Returns the Company roles and roles description</returns>
         /// <remarks>Example: Get: /api/registration/company/companyRoles</remarks>
         /// <response code="200">Returns the Company roles data</response>
