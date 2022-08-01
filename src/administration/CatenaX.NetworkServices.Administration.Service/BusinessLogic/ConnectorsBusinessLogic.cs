@@ -95,40 +95,35 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
 
-        if (!Enum.IsDefined(typeof(ConnectorTypeId), type.ToString()))
-            throw new ArgumentException("ConnectorTypeId does not exist.", nameof(type));
-
-        if (!Enum.IsDefined(typeof(ConnectorStatusId), status.ToString()))
-            throw new ArgumentException("ConnectorStatusId does not exist.", nameof(status));
-
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
             throw new ArgumentException($"Location {location} does not exist", nameof(location));
         }
 
-        var companyDatas = await _portalRepositories.GetInstance<ICompanyRepository>().GetConnectorCreationCompanyDataAsync(
-            provider == host || !host.HasValue
-                ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new (provider, true), 1)
-                : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host, false) }.AsEnumerable()
-            )
+        var parameters = provider == host || !host.HasValue
+            ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(provider, true), 1)
+            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host, false) }.AsEnumerable();
+        var companyDatas = await _portalRepositories
+            .GetInstance<ICompanyRepository>()
+            .GetConnectorCreationCompanyDataAsync(parameters)
             .ToListAsync().ConfigureAwait(false);
 
-        if (!companyDatas.Any(data => data.CompanyId == provider))
+        if (companyDatas.All(data => data.CompanyId != provider))
         {
-            throw new ArgumentException($"Company {provider} does not exist", nameof(provider));
+            throw new UnexpectedConditionException($"Company {provider} does not exist");
         }
 
-        if (provider != host && host.HasValue && !companyDatas.Any(data => data.CompanyId == host))
+        if (provider != host && host.HasValue && companyDatas.All(data => data.CompanyId != host))
         {
-            throw new ArgumentException($"Company {host} does not exist", nameof(host));
+            throw new UnexpectedConditionException($"Company {host} does not exist");
         }
 
         var providerBusinessPartnerNumber = companyDatas.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
 
         if (providerBusinessPartnerNumber == null)
         {
-            throw new Exception($"provider company {provider} has no businessPartnerNumber assigned");
+            throw new UnexpectedConditionException($"provider company {provider} has no businessPartnerNumber assigned");
         }
 
         var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name, location.ToUpper(), connectorUrl,
