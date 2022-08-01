@@ -87,6 +87,7 @@ jobs:
   auth-and-dispatch:
     runs-on: ubuntu-latest
 
+    steps:
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v1
