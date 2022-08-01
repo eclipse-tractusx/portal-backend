@@ -240,7 +240,7 @@ public class UserRepository : IUserRepository
             .Select(companyUser => ((Guid CompanyUserId, bool IsIamUser)) new (companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
             .ToAsyncEnumerable();
 
-    private CompanyUserDetails SelectCompanyUserDetails(CompanyUser companyUser) =>
+    private static CompanyUserDetails SelectCompanyUserDetails(CompanyUser companyUser) =>
         new CompanyUserDetails(
             companyUser.Id,
             companyUser.DateCreated,
@@ -255,7 +255,7 @@ public class UserRepository : IUserRepository
             Email = companyUser.Email
         };
 
-    private IEnumerable<CompanyUserAssignedRoleDetails> SelectCompanyUserAssignedRoleDetails(CompanyUser companyUser) =>
+    private static IEnumerable<CompanyUserAssignedRoleDetails> SelectCompanyUserAssignedRoleDetails(CompanyUser companyUser) =>
         companyUser.Company!.CompanyAssignedApps
         .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
         .Select(app => new CompanyUserAssignedRoleDetails(
