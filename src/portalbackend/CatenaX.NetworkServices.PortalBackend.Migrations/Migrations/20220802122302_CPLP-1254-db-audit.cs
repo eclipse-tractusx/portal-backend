@@ -1,4 +1,6 @@
 ﻿using System;
+using CatenaX.NetworkServices.PortalBackend.Migrations.Extensions;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -17,13 +19,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 nullable: true);
 
             migrationBuilder.CreateTable(
-                name: "audit_company_users",
+                name: "audit_company_users_cplp_1254_db_audit",
                 schema: "portal",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     audit_id = table.Column<Guid>(type: "uuid", nullable: false),
                     audit_operation_id = table.Column<int>(type: "integer", nullable: false),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     firstname = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
@@ -31,14 +34,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     lastname = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     company_user_status_id = table.Column<int>(type: "integer", nullable: false),
-                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_audit_company_users", x => x.id);
+                    table.PrimaryKey("pk_audit_company_users_cplp_1254_db_audit", x => x.id);
                     table.ForeignKey(
-                        name: "fk_audit_company_users_company_user_statuses_company_user_stat",
+                        name: "fk_audit_company_users_cplp_1254_db_audit_company_user_statuse",
                         column: x => x.company_user_status_id,
                         principalSchema: "portal",
                         principalTable: "company_user_statuses",
@@ -71,16 +73,20 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_audit_company_users_company_user_status_id",
+                name: "ix_audit_company_users_cplp_1254_db_audit_company_user_status_",
                 schema: "portal",
-                table: "audit_company_users",
+                table: "audit_company_users_cplp_1254_db_audit",
                 column: "company_user_status_id");
+            
+            migrationBuilder.AddAuditTrigger<AuditCompanyUser>("cplp_1254_db_audit");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropAuditTrigger<AuditCompanyUser>();
+
             migrationBuilder.DropTable(
-                name: "audit_company_users",
+                name: "audit_company_users_CPLP-1254-db-audit",
                 schema: "portal");
 
             migrationBuilder.DropTable(
