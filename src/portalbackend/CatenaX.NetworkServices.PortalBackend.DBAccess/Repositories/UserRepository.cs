@@ -91,18 +91,7 @@ public class UserRepository : IUserRepository
                                   && companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
                                   && companyUser.Company!.CompanyUsers.Any(companyUser =>
                                       companyUser.IamUser!.UserEntityId == iamUserId))
-            .Select(companyUser => new CompanyUserDetails(
-                companyUser.Id,
-                companyUser.DateCreated,
-                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber),
-                companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            })
+            .Select(companyUser => SelectCompanyUserDetails(companyUser))
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(
@@ -161,18 +150,7 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-            .Select(companyUser => new CompanyUserDetails(
-                companyUser.Id,
-                companyUser.DateCreated,
-                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber),
-                companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            })
+            .Select(companyUser => SelectCompanyUserDetails(companyUser))
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId) =>
@@ -184,6 +162,7 @@ public class UserRepository : IUserRepository
                                           IdentityProviderCategoryId.KEYCLOAK_SHARED))
             .Include(companyUser => companyUser.Company)
             .Include(companyUser => companyUser.IamUser)
+            .AsSplitQuery()
             .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
                 companyUser,
                 companyUser.Company!.IdentityProviders.Where(identityProvider =>
@@ -191,8 +170,8 @@ public class UserRepository : IUserRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()!,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber)
-            ))
+                    assignedPartner.BusinessPartnerNumber),
+                SelectCompanyUserAssignedRoleDetails(companyUser)))
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId) =>
@@ -260,4 +239,30 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
             .Select(companyUser => ((Guid CompanyUserId, bool IsIamUser)) new (companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
             .ToAsyncEnumerable();
+
+    private static CompanyUserDetails SelectCompanyUserDetails(CompanyUser companyUser) =>
+        new CompanyUserDetails(
+            companyUser.Id,
+            companyUser.DateCreated,
+            companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                assignedPartner.BusinessPartnerNumber),
+            companyUser.Company!.Name,
+            companyUser.CompanyUserStatusId,
+            SelectCompanyUserAssignedRoleDetails(companyUser))
+        {
+            FirstName = companyUser.Firstname,
+            LastName = companyUser.Lastname,
+            Email = companyUser.Email
+        };
+
+    private static IEnumerable<CompanyUserAssignedRoleDetails> SelectCompanyUserAssignedRoleDetails(CompanyUser companyUser) =>
+        companyUser.Company!.CompanyAssignedApps
+        .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
+        .Select(app => new CompanyUserAssignedRoleDetails(
+            app.AppId,
+            app.App!.IamClients
+            .SelectMany(iamClient => iamClient.UserRoles
+                .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                .Select(role => role.UserRoleText))
+        ));
 }
