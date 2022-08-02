@@ -100,7 +100,7 @@ jobs:
       #  env:
       #    API_TOKEN_GITHUB: ${{ steps.get_workflow_token.outputs.token }}
       #  uses: catenax-ng/playground-target/Demo@v1
-      # trigger workflow
+      # trigger workflow again
       
       - name: Trigger workflow
         id: call_action
