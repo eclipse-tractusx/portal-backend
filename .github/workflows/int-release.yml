@@ -25,7 +25,7 @@ name: INT Release
 on:
   push:
     tags:
-      - 'int*'
+      - 'int-v*'
     branches:
       - 'feature/CPLP-1074_auto_image_update'
 
