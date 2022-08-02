@@ -23,4 +23,4 @@
 /// <summary>
 /// Basic model for data needed in App display.
 /// </summary>
-public record AppDataProvider(Guid Id, string? Name, string? LeadPictureUri, string Provider,string Status);
+public record AppDataProvider(Guid Id, string? Name, string? LeadPictureUri, string Provider, string Status, DateTimeOffset? LastChanged);

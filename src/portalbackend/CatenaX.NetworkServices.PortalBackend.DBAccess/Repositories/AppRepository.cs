@@ -185,7 +185,8 @@ public class AppRepository : IAppRepository
                     app.Name,
                     app.ThumbnailUrl,
                     app.Provider,
-                    app.AppStatusId.ToString()
+                    app.AppStatusId.ToString(),
+                    app.DateLastChanged
                  )).AsAsyncEnumerable();
 
 }
