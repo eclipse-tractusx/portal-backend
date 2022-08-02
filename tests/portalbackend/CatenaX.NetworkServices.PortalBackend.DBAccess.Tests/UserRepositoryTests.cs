@@ -136,7 +136,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds).ToListAsync();
+        var result = await sut.GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -159,7 +159,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds).ToListAsync();
+        var result = await sut.GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -182,7 +182,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds).ToListAsync();
+        var result = await sut.GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();

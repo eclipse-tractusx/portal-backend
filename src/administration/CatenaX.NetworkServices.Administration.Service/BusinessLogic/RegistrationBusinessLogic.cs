@@ -120,7 +120,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var businessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber;
         if (String.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -129,7 +129,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var initialRolesData = await userRolesRepository.GetUserRoleDataUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
         if (initialRolesData.Count < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
         {
-            throw new UnexpectedConditionException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
@@ -169,7 +169,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             }
         }
 
-        await this.CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
+        await CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);        
         return true;
     }
 
@@ -288,9 +289,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     });
             }
         }
-
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     private async Task PostRegistrationWelcomeEmailAsync(Guid applicationId)
