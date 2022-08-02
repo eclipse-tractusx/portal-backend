@@ -37,12 +37,20 @@ public class GeneralHttpErrorHandler
         catch (Exception error)
         {
             ErrorResponse errorResponse = null!;
-            if (error is ArgumentException or ControllerArgumentException)
+            if (error is ArgumentException) //TODO Replace uses of ArgumentException with ControllerArgumentException, then remove this path
             {
                 errorResponse = CreateErrorResponse(
                     HttpStatusCode.BadRequest,
                     error,
-                    (error) => ((error as ArgumentException)!.ParamName, Enumerable.Repeat(error.Message, 1)));
+                    error => ((error as ArgumentException)!.ParamName, Enumerable.Repeat(error.Message, 1)));
+                _logger.LogInformation(error.Message);
+            }
+            else if (error is ControllerArgumentException)
+            {
+                errorResponse = CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    error,
+                    error => ((error as ControllerArgumentException)!.ParamName, Enumerable.Repeat(error.Message, 1)));
                 _logger.LogInformation(error.Message);
             }
             else if (error is NotFoundException)
@@ -67,7 +75,7 @@ public class GeneralHttpErrorHandler
                 errorResponse = CreateErrorResponse(
                     HttpStatusCode.BadGateway,
                     error,
-                    (error) => (error.Source, new [] { $"remote service returned status code: {(int)statusCode} {statusCode}", error.Message } ));
+                    error => (error.Source, new [] { $"remote service returned status code: {(int)statusCode} {statusCode}", error.Message } ));
                 _logger.LogInformation(error.Message);
             }
             else if (error is UnsupportedMediaTypeException)
