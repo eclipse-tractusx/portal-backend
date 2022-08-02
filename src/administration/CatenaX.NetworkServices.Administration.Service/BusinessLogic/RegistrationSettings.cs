@@ -53,15 +53,15 @@ public static class RegistrationSettingsExtension
                 {
                     throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.PartnerUserInitialRoles)} must not be null");
                 }
-                if (x.CatenaXCompanyId == default)
+                if (x.CatenaXCompanyId == Guid.Empty)
                 {
                     throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be null");
                 }
-                if (x.CxAdminRoleId == default)
+                if (x.CxAdminRoleId == Guid.Empty)
                 {
                     throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CxAdminRoleId)} must not be empty");
                 }
-                if (x.CompanyAdminRoleId == default)
+                if (x.CompanyAdminRoleId == Guid.Empty)
                 {
                     throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CompanyAdminRoleId)} must not be empty");
                 }
