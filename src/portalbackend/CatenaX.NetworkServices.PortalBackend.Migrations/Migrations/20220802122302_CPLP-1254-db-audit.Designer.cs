@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220801144632_CPLP-1254-db-audit")]
+    [Migration("20220802122302_CPLP-1254-db-audit")]
     partial class CPLP1254dbaudit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,7 +53,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
-                    b.Property<DateTimeOffset?>("DateLastChanged")
+                    b.Property<DateTimeOffset>("DateLastChanged")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_last_changed");
 
@@ -81,12 +81,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("lastname");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_company_users");
+                        .HasName("pk_audit_company_users_cplp_1254_db_audit");
 
                     b.HasIndex("CompanyUserStatusId")
-                        .HasDatabaseName("ix_audit_company_users_company_user_status_id");
+                        .HasDatabaseName("ix_audit_company_users_cplp_1254_db_audit_company_user_status_");
 
-                    b.ToTable("audit_company_users", "portal");
+                    b.ToTable("audit_company_users_CPLP-1254-db-audit", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -3882,7 +3882,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("CompanyUserStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_audit_company_users_company_user_statuses_company_user_stat");
+                        .HasConstraintName("fk_audit_company_users_cplp_1254_db_audit_company_user_statuse");
 
                     b.Navigation("CompanyUserStatus");
                 });

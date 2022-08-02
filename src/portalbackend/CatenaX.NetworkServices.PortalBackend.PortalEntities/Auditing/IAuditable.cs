@@ -33,11 +33,6 @@ public interface IAuditable
     Guid Id { get; set; }
     
     /// <summary>
-    /// Date Time of the last change of the entity
-    /// </summary>
-    DateTimeOffset? DateLastChanged { get; set; }
-
-    /// <summary>
     /// Reference to the <see cref="CompanyUser"/> that changed the entity
     /// </summary>
     Guid? LastEditorId { get; set; }

@@ -523,7 +523,7 @@ public class PortalDbContext : DbContext
             x.Ignore(x => x.Notifications);
             x.Ignore(x => x.CreatedNotifications);
 
-            x.ToTable("audit_company_users");
+            x.ToTable("audit_company_users_cplp_1254_db_audit");
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()

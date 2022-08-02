@@ -21,4 +21,7 @@ public class AuditCompanyUser : CompanyUser, IAuditEntity
 
     /// <inheritdoc />
     public AuditOperationId AuditOperationId { get; set; }
+    
+    /// <inheritdoc />
+    public new DateTimeOffset DateLastChanged { get; set; }
 }

@@ -33,6 +33,11 @@ public interface IAuditEntity : IAuditable
     Guid AuditId { get; set; }
 
     /// <summary>
+    /// Date Time of the last change of the entity
+    /// </summary>
+    DateTimeOffset DateLastChanged { get; set; }
+
+    /// <summary>
     /// Id of the audit operation
     /// </summary>
     AuditOperationId AuditOperationId { get; set; }
