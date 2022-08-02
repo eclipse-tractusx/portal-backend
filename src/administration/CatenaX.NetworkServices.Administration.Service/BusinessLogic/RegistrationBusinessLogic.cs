@@ -263,7 +263,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             new (companyId, _settings.CompanyAdminRoleId),
         };
         var userIds = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds)
+            .GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds)
             .ToListAsync()
             .ConfigureAwait(false);
         if (!userIds.Any(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleIds.Any(y => y == _settings.CxAdminRoleId)))
