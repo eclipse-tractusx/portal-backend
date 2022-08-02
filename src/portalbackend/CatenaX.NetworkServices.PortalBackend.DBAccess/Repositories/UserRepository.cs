@@ -262,7 +262,7 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> GetCatenaAndCompanyAdminIdAsync(IEnumerable<(Guid companyId, Guid userRoleId)> companyUserRoleIds) =>
+    public IAsyncEnumerable<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> GetCompanyUsersByCompanyAndRoleIdAsync(IEnumerable<(Guid companyId, Guid userRoleId)> companyUserRoleIds) =>
         _dbContext.CompanyUsers
             .Where(companyUser => companyUserRoleIds.Any(companyUserRoleId =>
                 companyUser.CompanyId == companyUserRoleId.companyId &&

@@ -47,28 +47,27 @@ public static class RegistrationSettingsExtension
                 section.Bind(x);
                 if (x.ApplicationApprovalInitialRoles == null)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.ApplicationApprovalInitialRoles)} must not be null");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.ApplicationApprovalInitialRoles)} must not be null");
                 }
                 if (x.PartnerUserInitialRoles == null)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.PartnerUserInitialRoles)} must not be null");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.PartnerUserInitialRoles)} must not be null");
                 }
-                if (x.CatenaXCompanyId == Guid.Empty)
+                if (x.CatenaXCompanyId == default)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be null");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be null");
                 }
-                if (x.CxAdminRoleId == Guid.Empty)
+                if (x.CxAdminRoleId == default)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be empty");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CxAdminRoleId)} must not be empty");
                 }
-                if (x.CompanyAdminRoleId == Guid.Empty)
+                if (x.CompanyAdminRoleId == default)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be empty");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CompanyAdminRoleId)} must not be empty");
                 }
                 if (x.WelcomeNotificationTypeIds == null)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.WelcomeNotificationTypeIds)} must not be empty");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.WelcomeNotificationTypeIds)} must not be empty");
                 }
-                
             });
 }
