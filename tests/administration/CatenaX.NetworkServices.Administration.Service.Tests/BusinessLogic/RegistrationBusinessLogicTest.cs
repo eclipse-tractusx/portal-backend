@@ -275,9 +275,9 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var bpns = new List<string> { BusinessPartnerNumber }.AsEnumerable();
 
             _settings.ApplicationApprovalInitialRoles = clientRoleNames;
-            _settings.CatenaXCompanyName = "Catena X";
-            _settings.CompanyAdminRole = "Company Admin";
-            _settings.CxAdminRolename = "CX Admin";
+            _settings.CatenaXCompanyId = Guid.NewGuid();
+            _settings.CompanyAdminRoleId = Guid.NewGuid();
+            _settings.CxAdminRoleId = Guid.NewGuid();
             _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
             {
                 NotificationTypeId.WELCOME,
@@ -329,27 +329,24 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 .Returns(Task.CompletedTask);
             if (withCatenaXAdmin && withCompanyAdmin)
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName,
-                        _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                    .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)>
-                        {new(CompanyUserId1, true, new[] { _settings.CxAdminRolename }), new(CompanyUserId1, false, new[] { _settings.CompanyAdminRole })}.ToAsyncEnumerable());
+                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                    .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)>
+                        {new(CompanyUserId1, _settings.CatenaXCompanyId, new[] { _settings.CxAdminRoleId }), new(CompanyUserId1, company.Id, new[] { _settings.CompanyAdminRoleId })}.ToAsyncEnumerable());
             }
             else if (withCompanyAdmin)
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName,
-                        _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)> { new (CompanyUserId1, false, new[] { _settings.CompanyAdminRole }) }.ToAsyncEnumerable());
+                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> { new (CompanyUserId1, company.Id, new[] { _settings.CompanyAdminRoleId }) }.ToAsyncEnumerable());
             }
             else if (withCatenaXAdmin)
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName,
-                        _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                    .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)> { new (CompanyUserId1, true, new[] { _settings.CxAdminRolename }) }.ToAsyncEnumerable());
+                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                    .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> { new (CompanyUserId1, _settings.CatenaXCompanyId, new[] { _settings.CxAdminRoleId }) }.ToAsyncEnumerable());
             }
             else
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<Guid>._, _settings.CatenaXCompanyName, _settings.CxAdminRolename, _settings.CompanyAdminRole))
-                    .Returns(new List<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)>().ToAsyncEnumerable());
+                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                    .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)>().ToAsyncEnumerable());
             }
 
             A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))

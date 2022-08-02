@@ -257,28 +257,34 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     private async Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId)
     {
+        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>()
+        {
+            new (_settings.CatenaXCompanyId, _settings.CxAdminRoleId),
+            new (companyId, _settings.CompanyAdminRoleId),
+        };
         var userIds = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCatenaAndCompanyAdminIdAsync(companyId, _settings.CatenaXCompanyName, _settings.CxAdminRolename, _settings.CompanyAdminRole)
+            .GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (!userIds.Any(x => x.CompanyIsCatena && x.RoleNames.Any(y => y == _settings.CxAdminRolename)))
+        if (!userIds.Any(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleIds.Any(y => y == _settings.CxAdminRoleId)))
         {
             return;
         }
 
-        if (!userIds.Any(x => x.RoleNames.All(y => y != _settings.CxAdminRolename) && x.RoleNames.Any(y => y == _settings.CompanyAdminRole)))
+        if (!userIds.Any(x => x.RoleIds.All(y => y != _settings.CxAdminRoleId) && x.RoleIds.Any(y => y == _settings.CompanyAdminRoleId)))
         {
             return;
         }
 
-        foreach (var receiverUserId in userIds.Where(x => x.RoleNames.All(y => y != _settings.CxAdminRolename) && x.RoleNames.Any(y => y == _settings.CompanyAdminRole)).Select(x => x.CompanyUserId))
+        var catenaXAdmin = userIds.Single(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleIds.Any(y => y == _settings.CxAdminRoleId)).CompanyUserId;
+        foreach (var receiverUserId in userIds.Where(x => x.RoleIds.All(y => y != _settings.CxAdminRoleId) && x.RoleIds.Any(y => y == _settings.CompanyAdminRoleId)).Select(x => x.CompanyUserId))
         {
             foreach (var typeId in _settings.WelcomeNotificationTypeIds)
             {
                 _portalRepositories.GetInstance<INotificationRepository>().Create(receiverUserId, typeId, false,
                     notification =>
                     {
-                        notification.CreatorUserId = userIds.Single(x => x.CompanyIsCatena && x.RoleNames.Any(y => y == _settings.CxAdminRolename)).CompanyUserId;
+                        notification.CreatorUserId = catenaXAdmin;
                     });
             }
         }
@@ -289,13 +295,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task PostRegistrationWelcomeEmailAsync(Guid applicationId)
     {
+        var failedUserNames = new List<string>();
         await foreach (var user in _applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
+            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 
-            if (String.IsNullOrWhiteSpace(user.Email))
+            if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw new ArgumentException($"user {userName} has no assigned email");
+                failedUserNames.Add(userName);
+                continue;
             }
 
             var mailParameters = new Dictionary<string, string>
@@ -306,5 +314,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
         }
+
+        if (failedUserNames.Any())
+            throw new ArgumentException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
     }
 }

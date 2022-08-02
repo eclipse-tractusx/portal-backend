@@ -40,6 +40,8 @@ public class UserRepositoryTests
     private static string CxAdminRolename = "CX Admin";
     private static string CompanyAdminRole = "Company Admin";
     private static readonly Guid CatenaXCompanyId = Guid.NewGuid();
+    private static readonly Guid CxAdminRoleId = Guid.NewGuid();
+    private static readonly Guid CompanyAdminRoleId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
 
@@ -126,17 +128,21 @@ public class UserRepositoryTests
         // Arrange
         var (companyUser, _) = CreateTestUserPair();
         CreateFakeContext(companyUser.CompanyId, false, 2);
-
+        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>
+        {
+            new(CatenaXCompanyId, CxAdminRoleId),
+            new(companyUser.CompanyId, CompanyAdminRoleId)
+        };
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId, CatenaXCompanyName, CxAdminRolename, CompanyAdminRole).ToListAsync();
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(2);
-        result.Where(x => x.RoleNames.Any(y => y == CompanyAdminRole)).Should().HaveCount(2);
-        result.Where(x => x.RoleNames.Any(y => y == CxAdminRolename)).Should().HaveCount(0);
+        result.Where(x => x.RoleIds.Any(y => y == CompanyAdminRoleId)).Should().HaveCount(2);
+        result.Where(x => x.RoleIds.Any(y => y == CxAdminRoleId)).Should().HaveCount(0);
     }
 
     [Fact]
@@ -145,17 +151,21 @@ public class UserRepositoryTests
         // Arrange
         var (companyUser, _) = CreateTestUserPair();
         CreateFakeContext(companyUser.CompanyId, true, 2);
-
+        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>
+        {
+            new(CatenaXCompanyId, CxAdminRoleId),
+            new(companyUser.CompanyId, CompanyAdminRoleId)
+        };
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId, CatenaXCompanyName, CxAdminRolename, CompanyAdminRole).ToListAsync();
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(3);
-        result.Where(x => x.RoleNames.Any(y => y == CompanyAdminRole)).Should().HaveCount(2);
-        result.Where(x => x.RoleNames.Any(y => y == CxAdminRolename)).Should().HaveCount(1);
+        result.Where(x => x.RoleIds.Any(y => y == CompanyAdminRoleId)).Should().HaveCount(2);
+        result.Where(x => x.RoleIds.Any(y => y == CxAdminRoleId)).Should().HaveCount(1);
     }
 
     [Fact]
@@ -164,17 +174,21 @@ public class UserRepositoryTests
         // Arrange
         var (companyUser, _) = CreateTestUserPair();
         CreateFakeContext(companyUser.CompanyId, true, 0);
-
+        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>
+        {
+            new(CatenaXCompanyId, CxAdminRoleId),
+            new(companyUser.CompanyId, CompanyAdminRoleId)
+        };
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUser.CompanyId, CatenaXCompanyName, CxAdminRolename, CompanyAdminRole).ToListAsync();
+        var result = await sut.GetCatenaAndCompanyAdminIdAsync(companyUserRoleIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(1);
-        result.Where(x => x.RoleNames.Any(y => y == CompanyAdminRole)).Should().HaveCount(0);
-        result.Where(x => x.RoleNames.Any(y => y == CxAdminRolename)).Should().HaveCount(1);
+        result.Where(x => x.RoleIds.Any(y => y == CompanyAdminRoleId)).Should().HaveCount(0);
+        result.Where(x => x.RoleIds.Any(y => y == CxAdminRoleId)).Should().HaveCount(1);
     }
 
     #region Setup
@@ -193,11 +207,11 @@ public class UserRepositoryTests
 
     private void CreateFakeContext(Guid companyId, bool withCatenaXAdmin, int companyAdminCount)
     {
-        var catenaCompany = new Company(Guid.NewGuid(), CatenaXCompanyName, CompanyStatusId.ACTIVE,
+        var catenaCompany = new Company(CatenaXCompanyId, CatenaXCompanyName, CompanyStatusId.ACTIVE,
             DateTimeOffset.UtcNow);
 
-        var catenaXAdminRole = new UserRole(Guid.NewGuid(), CxAdminRolename, Guid.NewGuid());
-        var companyAdminRole = new UserRole(Guid.NewGuid(), CompanyAdminRole, Guid.NewGuid());
+        var catenaXAdminRole = new UserRole(CxAdminRoleId, CxAdminRolename, Guid.NewGuid());
+        var companyAdminRole = new UserRole(CompanyAdminRoleId, CompanyAdminRole, Guid.NewGuid());
         var rolesDbSet = new List<UserRole>
         {
             catenaXAdminRole,
