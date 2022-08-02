@@ -1,6 +1,6 @@
 name: Maintenance-Service
 
-on: 
+on:
   push:
     paths:
       # service path
