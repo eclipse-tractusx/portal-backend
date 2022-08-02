@@ -77,5 +77,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/portal-migrations-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"feature/CPLP-1074_auto_image_update", "inputs": { "new-image":"${{ env.IMAGE_FULL }}" }}' \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ env.IMAGE_FULL }}" }}' \
             --fail
