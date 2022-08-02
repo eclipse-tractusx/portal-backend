@@ -97,7 +97,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
-            throw new ArgumentException($"Location {location} does not exist", nameof(location));
+            throw new ControllerArgumentException($"Location {location} does not exist", nameof(location));
         }
 
         var parameters = provider == host || !host.HasValue
@@ -110,7 +110,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (companyData.All(data => data.CompanyId != provider))
         {
-            throw new UnexpectedConditionException($"Company {provider} does not exist");
+            throw new ControllerArgumentException($"Company {provider} does not exist", nameof(provider));
         }
 
         if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
