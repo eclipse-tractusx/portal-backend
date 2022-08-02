@@ -237,7 +237,7 @@ public class UserRepository : IUserRepository
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId) =>
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
-            .Select(companyUser => ((Guid CompanyUserId, bool IsIamUser)) new (companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
+            .Select(companyUser => new ValueTuple<Guid, bool>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -246,7 +246,7 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUserRoleIds.Any(companyUserRoleId =>
                 companyUser.CompanyId == companyUserRoleId.companyId &&
                 companyUser.UserRoles.Any(userRole => userRole.Id == companyUserRoleId.userRoleId)))
-            .Select(companyUser => ((Guid CompanyUserId, Guid companyId, IEnumerable<Guid> RoleIds)) new (companyUser.Id, companyUser.CompanyId, companyUser.UserRoles.Select(y => y.Id)))
+            .Select(companyUser => new ValueTuple<Guid, Guid, IEnumerable<Guid>>(companyUser.Id, companyUser.CompanyId, companyUser.UserRoles.Select(y => y.Id)))
             .ToAsyncEnumerable();
 
     private static CompanyUserDetails SelectCompanyUserDetails(CompanyUser companyUser) =>
