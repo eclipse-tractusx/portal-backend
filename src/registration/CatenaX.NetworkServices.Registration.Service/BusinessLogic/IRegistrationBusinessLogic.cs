@@ -35,5 +35,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
+        IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null);
     }
 }
