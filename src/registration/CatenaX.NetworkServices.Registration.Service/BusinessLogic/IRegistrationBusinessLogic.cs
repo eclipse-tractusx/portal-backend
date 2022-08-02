@@ -9,7 +9,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
     public interface IRegistrationBusinessLogic
     {
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
-        Task<IEnumerable<string>> GetClientRolesCompositeAsync();
+        IAsyncEnumerable<string> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
         
         /// <summary>

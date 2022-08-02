@@ -157,4 +157,7 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Email,
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
+
+     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery() =>
+         _dbContext.CompanyApplications.AsNoTracking();
 }

@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.Administration.Service.Models;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
@@ -236,7 +256,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 var language = await _portalDBAccess.GetLanguageAsync(languageShortName);
                 if (language == null)
                 {
-                    throw new NotFoundException($"language {languageShortName} does not exist");
+                    throw new ArgumentException($"language {languageShortName} does not exist");
                 }
             }
             await foreach (var roles in _portalDBAccess.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
@@ -268,7 +288,6 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             }
 
             var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
             await _provisioningManager.AddBpnAttributetoUserAsync(user.UserEntityId, businessPartnerNumbers).ConfigureAwait(false);
             foreach (var businessPartnerToAdd in businessPartnerNumbers.Except(user.AssignedBusinessPartnerNumbers))
             {
@@ -340,7 +359,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var userData = await _userRepository.GetUserWithIdpAsync(iamUserId).ConfigureAwait(false);
             if (userData == null)
             {
-                throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
+                throw new NotFoundException($"iamUser {iamUserId} is not a shared idp user");
             }
             if (userData.CompanyUser.Id != companyUserId)
             {
@@ -358,8 +377,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
             if (iamIdpAlias == null)
             {
-                throw new ArgumentOutOfRangeException($"iamUser {adminUserId} is not a shared idp user");
+                throw new NotFoundException($"iamUser {adminUserId} is not a shared idp user");
             }
+
             await foreach (var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
             {
                 var success = false;
@@ -463,9 +483,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
         {
-            var appUsers = _portalRepositories.GetInstance<IAppUserRepository>().GetCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
 
             return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,
@@ -479,7 +499,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         .Select(companyUser => new CompanyAppUserDetails(
                             companyUser.Id,
                             companyUser.CompanyUserStatusId,
-                            companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                            companyUser.UserRoles!.Where(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId)).Select(userRole => userRole.UserRoleText))
                         {
                             FirstName = companyUser.Firstname,
                             LastName = companyUser.Lastname,
@@ -524,7 +544,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     };
 
                 var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
-           
+
                 foreach (var roleWithId in userRoleWithIds)
                 {
                     if (assignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
@@ -544,6 +564,39 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
             return new UserRoleMessage(success, warning);
+        }
+    
+        public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
+        {
+            var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+            var userWithBpn = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber).ConfigureAwait(false);
+            
+            if (userWithBpn == default)
+            {
+                throw new NotFoundException($"user {companyUserId} does not exist");
+            }
+
+            if (userWithBpn.AssignedBusinessPartner == null)
+            {
+                throw new NotFoundException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
+            }
+
+            if (userWithBpn.UserEntityId == null)
+            {
+                throw new Exception($"user {companyUserId} is not associated with a user in keycloak");
+            }
+
+            if (!userWithBpn.IsValidUser)
+            {
+                throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} do not belong to same company");
+            }
+
+            userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartner);
+          
+            await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
     }
 }

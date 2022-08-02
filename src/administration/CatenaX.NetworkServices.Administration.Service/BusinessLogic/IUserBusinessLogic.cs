@@ -1,6 +1,25 @@
-﻿using CatenaX.NetworkServices.Administration.Service.Models;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Framework.Models;
 
@@ -22,7 +41,7 @@ public interface IUserBusinessLogic
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId);
     Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId);
-    Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size);
+    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size);
 
     /// <summary>
     /// Add Role to User
@@ -32,4 +51,5 @@ public interface IUserBusinessLogic
     /// <param name="adminUserId">Admin User Id</param>
     /// <returns>messages</returns>
     Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
+    Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
 }
