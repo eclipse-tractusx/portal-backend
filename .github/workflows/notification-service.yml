@@ -1,4 +1,5 @@
 name: Notification-Service
+
 on:
   push:
     paths:
@@ -11,11 +12,15 @@ on:
 
     branches:
       - 'main'
+      - 'feature/CPLP-1074_auto_image_update'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_notification-service
+  COMMIT_SHA: ${{ github.sha }}
+  IMAGE_BEGINN: 'notificationtag: '
+  IMAGE_FULL: 'notificationtag: ${{ github.sha }}'
 
 jobs:
   build-and-push-image:
@@ -48,5 +53,30 @@ jobs:
           file: docker/Dockerfile-notification-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  auth-and-dispatch:
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v1
+        with:
+          application_id: ${{ secrets.ORG_PORTAL_DISPATCH_APPID }}
+          application_private_key: ${{ secrets.ORG_PORTAL_DISPATCH_KEY }}
+
+      - name: Trigger workflow
+        id: call_action
+        env:
+          TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          curl -v \
+            --request POST \
+            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/notification-service-image-update.yml/dispatches \
+            --header "authorization: Bearer $TOKEN" \
+            --header "Accept: application/vnd.github.v3+json" \
+            --data '{"ref":"feature/CPLP-1074_auto_image_update", "inputs": { "new-image":"${{ env.IMAGE_FULL }}" }}' \
+            --fail
