@@ -291,11 +291,16 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> GetCompanyUsersByCompanyAndRoleIdAsync(IEnumerable<(Guid companyId, Guid userRoleId)> companyUserRoleIds) =>
-        _dbContext.CompanyUsers
-            .Where(companyUser => companyUserRoleIds.Any(companyUserRoleId =>
-                companyUser.CompanyId == companyUserRoleId.companyId &&
-                companyUser.UserRoles.Any(userRole => userRole.Id == companyUserRoleId.userRoleId)))
-            .Select(companyUser => new ValueTuple<Guid, Guid, IEnumerable<Guid>>(companyUser.Id, companyUser.CompanyId, companyUser.UserRoles.Select(y => y.Id)))
+    public IAsyncEnumerable<(Guid CompanyUserId, Guid CompanyId, Guid RoleId)> GetCompanyUsersByCompanyAndRoleIdAsync(IEnumerable<(Guid companyId, Guid userRoleId)> companyUserRoleIds) =>
+        companyUserRoleIds.Join(_dbContext.CompanyUsers
+            .SelectMany(companyUser => 
+                companyUser.UserRoles.Select(userRole => new {
+                    CompanyUserId = companyUser.Id,
+                    CompanyId = companyUser.CompanyId,
+                    RoleId = userRole.Id
+            })),
+            x => (x.companyId, x.userRoleId),
+            x => (x.CompanyId, x.RoleId),
+            (x,y) => (y.CompanyUserId, y.CompanyId, y.RoleId))
             .ToAsyncEnumerable();
 }

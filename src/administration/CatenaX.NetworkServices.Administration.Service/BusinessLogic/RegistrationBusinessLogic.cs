@@ -267,18 +267,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds)
             .ToListAsync()
             .ConfigureAwait(false);
-        if (!userIds.Any(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleIds.Any(y => y == _settings.CxAdminRoleId)))
+        if (!userIds.Any(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleId == _settings.CxAdminRoleId))
         {
             return;
         }
 
-        if (!userIds.Any(x => x.RoleIds.All(y => y != _settings.CxAdminRoleId) && x.RoleIds.Any(y => y == _settings.CompanyAdminRoleId)))
+        if (!userIds.Any(x => x.CompanyId == companyId && x.RoleId == _settings.CompanyAdminRoleId))
         {
             return;
         }
 
-        var catenaXAdmin = userIds.Single(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleIds.Any(y => y == _settings.CxAdminRoleId)).CompanyUserId;
-        foreach (var receiverUserId in userIds.Where(x => x.RoleIds.All(y => y != _settings.CxAdminRoleId) && x.RoleIds.Any(y => y == _settings.CompanyAdminRoleId)).Select(x => x.CompanyUserId))
+        var catenaXAdmin = userIds.First(x => x.CompanyId == _settings.CatenaXCompanyId && x.RoleId == _settings.CxAdminRoleId).CompanyUserId;
+        foreach (var receiverUserId in userIds.Where(x => x.CompanyId == companyId && x.RoleId == _settings.CompanyAdminRoleId).Select(x => x.CompanyUserId))
         {
             foreach (var typeId in _settings.WelcomeNotificationTypeIds)
             {
