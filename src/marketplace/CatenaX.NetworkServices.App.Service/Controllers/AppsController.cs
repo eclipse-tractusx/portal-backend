@@ -258,7 +258,7 @@ public class AppsController : ControllerBase
     /// </summary>
     /// <param name="appRequestModel">Request model for app creation.</param>
     /// <returns>ID of created application.</returns> 
-     /// <remarks>Example: POST: /api/apps/createapp</remarks>
+    /// <remarks>Example: POST: /api/apps/createapp</remarks>
     /// <response code="201">Returns created app's ID.</response>
     /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
     [HttpPost]
