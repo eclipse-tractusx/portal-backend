@@ -268,11 +268,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }).Id;
 
         appRepository.AddAppDescriptions(appRequestModel.Descriptions.Select(d =>
-            ((Guid appId, string languageShortName, string descriptionLong, string descriptionShort)) new (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+              (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
-            ((Guid appId, string languageShortName)) new (appId, c)));
+              (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-            ((Guid appId, Guid useCaseId)) new (appId, uc)));
+              (appId, uc)));
         var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
         appRepository.CreateAppAssignedLicense(appId, licenseId);
 
