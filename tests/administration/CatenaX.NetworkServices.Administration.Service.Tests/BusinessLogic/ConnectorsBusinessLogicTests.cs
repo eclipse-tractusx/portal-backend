@@ -78,7 +78,7 @@ public class ConnectorsBusinessLogicTests
     }
     
     [Fact]
-    public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsArgumentException()
+    public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
         var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
@@ -89,12 +89,12 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
+        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         exception.Message.Should().Be("Location invalid does not exist (Parameter 'location')");
     }
     
     [Fact]
-    public async Task CreateConnectorAsync_WithInvalidCompany_ThrowsUnexpectedConditionException()
+    public async Task CreateConnectorAsync_WithInvalidCompany_ThrowsControllerArgumentException()
     {
         // Arrange
         var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
@@ -105,8 +105,8 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be($"Company {_invalidCompanyId} does not exist");
+        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        exception.Message.Should().Be($"Company {_invalidCompanyId} does not exist (Parameter 'provider')");
     }
     
     [Fact]

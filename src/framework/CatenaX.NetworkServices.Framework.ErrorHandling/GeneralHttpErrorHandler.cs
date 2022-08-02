@@ -37,7 +37,7 @@ public class GeneralHttpErrorHandler
         catch (Exception error)
         {
             ErrorResponse errorResponse = null!;
-            if (error is ArgumentException)
+            if (error is ArgumentException or ControllerArgumentException)
             {
                 errorResponse = CreateErrorResponse(
                     HttpStatusCode.BadRequest,
