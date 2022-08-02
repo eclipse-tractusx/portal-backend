@@ -137,8 +137,8 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be($"Company {_invalidHostId} does not exist");
+        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        exception.Message.Should().Be($"Company {_invalidHostId} does not exist (Parameter 'host')");
     }
 
     #region Setup

@@ -115,7 +115,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
         {
-            throw new UnexpectedConditionException($"Company {host} does not exist");
+            throw new ControllerArgumentException($"Company {host} does not exist", nameof(host));
         }
 
         var providerBusinessPartnerNumber = companyData.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
