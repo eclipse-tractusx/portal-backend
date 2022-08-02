@@ -37,10 +37,10 @@ public class GeneralHttpErrorHandler
         catch (Exception error)
         {
             LogLevel logLevel = LogLevel.Information;
-            HttpStatusCode statusCode = default!;
+            HttpStatusCode statusCode;
             Func<Exception,  (string?, IEnumerable<string>)>? messageFunc = null;
 
-            if (error is ArgumentException) //TODO Replace uses of ArgumentException with ControllerArgumentException, then remove this path
+            if (error is ArgumentException)
             {
                 statusCode = HttpStatusCode.BadRequest;
                 messageFunc = error => ((error as ArgumentException)!.ParamName, Enumerable.Repeat(error.Message, 1));
@@ -73,7 +73,7 @@ public class GeneralHttpErrorHandler
                 statusCode = HttpStatusCode.InternalServerError;
                 logLevel = LogLevel.Error;
             }
-            _logger.Log(logLevel, error, "GeneralErrorHandler caught {0} resulting in response status code {1}, message '{2}'", error.GetType().Name, statusCode, error.Message);
+            _logger.Log(logLevel, error, "GeneralErrorHandler caught {error} resulting in response status code {statusCode}, message '{message}'", error.GetType().Name, statusCode, error.Message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
             await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, messageFunc))).ConfigureAwait(false);
