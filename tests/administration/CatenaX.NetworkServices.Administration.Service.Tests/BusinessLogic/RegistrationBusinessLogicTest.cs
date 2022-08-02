@@ -243,7 +243,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             //Act
             async Task Action() => await _logic.ApprovePartnerRequest(applicationId);
             // Assert
-            var ex = await Assert.ThrowsAsync<ArgumentException>(Action);
+            var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
             ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty (Parameter 'bpn')");
             ex.ParamName.Should().Be($"bpn");
         }
@@ -329,23 +329,23 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 .Returns(Task.CompletedTask);
             if (withCatenaXAdmin && withCompanyAdmin)
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
                     .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)>
                         {new(CompanyUserId1, _settings.CatenaXCompanyId, new[] { _settings.CxAdminRoleId }), new(CompanyUserId1, company.Id, new[] { _settings.CompanyAdminRoleId })}.ToAsyncEnumerable());
             }
             else if (withCompanyAdmin)
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
                 .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> { new (CompanyUserId1, company.Id, new[] { _settings.CompanyAdminRoleId }) }.ToAsyncEnumerable());
             }
             else if (withCatenaXAdmin)
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
                     .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> { new (CompanyUserId1, _settings.CatenaXCompanyId, new[] { _settings.CxAdminRoleId }) }.ToAsyncEnumerable());
             }
             else
             {
-                A.CallTo(() => _userRepository.GetCatenaAndCompanyAdminIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
+                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
                     .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)>().ToAsyncEnumerable());
             }
 
