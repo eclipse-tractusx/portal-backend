@@ -26,8 +26,6 @@ on:
   push:
     tags:
       - 'int-v*'
-    branches:
-      - 'feature/CPLP-1074_auto_image_update'
 
 env:
   REGISTRY: ghcr.io
@@ -321,5 +319,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/int-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"feature/CPLP-1074_auto_image_update", "inputs": { "new-image":"${{ steps.git-tag.outputs.git-version }}" }}' \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ steps.git-tag.outputs.git-version }}" }}' \
             --fail
