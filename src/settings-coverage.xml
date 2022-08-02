@@ -62,8 +62,9 @@
         <!-- Match the path of the source files in which each method is defined: -->
         <Sources>
             <Exclude>
-                <Source>.*\\administration\\CatenaX.NetworkServices.Administration.Service\\Program.cs</Source>
-                <Source>.*\\notification\\CatenaX.NetworkServices.Notification.Service\\Program.cs</Source>
+                <Source>administration/CatenaX.NetworkServices.Administration.Service/Program.cs</Source>
+                <Source>notification/CatenaX.NetworkServices.Notification.Service/Program.cs</Source>
+                <Source>administration/CatenaX.NetworkServices.Administration.Service/BusinessLogic/RegistrationSettings.cs</Source>
             </Exclude>
         </Sources>
 

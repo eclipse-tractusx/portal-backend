@@ -9,9 +9,6 @@ public class RegistrationSettings
     {
         ApplicationApprovalInitialRoles = null!;
         PartnerUserInitialRoles = null!;
-        CatenaXCompanyName = null!;
-        CxAdminRolename = null!;
-        CompanyAdminRole = null!;
         WelcomeNotificationTypeIds = null!;
     }
 
@@ -22,17 +19,17 @@ public class RegistrationSettings
     /// <summary>
     /// Company name of the Catena X Company
     /// </summary>
-    public string CatenaXCompanyName { get; set; }
+    public Guid CatenaXCompanyId { get; set; }
 
     /// <summary>
     /// Name of the CX Admin Role
     /// </summary>
-    public string CxAdminRolename { get; set; }
+    public Guid CxAdminRoleId { get; set; }
 
     /// <summary>
     /// Name of the Company Admin
     /// </summary>
-    public string CompanyAdminRole { get; set; }
+    public Guid CompanyAdminRoleId { get; set; }
 
     /// <summary>
     /// IDs of the notification types that should be created as welcome notifications
@@ -56,9 +53,22 @@ public static class RegistrationSettingsExtension
                 {
                     throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.PartnerUserInitialRoles)} must not be null");
                 }
+                if (x.CatenaXCompanyId == Guid.Empty)
+                {
+                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be null");
+                }
+                if (x.CxAdminRoleId == Guid.Empty)
+                {
+                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be empty");
+                }
+                if (x.CompanyAdminRoleId == Guid.Empty)
+                {
+                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be empty");
+                }
                 if (x.WelcomeNotificationTypeIds == null)
                 {
-                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.WelcomeNotificationTypeIds)} must not be null");
+                    throw new UnexpectedConditionException($"{nameof(RegistrationSettings)}: {nameof(x.WelcomeNotificationTypeIds)} must not be empty");
                 }
+                
             });
 }

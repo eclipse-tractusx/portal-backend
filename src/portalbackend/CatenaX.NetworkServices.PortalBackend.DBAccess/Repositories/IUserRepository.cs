@@ -84,10 +84,7 @@ public interface IUserRepository
     /// <summary>
     /// Gets the id of the company admin for the given company and the id of the catena x admin
     /// </summary>
-    /// <param name="companyId">Id of the company to retrieve the user id</param>
-    /// <param name="catenaXCompanyName">Company Name for Catena X</param>
-    /// <param name="cxAdminRolename"></param>
-    /// <param name="companyAdminRole"></param>
+    /// <param name="companyUserRoleIds">company id with the userRoleId</param>
     /// <returns>Returns the Id of the user and identifier whether the user is the catena x admin or a company admin</returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool CompanyIsCatena, IEnumerable<string> RoleNames)> GetCatenaAndCompanyAdminIdAsync(Guid companyId, string catenaXCompanyName, string cxAdminRolename, string companyAdminRole);
+    IAsyncEnumerable<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> GetCatenaAndCompanyAdminIdAsync(IEnumerable<(Guid companyId, Guid userRoleId)> companyUserRoleIds);
 }
