@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -70,6 +90,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Invitation> Invitations { get; set; } = default!;
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
+    public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -233,6 +254,11 @@ public class PortalDbContext : DbContext
                     {
                         j.HasKey(e => new { e.AppId, e.UseCaseId });
                     });
+
+            entity.HasMany(p => p.CompanyAssignedApps)
+                .WithOne(d => d.App)
+                .HasForeignKey(d => d.AppId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<AppDescription>(entity =>
@@ -296,6 +322,11 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyAssignedRoles)
                 .WithOne(d => d.Company!)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasMany(p => p.CompanyAssignedApps)
+                .WithOne(d => d.Company)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -630,6 +661,34 @@ public class PortalDbContext : DbContext
 
             entity.HasData(StaticPortalData.Languages);
         });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(x => x.DueDate)
+                .IsRequired(false);
+
+            entity.HasOne(d => d.Receiver)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.ReceiverUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Creator)
+                .WithMany(p => p!.CreatedNotifications)
+                .HasForeignKey(d => d.CreatorUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.NotificationType)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.NotificationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NotificationType>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationTypeId))
+                    .Cast<NotificationTypeId>()
+                    .Select(e => new NotificationType(e))
+            );
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
 

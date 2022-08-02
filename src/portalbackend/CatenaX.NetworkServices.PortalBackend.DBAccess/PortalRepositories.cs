@@ -1,3 +1,23 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -7,6 +27,25 @@ public class PortalRepositories : IPortalRepositories
 {
     private readonly PortalDbContext _dbContext;
 
+    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+        { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
+        { typeof(IAppRepository), context => new AppRepository(context) },
+        { typeof(ICompanyAssignedAppsRepository), context => new CompanyAssignedAppsRepository(context) },
+        { typeof(ICompanyRepository), context => new CompanyRepository(context) },
+        { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
+        { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
+        { typeof(IConsentRepository), context => new ConsentRepository(context) },
+        { typeof(ICountryRepository), context => new CountryRepository(context) },
+        { typeof(IDocumentRepository), context => new DocumentRepository(context) },
+        { typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
+        { typeof(INotificationRepository), context => new NotificationRepository(context) },
+        { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
+        { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
+        { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
+        { typeof(IUserRepository), context => new UserRepository(context) },
+        { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
+    };
+
     public PortalRepositories(PortalDbContext portalDbContext)
     {
         _dbContext = portalDbContext;
@@ -14,71 +53,29 @@ public class PortalRepositories : IPortalRepositories
 
     public RepositoryType GetInstance<RepositoryType>()
     {
-        var repositoryType = typeof(RepositoryType);
+        Object? repository = default;
 
-        if (repositoryType == typeof(IAppRepository))
+        if (_types.TryGetValue(typeof(RepositoryType), out Func<PortalDbContext, Object>? createFunc))
         {
-            return To<RepositoryType>(new AppRepository(_dbContext));
+            repository = createFunc(_dbContext);
         }
-        else if (repositoryType == typeof(IApplicationRepository))
-        {
-            return To<RepositoryType>(new ApplicationRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IAppUserRepository))
-        {
-            return To<RepositoryType>(new AppUserRepository(_dbContext));
-        }
-          else if (repositoryType == typeof(ICompanyAssignedAppsRepository))
-        {
-            return To<RepositoryType>(new CompanyAssignedAppsRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(ICompanyRepository))
-        {
-            return To<RepositoryType>(new CompanyRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(ICompanyRolesRepository))
-        {
-            return To<RepositoryType>(new CompanyRolesRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IConnectorsRepository))
-        {
-            return To<RepositoryType>(new ConnectorsRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IConsentRepository))
-        {
-            return To<RepositoryType>(new ConsentRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IDocumentRepository))
-        {
-            return To<RepositoryType>(new DocumentRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IIdentityProviderRepository))
-        {
-            return To<RepositoryType>(new IdentityProviderRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IServiceAccountsRepository))
-        {
-            return To<RepositoryType>(new ServiceAccountRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IUserBusinessPartnerRepository))
-        {
-            return To<RepositoryType>(new UserBusinessPartnerRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IUserRepository))
-        {
-            return To<RepositoryType>(new UserRepository(_dbContext));
-        }
-        else if (repositoryType == typeof(IUserRolesRepository))
-        {
-            return To<RepositoryType>(new UserRolesRepository(_dbContext));
-        }
-        else
-        {
-            throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType));
-        }
+        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType)));
     }
 
-    public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
+    /// <inheritdoc />
+    public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null)
+        where TEntity : class
+    {
+        var attachedEntity = _dbContext.Attach(entity).Entity;
+        setOptionalParameters?.Invoke(attachedEntity);
 
-    private static T To<T>(dynamic value) => (T) value;
+        return attachedEntity;
+    }
+
+    /// <inheritdoc />
+    public TEntity Remove<TEntity>(TEntity entity)
+        where TEntity : class
+        => _dbContext.Remove(entity).Entity;
+
+    public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
 }

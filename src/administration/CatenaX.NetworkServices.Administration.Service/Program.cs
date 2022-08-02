@@ -22,27 +22,28 @@ using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
+using CatenaX.NetworkServices.Framework.Swagger;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -61,12 +62,10 @@ builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 
 builder.Services.AddControllers()
                 .AddJsonOptions(options => {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
                 });
 
-builder.Services.AddSwaggerGen(c => {
-                    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-                });
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x => {
                     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -120,6 +119,7 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
+builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
@@ -129,9 +129,7 @@ builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
-builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();
-
-builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
+builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 

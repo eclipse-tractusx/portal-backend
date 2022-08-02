@@ -1,23 +1,43 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using CatenaX.NetworkServices.Framework.DBAccess;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
-using CatenaX.NetworkServices.Registration.Service.BPN;
-using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Registration.Service.BPN;
+using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
@@ -42,14 +62,10 @@ builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
                 });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-    c.OperationFilter<SwaggerFileOperationFilter>();
-});
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x =>
 {

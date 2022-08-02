@@ -18,26 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Cors;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Keycloak.Factory.Utils;
+using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
+using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Text.Json.Serialization;
-
-using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
-using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -56,12 +55,10 @@ builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
 
 builder.Services.AddControllers()
                 .AddJsonOptions(options => {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
                 });
 
-builder.Services.AddSwaggerGen(c => {
-                    c.SwaggerDoc(VERSION, new OpenApiInfo { Title = TAG, Version = VERSION });
-                });
+builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
 
 builder.Services.AddAuthentication(x => {
                     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
