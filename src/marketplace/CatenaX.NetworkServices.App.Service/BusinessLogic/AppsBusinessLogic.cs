@@ -244,27 +244,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
     {
-        if (!appRequestModel.SupportedLanguageCodes.Any())
-        {
-            throw new ArgumentException($"Language Code does not exist"); 
-        }
-        if (!appRequestModel.UseCaseIds.Any())
-        {
-            throw new ArgumentException($"Use Case does not exist"); 
-        }
+       // Add app to db
+        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
         if(appRequestModel.ProviderCompanyId == null)
         {
             throw new ArgumentException($"Company Id  does not exist"); 
         }
-        var appId = await CreateAppAsync(appRequestModel).ConfigureAwait(false);
-        return appId;
-    }
-
-    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
-    {
-        // Add app to db
-        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
-
         var appId = appRepository.CreateApp(appRequestModel.Provider, app =>
         {
             app.Name = appRequestModel.Title;
@@ -272,18 +257,27 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
             app.AppStatusId = AppStatusId.CREATED;
         }).Id;
-
         appRepository.AddAppDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+
+        if (!appRequestModel.SupportedLanguageCodes.Any())
+        {
+            throw new ArgumentException($"Language Code does not exist"); 
+        }
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
               (appId, c)));
+        
+        if (!appRequestModel.UseCaseIds.Any())
+        {
+            throw new ArgumentException($"Use Case does not exist"); 
+        }
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
               (appId, uc)));
+
         var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
         appRepository.CreateAppAssignedLicense(appId, licenseId);
-
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
         return appId;
     }
+    
 }
