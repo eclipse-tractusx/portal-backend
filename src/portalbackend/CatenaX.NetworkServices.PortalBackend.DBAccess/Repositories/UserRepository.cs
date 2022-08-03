@@ -55,11 +55,11 @@ public class UserRepository : IUserRepository
                 Email = email,
             }).Entity;
 
-    public IamUser CreateIamUser(CompanyUser user, string iamUserEntityId) =>
+    public IamUser CreateIamUser(CompanyUser companyUser, string iamUserId) =>
         _dbContext.IamUsers.Add(
             new IamUser(
-                iamUserEntityId,
-                user.Id)).Entity;
+                iamUserId,
+                companyUser.Id)).Entity;
 
     public IQueryable<CompanyUser> GetOwnCompanyUserQuery(
         string adminUserId,
@@ -287,6 +287,6 @@ public class UserRepository : IUserRepository
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId) =>
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
-            .Select(companyUser => ((Guid CompanyUserId, bool IsIamUser)) new (companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
+            .Select(companyUser => new ValueTuple<Guid, bool>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
             .ToAsyncEnumerable();
 }

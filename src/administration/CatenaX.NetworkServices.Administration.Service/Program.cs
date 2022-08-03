@@ -138,7 +138,6 @@ builder.Services.AddDbContext<PortalDbContext>(options =>
 builder.Services.AddDbContext<ProvisioningDBContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
-
 var app = builder.Build();
 
 var debugEnabled = app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configuration.GetValue<bool>("DebugEnabled");
