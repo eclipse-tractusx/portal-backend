@@ -240,17 +240,8 @@ public class UserRepository : IUserRepository
             .Select(companyUser => new ValueTuple<Guid, bool>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
             .ToAsyncEnumerable();
 
-    /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> GetCompanyUsersByCompanyAndRoleIdAsync(IEnumerable<(Guid companyId, Guid userRoleId)> companyUserRoleIds) =>
-        _dbContext.CompanyUsers
-            .Where(companyUser => companyUserRoleIds.Any(companyUserRoleId =>
-                companyUser.CompanyId == companyUserRoleId.companyId &&
-                companyUser.UserRoles.Any(userRole => userRole.Id == companyUserRoleId.userRoleId)))
-            .Select(companyUser => new ValueTuple<Guid, Guid, IEnumerable<Guid>>(companyUser.Id, companyUser.CompanyId, companyUser.UserRoles.Select(y => y.Id)))
-            .ToAsyncEnumerable();
-
     private static CompanyUserDetails SelectCompanyUserDetails(CompanyUser companyUser) =>
-        new CompanyUserDetails(
+        new(
             companyUser.Id,
             companyUser.DateCreated,
             companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
