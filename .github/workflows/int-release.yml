@@ -273,13 +273,6 @@ jobs:
         id: git-tag
         run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
 
-      - name: Set env
-        run: echo "RELEASE_VERSION=$${{ steps.git-tag.outputs.git-version }}" >> $GITHUB_ENV
-      - name: Test
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -307,10 +300,22 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release ]
+    # needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release ]
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Get tag name
+        id: git-tag
+        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=$${{ steps.git-tag.outputs.git-version }}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v1
