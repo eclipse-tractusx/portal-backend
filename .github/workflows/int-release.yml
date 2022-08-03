@@ -20,12 +20,12 @@
 
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: Release
+name: INT Release
 
 on:
   push:
     tags:
-      - '*'
+      - 'int-v*'
 
 env:
   REGISTRY: ghcr.io
@@ -296,3 +296,28 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ steps.git-tag.outputs.git-version }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  auth-and-dispatch:
+    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v1
+        with:
+          application_id: ${{ secrets.ORG_PORTAL_DISPATCH_APPID }}
+          application_private_key: ${{ secrets.ORG_PORTAL_DISPATCH_KEY }}
+
+      - name: Trigger workflow
+        id: call_action
+        env:
+          TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          curl -v \
+            --request POST \
+            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/int-release-image-update.yml/dispatches \
+            --header "authorization: Bearer $TOKEN" \
+            --header "Accept: application/vnd.github.v3+json" \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ steps.git-tag.outputs.git-version }}" }}' \
+            --fail
