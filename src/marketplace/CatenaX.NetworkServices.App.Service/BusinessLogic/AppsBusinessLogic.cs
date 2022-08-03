@@ -244,7 +244,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
     {
-        if (!appRequestModel.Descriptions.Any())
+        if (!appRequestModel.SupportedLanguageCodes.Any())
         {
             throw new ArgumentException($"Language Code does not exist"); 
         }
