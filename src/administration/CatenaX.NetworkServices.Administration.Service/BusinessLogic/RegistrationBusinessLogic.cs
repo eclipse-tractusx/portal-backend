@@ -68,13 +68,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsFilteredQuery(
             companyName?.Length >= 3 ? companyName : null,
-            new CompanyApplicationStatusId[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
+            new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
 
-        return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
+        return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
+            (skip, take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
                 applications.CountAsync(),
                 applications.OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
@@ -104,7 +104,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
     {
-        if (applicationId == Guid.Empty)
+        if (applicationId == default)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
