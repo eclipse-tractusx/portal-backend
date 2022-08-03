@@ -309,10 +309,6 @@ jobs:
 
       - name: Set env
         run: echo "RELEASE_VERSION=$${{ steps.git-tag.outputs.git-version }}" >> $GITHUB_ENV
-      - name: Test
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
 
       - name: Get token
         id: get_workflow_token
