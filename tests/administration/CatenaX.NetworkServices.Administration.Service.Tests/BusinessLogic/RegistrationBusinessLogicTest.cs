@@ -260,13 +260,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var welcomeEmailData = new List<WelcomeEmailData>();
             welcomeEmailData.AddRange(new WelcomeEmailData[]
             {
-                new (CompanyUserId1, "Stan", "Lee", "stan@lee.com", company.Name, withCompanyAdmin ? Enumerable.Repeat(_companyAdminRoleId, 1) : Enumerable.Empty<Guid>()),
-                new (CompanyUserId2, "Tony", "Stark", "tony@stark.com", company.Name,Enumerable.Repeat(UserRoleId, 1)),
-                new (CompanyUserId3, "Peter", "Parker", "peter@parker.com", company.Name,Enumerable.Empty<Guid>())
+                new (CompanyUserId1, "Stan", "Lee", "stan@lee.com", company.Name, withCompanyAdmin),
+                new (CompanyUserId2, "Tony", "Stark", "tony@stark.com", company.Name, false),
+                new (CompanyUserId3, "Peter", "Parker", "peter@parker.com", company.Name, false)
             });
-            A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(Id))
+            A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(Id, A<IEnumerable<Guid>>._))
                 .Returns(welcomeEmailData.ToAsyncEnumerable());
-            A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id)))
+            A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id), A<IEnumerable<Guid>>._))
                 .Returns(new List<WelcomeEmailData>().ToAsyncEnumerable());
 
             A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(clientRoleNames))
