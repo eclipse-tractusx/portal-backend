@@ -114,4 +114,11 @@ public interface IAppsBusinessLogic
     /// <param name="appInputModel">Input model for app creation.</param>
     /// <returns>Guid of the created app.</returns>
     public Task<Guid> CreateAppAsync(AppInputModel appInputModel);
+
+    /// <summary>
+    /// Creates an application and returns its generated ID.
+    /// </summary>
+    /// <param name="appRequestModel"></param>
+    /// <returns>Guid of the created app.</returns>
+    Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
 }
