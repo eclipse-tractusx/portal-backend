@@ -28,7 +28,6 @@ using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;

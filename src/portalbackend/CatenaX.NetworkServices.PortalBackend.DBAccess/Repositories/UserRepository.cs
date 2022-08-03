@@ -97,7 +97,17 @@ public class UserRepository : IUserRepository
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
                     assignedPartner.BusinessPartnerNumber),
                 companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
+                companyUser.CompanyUserStatusId,
+                companyUser.Company!.CompanyAssignedApps
+                    .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
+                    .Select(app => new CompanyUserAssignedRoleDetails(
+                        app.AppId,
+                        app.App!.IamClients
+                        .SelectMany(iamClient => iamClient.UserRoles
+                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                            .Select(role => role.UserRoleText))
+                    ))
+                    )
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
@@ -167,7 +177,17 @@ public class UserRepository : IUserRepository
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
                     assignedPartner.BusinessPartnerNumber),
                 companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
+                companyUser.CompanyUserStatusId,
+                companyUser.Company!.CompanyAssignedApps
+                    .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
+                    .Select(app => new CompanyUserAssignedRoleDetails(
+                        app.AppId,
+                        app.App!.IamClients
+                        .SelectMany(iamClient => iamClient.UserRoles
+                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                            .Select(role => role.UserRoleText))
+                    ))
+                    )
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
@@ -184,6 +204,7 @@ public class UserRepository : IUserRepository
                                           IdentityProviderCategoryId.KEYCLOAK_SHARED))
             .Include(companyUser => companyUser.Company)
             .Include(companyUser => companyUser.IamUser)
+            .AsSplitQuery()
             .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
                 companyUser,
                 companyUser.Company!.IdentityProviders.Where(identityProvider =>
@@ -191,8 +212,16 @@ public class UserRepository : IUserRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault()!,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
-                    assignedPartner.BusinessPartnerNumber)
-            ))
+                    assignedPartner.BusinessPartnerNumber),
+                companyUser.Company!.CompanyAssignedApps
+                    .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
+                    .Select(app => new CompanyUserAssignedRoleDetails(
+                        app.AppId,
+                        app.App!.IamClients
+                        .SelectMany(iamClient => iamClient.UserRoles
+                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
+                            .Select(role => role.UserRoleText))
+                    ))))
             .SingleOrDefaultAsync();
 
     public Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId) =>

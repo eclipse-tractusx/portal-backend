@@ -168,7 +168,7 @@ public class AppRepository : IAppRepository
 
     /// <inheritdoc />
     public void AddAppDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
-        _context.AppDescriptions.AddRange(appDescriptions.Select(s => new AppDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionLong)));
+        _context.AppDescriptions.AddRange(appDescriptions.Select(s => new AppDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
 
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
