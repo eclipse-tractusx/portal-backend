@@ -18,8 +18,6 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_maintenance-service
   COMMIT_SHA: ${{ github.sha }}
-  IMAGE_BEGINN: 'portalmaintenancetag: '
-  IMAGE_FULL: 'portalmaintenancetag: ${{ github.sha }}'
 
 jobs:
   build-and-push-image:
@@ -77,5 +75,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/maintenance-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"main", "inputs": { "new-image":"${{ env.IMAGE_FULL }}" }}' \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
             --fail
