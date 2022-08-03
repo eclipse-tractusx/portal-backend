@@ -246,4 +246,45 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IAppRepository>().GetAppData(userId);
     
 
+    
+    /// <inheritdoc/>
+    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
+    {
+        if(appRequestModel.ProviderCompanyId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"Company Id must be specified", nameof(appRequestModel.ProviderCompanyId)); 
+        }
+        if (!appRequestModel.SupportedLanguageCodes.Any())
+        {
+            throw new ControllerArgumentException($"Language Codes must not be empty", nameof(appRequestModel.SupportedLanguageCodes)); 
+        }
+        if (!appRequestModel.UseCaseIds.Any())
+        {
+            throw new ControllerArgumentException($"Use Cases must not be empty", nameof(appRequestModel.UseCaseIds)); 
+        }
+        return CreateAppAsync(appRequestModel);
+    }
+    
+    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
+    {   
+        // Add app to db
+        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
+        var appId = appRepository.CreateApp(appRequestModel.Provider, app =>
+        {
+            app.Name = appRequestModel.Title;
+            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
+            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
+            app.AppStatusId = AppStatusId.CREATED;
+        }).Id;
+        appRepository.AddAppDescriptions(appRequestModel.Descriptions.Select(d =>
+              (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+        appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
+              (appId, c)));
+        appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
+              (appId, uc)));
+        var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
+        appRepository.CreateAppAssignedLicense(appId, licenseId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return appId;
+    }
 }

@@ -3,20 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class CompanyUserDetails
+public record CompanyUserDetails(
+    [property: JsonPropertyName("companyUserId")] Guid companyUserId,
+    [property: JsonPropertyName("created")] DateTimeOffset createdAt,
+    [property: JsonPropertyName("bpn")] IEnumerable<string> businessPartnerNumbers,
+    [property: JsonPropertyName("company")] string companyName,
+    [property: JsonPropertyName("status")] CompanyUserStatusId companyUserStatusId,
+    [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> assignedRoles)
 {
-    public CompanyUserDetails(Guid companyUserId, DateTimeOffset createdAt, IEnumerable<string> businessPartnerNumbers, string companyName, CompanyUserStatusId companyUserStatusId)
-    {
-        CompanyUserId = companyUserId;
-        CreatedAt = createdAt;
-        BusinessPartnerNumbers = businessPartnerNumbers;
-        CompanyName = companyName;
-        CompanyUserStatusId = companyUserStatusId;
-    }
-
-    [JsonPropertyName("companyUserId")]
-    public Guid CompanyUserId { get; set; }
-
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; }
 
@@ -25,16 +19,8 @@ public class CompanyUserDetails
 
     [JsonPropertyName("email")]
     public string? Email { get; set; }
-
-    [JsonPropertyName("bpn")]
-    public IEnumerable<string> BusinessPartnerNumbers { get; set; }
-
-    [JsonPropertyName("created")]
-    public DateTimeOffset CreatedAt { get; set; }
-
-    [JsonPropertyName("company")]
-    public string CompanyName { get; set; }
-
-    [JsonPropertyName("status")]
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
 }
+
+public record CompanyUserAssignedRoleDetails(
+    [property: JsonPropertyName("appId")] Guid appId,
+    [property: JsonPropertyName("roles")] IEnumerable<string> userRoles);

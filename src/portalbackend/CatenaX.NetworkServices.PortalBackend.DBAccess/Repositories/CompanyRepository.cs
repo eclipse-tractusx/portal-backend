@@ -78,12 +78,17 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters) =>
-        _context.Companies
+    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(
+        IEnumerable<(Guid companyId, bool bpnRequested)> parameters)
+    {
+        var bpnRequestCompanyIds = parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).ToList();
+        return _context.Companies
             .AsNoTracking()
             .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
             .Select(company => ((Guid CompanyId, string? BusinessPartnerNumber)) new (
                 company.Id,
-                parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).Contains(company.Id) ? company.BusinessPartnerNumber : null
-            )).AsAsyncEnumerable();
+                bpnRequestCompanyIds.Contains(company.Id) ? company.BusinessPartnerNumber : null
+            ))
+            .AsAsyncEnumerable();
+    }
 }

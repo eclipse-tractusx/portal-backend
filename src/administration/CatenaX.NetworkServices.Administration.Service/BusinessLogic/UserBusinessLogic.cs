@@ -346,7 +346,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 companyUser.DateCreated,
                 userData.BusinessPartnerNumbers,
                 companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
+                companyUser.CompanyUserStatusId,
+                userData.AssignedRoles)
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
