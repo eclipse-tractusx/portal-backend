@@ -24,8 +24,6 @@ name: INT Release
 
 on:
   push:
-    branches:
-      - 'feature/CPLP-1074_auto_image_update-2'
     tags:
       - 'int-v*'
 
@@ -300,7 +298,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    # needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release ]
+    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release ]
     runs-on: ubuntu-latest
 
     steps:
@@ -333,5 +331,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/int-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"feature/CPLP-1074_auto_image_update_backend-2", "inputs": { "new-image":"${{ env.RELEASE_VERSION }}" }}' \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ env.RELEASE_VERSION }}" }}' \
             --fail
