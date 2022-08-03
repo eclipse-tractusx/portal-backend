@@ -130,7 +130,7 @@ public class ApplicationRepository : IApplicationRepository
                 companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId) =>
+    public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
@@ -143,7 +143,7 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Lastname,
                         companyUser.Email,
                         companyUser.Company!.Name,
-                        companyUser.UserRoles.Select(x => x.Id))))
+                        companyUser.UserRoles.Any(role => roleIds.Contains(role.Id)))))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
@@ -159,7 +159,7 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Lastname,
                         companyUser.Email,
                         companyUser.Company!.Name,
-                        companyUser.UserRoles.Select(x => x.Id))))
+                        true)))
             .AsAsyncEnumerable();
 
      public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery() =>
