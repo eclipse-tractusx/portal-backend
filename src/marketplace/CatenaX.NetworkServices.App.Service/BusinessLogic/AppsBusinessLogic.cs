@@ -244,19 +244,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
     {
-        if(appRequestModel.ProviderCompanyId == null)
+        if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
-            throw new ArgumentException($"Company Id  does not exist"); 
+            throw new ControllerArgumentException($"Company Id must be specified", nameof(appRequestModel.ProviderCompanyId)); 
         }
         if (!appRequestModel.SupportedLanguageCodes.Any())
         {
-            throw new ArgumentException($"Language Code does not exist"); 
+            throw new ControllerArgumentException($"Language Codes must not be empty", nameof(appRequestModel.SupportedLanguageCodes)); 
         }
         if (!appRequestModel.UseCaseIds.Any())
         {
-            throw new ArgumentException($"Use Case does not exist"); 
+            throw new ControllerArgumentException($"Use Cases must not be empty", nameof(appRequestModel.UseCaseIds)); 
         }
-        return  this.CreateAppAsync(appRequestModel);
+        return CreateAppAsync(appRequestModel);
     }
     
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
