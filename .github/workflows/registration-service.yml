@@ -12,14 +12,13 @@ on:
 
     branches:
       - 'main'
+      - 'feature/CPLP-1074_auto_image_update-2'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}_registration-service
   COMMIT_SHA: ${{ github.sha }}
-  IMAGE_BEGINN: 'registrationtag: '
-  IMAGE_FULL: 'registrationtag: ${{ github.sha }}'
 
 jobs:
   build-and-push-image:
@@ -77,5 +76,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/registration-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"main", "inputs": { "new-image":"${{ env.IMAGE_FULL }}" }}' \
+            --data '{"ref":"feature/CPLP-1074_auto_image_update_backend-2", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
             --fail
