@@ -244,17 +244,17 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
     {
-        if (appRequestModel.Descriptions.Select(x => x.LanguageCode) == null)
+        if (!appRequestModel.Descriptions.Any())
         {
-            throw new NotFoundException($"Language Code does not exist"); 
+            throw new ArgumentException($"Language Code does not exist"); 
         }
-        if (appRequestModel.UseCaseIds == null)
+        if (!appRequestModel.UseCaseIds.Any())
         {
-            throw new NotFoundException($"Use Case does not exist"); 
+            throw new ArgumentException($"Use Case does not exist"); 
         }
         if(appRequestModel.ProviderCompanyId == null)
         {
-            throw new NotFoundException($"Company Id  does not exist"); 
+            throw new ArgumentException($"Company Id  does not exist"); 
         }
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
