@@ -302,6 +302,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Get tag name
+        id: git-tag
+        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=$${{ steps.git-tag.outputs.git-version }}" >> $GITHUB_ENV
+
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v1
@@ -316,8 +324,8 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/int-release-image-update.yml/dispatches \
+            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/portal-backend-int-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"main", "inputs": { "new-image":"${{ steps.git-tag.outputs.git-version }}" }}' \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ env.RELEASE_VERSION }}" }}' \
             --fail
