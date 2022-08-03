@@ -116,5 +116,5 @@ public interface IAppRepository
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
-    IAsyncEnumerable<AppDataProvider> GetAppData(string iamUserId);
+    IAsyncEnumerable<AllAppData> GetAppData(string iamUserId);
 }

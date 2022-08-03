@@ -23,4 +23,4 @@
 /// <summary>
 /// Model for app data.
 /// </summary>
-public record AppDataProvider(Guid Id, string? Name, string? LeadPictureUri, string Provider, string Status, DateTimeOffset? LastChanged);
+public record AllAppData(Guid Id, string? Name, string? LeadPictureUri, string Provider, string Status, DateTimeOffset? LastChanged);

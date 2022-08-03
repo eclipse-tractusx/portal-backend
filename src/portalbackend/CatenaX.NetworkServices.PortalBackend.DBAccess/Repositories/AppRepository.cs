@@ -175,11 +175,11 @@ public class AppRepository : IAppRepository
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AppDataProvider> GetAppData(string iamUserId) =>
+    public IAsyncEnumerable<AllAppData> GetAppData(string iamUserId) =>
         _context.Apps
                  .AsNoTracking()
                  .Where(app=>app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-                 .Select(app => new AppDataProvider
+                 .Select(app => new AllAppData
                  (
                     app.Id,
                     app.Name,
