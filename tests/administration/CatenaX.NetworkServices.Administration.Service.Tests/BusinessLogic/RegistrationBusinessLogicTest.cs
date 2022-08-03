@@ -44,6 +44,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
     public class RegistrationBusinessLogicTest
     {
         private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
+        private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
         private static readonly Guid CompanyUserId1 = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
         private static readonly Guid CompanyUserId2 = new("857b93b1-8fcb-4141-81b0-ae81950d489f");
         private static readonly Guid CompanyUserId3 = new("857b93b1-8fcb-4141-81b0-ae81950d48af");
@@ -56,6 +57,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         private const string CompanyName = "Shared Idp Test";
         private const string ClientId = "catenax-portal";
 
+        private readonly Guid _companyAdminRoleId = Guid.NewGuid();
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalRepositories _portalRepositories;
         private readonly IApplicationRepository _applicationRepository;
@@ -66,7 +68,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         private readonly IRegistrationBusinessLogic _logic;
         private readonly RegistrationSettings _settings;
         private readonly INotificationRepository _notificationRepository;
-        private readonly IUserRepository _userRepository;
         private readonly List<Notification> _notifications = new();
 
         public RegistrationBusinessLogicTest()
@@ -84,23 +85,36 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             _custodianService = A.Fake<ICustodianService>();
             _settings = A.Fake<RegistrationSettings>();
             _notificationRepository = A.Fake<INotificationRepository>();
-            _userRepository = A.Fake<IUserRepository>();
-
+            
+            var userRepository = A.Fake<IUserRepository>();
             var mailingService = A.Fake<IMailingService>();
             var options = A.Fake<IOptions<RegistrationSettings>>();
 
+            _settings.CompanyAdminRoleId = _companyAdminRoleId;
+            _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
+            {
+                NotificationTypeId.WELCOME,
+                NotificationTypeId.WELCOME_USE_CASES,
+                NotificationTypeId.WELCOME_APP_MARKETPLACE,
+                NotificationTypeId.WELCOME_SERVICE_PROVIDER,
+                NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION
+            };
+            
             A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
             A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
-            A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+            A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(userRepository);
             A.CallTo(() => options.Value).Returns(_settings);
+
+            A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
+                .ReturnsLazily(Guid.NewGuid);
 
             _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService);
         }
 
         [Fact]
-        public async Task ApprovePartnerRequest_WithoutCatenaXAdminAndCompanyUser_ApprovesRequestDoesntCreateNotifications()
+        public async Task ApprovePartnerRequest_WithoutCompanyAdmin_ApprovesRequestDoesntCreateNotifications()
         {
             //Arrange
             var roles = new List<string> { "IT Admin" };
@@ -113,10 +127,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
             var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
 
-            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, false, false);
+            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, false);
 
             //Act
-            var result = await _logic.ApprovePartnerRequest(Id).ConfigureAwait(false);
+            var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
             //Assert
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
@@ -134,23 +148,23 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         }
 
         [Fact]
-        public async Task ApprovePartnerRequest_WithCatenaXAdminAndCompanyUser_ApprovesRequestAndCreatesNotifications()
+        public async Task ApprovePartnerRequest_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications()
         {
             //Arrange
-            var roles = new List<string> { "IT Admin" };
+            var roles = new List<string> { "Company Admin" };
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                         {
                             { ClientId, roles.AsEnumerable() }
                         };
-            var userRoleData = new List<UserRoleData>() { new(UserRoleId, ClientId, "IT Admin") };
+            var userRoleData = new List<UserRoleData>() { new(UserRoleId, ClientId, "Company Admin") };
 
             var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
             var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
 
-            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, true, true);
+            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, true);
 
             //Act
-            var result = await _logic.ApprovePartnerRequest(Id).ConfigureAwait(false);
+            var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
             //Assert
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
@@ -168,45 +182,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         }
 
         [Fact]
-        public async Task ApprovePartnerRequest_WithCatenaXAdminWithoutCompanyUser_ApprovesRequestAndDoesntCreatesNotifications()
-        {
-            //Arrange
-            var roles = new List<string> { "IT Admin" };
-            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                        {
-                            { ClientId, roles.AsEnumerable() }
-                        };
-            var userRoleData = new List<UserRoleData>() { new(UserRoleId, ClientId, "IT Admin") };
-
-            var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
-            var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-
-            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, true, false);
-
-            //Act
-            var result = await _logic.ApprovePartnerRequest(Id).ConfigureAwait(false);
-            //Assert
-            A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-            A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-            A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-            A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName)).MustHaveHappened(1, Times.OrMore);
-            Assert.IsType<bool>(result);
-            Assert.True(result);
-            _notifications.Should().BeEmpty();
-        }
-
-
-        [Fact]
         public async Task ApprovePartnerRequest_WithDefaultApplicationId_ThrowsArgumentNullException()
         {
             //Act
-            async Task Action() => await _logic.ApprovePartnerRequest(Guid.Empty);
+            async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, Guid.Empty);
             // Assert
             var ex = await Assert.ThrowsAsync<ArgumentNullException>(Action);
             ex.ParamName.Should().Be("applicationId");
@@ -221,7 +200,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 .ReturnsLazily(() => (CompanyApplication?)null);
 
             //Act
-            async Task Action() => await _logic.ApprovePartnerRequest(applicationId);
+            async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, applicationId);
             // Assert
             var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
             ex.Message.Should().Be($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -241,7 +220,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 .ReturnsLazily(() => companyApplication);
 
             //Act
-            async Task Action() => await _logic.ApprovePartnerRequest(applicationId);
+            async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, applicationId);
             // Assert
             var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
             ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty (Parameter 'bpn')");
@@ -251,11 +230,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         #region Setup
 
         private void SetupFakes(
-            Dictionary<string, IEnumerable<string>> clientRoleNames,
-            List<UserRoleData> userRoleData,
+            IDictionary<string, IEnumerable<string>> clientRoleNames,
+            IEnumerable<UserRoleData> userRoleData,
             CompanyUserAssignedRole companyUserAssignedRole,
             CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner,
-            bool withCatenaXAdmin,
             bool withCompanyAdmin)
         {
             var company = _fixture.Build<Company>()
@@ -266,29 +244,30 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 .With(u => u.Company, company)
                 .Create();
 
-            var companyInvitedUsers = new List<CompanyInvitedUserData>()
+            var companyInvitedUsers = new List<CompanyInvitedUserData>
             {
                 new(CompanyUserId1, CentralUserId1.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
                 new(CompanyUserId2, CentralUserId2.ToString(), Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
                 new(CompanyUserId3, CentralUserId3.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
             }.ToAsyncEnumerable();
-            var bpns = new List<string> { BusinessPartnerNumber }.AsEnumerable();
+            var businessPartnerNumbers = new List<string> { BusinessPartnerNumber }.AsEnumerable();
 
             _settings.ApplicationApprovalInitialRoles = clientRoleNames;
-            _settings.CatenaXCompanyId = Guid.NewGuid();
-            _settings.CompanyAdminRoleId = Guid.NewGuid();
-            _settings.CxAdminRoleId = Guid.NewGuid();
-            _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
-            {
-                NotificationTypeId.WELCOME,
-                NotificationTypeId.WELCOME_USE_CASES,
-                NotificationTypeId.WELCOME_APP_MARKETPLACE,
-                NotificationTypeId.WELCOME_SERVICE_PROVIDER,
-                NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION
-            };
-
+            
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id))
                 .Returns(companyApplication);
+
+            var welcomeEmailData = new List<WelcomeEmailData>();
+            welcomeEmailData.AddRange(new WelcomeEmailData[]
+            {
+                new (CompanyUserId1, "Stan", "Lee", "stan@lee.com", company.Name, withCompanyAdmin ? Enumerable.Repeat(_companyAdminRoleId, 1) : Enumerable.Empty<Guid>()),
+                new (CompanyUserId2, "Tony", "Stark", "tony@stark.com", company.Name,Enumerable.Repeat(UserRoleId, 1)),
+                new (CompanyUserId3, "Peter", "Parker", "peter@parker.com", company.Name,Enumerable.Empty<Guid>())
+            });
+            A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(Id))
+                .Returns(welcomeEmailData.ToAsyncEnumerable());
+            A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id)))
+                .Returns(new List<WelcomeEmailData>().ToAsyncEnumerable());
 
             A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(clientRoleNames))
                 .Returns(userRoleData.ToAsyncEnumerable());
@@ -297,17 +276,17 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 .Returns(companyInvitedUsers);
 
             A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1.ToString(), clientRoleNames))
-                .Returns(Task.FromResult((IDictionary<string, IEnumerable<string>>) clientRoleNames));
+                .Returns(Task.FromResult(clientRoleNames));
             A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2.ToString(), clientRoleNames))
-                .Returns(Task.FromResult((IDictionary<string, IEnumerable<string>>) clientRoleNames));
+                .Returns(Task.FromResult(clientRoleNames));
             A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3.ToString(), clientRoleNames))
-                .Returns(Task.FromResult((IDictionary<string, IEnumerable<string>>) clientRoleNames));
+                .Returns(Task.FromResult(clientRoleNames));
 
-            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1.ToString(), bpns))
+            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1.ToString(), businessPartnerNumbers))
                 .Returns(Task.CompletedTask);
-            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId2.ToString(), bpns))
+            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId2.ToString(), businessPartnerNumbers))
                 .Returns(Task.CompletedTask);
-            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId3.ToString(), bpns))
+            A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId3.ToString(), businessPartnerNumbers))
                 .Returns(Task.CompletedTask);
 
             A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, CompanyUserRoleId))
@@ -327,28 +306,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
 
             A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName))
                 .Returns(Task.CompletedTask);
-            if (withCatenaXAdmin && withCompanyAdmin)
-            {
-                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
-                    .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)>
-                        {new(CompanyUserId1, _settings.CatenaXCompanyId, new[] { _settings.CxAdminRoleId }), new(CompanyUserId1, company.Id, new[] { _settings.CompanyAdminRoleId })}.ToAsyncEnumerable());
-            }
-            else if (withCompanyAdmin)
-            {
-                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
-                .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> { new (CompanyUserId1, company.Id, new[] { _settings.CompanyAdminRoleId }) }.ToAsyncEnumerable());
-            }
-            else if (withCatenaXAdmin)
-            {
-                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
-                    .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)> { new (CompanyUserId1, _settings.CatenaXCompanyId, new[] { _settings.CxAdminRoleId }) }.ToAsyncEnumerable());
-            }
-            else
-            {
-                A.CallTo(() => _userRepository.GetCompanyUsersByCompanyAndRoleIdAsync(A<IEnumerable<(Guid companyId, Guid)>>._))
-                    .Returns(new List<(Guid CompanyUserId, Guid CompanyId, IEnumerable<Guid> RoleIds)>().ToAsyncEnumerable());
-            }
-
+            
             A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
                 .Invokes(x =>
                 {

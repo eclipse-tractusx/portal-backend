@@ -23,7 +23,6 @@ using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
@@ -36,12 +35,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class UserRepositoryTests
 {
-    private static string CatenaXCompanyName = "Catena X";
-    private static string CxAdminRolename = "CX Admin";
-    private static string CompanyAdminRole = "Company Admin";
-    private static readonly Guid CatenaXCompanyId = Guid.NewGuid();
-    private static readonly Guid CxAdminRoleId = Guid.NewGuid();
-    private static readonly Guid CompanyAdminRoleId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
 
@@ -122,75 +115,6 @@ public class UserRepositoryTests
         result.Single().Id.Should().Be(expectedApp.Id);
     }
 
-    [Fact]
-    public async Task GetCatenaAndCompanyAdminIdAsync_WithMultipleCompanyAdmins_ReturnsExpectedAmount()
-    {
-        // Arrange
-        var (companyUser, _) = CreateTestUserPair();
-        CreateFakeContext(companyUser.CompanyId, false, 2);
-        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>
-        {
-            new(CatenaXCompanyId, CxAdminRoleId),
-            new(companyUser.CompanyId, CompanyAdminRoleId)
-        };
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(2);
-        result.Where(x => x.RoleIds.Any(y => y == CompanyAdminRoleId)).Should().HaveCount(2);
-        result.Where(x => x.RoleIds.Any(y => y == CxAdminRoleId)).Should().HaveCount(0);
-    }
-
-    [Fact]
-    public async Task GetCatenaAndCompanyAdminIdAsync_WithMultipleCompanyAdminsAndCatenaXAdmin_ReturnsExpectedAmount()
-    {
-        // Arrange
-        var (companyUser, _) = CreateTestUserPair();
-        CreateFakeContext(companyUser.CompanyId, true, 2);
-        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>
-        {
-            new(CatenaXCompanyId, CxAdminRoleId),
-            new(companyUser.CompanyId, CompanyAdminRoleId)
-        };
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(3);
-        result.Where(x => x.RoleIds.Any(y => y == CompanyAdminRoleId)).Should().HaveCount(2);
-        result.Where(x => x.RoleIds.Any(y => y == CxAdminRoleId)).Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task GetCatenaAndCompanyAdminIdAsync_WithOnlyCatenaXAdmin_ReturnsExpectedAmount()
-    {
-        // Arrange
-        var (companyUser, _) = CreateTestUserPair();
-        CreateFakeContext(companyUser.CompanyId, true, 0);
-        var companyUserRoleIds = new List<(Guid companyId, Guid userRoleId)>
-        {
-            new(CatenaXCompanyId, CxAdminRoleId),
-            new(companyUser.CompanyId, CompanyAdminRoleId)
-        };
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetCompanyUsersByCompanyAndRoleIdAsync(companyUserRoleIds).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(1);
-        result.Where(x => x.RoleIds.Any(y => y == CompanyAdminRoleId)).Should().HaveCount(0);
-        result.Where(x => x.RoleIds.Any(y => y == CxAdminRoleId)).Should().HaveCount(1);
-    }
-
     #region Setup
 
     private (CompanyUser, IamUser) CreateTestUserPair()
@@ -203,52 +127,6 @@ public class UserRepositoryTests
             .Create();
         companyUser.IamUser = iamUser;
         return (companyUser, iamUser);
-    }
-
-    private void CreateFakeContext(Guid companyId, bool withCatenaXAdmin, int companyAdminCount)
-    {
-        var catenaCompany = new Company(CatenaXCompanyId, CatenaXCompanyName, CompanyStatusId.ACTIVE,
-            DateTimeOffset.UtcNow);
-
-        var catenaXAdminRole = new UserRole(CxAdminRoleId, CxAdminRolename, Guid.NewGuid());
-        var companyAdminRole = new UserRole(CompanyAdminRoleId, CompanyAdminRole, Guid.NewGuid());
-        var rolesDbSet = new List<UserRole>
-        {
-            catenaXAdminRole,
-            companyAdminRole
-        };
-        var companyUsers = companyAdminCount > 0 ?
-            _fixture.Build<CompanyUser>()
-                .With(x => x.CompanyId, companyId)
-                .CreateMany(companyAdminCount)
-                .ToList() :
-            new List<CompanyUser>();
-        foreach (var companyUser in companyUsers)
-        {
-            companyUser.UserRoles.Add(companyAdminRole);
-        }
-
-        var companyUserRoles = companyUsers
-            .Select(companyUser => new CompanyUserAssignedRole(companyUser.Id, companyAdminRole.Id))
-            .ToList();
-
-        if(withCatenaXAdmin)
-        {
-            var catenaAdmin = new CompanyUser(Guid.NewGuid(), CatenaXCompanyId, CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
-            {
-                Lastname = CxAdminRolename,
-                Company = catenaCompany,
-                UserRoles = { catenaXAdminRole }
-            };
-            companyUsers.Add(catenaAdmin);
-            companyUserRoles.Add(new CompanyUserAssignedRole(catenaAdmin.Id, catenaXAdminRole.Id));
-        }
-
-        A.CallTo(() => _contextFake.Companies).Returns(new List<Company> { catenaCompany }.AsFakeDbSet());
-        A.CallTo(() => _contextFake.UserRoles).Returns(rolesDbSet.AsFakeDbSet());
-        A.CallTo(() => _contextFake.CompanyUsers).Returns(companyUsers.AsFakeDbSet());
-        A.CallTo(() => _contextFake.CompanyUserAssignedRoles).Returns(companyUserRoles.AsFakeDbSet());
-        _fixture.Inject(_contextFake);
     }
 
     #endregion

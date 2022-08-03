@@ -17,16 +17,6 @@ public class RegistrationSettings
     public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
 
     /// <summary>
-    /// Company name of the Catena X Company
-    /// </summary>
-    public Guid CatenaXCompanyId { get; set; }
-
-    /// <summary>
-    /// Name of the CX Admin Role
-    /// </summary>
-    public Guid CxAdminRoleId { get; set; }
-
-    /// <summary>
     /// Name of the Company Admin
     /// </summary>
     public Guid CompanyAdminRoleId { get; set; }
@@ -52,14 +42,6 @@ public static class RegistrationSettingsExtension
                 if (x.PartnerUserInitialRoles == null)
                 {
                     throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.PartnerUserInitialRoles)} must not be null");
-                }
-                if (x.CatenaXCompanyId == Guid.Empty)
-                {
-                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CatenaXCompanyId)} must not be null");
-                }
-                if (x.CxAdminRoleId == Guid.Empty)
-                {
-                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CxAdminRoleId)} must not be empty");
                 }
                 if (x.CompanyAdminRoleId == Guid.Empty)
                 {
