@@ -90,7 +90,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var mailingService = A.Fake<IMailingService>();
             var options = A.Fake<IOptions<RegistrationSettings>>();
 
-            _settings.CompanyAdminRoleId = _companyAdminRoleId;
             _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
             {
                 NotificationTypeId.WELCOME,
@@ -131,6 +130,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
 
             //Act
             var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
+
             //Assert
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
@@ -165,6 +165,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
 
             //Act
             var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
+
             //Assert
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
@@ -253,7 +254,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var businessPartnerNumbers = new List<string> { BusinessPartnerNumber }.AsEnumerable();
 
             _settings.ApplicationApprovalInitialRoles = clientRoleNames;
-            
+            _settings.CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
+            };
+
             A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id))
                 .Returns(companyApplication);
 
@@ -269,8 +274,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id), A<IEnumerable<Guid>>._))
                 .Returns(new List<WelcomeEmailData>().ToAsyncEnumerable());
 
-            A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(clientRoleNames))
+            A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames[ClientId].First())))
                 .Returns(userRoleData.ToAsyncEnumerable());
+
+            A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == _settings.CompanyAdminRoles[ClientId].First())))
+                .Returns(new List<UserRoleData>() { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
 
             A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))
                 .Returns(companyInvitedUsers);
