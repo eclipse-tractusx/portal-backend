@@ -256,6 +256,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ArgumentException($"Company Id  does not exist"); 
         }
+        var appId = await CreateAppAsync(appRequestModel).ConfigureAwait(false);
+        return appId;
+    }
+
+    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
+    {
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
 
