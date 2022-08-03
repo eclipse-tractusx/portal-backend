@@ -49,13 +49,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _mailingService = mailingService;
     }
 
-    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
     {
         if (applicationId == default)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
-
+        return GetCompanyWithAddressAsyncInternal(applicationId);
+    }
+    private async Task<CompanyWithAddress> GetCompanyWithAddressAsyncInternal(Guid applicationId)
+    {
         var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
@@ -102,13 +105,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public async Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
+    public Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
     {
         if (applicationId == default)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
+        return ApprovePartnerRequestInternal(iamUserId, applicationId);
+    }
 
+    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
+    {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var companyApplication = await applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
@@ -148,13 +155,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
-    public async Task<bool> DeclinePartnerRequest(Guid applicationId)
+    public Task<bool> DeclinePartnerRequest(Guid applicationId)
     {
         if (applicationId == default)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
+        return DeclinePartnerRequestInternal(applicationId);
+    }
 
+    private async Task<bool> DeclinePartnerRequestInternal(Guid applicationId)
+    {
         var companyApplication = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
         {
@@ -231,11 +242,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
     {
         var failedUserNames = new List<string>();
-        await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
+        await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, Enumerable.Repeat(_settings.CompanyAdminRoleId,1)).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 
-            if (user.RoleIds.Any(x => x == _settings.CompanyAdminRoleId))
+            if (user.HasRequestedRole)
             {
                 foreach (var typeId in _settings.WelcomeNotificationTypeIds)
                 {
