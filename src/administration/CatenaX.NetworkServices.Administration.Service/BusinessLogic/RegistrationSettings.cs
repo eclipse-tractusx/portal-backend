@@ -14,9 +14,8 @@ public class RegistrationSettings
     }
 
     public int ApplicationsMaxPageSize { get; set; }
-    public IDictionary<string, IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
+    public IDictionary<string,IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
     public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
-
     public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
 
     /// <summary>
@@ -43,11 +42,11 @@ public static class RegistrationSettingsExtension
                 }
                 if (x.CompanyAdminRoles == null)
                 {
-                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CompanyAdminRoles)} must not be empty");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CompanyAdminRoles)} must not be null");
                 }
                 if (x.WelcomeNotificationTypeIds == null)
                 {
-                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.WelcomeNotificationTypeIds)} must not be empty");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.WelcomeNotificationTypeIds)} must not be null");
                 }
             });
 }
