@@ -21,6 +21,6 @@
  namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Basic model for data needed in App display.
+/// Model for app data.
 /// </summary>
 public record AppDataProvider(Guid Id, string? Name, string? LeadPictureUri, string Provider, string Status, DateTimeOffset? LastChanged);
