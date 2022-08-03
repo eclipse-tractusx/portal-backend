@@ -63,7 +63,7 @@ public class CompanyUser
     [MaxLength(255)]
     public string? Lastname { get; set; }
 
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
 
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
@@ -78,6 +78,6 @@ public class CompanyUser
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
-    public virtual ICollection<Notification> Notifications { get; set; }
+    public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
 }
