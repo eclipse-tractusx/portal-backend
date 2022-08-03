@@ -9,6 +9,7 @@ public class RegistrationSettings
     {
         ApplicationApprovalInitialRoles = null!;
         PartnerUserInitialRoles = null!;
+        CompanyAdminRoles = null!;
         WelcomeNotificationTypeIds = null!;
     }
 
@@ -16,10 +17,7 @@ public class RegistrationSettings
     public IDictionary<string, IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
     public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
 
-    /// <summary>
-    /// Name of the Company Admin
-    /// </summary>
-    public Guid CompanyAdminRoleId { get; set; }
+    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
 
     /// <summary>
     /// IDs of the notification types that should be created as welcome notifications
@@ -43,9 +41,9 @@ public static class RegistrationSettingsExtension
                 {
                     throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.PartnerUserInitialRoles)} must not be null");
                 }
-                if (x.CompanyAdminRoleId == Guid.Empty)
+                if (x.CompanyAdminRoles == null)
                 {
-                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CompanyAdminRoleId)} must not be empty");
+                    throw new ConfigurationException($"{nameof(RegistrationSettings)}: {nameof(x.CompanyAdminRoles)} must not be empty");
                 }
                 if (x.WelcomeNotificationTypeIds == null)
                 {

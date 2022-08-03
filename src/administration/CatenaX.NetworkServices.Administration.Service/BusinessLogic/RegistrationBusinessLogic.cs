@@ -129,7 +129,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
         }
 
-        var assignedRoles = await AssignRolesAndBpn(applicationId, applicationRepository, businessPartnerNumber);
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber);
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
@@ -137,7 +138,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
 
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
-        await PostRegistrationWelcomeEmailAndCreateNotificationsAsync(applicationRepository, applicationId, creatorId).ConfigureAwait(false);
+        await PostRegistrationWelcomeEmailAndCreateNotificationsAsync(userRolesRepository, applicationRepository, applicationId, creatorId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (assignedRoles == null) return true;
@@ -239,10 +240,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
+    private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
     {
         var failedUserNames = new List<string>();
-        await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, Enumerable.Repeat(_settings.CompanyAdminRoleId,1)).ConfigureAwait(false))
+        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles);
+        await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, initialRolesData.Select(x => x.UserRoleId)).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 
@@ -277,16 +279,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
     }
 
-    private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IApplicationRepository applicationRepository, string businessPartnerNumber)
+    private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
     {
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var initialRolesData = await userRolesRepository.GetUserRoleDataUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
-        if (initialRolesData.Count < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
-        {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
-        }
+        var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
+        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles);
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
         var invitedUsersData = applicationRepository
@@ -295,7 +293,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await foreach (var userData in invitedUsersData)
         {
             assignedRoles = await _provisioningManager
-                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles)
+                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
                 .ConfigureAwait(false);
 
             foreach (var roleData in initialRolesData)
@@ -316,5 +314,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return assignedRoles;
+    }
+
+    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
+    {
+        var roleData = await userRolesRepository
+            .GetUserRoleDataUntrackedAsync(roles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+
+        return roleData;
     }
 }
