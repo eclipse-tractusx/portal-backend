@@ -92,7 +92,7 @@ public class RegistrationController : ControllerBase
     /// <response code="500">Internal Server Error.</response>
     /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPut]
-    // [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "approve_new_partner")]
     [Route("application/{applicationId}/approveRequest")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

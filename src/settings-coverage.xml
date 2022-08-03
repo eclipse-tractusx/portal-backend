@@ -63,8 +63,10 @@
         <Sources>
             <Exclude>
                 <Source>administration/CatenaX.NetworkServices.Administration.Service/Program.cs</Source>
-                <Source>notification/CatenaX.NetworkServices.Notification.Service/Program.cs</Source>
                 <Source>administration/CatenaX.NetworkServices.Administration.Service/BusinessLogic/RegistrationSettings.cs</Source>
+                <Source>framework/CatenaX.NetworkServices.Framework.ErrorHandling/ConfigurationException.cs</Source>
+                <Source>framework/CatenaX.NetworkServices.Framework.ErrorHandling/UnexpectedConditionException.cs</Source>
+                <Source>notification/CatenaX.NetworkServices.Notification.Service/Program.cs</Source>
             </Exclude>
         </Sources>
 
