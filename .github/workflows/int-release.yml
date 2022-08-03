@@ -24,6 +24,9 @@ name: INT Release
 
 on:
   push:
+    branches:
+      - 'feature/CPLP-1074_auto_image_update-2'
+  push:
     tags:
       - 'int-v*'
 
@@ -271,6 +274,13 @@ jobs:
         id: git-tag
         run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
 
+      - name: Set env
+        run: echo "RELEASE_VERSION=$${{ steps.git-tag.outputs.git-version }}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -319,5 +329,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/int-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"main", "inputs": { "new-image":"${{ steps.git-tag.outputs.git-version }}" }}' \
+            --data '{"ref":"feature/CPLP-1074_auto_image_update_backend-2", "inputs": { "new-image":"${{ env.RELEASE_VERSION }}" }}' \
             --fail
