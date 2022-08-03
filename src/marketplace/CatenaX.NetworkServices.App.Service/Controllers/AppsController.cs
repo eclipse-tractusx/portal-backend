@@ -254,15 +254,15 @@ public class AppsController : ControllerBase
     }
     
     /// <summary>
-    /// Get app data for user own company
+    /// Get all company owned apps.
     /// </summary>
     /// <returns>Collection of app data for user own company</returns>
-    /// <remarks>Example: GET: /api/apps/owncompany/app</remarks>
-    /// <response code="200">Returns the list of apps of current user.</response>
-    /// <response code="400">If sub claim is empty/invalid.</response>
+    /// <remarks>Example: GET: /api/apps/owncompany/apps</remarks>
+    /// <response code="200">Returns list of apps owned by the user assigned company.</response>
+    /// <response code="400">If claim is empty/invalid.i.e user does not exist</response>
 
     [HttpGet]
-    [Route("owncompany/app")]
+    [Route("owncompany/apps")]
     [Authorize(Roles = "app_management")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AppDataProvider>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
