@@ -242,7 +242,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AppDataProvider> GetAppDataAsync(string userId)=>
+    public IAsyncEnumerable<AllAppData> GetAppDataAsync(string userId)=>
         _portalRepositories.GetInstance<IAppRepository>().GetAppData(userId);
     
 

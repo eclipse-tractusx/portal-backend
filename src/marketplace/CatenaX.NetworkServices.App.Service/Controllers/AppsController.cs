@@ -264,9 +264,9 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("owncompany/apps")]
     [Authorize(Roles = "app_management")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AppDataProvider>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AllAppData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public IAsyncEnumerable<AppDataProvider> GetAppDataAsync()=>
+    public IAsyncEnumerable<AllAppData> GetAppDataAsync()=>
         this.WithIamUserId(userId => _appsBusinessLogic.GetAppDataAsync(userId));
     
 }
