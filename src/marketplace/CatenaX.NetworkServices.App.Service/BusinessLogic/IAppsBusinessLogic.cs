@@ -121,7 +121,8 @@ public interface IAppsBusinessLogic
     /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Async enumberable of company owned apps data</returns>
     IAsyncEnumerable<AllAppData> GetAppDataAsync(string userId);
-
+    
+    /// <summary>
     /// Creates an application and returns its generated ID.
     /// </summary>
     /// <param name="appRequestModel"></param>
