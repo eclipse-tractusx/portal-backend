@@ -242,7 +242,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
     
     /// <inheritdoc/>
-    public async Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
+    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
     {
         if(appRequestModel.ProviderCompanyId == null)
         {
@@ -256,7 +256,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ArgumentException($"Use Case does not exist"); 
         }
-        return await this.CreateAppAsync(appRequestModel).ConfigureAwait(false);
+        return  this.CreateAppAsync(appRequestModel);
     }
     
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
