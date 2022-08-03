@@ -11,6 +11,7 @@ on:
       - 'docker/Dockerfile-registration-service'
 
     branches:
+      - 'main'
       - 'feature/CPLP-1074_auto_image_update-2'
   workflow_dispatch:
 
