@@ -264,7 +264,8 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     Password = password
                 }).ConfigureAwait(false);
 
-            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+            var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
+            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE, companyUserId);
 
             IEnumerable<string>? unassignedRoles = null;
             if (roles.Count() > 0)

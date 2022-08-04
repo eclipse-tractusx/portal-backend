@@ -29,7 +29,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// </summary>
 public interface IUserRepository
 {
-    CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId);
+    CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
     IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId);

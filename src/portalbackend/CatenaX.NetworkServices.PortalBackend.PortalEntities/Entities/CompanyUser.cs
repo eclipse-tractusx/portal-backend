@@ -39,13 +39,14 @@ public class CompanyUser : IAuditable
         CreatedNotifications = new HashSet<Notification>();
     }
     
-    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) 
+    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId) 
         : this()
     {
         Id = id;
         DateCreated = dateCreated;
         CompanyId = companyId;
         CompanyUserStatusId = companyUserStatusId;
+        LastEditorId = lastEditorId;
     }
 
     public Guid Id { get; set; }
@@ -67,7 +68,6 @@ public class CompanyUser : IAuditable
 
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
-    /// <inheritdoc />
     public DateTimeOffset? DateLastChanged { get; set; }
 
     /// <inheritdoc />
