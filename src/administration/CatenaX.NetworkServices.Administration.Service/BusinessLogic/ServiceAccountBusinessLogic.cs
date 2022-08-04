@@ -30,6 +30,7 @@ using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -37,13 +38,17 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 {
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly ServiceAccountSettings _Settings;
+    
 
     public ServiceAccountBusinessLogic(
         IProvisioningManager provisioningManager,
-        IPortalRepositories portalRepositories)
+        IPortalRepositories portalRepositories,
+        IOptions<ServiceAccountSettings> options)
     {
         _provisioningManager = provisioningManager;
         _portalRepositories = portalRepositories;
+        _Settings = options.Value;
     }
 
     public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, string iamAdminId)
@@ -252,4 +257,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                         serviceAccount.Name))
                     .AsAsyncEnumerable()));
     }
+
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_Settings.ClientId,languageShortName);
 }
