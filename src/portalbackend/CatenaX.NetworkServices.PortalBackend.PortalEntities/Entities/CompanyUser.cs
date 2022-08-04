@@ -26,7 +26,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class CompanyUser : IAuditable
 {
-    private CompanyUser()
+    /// <summary>
+    /// Only needed for ef and the audit entity
+    /// </summary>
+    public CompanyUser()
     {
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();

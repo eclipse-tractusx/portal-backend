@@ -84,7 +84,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasIndex("CompanyUserStatusId")
                         .HasDatabaseName("ix_audit_company_users_cplp_1254_db_audit_company_user_status_");
 
-                    b.ToTable("audit_company_users_CPLP-1254-db-audit", "portal");
+                    b.ToTable("audit_company_users_cplp_1254_db_audit", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>

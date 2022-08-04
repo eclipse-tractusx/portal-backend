@@ -1,7 +1,6 @@
 ﻿using System;
-using CatenaX.NetworkServices.PortalBackend.Migrations.Extensions;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using Microsoft.EntityFrameworkCore.Migrations;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 
 #nullable disable
 
@@ -86,7 +85,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             migrationBuilder.DropAuditTrigger<AuditCompanyUser>();
 
             migrationBuilder.DropTable(
-                name: "audit_company_users_CPLP-1254-db-audit",
+                name: "audit_company_users_cplp_1254_db_audit",
                 schema: "portal");
 
             migrationBuilder.DropTable(

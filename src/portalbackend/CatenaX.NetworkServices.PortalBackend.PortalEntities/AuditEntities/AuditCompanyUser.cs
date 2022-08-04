@@ -10,13 +10,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 public class AuditCompanyUser : CompanyUser, IAuditEntity
 {
     /// <inheritdoc />
-    public AuditCompanyUser(Guid id, Guid auditId, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId) 
-        : base(id, companyId, companyUserStatusId, dateCreated, lastEditorId)
-    {
-        AuditId = auditId;
-    }
-
-    /// <inheritdoc />
     public Guid AuditId { get; set; }
 
     /// <inheritdoc />
