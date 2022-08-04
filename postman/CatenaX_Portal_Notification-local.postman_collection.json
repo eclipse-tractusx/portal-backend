@@ -115,7 +115,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/notification/3f28d393-2e51-433a-b823-566d691bb02c",
+					"raw": "https://localhost:5001/api/notification?companyUserId=3f28d393-2e51-433a-b823-566d691bb02c",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -123,8 +123,13 @@
 					"port": "5001",
 					"path": [
 						"api",
-						"notification",
-						"3f28d393-2e51-433a-b823-566d691bb02c"
+						"notification"
+					],
+					"query": [
+						{
+							"key": "companyUserId",
+							"value": "3f28d393-2e51-433a-b823-566d691bb02c"
+						}
 					]
 				}
 			},
@@ -168,7 +173,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/notification/e93ec4cd-5536-44b2-9f37-d85f629a03ea",
+					"raw": "https://localhost:5001/api/notification?companyUserId=e93ec4cd-5536-44b2-9f37-d85f629a03ea",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -176,8 +181,13 @@
 					"port": "5001",
 					"path": [
 						"api",
-						"notification",
-						"e93ec4cd-5536-44b2-9f37-d85f629a03ea"
+						"notification"
+					],
+					"query": [
+						{
+							"key": "companyUserId",
+							"value": "e93ec4cd-5536-44b2-9f37-d85f629a03ea"
+						}
 					]
 				}
 			},
