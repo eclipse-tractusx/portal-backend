@@ -61,10 +61,11 @@ public class NotificationRepository : INotificationRepository
                 && (typeId.HasValue ? notification.NotificationTypeId == typeId.Value : true))
             .Select(notification => new NotificationDetailData(
                 notification.Id,
-                notification.Content,
-                notification.DueDate,
+                notification.DateCreated,
                 notification.NotificationTypeId,
-                notification.IsRead))
+                notification.IsRead,
+                notification.Content,
+                notification.DueDate))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -74,7 +75,13 @@ public class NotificationRepository : INotificationRepository
             .Where(notification => notification.Id == notificationId)
             .Select(notification => ((bool IsUserReceiver, NotificationDetailData NotificationDetailData)) new (
                 notification.Receiver!.IamUser!.UserEntityId == iamUserId,
-                new NotificationDetailData(notification.Id, notification.Content, notification.DueDate, notification.NotificationTypeId, notification.IsRead)))
+                new NotificationDetailData(
+                    notification.Id,
+                    notification.DateCreated,
+                    notification.NotificationTypeId,
+                    notification.IsRead,
+                    notification.Content,
+                    notification.DueDate)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
