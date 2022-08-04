@@ -259,7 +259,7 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(cu => cu.IamUser!.UserEntityId == userId)
             .Select(cu => cu.Id)
-            .SingleAsync();
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId) =>

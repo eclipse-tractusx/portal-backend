@@ -116,6 +116,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
     {
+        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (creatorId == null)
+        {
+            throw new UnexpectedConditionException($"user {iamUserId} is not associated with a companyuser");
+        }
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var companyApplication = await applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
@@ -130,14 +135,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber);
+        var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
 
-        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
         await PostRegistrationWelcomeEmailAndCreateNotificationsAsync(userRolesRepository, applicationRepository, applicationId, creatorId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -243,7 +247,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
     {
         var failedUserNames = new List<string>();
-        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles);
+        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles).ConfigureAwait(false);
         await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, initialRolesData.Select(x => x.UserRoleId)).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
@@ -284,13 +288,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles);
+        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
         var invitedUsersData = applicationRepository
-            .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId)
-            .ConfigureAwait(false);
-        await foreach (var userData in invitedUsersData)
+            .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
+        await foreach (var userData in invitedUsersData.ConfigureAwait(false))
         {
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
