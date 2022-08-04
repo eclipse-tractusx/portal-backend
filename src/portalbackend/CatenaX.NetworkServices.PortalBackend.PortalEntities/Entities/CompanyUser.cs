@@ -63,7 +63,7 @@ public class CompanyUser : IAuditable
     [MaxLength(255)]
     public string? Lastname { get; set; }
 
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
 
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
 

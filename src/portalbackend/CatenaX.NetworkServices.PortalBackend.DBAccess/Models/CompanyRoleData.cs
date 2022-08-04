@@ -3,22 +3,18 @@ using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
 {
-    public class CompanyRoleData
-    {
-        public CompanyRoleData(CompanyRoleId companyRoleId, IDictionary<string, string> companyRoleDescriptions, IEnumerable<Guid> agreementIds)
-        {
-            CompanyRoleId = companyRoleId;
-            CompanyRoleDescriptions = companyRoleDescriptions;
-            AgreementIds = agreementIds;
-        }
+    /// <summary>
+    /// Basic model for company role agreements data
+    /// </summary>
+    public record CompanyRoleData(
+        [property: JsonPropertyName("companyRole")] CompanyRoleId CompanyRoleId,
+        [property: JsonPropertyName("descriptions")] IDictionary<string, string> CompanyRoleDescriptions,
+        [property: JsonPropertyName("agreementIds")] IEnumerable<Guid> AgreementIds);
 
-        [JsonPropertyName("companyRole")]
-        public CompanyRoleId CompanyRoleId { get; set; }
-
-        [JsonPropertyName("descriptions")]
-        public IDictionary<string,string> CompanyRoleDescriptions { get; set; }
-
-        [JsonPropertyName("agreementIds")]
-        public IEnumerable<Guid> AgreementIds { get; set; }
-    }
+    /// <summary>
+    /// Basic model for company role data needed to display company roles with description.
+    /// </summary>
+    public record CompanyRolesDetails(
+        [property: JsonPropertyName("companyRole")] string CompanyRole,
+        [property: JsonPropertyName("roleDescription")] string RoleDescription);
 }

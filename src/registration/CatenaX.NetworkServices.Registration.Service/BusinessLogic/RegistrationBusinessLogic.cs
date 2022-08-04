@@ -625,5 +625,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 }
             }
         }
+
+        public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
+            _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
+
     }
 }
