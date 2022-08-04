@@ -32,7 +32,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             _logger = logger;
         }
 
-        public async Task ExecuteInvitation(CompanyInvitationData invitationData)
+        public async Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
         {
             if (String.IsNullOrWhiteSpace(invitationData.email))
             {
@@ -60,7 +60,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var password = new Password().Next();
             var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
-                    String.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
+                    string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
                     invitationData.email,
                     invitationData.organisationName
             ) {
@@ -76,7 +76,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             
             var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
             var application = applicationRepository.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
-            var companyUser = userRepository.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.ACTIVE);
+            var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+            var companyUser = userRepository.CreateCompanyUser(invitationData.firstName, invitationData.lastName, invitationData.email, company.Id, CompanyUserStatusId.ACTIVE, creatorId);
             foreach(var userRoleId in userRoleIds)
             {
                 userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
@@ -90,7 +91,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             if (unassignedClientRoles.Count() > 0)
             {
-                throw new Exception($"invalid configuration, configured roles were not assigned in keycloak: {String.Join(", ",unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ",clientRoles.roles)}]"))}");
+                throw new Exception($"invalid configuration, configured roles were not assigned in keycloak: {string.Join(", ",unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ",clientRoles.roles)}]"))}");
             }
 
             var mailParameters = new Dictionary<string, string>

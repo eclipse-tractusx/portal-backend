@@ -42,13 +42,14 @@ public class UserRepository : IUserRepository
     }
 
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
-        CompanyUserStatusId companyUserStatusId) =>
+        CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
         _dbContext.CompanyUsers.Add(
             new CompanyUser(
                 Guid.NewGuid(),
                 companyId,
                 companyUserStatusId,
-                DateTimeOffset.UtcNow)
+                DateTimeOffset.UtcNow,
+                lastEditorId)
             {
                 Firstname = firstName,
                 Lastname = lastName,
