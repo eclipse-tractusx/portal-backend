@@ -56,11 +56,7 @@ public class GeneralHttpErrorHandler
             }
             else if (error is ConflictException)
             {
-                errorResponse = CreateErrorResponse(
-                    HttpStatusCode.Conflict,
-                    error,
-                    null);
-                _logger.LogInformation(error.Message);
+                statusCode = HttpStatusCode.Conflict;
             }
             else if (error is ForbiddenException)
             {
