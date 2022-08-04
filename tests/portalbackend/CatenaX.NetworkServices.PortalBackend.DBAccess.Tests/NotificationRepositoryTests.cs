@@ -27,7 +27,6 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
-using FakeItEasy.Sdk;
 using FluentAssertions;
 using Xunit;
 
@@ -36,7 +35,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 /// <summary>
 /// Tests the functionality of the <see cref="NotificationRepository"/>
 /// </summary>
-public class NotificationRespotitoryTests
+public class NotificationRepositoryTests
 {
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
@@ -46,7 +45,7 @@ public class NotificationRespotitoryTests
     private readonly ICollection<Notification> _unreadNotifications;
     private List<Notification> _notifications;
 
-    public NotificationRespotitoryTests()
+    public NotificationRepositoryTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -77,10 +76,11 @@ public class NotificationRespotitoryTests
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, false, null).ToListAsync();
 
         // Assert
+        var unreadNotificationIds = _unreadNotifications.Select(notification => notification.Id).ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(_unreadNotifications.Count);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _unreadNotifications.Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(unreadNotificationIds);
     }
 
     [Fact]
@@ -94,11 +94,12 @@ public class NotificationRespotitoryTests
         // Act
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, null).ToListAsync();
 
+        var readNotificationIds = _readNotifications.Select(notification => notification.Id).ToList();
         // Assert
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(_readNotifications.Count);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     [Fact]
@@ -113,10 +114,14 @@ public class NotificationRespotitoryTests
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, NotificationTypeId.INFO).ToListAsync();
 
         // Assert
+        var readNotificationIds = _readNotifications
+            .Where(x => x.NotificationTypeId == NotificationTypeId.INFO)
+            .Select(x => x.Id)
+            .ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(1);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Where(x => x.NotificationTypeId == NotificationTypeId.INFO).Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     [Fact]
@@ -131,10 +136,13 @@ public class NotificationRespotitoryTests
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(_iamUserId, true, NotificationTypeId.ACTION).ToListAsync();
 
         // Assert
+        var readNotificationIds = _readNotifications
+            .Where(x => x.NotificationTypeId == NotificationTypeId.ACTION)
+            .Select(x => x.Id).ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(2);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Should().AllSatisfy(x => _readNotifications.Where(x => x.NotificationTypeId == NotificationTypeId.ACTION).Select(notification => notification.Id).Contains(x.Id));
+        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     #endregion
@@ -209,7 +217,11 @@ public class NotificationRespotitoryTests
             IamUser = new IamUser(_iamUserId, _companyUserId)
         };
 
-        companyUser.Notifications = _notifications;
+        foreach (var notification in _notifications)
+        {
+            companyUser.Notifications.Add(notification);
+        }
+
         A.CallTo(() => _contextFake.CompanyUsers).Returns(new List<CompanyUser>{companyUser}.AsFakeDbSet());
     }
 }

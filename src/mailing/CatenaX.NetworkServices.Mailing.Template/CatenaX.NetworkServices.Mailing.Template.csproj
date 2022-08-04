@@ -49,4 +49,10 @@
     </None>
   </ItemGroup>
 
+<ItemGroup>
+     <SonarQubeSetting Include="sonar.exclusions">
+          <Value>EmailTemplates/**/*</Value>
+     </SonarQubeSetting>
+</ItemGroup>
+
 </Project>

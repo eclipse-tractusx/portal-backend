@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,17 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Detail data of a notification
+/// Model for app data.
 /// </summary>
-/// <param name="Id">The Id of the notification</param>
-/// <param name="Created">Date of the notification creation</param>
-/// <param name="TypeId">The notifications type id</param>
-/// <param name="IsRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-/// <param name="Content">The notifications content</param>
-/// <param name="DueDate">Optional: The notifications dueDate</param>
-public record NotificationDetailData(Guid Id, DateTimeOffset Created, NotificationTypeId TypeId, bool IsRead, string? Content, DateTimeOffset? DueDate);
+public record AllAppData(Guid Id, string? Name, string? LeadPictureUri, string Provider, string Status, DateTimeOffset? LastChanged);
