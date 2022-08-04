@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220802122302_CPLP-1254-db-audit")]
+    [Migration("20220804101340_CPLP-1254-db-audit")]
     partial class CPLP1254dbaudit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,7 +86,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasIndex("CompanyUserStatusId")
                         .HasDatabaseName("ix_audit_company_users_cplp_1254_db_audit_company_user_status_");
 
-                    b.ToTable("audit_company_users_CPLP-1254-db-audit", "portal");
+                    b.ToTable("audit_company_users_cplp_1254_db_audit", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -3733,6 +3733,46 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 2,
                             Label = "ACTION"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "WELCOME"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "WELCOME_USE_CASES"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "WELCOME_SERVICE_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "WELCOME_CONNECTOR_REGISTRATION"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "WELCOME_APP_MARKETPLACE"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "APP_SUBSCRIPTION_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "APP_SUBSCRIPTION_ACTIVATION"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "CONNECTOR_REGISTERED"
                         });
                 });
 

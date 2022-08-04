@@ -4,7 +4,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Newtonsoft.Json.Serialization;
 
-namespace CatenaX.NetworkServices.PortalBackend.Migrations.Extensions;
+namespace Microsoft.EntityFrameworkCore.Migrations;
 
 /// <summary>
 /// Extension methods for the migration builder
