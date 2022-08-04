@@ -51,7 +51,7 @@
 
 <ItemGroup>
      <SonarQubeSetting Include="sonar.exclusions">
-          <Value>EmailTemplates/*</Value>
+          <Value>EmailTemplates/**/*</Value>
      </SonarQubeSetting>
 </ItemGroup>
 
