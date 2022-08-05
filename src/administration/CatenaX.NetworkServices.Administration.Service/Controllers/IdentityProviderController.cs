@@ -40,7 +40,7 @@ public class IdentityProviderController : ControllerBase
     public Task<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
         this.WithIamUserId(async iamUserId =>
         {
-            var details = await _businessLogic.CreateOwnCompanyIdentityProvider(protocol, iamUserId).ConfigureAwait(false);
+            var details = await _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, iamUserId).ConfigureAwait(false);
             return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
         });
 

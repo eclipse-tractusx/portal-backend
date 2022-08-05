@@ -54,7 +54,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async Task<IdentityProviderDetails> CreateOwnCompanyIdentityProvider(IamIdentityProviderProtocol protocol, string iamUserId)
+    public Task<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string iamUserId)
     {
         IdentityProviderCategoryId identityProviderCategory = default!;
         switch (protocol)
@@ -66,15 +66,19 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 identityProviderCategory = IdentityProviderCategoryId.KEYCLOAK_OIDC;
                 break;
             default:
-                throw new ArgumentException($"unexcepted value of protocol: {protocol.ToString()}", nameof(protocol));
+                throw new ControllerArgumentException($"unexcepted value of protocol: '{protocol.ToString()}'", nameof(protocol));
         }
+        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, iamUserId);
+    }
 
+    private async Task<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, string iamUserId)
+    {
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
         var (companyName, companyId) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (companyName == null || companyId == default)
         {
-            throw new Exception($"user {iamUserId} is not associated with a company");
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with a company", nameof(iamUserId));
         }
         var alias = await _provisioningManager.CreateOwnIdpAsync(companyName, protocol).ConfigureAwait(false);
         var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory);
@@ -89,7 +93,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             case IamIdentityProviderProtocol.SAML:
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProvider.Id, alias).ConfigureAwait(false);
             default:
-                throw new ArgumentException($"unexcepted value of protocol: {protocol.ToString()}", nameof(protocol));
+                throw new UnexpectedConditionException($"unexcepted value of protocol: '{protocol.ToString()}'");
         }
     }
 
@@ -111,7 +115,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
-                throw new ArgumentException($"identityProvider {identityProviderId} category cannot be updated");
+                throw new ControllerArgumentException($"identityProvider '{identityProviderId}' category '{category.ToString()}' cannot be updated");
         }
     }
 
@@ -131,7 +135,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                 if(details.oidc == null)
                 {
-                    throw new ArgumentNullException("property 'oidc' must not be null", nameof(details));
+                    throw new ControllerArgumentException("property 'oidc' must not be null", nameof(details.oidc));
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(
                     alias,
@@ -148,7 +152,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 if(details.saml == null)
                 {
-                    throw new ArgumentNullException("property 'saml' must not be null", nameof(details));
+                    throw new ControllerArgumentException("property 'saml' must not be null", nameof(details.saml));
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(
                     alias,
@@ -160,7 +164,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
-                throw new ArgumentException($"identityProvider {identityProviderId} category {category} cannot be updated");
+                throw new ControllerArgumentException($"identityProvider '{identityProviderId}' category '{category.ToString()}' cannot be updated");
         }
     }
 
@@ -331,26 +335,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private async Task<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId)
     {
-        var csvSettings = _settings.CSVSettings;
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var companyId = await userRepository.GetOwnCompanyId(iamUserId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with a company");
         }
+        var (sharedIdpAlias, validAliase) = await GetOwnCompaniesAliasDataAsync(iamUserId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
-        var reader = new StreamReader(stream, csvSettings.Encoding);
-        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        if (firstLine == null)
-        {
-            throw new ControllerArgumentException("uploaded file contains no lines");
-        }
-        var numIdps = ParseCSVFirstLineReturningNumIdps(firstLine);
+        var reader = new StreamReader(stream, _settings.CSVSettings.Encoding);
 
-        var identityProviderCategoryData = (await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderCategoryDataUntracked(iamUserId).ToListAsync().ConfigureAwait(false));
-        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.CategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).Select(data => data.Alias).SingleOrDefault();
-        var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
+        var numIdps = await ValidateHeadersReturningNumIdpsAsync(reader).ConfigureAwait(false);
 
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         int numUpdates = 0;
@@ -363,85 +359,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             try
             {
                 var (companyUserId, firstName, lastName, email, identityProviderLinks) = ParseCSVLine(nextLine, numIdps);
-                
-                var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(false);
-                if (userEntityData == default)
-                {
-                    throw new ControllerArgumentException($"unexpected value of {csvSettings.HeaderUserId}: '{companyUserId}'");
-                }
-                var (userEntityId, existingFirstName, existingLastName, existingEmail) = userEntityData;
 
-                var aliase = identityProviderLinks.Select(identityProviderLink => identityProviderLink.Alias).ToList();
-                var invalidAliase = aliase.Where(alias => !validAliase.Contains(alias));
-                if (invalidAliase.Any())
-                {
-                    throw new ControllerArgumentException($"unexpected value for {csvSettings.HeaderProviderAlias}: [{string.Join(", ",invalidAliase)}]");
-                }
-                if (sharedIdpAlias != null && !aliase.Contains(sharedIdpAlias))
-                {
-                    aliase.Append(sharedIdpAlias);
-                }
-
-                var existingLinks = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false);
+                var (userEntityId, existingFirstName, existingLastName, existingEmail, existingLinks) = await GetExistingLinkDataAsync(userRepository, companyUserId, companyId, identityProviderLinks, validAliase, sharedIdpAlias).ConfigureAwait(false);
 
                 var updated = false;
                 foreach (var (alias, providerUserId, providerUserName) in identityProviderLinks)
                 {
-                    var existingLink = existingLinks.SingleOrDefault(link => link.Alias == alias);
-                    if (existingLink == default)
-                    {
-                        if (!string.IsNullOrWhiteSpace(providerUserId) || !string.IsNullOrWhiteSpace(providerUserName))
-                        {
-                            if (sharedIdpAlias == alias)
-                            {
-                                throw new ControllerArgumentException($"unexpected update of already deleted shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{providerUserId}', providerUserName: '{providerUserName}'");
-                            }
-                            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, providerUserId, providerUserName).ConfigureAwait(false);
-                            updated = true;
-                        }
-                    }
-                    else
-                    {
-                        if (existingLink.UserId != providerUserId || existingLink.UserName != providerUserName)
-                        {
-                            if (sharedIdpAlias == alias)
-                            {
-                                throw new ControllerArgumentException($"unexpected update of existing shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{providerUserId}', providerUserName: '{providerUserName}'");
-                            }
-                            await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
-                            if (!string.IsNullOrWhiteSpace(providerUserId) || !string.IsNullOrWhiteSpace(providerUserName))
-                            {
-                                await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, providerUserId, providerUserName);
-                            }
-                            updated = true;
-                        }
-                    }
+                    updated |= await UpdateIdentityProviderLinksAsync(userEntityId, companyUserId, alias, providerUserId, providerUserName, existingLinks, sharedIdpAlias).ConfigureAwait(false);
                 }
 
                 if (firstName != existingFirstName || lastName != existingLastName || email != existingEmail)
                 {
-                    if (!await _provisioningManager.UpdateCentralUserAsync(userEntityId, firstName ?? "", lastName ?? "", email ?? "").ConfigureAwait(false))
-                    {
-                        throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
-                    }
-                    if (sharedIdpAlias != null)
-                    {
-                        var sharedIdpLink = existingLinks.Where(link => link.Alias == sharedIdpAlias).SingleOrDefault();
-                        if (sharedIdpLink != default)
-                        {
-                            if (!await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName ?? "", lastName ?? "", email ?? "").ConfigureAwait(false))
-                            {
-                                throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
-                            }
-                        }
-                    }
-                    _portalRepositories.Attach(new CompanyUser(companyUserId, default, default, default), companyUser =>
-                    {
-                        companyUser.Firstname = firstName;
-                        companyUser.Lastname = lastName;
-                        companyUser.Email = email;
-                    });
-                    await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                    await UpdateUserProfileAsync(userEntityId, companyUserId, firstName, lastName, email, sharedIdpAlias, existingLinks).ConfigureAwait(false);
                     updated = true;
                 }
                 if (updated)
@@ -462,6 +391,108 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         return new IdentityProviderUpdateStats(numUpdates, numUnchanged, errors.Count(), numLines, errors);
     }
+
+    private async Task<int> ValidateHeadersReturningNumIdpsAsync(StreamReader reader)
+    {
+        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
+        if (firstLine == null)
+        {
+            throw new ControllerArgumentException("uploaded file contains no lines");
+        }
+        return ParseCSVFirstLineReturningNumIdps(firstLine);
+    }
+
+    private async Task<(string? SharedIdpAlias, IEnumerable<string> ValidAliase)> GetOwnCompaniesAliasDataAsync(string iamUserId)
+    {
+        var identityProviderCategoryData = (await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderCategoryDataUntracked(iamUserId).ToListAsync().ConfigureAwait(false));
+        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.CategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).Select(data => data.Alias).SingleOrDefault();
+        var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
+        return (sharedIdpAlias, validAliase);
+    }
+
+    private async Task<(string UserEntityId, string? ExistingFirstName, string? ExistingLastName, string? ExistingEmail, IEnumerable<(string Alias, string UserId, string UserName)> ExistingLinks)> GetExistingLinkDataAsync(IUserRepository userRepository, Guid companyUserId, Guid companyId, IEnumerable<(string Alias, string UserId, string UserName)> identityProviderLinks, IEnumerable<string> validAliase, string? sharedIdpAlias)
+    {
+        var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(false);
+        if (userEntityData == default)
+        {
+            throw new ControllerArgumentException($"unexpected value of {_settings.CSVSettings.HeaderUserId}: '{companyUserId}'");
+        }
+        var (userEntityId, existingFirstName, existingLastName, existingEmail) = userEntityData;
+
+        var aliase = identityProviderLinks.Select(identityProviderLink => identityProviderLink.Alias).ToList();
+        var invalidAliase = aliase.Where(alias => !validAliase.Contains(alias));
+        if (invalidAliase.Any())
+        {
+            throw new ControllerArgumentException($"unexpected value for {_settings.CSVSettings.HeaderProviderAlias}: [{string.Join(", ",invalidAliase)}]");
+        }
+        if (sharedIdpAlias != null && !aliase.Contains(sharedIdpAlias))
+        {
+            aliase.Append(sharedIdpAlias);
+        }
+
+        var existingLinks = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false);
+        return (userEntityId, existingFirstName, existingLastName, existingEmail, existingLinks);
+    }
+
+    private async Task<bool> UpdateIdentityProviderLinksAsync(string userEntityId, Guid companyUserId, string alias, string providerUserId, string providerUserName, IEnumerable<(string Alias, string UserId, string UserName)> existingLinks, string? sharedIdpAlias)
+    {
+        var existingLink = existingLinks.SingleOrDefault(link => link.Alias == alias);
+        if (existingLink == default)
+        {
+            if (!string.IsNullOrWhiteSpace(providerUserId) || !string.IsNullOrWhiteSpace(providerUserName))
+            {
+                if (sharedIdpAlias == alias)
+                {
+                    throw new ControllerArgumentException($"unexpected update of already deleted shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{providerUserId}', providerUserName: '{providerUserName}'");
+                }
+                await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, providerUserId, providerUserName).ConfigureAwait(false);
+                return true;
+            }
+        }
+        else
+        {
+            if (existingLink.UserId != providerUserId || existingLink.UserName != providerUserName)
+            {
+                if (sharedIdpAlias == alias)
+                {
+                    throw new ControllerArgumentException($"unexpected update of existing shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{providerUserId}', providerUserName: '{providerUserName}'");
+                }
+                await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
+                if (!string.IsNullOrWhiteSpace(providerUserId) || !string.IsNullOrWhiteSpace(providerUserName))
+                {
+                    await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, providerUserId, providerUserName);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private async Task UpdateUserProfileAsync(string userEntityId, Guid companyUserId, string? firstName, string? lastName, string? email, string? sharedIdpAlias, IEnumerable<(string Alias, string UserId, string UserName)> existingLinks)
+    {
+        if (!await _provisioningManager.UpdateCentralUserAsync(userEntityId, firstName ?? "", lastName ?? "", email ?? "").ConfigureAwait(false))
+        {
+            throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
+        }
+        if (sharedIdpAlias != null)
+        {
+            var sharedIdpLink = existingLinks.Where(link => link.Alias == sharedIdpAlias).SingleOrDefault();
+            if (sharedIdpLink != default)
+            {
+                if (!await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName ?? "", lastName ?? "", email ?? "").ConfigureAwait(false))
+                {
+                    throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
+                }
+            }
+        }
+        _portalRepositories.Attach(new CompanyUser(companyUserId, default, default, default), companyUser =>
+        {
+            companyUser.Firstname = firstName;
+            companyUser.Lastname = lastName;
+            companyUser.Email = email;
+        });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+   }
 
     private int ParseCSVFirstLineReturningNumIdps(string firstLine)
     {
