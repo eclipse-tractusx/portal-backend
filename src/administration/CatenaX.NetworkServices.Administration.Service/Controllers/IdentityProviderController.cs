@@ -69,7 +69,8 @@ public class IdentityProviderController : ControllerBase
     [HttpGet]
     [Route("owncompany/usersfile")]
     public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds) {
-        return File(this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataStream(identityProviderIds, iamUserId)), "text/csv", "blah.csv");
+        var (stream, contentType, fileName, encoding) = this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataStream(identityProviderIds, iamUserId));
+        return File(stream, string.Join("; ", contentType, encoding.WebName), fileName);
     }
 
     [HttpPost]
