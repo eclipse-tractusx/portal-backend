@@ -96,6 +96,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
 
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+    
+    public virtual DbSet<AuditCompanyAssignedApp> AuditCompanyAssignedApps { get; set; } = default!;
 
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -393,6 +395,17 @@ public class PortalDbContext : DbContext
                     .Cast<CompanyApplicationStatusId>()
                     .Select(e => new CompanyApplicationStatus(e))
             );
+
+        modelBuilder.Entity<AuditCompanyAssignedApp>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.App);
+            x.Ignore(x => x.Company);
+            x.Ignore(x => x.AppSubscriptionStatus);
+
+            x.ToTable("audit_company_assigned_apps_cplp_1253_company_assigned_app");
+        });
 
         modelBuilder.Entity<CompanyRole>()
             .HasData(
