@@ -1,38 +1,40 @@
-using AutoFixture;
-using FakeItEasy;
 using System;
 using System.Threading.Tasks;
-using Xunit;
-using CatenaX.NetworkServices.Administration.Service.Controllers;
+using AutoFixture;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Administration.Service.Controllers;
+using CatenaX.NetworkServices.Tests.Shared;
+using FakeItEasy;
+using Xunit;
 
-namespace CatenaX.NetworkServices.Administration.Service.Tests
+namespace CatenaX.NetworkServices.Administration.Service.Tests.Controllers
 {
     public class RegistrationControllerTest
     {
+        private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
         private readonly IRegistrationBusinessLogic _logic;
-        private readonly IFixture _fixture;
-        private readonly RegistrationController controller;
+        private readonly RegistrationController _controller;
+
         public RegistrationControllerTest()
         {
-            _fixture = new Fixture();
             _logic = A.Fake<IRegistrationBusinessLogic>();
-            this.controller = new RegistrationController(_logic);
+            this._controller = new RegistrationController(_logic);
+            _controller.AddControllerContextWithClaim(IamUserId);
         }
 
         [Fact]
         public async Task Test1()
         {
             //Arrange
-            Guid id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-            A.CallTo(() => _logic.ApprovePartnerRequest(id))
+            var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, id))
                       .Returns(true);
 
             //Act
-            var result = await this.controller.ApprovePartnerRequest(id).ConfigureAwait(false);
+            var result = await this._controller.ApprovePartnerRequest(id).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.ApprovePartnerRequest(id)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, id)).MustHaveHappenedOnceExactly();
             Assert.IsType<bool>(result);
             Assert.True(result);
         }
@@ -41,14 +43,14 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests
         public async Task Test2()
         {
             //Arrange
-            A.CallTo(() => _logic.ApprovePartnerRequest(Guid.Empty))
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty))
                       .Returns(false);
 
             //Act
-            var result = await this.controller.ApprovePartnerRequest(Guid.Empty).ConfigureAwait(false);
+            var result = await this._controller.ApprovePartnerRequest(Guid.Empty).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.ApprovePartnerRequest(Guid.Empty)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty)).MustHaveHappenedOnceExactly();
             Assert.IsType<bool>(result);
             Assert.False(result);
         }

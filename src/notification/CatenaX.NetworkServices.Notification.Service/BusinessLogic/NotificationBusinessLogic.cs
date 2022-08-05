@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -31,25 +30,42 @@ namespace CatenaX.NetworkServices.Notification.Service.BusinessLogic;
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly INotificationService _notificationService;
 
     /// <summary>
     ///     Creates a new instance of <see cref="NotificationBusinessLogic" />
     /// </summary>
     /// <param name="portalRepositories">Access to the repository factory.</param>
-    /// <param name="notificationService">Access to the notification service.</param>
-    public NotificationBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService)
+    public NotificationBusinessLogic(IPortalRepositories portalRepositories)
     {
         _portalRepositories = portalRepositories;
-        _notificationService = notificationService;
     }
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> CreateNotificationAsync(string iamUserId,
-        NotificationCreationData creationData, Guid receiverId) =>
-        await this._notificationService
-            .CreateNotificationAsync(iamUserId, creationData, receiverId)
-            .ConfigureAwait(false);
+        NotificationCreationData creationData, Guid receiverId)
+    {
+        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(iamUserId, receiverId).ToListAsync().ConfigureAwait(false);
+
+        if (users.All(x => x.CompanyUserId != receiverId))
+            throw new ArgumentException("User does not exist", nameof(receiverId));
+
+        var (content, notificationTypeId, notificationStatusId, dueDate) =
+            creationData;
+
+        var notification = _portalRepositories.GetInstance<INotificationRepository>().Create(
+            receiverId,
+            notificationTypeId,
+            notificationStatusId,
+            notification =>
+            {
+                notification.DueDate = dueDate;
+                notification.CreatorUserId = users.Single(x => x.IsIamUser).CompanyUserId;
+                notification.Content = content;
+            });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notificationStatusId, content, dueDate);
+    }
 
     /// <inheritdoc />
     public IAsyncEnumerable<NotificationDetailData> GetNotificationsAsync(string iamUserId,

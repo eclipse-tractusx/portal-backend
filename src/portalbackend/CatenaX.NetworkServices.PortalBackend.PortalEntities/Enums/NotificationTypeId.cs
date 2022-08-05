@@ -69,4 +69,9 @@ public enum NotificationTypeId : int
     /// New App Subscription was activated
     /// </summary>
     APP_SUBSCRIPTION_ACTIVATION = 9,
+
+    /// <summary>
+    /// Connector was registered
+    /// </summary>
+    CONNECTOR_REGISTERED = 10
 }

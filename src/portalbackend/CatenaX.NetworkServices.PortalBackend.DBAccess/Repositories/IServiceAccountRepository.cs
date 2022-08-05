@@ -4,7 +4,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-public interface IServiceAccountsRepository
+public interface IServiceAccountRepository
 {
     CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description);
     IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId);

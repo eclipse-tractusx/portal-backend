@@ -110,4 +110,11 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appLanguages">The app languages that should be added to the database</param>
     void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages);
+
+    /// <summary>
+    /// Retrieve all app data
+    /// </summary>
+    /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
+    /// <returns>Return Async Enumerable of App Data</returns>
+    IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
 }

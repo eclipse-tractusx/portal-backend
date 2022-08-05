@@ -250,6 +250,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
+                    b.Property<DateTimeOffset?>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
                     b.Property<DateTimeOffset?>("DateReleased")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_released");
@@ -3660,6 +3664,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 9,
                             Label = "APP_SUBSCRIPTION_ACTIVATION"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "CONNECTOR_REGISTERED"
                         });
                 });
 
