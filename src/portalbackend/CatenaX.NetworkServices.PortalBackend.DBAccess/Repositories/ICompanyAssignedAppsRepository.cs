@@ -34,7 +34,9 @@ public interface ICompanyAssignedAppsRepository
     /// </summary>
     /// <param name="appId">Id of the assigned app</param>
     /// <param name="companyId">Id of the company</param>
-    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId);
+    /// <param name="appSubscriptionStatusId">Id of the app subscription status</param>
+    /// <param name="creatorId">id of the creator</param>
+    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid creatorId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId);
 

@@ -41,8 +41,8 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     }
 
     /// <inheritdoc />
-    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId ) =>
-        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
+    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid creatorId) =>
+        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(Guid.NewGuid(), appId, companyId, appSubscriptionStatusId, creatorId)).Entity;
 
     public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
         _context.CompanyUsers
