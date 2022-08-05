@@ -15,8 +15,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "company_assigned_apps",
                 type: "uuid",
-                nullable: false);
+                nullable: false,
+                defaultValueSql: "gen_random_uuid()");
             
+            migrationBuilder.AlterColumn<Guid>(
+                name: "id",
+                schema: "portal",
+                table: "company_assigned_apps",
+                type: "uuid",
+                nullable: false);
+
             migrationBuilder.AddColumn<Guid>(
                 name: "last_editor_id",
                 schema: "portal",
