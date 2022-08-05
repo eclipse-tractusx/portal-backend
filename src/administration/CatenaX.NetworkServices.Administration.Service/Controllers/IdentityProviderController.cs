@@ -1,6 +1,6 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
-using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -69,9 +69,21 @@ public class IdentityProviderController : ControllerBase
     [HttpGet]
     [Route("owncompany/usersfile")]
     public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds) {
-        var (stream, contentType, fileName, encoding) = this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataStream(identityProviderIds, iamUserId));
+        var (stream, contentType, fileName, encoding) = this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, iamUserId));
         return File(stream, string.Join("; ", contentType, encoding.WebName), fileName);
     }
+
+    [HttpPost]
+//    [Authorize(Roles = "upload_documents")]
+    [Consumes("multipart/form-data")]
+    [Route("owncompany/usersfile")]
+    [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+        public Task<int> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document) =>
+            this.WithIamUserId(iamUserId => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, iamUserId));
+
 
     [HttpPost]
     [Route("owncompany/users/{companyUserId}/identityprovider")]
