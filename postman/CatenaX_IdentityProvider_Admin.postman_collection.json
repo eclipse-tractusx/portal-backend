@@ -1,0 +1,782 @@
+{
+	"info": {
+		"_postman_id": "791b6802-a6cc-4a30-ae87-2b91a72e5d93",
+		"name": "CatenaX IdentityProvider Admin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "devhost it-admin token https://devhost:8443/iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"var bodyToken = responseJson.access_token;",
+							"pm.collectionVariables.set(\"keycloakToken\", bodyToken)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "Cl2-CX-Portal",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{loginUserName}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://wsl:8443/iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+					"protocol": "https",
+					"host": [
+						"wsl"
+					],
+					"port": "8443",
+					"path": [
+						"iamcentral",
+						"auth",
+						"realms",
+						"CX-Central",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET own idps: https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"for(var i = 0; i < 3; i++) {",
+							"    var idpJson = responseJson[i];",
+							"    var categoryId = idpJson.identityProviderCategoryId;",
+							"    switch (categoryId) {",
+							"        case \"KEYCLOAK_SHARED\":",
+							"            pm.collectionVariables.set(\"identityProviderIdShared\", idpJson.identityProviderId);",
+							"            pm.collectionVariables.set(\"identityProviderAliasShared\", idpJson.alias);",
+							"            break;",
+							"        case \"KEYCLOAK_OIDC\":",
+							"            pm.collectionVariables.set(\"identityProviderIdOIDC\", idpJson.identityProviderId);",
+							"            pm.collectionVariables.set(\"identityProviderAliasOIDC\", idpJson.alias);",
+							"            break;",
+							"        case \"KEYCLOAK_SAML\":",
+							"            pm.collectionVariables.set(\"identityProviderIdSAML\", idpJson.identityProviderId);",
+							"            pm.collectionVariables.set(\"identityProviderAliasSAML\", idpJson.alias);",
+							"            break;",
+							"        default:",
+							"            break;",
+							"    }",
+							"}",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders?protocol=SAML",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders"
+					],
+					"query": [
+						{
+							"key": "protocol",
+							"value": "OIDC",
+							"disabled": true
+						},
+						{
+							"key": "protocol",
+							"value": "SAML"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"displayName\": \"displayName2\",\n  \"redirectUrl\": \"https://some.where\",\n  \"enabled\": true,\n  \"oidc\": {\n    \"clientId\": \"myClient1\",\n    \"authorizationUrl\": \"https://some.auth\",\n    \"clientAuthMethod\": \"SECRET_JWT\",\n    \"secret\": \"mysecret\",\n    \"signatureAlgorithm\": \"HS256\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdOIDC}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders",
+						"{{identityProviderIdOIDC}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"displayName\": \"displayName3\",\n  \"redirectUrl\": \"https://some.where\",\n  \"enabled\": true,\n  \"saml\": {\n    \"serviceProviderEntityId\": \"https://some.id\",\n    \"singleSignOnServiceUrl\": \"https:://saml.login\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdSAML}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders",
+						"{{identityProviderIdSAML}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DEL https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdSAML}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders",
+						"{{identityProviderIdSAML}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET own users idplinks: https://localhost:5001/api/administration/identityprovider/owncompany/users?identityProviderIds=...",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"var companyUserId = responseJson[0].companyUserId;\r",
+							"pm.collectionVariables.set(\"companyUserId\", companyUserId);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"displayName\": \"displayName2\",\n  \"redirectUrl\": \"https://some.where\",\n  \"enabled\": true,\n  \"oidc\": {\n    \"authorizationUrl\": \"https://some.auth\",\n    \"clientAuthMethod\": \"SECRET_BASIC\",\n    \"secret\": \"mysecret\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users?identityProviderIds={{identityProviderIdOIDC}}&identityProviderIds={{identityProviderIdShared}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"users"
+					],
+					"query": [
+						{
+							"key": "identityProviderIds",
+							"value": "{{identityProviderIdOIDC}}"
+						},
+						{
+							"key": "identityProviderIds",
+							"value": "{{identityProviderIdShared}}"
+						},
+						{
+							"key": "identityProviderIds",
+							"value": "{{identityProviderIdSAML}}",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET own users file: https://localhost:5001/api/administration/identityprovider/owncompany/users?identityProviderIds=... Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"displayName\": \"displayName2\",\n  \"redirectUrl\": \"https://some.where\",\n  \"enabled\": true,\n  \"oidc\": {\n    \"authorizationUrl\": \"https://some.auth\",\n    \"clientAuthMethod\": \"SECRET_BASIC\",\n    \"secret\": \"mysecret\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/usersfile?identityProviderIds={{identityProviderIdOIDC}}&identityProviderIds={{identityProviderIdShared}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"usersfile"
+					],
+					"query": [
+						{
+							"key": "identityProviderIds",
+							"value": "{{identityProviderIdOIDC}}"
+						},
+						{
+							"key": "identityProviderIds",
+							"value": "{{identityProviderIdShared}}"
+						},
+						{
+							"key": "identityProviderIds",
+							"value": "{{identityProviderIdSAML}}",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST own users file: https://localhost:5001/api/administration/identityprovider/owncompany/users?identityProviderIds=...",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "document",
+							"type": "file",
+							"src": "/C:/Users/q174298/Desktop/identityproviderlinks.csv"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/usersfile",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"usersfile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST own user idplink: https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/alias/{{identityProviderAlias}}",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"identityProviderId\": \"{{identityProviderIdOIDC}}\",\n    \"userId\": \"asdfasdf\",\n    \"userName\": \"myusername\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/identityprovider",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"users",
+						"{{companyUserId}}",
+						"identityprovider"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT own user idplink: https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/alias/{{identityProviderAlias}}",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"asdfasdf1\",\n    \"userName\": \"myusername1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/identityprovider/{{identityProviderIdOIDC}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"users",
+						"{{companyUserId}}",
+						"identityprovider",
+						"{{identityProviderIdOIDC}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET own user idplink: https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/alias/{{identityProviderAlias}}",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/identityprovider/{{identityProviderIdOIDC}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"users",
+						"{{companyUserId}}",
+						"identityprovider",
+						"{{identityProviderIdOIDC}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DEL own user idplink: https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/alias/{{identityProviderAlias}}",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users/{{companyUserId}}/identityprovider/{{identityProviderIdOIDC}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"users",
+						"{{companyUserId}}",
+						"identityprovider",
+						"{{identityProviderIdOIDC}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "keycloakToken",
+			"value": ""
+		},
+		{
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "identityProviderIdSAML",
+			"value": ""
+		},
+		{
+			"key": "identityProviderIdOIDC",
+			"value": ""
+		},
+		{
+			"key": "identityProviderIdShared",
+			"value": ""
+		},
+		{
+			"key": "identityProviderAliasSAML",
+			"value": ""
+		},
+		{
+			"key": "identityProviderAliasOIDC",
+			"value": ""
+		},
+		{
+			"key": "identityProviderAliasShared",
+			"value": ""
+		},
+		{
+			"key": "companyUserId",
+			"value": ""
+		},
+		{
+			"key": "loginUserName",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
