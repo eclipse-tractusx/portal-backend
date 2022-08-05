@@ -7,6 +7,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using System.Text;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -23,7 +24,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public async IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProviders(string iamUserId)
     {
-        await foreach ( var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDataUntracked(iamUserId).ConfigureAwait(false))
+        await foreach ( var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderCategoryDataUntracked(iamUserId).ConfigureAwait(false))
         {
             switch(identityProviderData.CategoryId)
             {
@@ -290,25 +291,86 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid>? identityProviderIds, string iamUserId)
+    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, string iamUserId)
     {
-        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDataUntracked(iamUserId, identityProviderIds).ToListAsync().ConfigureAwait(false);
+        var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
 
-        if (identityProviderIds != null)
+        await foreach (var data in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId, idpAliasDatas).ConfigureAwait(false))
         {
-            var invalidIds = identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId));
-            if (invalidIds.Count() > 0)
+            yield return new UserIdentityProviderData(
+                data.CompanyUserId,
+                data.FirstName,
+                data.LastName,
+                data.Email,
+                data.LinkDatas.Select(linkData => new UserIdentityProviderLinkData(
+                    linkData.IdentityProviderId,
+                    linkData.UserId,
+                    linkData.UserName))
+            );
+        }
+    }
+
+    public Stream GetOwnCompanyUsersIdentityProviderDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    {
+        return new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), Encoding.ASCII);
+    }
+
+    private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    {
+        var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
+        var idpIds = idpAliasDatas.Select(data => data.IdentityProviderId).ToList();
+
+        bool firstLine = true;
+
+        await foreach (var data in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId, idpAliasDatas).ConfigureAwait(false))
+        {
+            if (firstLine)
             {
-                throw new ArgumentException($"invalid identityProviders: [{String.Join(", ", invalidIds)}] for user {iamUserId}", nameof(identityProviderIds));
+                firstLine = false;
+                yield return string.Join(
+                    ",",
+                    "Id",
+                    "FirstName",
+                    "LastName",
+                    "Email",
+                    string.Join(",", idpAliasDatas.SelectMany(data => new [] { $"UserId {data.Alias}", $"UserName {data.Alias}" }))
+                );
             }
+            yield return string.Join(
+                ",",
+                data.CompanyUserId,
+                data.FirstName,
+                data.LastName,
+                data.Email,
+                string.Join(",", idpIds.SelectMany(identityProviderId =>
+                    {
+                        var linkData = data.LinkDatas.SingleOrDefault(linkData => linkData.IdentityProviderId == identityProviderId);
+                        return new [] { linkData.UserId, linkData.UserName };
+                    })));
+        }
+    }
+
+    private async Task<IEnumerable<(Guid IdentityProviderId, string Alias)>> GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    {
+        if (!identityProviderIds.Any())
+        {
+            throw new ControllerArgumentException("at lease one identityProviderId must be specified", nameof(identityProviderIds));
+        }
+        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(iamUserId, identityProviderIds).ToListAsync().ConfigureAwait(false);
+
+        var invalidIds = identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId));
+        if (invalidIds.Any())
+        {
+            throw new ControllerArgumentException($"invalid identityProviders: [{String.Join(", ", invalidIds)}] for user {iamUserId}", nameof(identityProviderIds));
         }
 
-        var idPerAlias = (identityProviderIds != null
-            ? identityProviderData.Where(data => identityProviderIds.Any(id => id == data.IdentityProviderId))
-            : identityProviderData)
-            .ToDictionary(data => data.Alias, data => data.IdentityProviderId);
+        return identityProviderData;
+    }
 
-        var aliase = idPerAlias.Keys;
+    private async IAsyncEnumerable<(Guid CompanyUserId, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid IdentityProviderId, string UserId, string UserName)> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId, IEnumerable<(Guid IdentityProviderId, string Alias)> identityProviderAliasDatas)
+    {
+        var idPerAlias = identityProviderAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
+        var aliase = identityProviderAliasDatas.Select(item => item.Alias).ToList();
 
         await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
             .GetOwnCompanyUserQuery(iamUserId)
@@ -319,22 +381,64 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     companyUser.Lastname,
                     companyUser.Email,
                     companyUser.IamUser!.UserEntityId))
-            .ToAsyncEnumerable())
+            .ToAsyncEnumerable().ConfigureAwait(false))
         {
             if (userEntityId != null)
             {
                 var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false);
-                yield return new UserIdentityProviderData(
-                    companyUserId,
-                    firstName,
-                    lastName,
-                    email,
-                    linkDatas.Select(linkData => new UserIdentityProviderLinkData(
-                        idPerAlias[linkData.Alias],
-                        linkData.UserId,
-                        linkData.UserName))
-                );
+                yield return (companyUserId, firstName, lastName, email, linkDatas.Select(linkData => (idPerAlias[linkData.Alias], linkData.UserId, linkData.UserName)));
             }
+        }
+    }
+
+    private class AsyncEnumerableStringStream : Stream
+    {
+        public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()
+        {
+            _enumerator = data.GetAsyncEnumerator();
+            _stream = new MemoryStream();
+            _writer = new StreamWriter(_stream, encoding);
+        }
+
+        private readonly IAsyncEnumerator<string> _enumerator;
+        private readonly MemoryStream _stream;
+        private readonly TextWriter _writer;
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanTimeout => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position
+        {
+            get { throw new NotSupportedException(); }
+            set { throw new NotSupportedException(); }
+        }
+        public override long Seek (long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
+        public override void Flush() => throw new NotSupportedException();
+        public override int Read(byte [] buffer, int offset, int count) => throw new NotSupportedException();
+        public override void Write(byte [] buffer, int offset, int count) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
+        {
+            var position = offset;
+            var remaining = count;
+            var written = _stream.Read(buffer, position, remaining);
+            remaining = remaining - written;
+            while (remaining > 0 && await _enumerator.MoveNextAsync(token).ConfigureAwait(false))
+            {
+                _stream.Position = 0;
+                _stream.SetLength(0);
+                _writer.WriteLine(_enumerator.Current);
+                _writer.Flush();
+                _stream.Position = 0;
+
+                position = position + written;
+                written = _stream.Read(buffer, position, remaining);
+                remaining = remaining - written;
+            }
+            return count - remaining;
         }
     }
 
@@ -347,7 +451,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         if (userAliasData.UserEntityId == null)
         {
-            throw new Exception($"companyUserId {companyUserId} is not linked to keycloak");
+            throw new UnexpectedConditionException($"companyUserId {companyUserId} is not linked to keycloak");
         }
         if (userAliasData.Alias == null)
         {
