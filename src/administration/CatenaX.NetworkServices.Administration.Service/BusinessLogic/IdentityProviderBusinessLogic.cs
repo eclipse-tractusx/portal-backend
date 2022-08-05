@@ -7,6 +7,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using Microsoft.Extensions.Options;
 using System.Text;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
@@ -15,11 +16,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IdentityProviderSettings _settings;
 
-    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager)
+    public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IOptions<IdentityProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
+        _settings = options.Value;
     }
 
     public async IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProviders(string iamUserId)
@@ -310,9 +313,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public Stream GetOwnCompanyUsersIdentityProviderDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
     {
-        return new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), Encoding.ASCII);
+        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), _settings.Encoding), _settings.ContentType, _settings.FileName, _settings.Encoding);
     }
 
     private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, string iamUserId)

@@ -121,7 +121,8 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
-builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>();
+builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
+                .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviders"));
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
