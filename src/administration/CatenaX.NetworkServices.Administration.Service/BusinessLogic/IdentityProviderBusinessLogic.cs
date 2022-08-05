@@ -297,6 +297,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, string iamUserId)
     {
         var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
+        var idPerAlias = idpAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
 
         await foreach (var data in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId, idpAliasDatas).ConfigureAwait(false))
         {
@@ -306,22 +307,155 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 data.LastName,
                 data.Email,
                 data.LinkDatas.Select(linkData => new UserIdentityProviderLinkData(
-                    linkData.IdentityProviderId,
+                    idPerAlias[linkData.Alias],
                     linkData.UserId,
                     linkData.UserName))
             );
         }
     }
 
-    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderLinkDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
     {
-        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), _settings.Encoding), _settings.ContentType, _settings.FileName, _settings.Encoding);
+        var csvSettings = _settings.CSVSettings;
+        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
+    }
+
+    public async Task<int> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId)
+    {
+        var csvSettings = _settings.CSVSettings;
+        if (!document.ContentType.Equals(csvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnsupportedMediaTypeException($"Only contentType {csvSettings.ContentType} files are allowed.");
+        }
+        using var stream = document.OpenReadStream();
+        var reader = new StreamReader(stream, csvSettings.Encoding);
+        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
+        if (firstLine == null)
+        {
+            throw new ControllerArgumentException("uploaded file contains no lines");
+        }
+        var numIdps = ParseCSVFirstLineReturningNumIdps(firstLine);
+        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+        int numLines = 0;
+        while (nextLine != null)
+        {
+            var (companyUserId, firstName, lastName, email, identityProviderLinks) = ParseCSVLine(nextLine, numIdps);
+            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+            numLines++;
+        }
+        return numLines;
+    }
+
+    private int ParseCSVFirstLineReturningNumIdps(string firstLine)
+    {
+        var headers = firstLine.Split(_settings.CSVSettings.Separator).GetEnumerator();
+        foreach (var csvHeader in CSVHeaders())
+        {
+            if (!headers.MoveNext())
+            {
+                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
+            }
+            if ((string)headers.Current != csvHeader)
+            {
+                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
+            }
+        }
+        var numIdps = 0;
+        var hasNext = headers.MoveNext();
+        while (hasNext)
+        {
+            foreach (var csvHeader in CSVIdpHeaders())
+            {
+                if (!hasNext)
+                {
+                    throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
+                }
+                if ((string)headers.Current != csvHeader)
+                {
+                    throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
+                }
+                hasNext = headers.MoveNext();
+            }
+            numIdps++;
+        }
+        return numIdps;
+    }
+
+    private (Guid CompanyUserId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, string UserId, string UserName)> IdentityProviderLinks) ParseCSVLine(string line, int numIdps)
+    {
+        var items = line.Split(_settings.CSVSettings.Separator).AsEnumerable().GetEnumerator();
+        if(!items.MoveNext())
+        {
+            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderUserId} type Guid, got ''");
+        }
+        if (!Guid.TryParse(items.Current, out var companyUserId))
+        {
+            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderUserId} type Guid, got '{items.Current}'");
+        }
+        if(!items.MoveNext())
+        {
+            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderFirstName} type Guid, got ''");
+        }
+        var firstName = items.Current;
+        if(!items.MoveNext())
+        {
+            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderLastName} type Guid, got ''");
+        }
+        var lastName = items.Current;
+        if(!items.MoveNext())
+        {
+            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderEmail} type Guid, got ''");
+        }
+        var email = items.Current;
+        var identityProviderLinks = ParseCSVIdentityProviderLinks(items, numIdps).ToList();
+        return (companyUserId, firstName, lastName, email, identityProviderLinks);
+    }
+
+    private IEnumerable<(string Alias, string UserId, string UserName)> ParseCSVIdentityProviderLinks(IEnumerator<string> items, int numIdps)
+    {
+        var remaining = numIdps;
+        while (remaining > 0)
+        {
+            if(!items.MoveNext())
+            {
+                throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderProviderAlias}, got ''");
+            }
+            var identityProviderAlias = items.Current;
+            if(!items.MoveNext())
+            {
+                throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderProviderUserId}, got ''");
+            }
+            var identityProviderUserId = items.Current;
+            if(!items.MoveNext())
+            {
+                throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderProviderUserName}, got ''");
+            }
+            var identityProviderUserName = items.Current;
+            yield return (identityProviderAlias, identityProviderUserId, identityProviderUserName);
+            remaining--;
+        }
+    }
+
+    private IEnumerable<string> CSVHeaders() {
+        var csvSettings = _settings.CSVSettings;
+        yield return csvSettings.HeaderUserId; 
+        yield return csvSettings.HeaderFirstName;
+        yield return csvSettings.HeaderLastName;
+        yield return csvSettings.HeaderEmail;
+    }
+
+    private IEnumerable<string> CSVIdpHeaders() {
+        var csvSettings = _settings.CSVSettings;
+        yield return csvSettings.HeaderProviderAlias;
+        yield return csvSettings.HeaderProviderUserId;
+        yield return csvSettings.HeaderProviderUserName;
     }
 
     private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, string iamUserId)
     {
         var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
-        var idpIds = idpAliasDatas.Select(data => data.IdentityProviderId).ToList();
+        var Aliase = idpAliasDatas.Select(data => data.Alias).ToList();
+        var csvSettings = _settings.CSVSettings;
 
         bool firstLine = true;
 
@@ -330,25 +464,18 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             if (firstLine)
             {
                 firstLine = false;
-                yield return string.Join(
-                    ",",
-                    "Id",
-                    "FirstName",
-                    "LastName",
-                    "Email",
-                    string.Join(",", idpAliasDatas.SelectMany(data => new [] { $"UserId {data.Alias}", $"UserName {data.Alias}" }))
-                );
+                yield return string.Join(csvSettings.Separator,CSVHeaders().Concat(idpAliasDatas.SelectMany(data => CSVIdpHeaders())));
             }
             yield return string.Join(
-                ",",
+                csvSettings.Separator,
                 data.CompanyUserId,
                 data.FirstName,
                 data.LastName,
                 data.Email,
-                string.Join(",", idpIds.SelectMany(identityProviderId =>
+                string.Join(csvSettings.Separator, Aliase.SelectMany(alias =>
                     {
-                        var linkData = data.LinkDatas.SingleOrDefault(linkData => linkData.IdentityProviderId == identityProviderId);
-                        return new [] { linkData.UserId, linkData.UserName };
+                        var linkData = data.LinkDatas.SingleOrDefault(linkData => linkData.Alias == alias);
+                        return new [] { alias, linkData.UserId, linkData.UserName };
                     })));
         }
     }
@@ -370,9 +497,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return identityProviderData;
     }
 
-    private async IAsyncEnumerable<(Guid CompanyUserId, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid IdentityProviderId, string UserId, string UserName)> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId, IEnumerable<(Guid IdentityProviderId, string Alias)> identityProviderAliasDatas)
+    private async IAsyncEnumerable<(Guid CompanyUserId, string? FirstName, string? LastName, string? Email, IEnumerable<(string Alias, string UserId, string UserName)> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId, IEnumerable<(Guid IdentityProviderId, string Alias)> identityProviderAliasDatas)
     {
-        var idPerAlias = identityProviderAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
         var aliase = identityProviderAliasDatas.Select(item => item.Alias).ToList();
 
         await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
@@ -389,7 +515,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             if (userEntityId != null)
             {
                 var linkDatas = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false);
-                yield return (companyUserId, firstName, lastName, email, linkDatas.Select(linkData => (idPerAlias[linkData.Alias], linkData.UserId, linkData.UserName)));
+                yield return (companyUserId, firstName, lastName, email, linkDatas.Select(linkData => (linkData.Alias, linkData.UserId, linkData.UserName)));
             }
         }
     }
