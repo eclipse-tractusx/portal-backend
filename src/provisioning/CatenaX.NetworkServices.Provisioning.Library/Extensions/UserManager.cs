@@ -35,6 +35,19 @@ public partial class ProvisioningManager
         return await _SharedIdp.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
     }
 
+    public async Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email)
+    {
+        var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+        if (user.FirstName != firstName || user.LastName != lastName || user.Email != email)
+        {
+            user.FirstName = firstName;
+            user.LastName = lastName;
+            user.Email = email;
+            return await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
+        }
+        return true;
+    }
+
     public Task<bool> DeleteSharedRealmUserAsync(string realm, string userId) =>
         _SharedIdp.DeleteUserAsync(realm, userId);
 
