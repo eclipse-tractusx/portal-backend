@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\administration\CatenaX.NetworkServices.Administration.Service\CatenaX.NetworkServices.Administration.Service.csproj" />
+    <ProjectReference Include="..\..\shared\CatenaX.NetworkServices.Tests.Shared\CatenaX.NetworkServices.Tests.Shared.csproj" />
   </ItemGroup>
 
 </Project>

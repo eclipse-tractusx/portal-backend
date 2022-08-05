@@ -114,4 +114,18 @@ public interface IAppsBusinessLogic
     /// <param name="appInputModel">Input model for app creation.</param>
     /// <returns>Guid of the created app.</returns>
     public Task<Guid> CreateAppAsync(AppInputModel appInputModel);
+
+    /// <summary>
+    /// Retrieve Company Owned App Data
+    /// </summary>
+    /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
+    /// <returns>Async enumberable of company owned apps data</returns>
+    IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId);
+    
+    /// <summary>
+    /// Creates an application and returns its generated ID.
+    /// </summary>
+    /// <param name="appRequestModel"></param>
+    /// <returns>Guid of the created app.</returns>
+    Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
 }

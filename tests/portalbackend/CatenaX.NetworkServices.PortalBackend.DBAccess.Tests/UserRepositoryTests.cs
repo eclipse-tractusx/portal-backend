@@ -49,10 +49,10 @@ public class UserRepositoryTests
     }
 
     [Fact]
-    public async void GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
+    public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
     {
         // Arrange
-        var favouriteApps = _fixture.CreateMany<App>(10);
+        var favouriteApps = _fixture.CreateMany<App>(10).ToList();
         var (companyUser, iamUser) = CreateTestUserPair();
         foreach (var app in favouriteApps)
         {
@@ -70,25 +70,26 @@ public class UserRepositoryTests
 
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(favouriteApps.Count());
-        results.Should().AllSatisfy(a => favouriteApps.Select(app => app.Id).Contains(a));
+        results.Should().HaveCount(favouriteApps.Count);
+        var favouriteAppIds = favouriteApps.Select(app => app.Id).ToList();
+        results.Should().BeEquivalentTo(favouriteAppIds);
     }
     
     [Fact]
-    public async void GetBusinessApps_ReturnsAppListSuccessfully()
+    public async Task GetBusinessApps_ReturnsAppListSuccessfully()
     {
         // Arrange
-        var expectedApp = _fixture.Create<PortalBackend.PortalEntities.Entities.App>();
+        var expectedApp = _fixture.Create<App>();
         var (companyUser, iamUser) = CreateTestUserPair();
         companyUser.Company!.BoughtApps.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
+        foreach (var app in _fixture.CreateMany<App>())
         {
             companyUser.Company.BoughtApps.Add(app);
         }
 
         var iamClient = _fixture.Create<IamClient>();
         iamClient.Apps.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<PortalBackend.PortalEntities.Entities.App>())
+        foreach (var app in _fixture.CreateMany<App>())
         {
             iamClient.Apps.Add(app);
         }
@@ -114,6 +115,8 @@ public class UserRepositoryTests
         result.Single().Id.Should().Be(expectedApp.Id);
     }
 
+    #region Setup
+
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()
@@ -125,4 +128,6 @@ public class UserRepositoryTests
         companyUser.IamUser = iamUser;
         return (companyUser, iamUser);
     }
+
+    #endregion
 }

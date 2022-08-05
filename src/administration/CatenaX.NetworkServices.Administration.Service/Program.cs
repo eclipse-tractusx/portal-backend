@@ -28,7 +28,6 @@ using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -43,7 +42,6 @@ using Microsoft.Extensions.FileProviders;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
-using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.Framework.Swagger;
 
 var VERSION = "v2";
@@ -120,7 +118,7 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
-builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
@@ -130,10 +128,7 @@ builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
-builder.Services.AddTransient<ICompanyRepository, CompanyRepository>();
-
-builder.Services.AddTransient<IConnectorsRepository, ConnectorsRepository>()
-                .AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
+builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 

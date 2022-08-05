@@ -21,7 +21,6 @@
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Framework.Notifications;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -36,32 +35,31 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IApplicationRepository _applicationRepository;
     private readonly RegistrationSettings _settings;
     private readonly IProvisioningManager _provisioningManager;
     private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
-    private readonly INotificationService _notifcationService;
 
-    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService, INotificationService notifcationService)
+    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
-        _applicationRepository = portalRepositories.GetInstance<IApplicationRepository>();
         _settings = configuration.Value;
         _provisioningManager = provisioningManager;
         _custodianService = custodianService;
         _mailingService = mailingService;
-        _notifcationService = notifcationService;
     }
 
-    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
     {
         if (applicationId == default)
         {
-            throw new ArgumentNullException("applicationId must not be null");
+            throw new ArgumentNullException(nameof(applicationId));
         }
-
-        var companyWithAddress = await _applicationRepository.GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+        return GetCompanyWithAddressAsyncInternal(applicationId);
+    }
+    private async Task<CompanyWithAddress> GetCompanyWithAddressAsyncInternal(Guid applicationId)
+    {
+        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
             throw new NotFoundException($"no company found for applicationId {applicationId}");
@@ -71,15 +69,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
     {
-        var applications = _applicationRepository.GetCompanyApplicationsFilteredQuery(
+        var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsFilteredQuery(
             companyName?.Length >= 3 ? companyName : null,
-            new CompanyApplicationStatusId[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
+            new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
 
-        return Pagination.CreateResponseAsync<CompanyApplicationDetails>(
+        return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
+            (skip, take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
                 applications.CountAsync(),
                 applications.OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
@@ -107,108 +105,72 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public async Task<bool> ApprovePartnerRequest(Guid applicationId)
+    public Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
     {
         if (applicationId == default)
         {
-            throw new ArgumentNullException("applicationId must not be null");
+            throw new ArgumentNullException(nameof(applicationId));
         }
+        return ApprovePartnerRequestInternal(iamUserId, applicationId);
+    }
 
-        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
+    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
+    {
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var companyApplication = await applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
 
         var businessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber;
-        if (String.IsNullOrWhiteSpace(businessPartnerNumber))
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
-        var initialRolesData = await userRolesRepository.GetUserRoleDataUntrackedAsync(_settings.ApplicationApprovalInitialRoles).ToListAsync().ConfigureAwait(false);
-        if (initialRolesData.Count() < _settings.ApplicationApprovalInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
-        {
-            throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ", _settings.ApplicationApprovalInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ", clientRoles.Value)}]"))}");
-        }
-
-        IDictionary<string, IEnumerable<string>>? assignedRoles = null;
-        await foreach (var userData in _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId).ConfigureAwait(false))
-        {
-            assignedRoles  = await _provisioningManager.AssignClientRolesToCentralUserAsync(userData.UserEntityId, _settings.ApplicationApprovalInitialRoles).ConfigureAwait(false);
-            
-            foreach (var roleData in initialRolesData)
-            {
-                if (!userData.RoleIds.Contains(roleData.UserRoleId) && assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText))
-                {
-                    userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
-                }
-            }
-            if (!userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
-            {
-                userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
-                await _provisioningManager.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1));
-            }
-        }
+        var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber);
         companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
-        await PostRegistrationWelcomeEmailAsync(applicationId).ConfigureAwait(false);
 
-        if (assignedRoles != null)
+        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId);
+        await PostRegistrationWelcomeEmailAndCreateNotificationsAsync(userRolesRepository, applicationRepository, applicationId, creatorId).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+        if (assignedRoles == null) return true;
+        
+        var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+            .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+            .Where(clientRoles => clientRoles.roles.Any())
+            .ToList();
+
+        if (unassignedClientRoles.Any())
         {
-            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-                .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
-                .Where(clientRoles => clientRoles.roles.Count() > 0);
-
-            if (unassignedClientRoles.Count() > 0)
-            {
-                throw new Exception($"inconsistend data, roles not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
-            }
+            throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
         }
 
-        await _notifcationService.CreateWelcomeNotificationsForCompanyAsync(companyApplication.CompanyId).ConfigureAwait(false);
         return true;
     }
 
-    private async Task<bool> PostRegistrationWelcomeEmailAsync(Guid applicationId)
-    {
-        await foreach (var user in _applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
-        {
-            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
-
-            if (String.IsNullOrWhiteSpace(user.Email))
-            {
-                throw new ArgumentException($"user {userName} has no assigned email");
-            }
-
-            var mailParameters = new Dictionary<string, string>
-                {
-                    { "userName", !String.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-                    { "companyName", user.CompanyName }
-                };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
-        }
-        return true;
-    }
-
-    public async Task<bool> DeclinePartnerRequest(Guid applicationId)
+    public Task<bool> DeclinePartnerRequest(Guid applicationId)
     {
         if (applicationId == default)
         {
-            throw new ArgumentNullException("applicationId must not be null");
+            throw new ArgumentNullException(nameof(applicationId));
         }
+        return DeclinePartnerRequestInternal(applicationId);
+    }
 
-        var companyApplication = await _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
+    private async Task<bool> DeclinePartnerRequestInternal(Guid applicationId)
+    {
+        var companyApplication = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyApplication == null)
         {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", "applicationId");
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
@@ -218,40 +180,39 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
-    private async Task<bool> PostRegistrationCancelEmailAsync(Guid applicationId)
+    private async Task PostRegistrationCancelEmailAsync(Guid applicationId)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
 
-        await foreach (var user in _applicationRepository.GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
+        await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
         {
-            var userName = String.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !String.IsNullOrWhiteSpace(item)));
+            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 
-            if (String.IsNullOrWhiteSpace(user.Email))
+            if (string.IsNullOrWhiteSpace(user.Email))
             {
                 throw new ArgumentException($"user {userName} has no assigned email");
             }
 
             var mailParameters = new Dictionary<string, string>
                 {
-                    { "userName", !String.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                    { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
                     { "companyName", user.CompanyName }
                 };
 
             await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
         }
-        return true;
     }
 
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size)
     {
-        var applications = _applicationRepository.GetAllCompanyApplicationsDetailsQuery();
+        var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery();
 
-        return Pagination.CreateResponseAsync<CompanyApplicationWithCompanyUserDetails>(
+        return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            (int skip, int take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
+            (skip, take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
                 applications.CountAsync(),
                 applications.OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
@@ -260,13 +221,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     {
                         Application = application,
                         CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
-                    .Where(companyUser =>
+                    .FirstOrDefault(companyUser =>
                         companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
                         && companyUser.Firstname != null
                         && companyUser.Lastname != null
                         && companyUser.Email != null
                     )
-                    .FirstOrDefault()
                     })
                     .Select(s => new CompanyApplicationWithCompanyUserDetails(
                         s.Application.ApplicationStatusId,
@@ -278,6 +238,95 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         Email = s.CompanyUser.Email
                     })
                     .AsAsyncEnumerable()));
+    }
 
+    private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
+    {
+        var failedUserNames = new List<string>();
+        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles);
+        await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, initialRolesData.Select(x => x.UserRoleId)).ConfigureAwait(false))
+        {
+            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+
+            if (user.HasRequestedRole)
+            {
+                foreach (var typeId in _settings.WelcomeNotificationTypeIds)
+                {
+                    _portalRepositories.GetInstance<INotificationRepository>().Create(user.CompanyUserId, typeId, false,
+                        notification =>
+                        {
+                            notification.CreatorUserId = creatorId;
+                        });
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                failedUserNames.Add(userName);
+                continue;
+            }
+
+            var mailParameters = new Dictionary<string, string>
+                {
+                    { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                    { "companyName", user.CompanyName }
+                };
+
+            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+        }
+
+        if (failedUserNames.Any())
+            throw new ArgumentException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
+    }
+
+    private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
+    {
+        var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+        var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
+        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles);
+
+        IDictionary<string, IEnumerable<string>>? assignedRoles = null;
+        var invitedUsersData = applicationRepository
+            .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId)
+            .ConfigureAwait(false);
+        await foreach (var userData in invitedUsersData)
+        {
+            assignedRoles = await _provisioningManager
+                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
+                .ConfigureAwait(false);
+
+            foreach (var roleData in initialRolesData)
+            {
+                if (!userData.RoleIds.Contains(roleData.UserRoleId) &&
+                    assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText))
+                {
+                    userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
+                }
+            }
+
+            if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber)) continue;
+
+            userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
+            await _provisioningManager
+                .AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1))
+                .ConfigureAwait(false);
+        }
+
+        return assignedRoles;
+    }
+
+    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
+    {
+        var roleData = await userRolesRepository
+            .GetUserRoleDataUntrackedAsync(roles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+
+        return roleData;
     }
 }

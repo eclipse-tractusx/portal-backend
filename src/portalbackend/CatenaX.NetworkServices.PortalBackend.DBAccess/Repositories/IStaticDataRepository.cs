@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -20,27 +20,22 @@
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.Framework.Notifications;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
-///     Business logic to work with the notifications
+/// Repository for accessing UseCase on persistence layer.
 /// </summary>
-public interface INotificationService
+public interface IStaticDataRepository
 {
     /// <summary>
-    ///     Creates a new internal triggered Notification.
+    /// Retrieves all Use Case.
     /// </summary>
-    /// <param name="companyId">Id of the company the admin should be retrieved</param>
-    /// <returns>Returns information of the created notification</returns>
-    Task CreateWelcomeNotificationsForCompanyAsync(Guid companyId);
-
+    /// <returns>Returns a async enumerable of <see cref="UseCaseData"/></returns>
+    IAsyncEnumerable<UseCaseData> GetAllUseCase();
+    
     /// <summary>
-    ///     Creates a new Notification with the given data
+    /// Retrieves all Language.
     /// </summary>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="creationData">The data for the creation of the notification.</param>
-    /// <param name="receiverId">Id of the company user the notification is intended for.</param>
-    Task<NotificationDetailData> CreateNotificationAsync(string iamUserId, NotificationCreationData creationData,
-        Guid receiverId);
-
+    /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
+    IAsyncEnumerable<LanguageData> GetAllLanguage();
 }

@@ -214,9 +214,13 @@ public class NotificationRepositoryTests
     {
         var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
         {
-            IamUser = new IamUser(_iamUserId, _companyUserId),
-            Notifications = _notifications
+            IamUser = new IamUser(_iamUserId, _companyUserId)
         };
+
+        foreach (var notification in _notifications)
+        {
+            companyUser.Notifications.Add(notification);
+        }
 
         A.CallTo(() => _contextFake.CompanyUsers).Returns(new List<CompanyUser>{companyUser}.AsFakeDbSet());
     }

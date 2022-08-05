@@ -80,11 +80,4 @@ public interface IUserRepository
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
     IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
         Guid companyUserId);
-
-    /// <summary>
-    /// Gets the id of the company admin for the given company and the id of the catena x admin
-    /// </summary>
-    /// <param name="companyId">Id of the company to retrieve the user id</param>
-    /// <returns>Returns the Id of the user and identifier whether the user is the catena x admin or a company admin</returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsCatenaXAdmin, bool IsCompanyAdmin)> GetCatenaAndCompanyAdminIdAsync(Guid companyId);
 }

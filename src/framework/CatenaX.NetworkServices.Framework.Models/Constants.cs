@@ -34,19 +34,4 @@ public static class Constants
     /// The default language
     /// </summary>
     public const string DefaultLanguage = "en";
-
-    /// <summary>
-    /// Company Name for Catena-X
-    /// </summary>
-    public const string CatenaXCompanyName = "Catena-X";
-
-    /// <summary>
-    /// Name of the CX Admin
-    /// </summary>
-    public const string CxAdminUsername = "CX Admin";
-
-    /// <summary>
-    /// Name of the Company Admin role
-    /// </summary>
-    public const string CompanyAdminRole = "Company Admin";
 }

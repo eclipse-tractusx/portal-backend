@@ -1,17 +1,10 @@
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class CompanyUserWithIdpBusinessPartnerData
-{
-    public CompanyUserWithIdpBusinessPartnerData(CompanyUser companyUser, string iamIdpAlias, IEnumerable<string> businessPartnerNumbers)
-    {
-        CompanyUser = companyUser;
-        IamIdpAlias = iamIdpAlias;
-        BusinessPartnerNumbers = businessPartnerNumbers;
-    }
-
-    public CompanyUser CompanyUser { get; }
-    public string IamIdpAlias { get; }
-    public IEnumerable<string> BusinessPartnerNumbers;
-}
+public record CompanyUserWithIdpBusinessPartnerData(
+    [property: JsonPropertyName("companyUser")] CompanyUser CompanyUser,
+    [property: JsonPropertyName("iamIdpAlias")] string IamIdpAlias,
+    [property: JsonPropertyName("businessPartnerNumbers")] IEnumerable<string> BusinessPartnerNumbers,
+    [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles);
