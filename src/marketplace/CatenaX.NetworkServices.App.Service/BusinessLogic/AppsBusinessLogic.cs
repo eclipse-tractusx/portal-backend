@@ -119,6 +119,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
 
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         var companyAppSubscriptionData = await companyAssignedAppRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
         if (companyAppSubscriptionData == default)
         {
@@ -129,7 +130,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if (companyAssignedApp == null)
         {
-            companyAssignedApp = companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING);
+            companyAssignedApp = companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING, companyUserId);
         }
         else
         {

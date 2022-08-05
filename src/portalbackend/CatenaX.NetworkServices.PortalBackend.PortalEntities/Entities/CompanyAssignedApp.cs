@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -25,20 +26,37 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-public class CompanyAssignedApp
+public class CompanyAssignedApp : IAuditable
 {
+    /// <summary>
+    /// Only used for the audit table
+    /// </summary>
+    protected CompanyAssignedApp()
+    {
+    }
+
     /// <summary>
     /// Constructor.
     /// </summary>
+    /// <param name="id">Id of the entity..</param>
     /// <param name="appId">App id.</param>
     /// <param name="companyId">Company id.</param>
     /// <param name="appSubscriptionStatusId">app subscription status.</param>
-    public CompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId)
+    /// <param name="lastEditorId">Id of the last editor</param>
+    public CompanyAssignedApp(Guid id, Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid lastEditorId)
     {
+        Id = id;
         AppId = appId;
         CompanyId = companyId;
         AppSubscriptionStatusId = appSubscriptionStatusId;
+        LastEditorId = lastEditorId;
     }
+
+    /// <inheritdoc />
+    public Guid Id { get; set; }
+
+    /// <inheritdoc />
+    public Guid? LastEditorId { get; set; }
 
     /// <summary>
     /// ID of the company subscribing an app.
