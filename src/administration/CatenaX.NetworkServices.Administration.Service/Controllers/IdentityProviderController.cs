@@ -66,6 +66,12 @@ public class IdentityProviderController : ControllerBase
     public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, iamUserId));
 
+    [HttpGet]
+    [Route("owncompany/usersfile")]
+    public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds) {
+        return File(this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataStream(identityProviderIds, iamUserId)), "text/csv", "blah.csv");
+    }
+
     [HttpPost]
     [Route("owncompany/users/{companyUserId}/identityprovider")]
     public Task<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData) =>

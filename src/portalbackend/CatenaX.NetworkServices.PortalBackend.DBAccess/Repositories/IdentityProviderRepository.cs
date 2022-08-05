@@ -63,15 +63,26 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     identityProvider.Companies.Count()))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderDataUntracked(string iamUserId, IEnumerable<Guid>? identityProviderIds) =>
+    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderCategoryDataUntracked(string iamUserId) =>
         _context.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders)
-            .Where(identityProvider => identityProviderIds != null ? identityProviderIds.Contains(identityProvider.Id) : true)
-            .Select(identityProvider => ((Guid Id, IdentityProviderCategoryId CategoryId, string Alias)) new (
+            .Select(identityProvider => new ValueTuple<Guid,IdentityProviderCategoryId,string>(
                 identityProvider.Id,
                 identityProvider.IdentityProviderCategoryId,
+                identityProvider.IamIdentityProvider!.IamIdpAlias
+            ))
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid IdentityProviderId, string Alias)> GetOwnCompanyIdentityProviderAliasDataUntracked(string iamUserId, IEnumerable<Guid> identityProviderIds) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders)
+            .Where(identityProvider => identityProviderIds.Contains(identityProvider.Id))
+            .Select(identityProvider => new ValueTuple<Guid,string>(
+                identityProvider.Id,
                 identityProvider.IamIdentityProvider!.IamIdpAlias
             ))
             .ToAsyncEnumerable();
