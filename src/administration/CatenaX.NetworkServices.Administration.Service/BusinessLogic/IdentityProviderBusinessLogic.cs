@@ -320,13 +320,25 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
-    public async Task<int> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId)
+    public Task<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId)
+    {
+        if (!document.ContentType.Equals(_settings.CSVSettings.ContentType, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnsupportedMediaTypeException($"Only contentType {_settings.CSVSettings.ContentType} files are allowed.");
+        }
+        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, iamUserId);
+    }
+
+    private async Task<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId)
     {
         var csvSettings = _settings.CSVSettings;
-        if (!document.ContentType.Equals(csvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var companyId = await userRepository.GetOwnCompanyId(iamUserId).ConfigureAwait(false);
+        if (companyId == Guid.Empty)
         {
-            throw new UnsupportedMediaTypeException($"Only contentType {csvSettings.ContentType} files are allowed.");
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with a company");
         }
+
         using var stream = document.OpenReadStream();
         var reader = new StreamReader(stream, csvSettings.Encoding);
         var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
@@ -335,15 +347,120 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             throw new ControllerArgumentException("uploaded file contains no lines");
         }
         var numIdps = ParseCSVFirstLineReturningNumIdps(firstLine);
+
+        var identityProviderCategoryData = (await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderCategoryDataUntracked(iamUserId).ToListAsync().ConfigureAwait(false));
+        var sharedIdpAlias = identityProviderCategoryData.Where(data => data.CategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED).Select(data => data.Alias).SingleOrDefault();
+        var validAliase = identityProviderCategoryData.Select(data => data.Alias).ToList();
+
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+        int numUpdates = 0;
+        int numUnchanged = 0;
+        var errors = new List<String>();
         int numLines = 0;
         while (nextLine != null)
         {
-            var (companyUserId, firstName, lastName, email, identityProviderLinks) = ParseCSVLine(nextLine, numIdps);
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
             numLines++;
+            try
+            {
+                var (companyUserId, firstName, lastName, email, identityProviderLinks) = ParseCSVLine(nextLine, numIdps);
+                
+                var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(false);
+                if (userEntityData == default)
+                {
+                    throw new ControllerArgumentException($"unexpected value of {csvSettings.HeaderUserId}: '{companyUserId}'");
+                }
+                var (userEntityId, existingFirstName, existingLastName, existingEmail) = userEntityData;
+
+                var aliase = identityProviderLinks.Select(identityProviderLink => identityProviderLink.Alias).ToList();
+                var invalidAliase = aliase.Where(alias => !validAliase.Contains(alias));
+                if (invalidAliase.Any())
+                {
+                    throw new ControllerArgumentException($"unexpected value for {csvSettings.HeaderProviderAlias}: [{string.Join(", ",invalidAliase)}]");
+                }
+                if (sharedIdpAlias != null && !aliase.Contains(sharedIdpAlias))
+                {
+                    aliase.Append(sharedIdpAlias);
+                }
+
+                var existingLinks = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false);
+
+                var updated = false;
+                foreach (var (alias, providerUserId, providerUserName) in identityProviderLinks)
+                {
+                    var existingLink = existingLinks.SingleOrDefault(link => link.Alias == alias);
+                    if (existingLink == default)
+                    {
+                        if (!string.IsNullOrWhiteSpace(providerUserId) || !string.IsNullOrWhiteSpace(providerUserName))
+                        {
+                            if (sharedIdpAlias == alias)
+                            {
+                                throw new ControllerArgumentException($"unexpected update of already deleted shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{providerUserId}', providerUserName: '{providerUserName}'");
+                            }
+                            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, providerUserId, providerUserName).ConfigureAwait(false);
+                            updated = true;
+                        }
+                    }
+                    else
+                    {
+                        if (existingLink.UserId != providerUserId || existingLink.UserName != providerUserName)
+                        {
+                            if (sharedIdpAlias == alias)
+                            {
+                                throw new ControllerArgumentException($"unexpected update of existing shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{providerUserId}', providerUserName: '{providerUserName}'");
+                            }
+                            await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
+                            if (!string.IsNullOrWhiteSpace(providerUserId) || !string.IsNullOrWhiteSpace(providerUserName))
+                            {
+                                await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, providerUserId, providerUserName);
+                            }
+                            updated = true;
+                        }
+                    }
+                }
+
+                if (firstName != existingFirstName || lastName != existingLastName || email != existingEmail)
+                {
+                    if (!await _provisioningManager.UpdateCentralUserAsync(userEntityId, firstName ?? "", lastName ?? "", email ?? "").ConfigureAwait(false))
+                    {
+                        throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
+                    }
+                    if (sharedIdpAlias != null)
+                    {
+                        var sharedIdpLink = existingLinks.Where(link => link.Alias == sharedIdpAlias).SingleOrDefault();
+                        if (sharedIdpLink != default)
+                        {
+                            if (!await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName ?? "", lastName ?? "", email ?? "").ConfigureAwait(false))
+                            {
+                                throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
+                            }
+                        }
+                    }
+                    _portalRepositories.Attach(new CompanyUser(companyUserId, default, default, default), companyUser =>
+                    {
+                        companyUser.Firstname = firstName;
+                        companyUser.Lastname = lastName;
+                        companyUser.Email = email;
+                    });
+                    await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                    updated = true;
+                }
+                if (updated)
+                {
+                    numUpdates++;
+                }
+                else
+                {
+                    numUnchanged++;
+                }
+            }
+            catch(Exception e)
+            {
+                errors.Add($"line: {numLines}, message: {e.Message}");
+            }
+
+            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         }
-        return numLines;
+        return new IdentityProviderUpdateStats(numUpdates, numUnchanged, errors.Count(), numLines, errors);
     }
 
     private int ParseCSVFirstLineReturningNumIdps(string firstLine)
@@ -386,25 +503,25 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var items = line.Split(_settings.CSVSettings.Separator).AsEnumerable().GetEnumerator();
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderUserId} type Guid, got ''");
+            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderUserId} type Guid expected");
         }
         if (!Guid.TryParse(items.Current, out var companyUserId))
         {
-            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderUserId} type Guid, got '{items.Current}'");
+            throw new ControllerArgumentException($"invalid format for {_settings.CSVSettings.HeaderUserId} type Guid: '{items.Current}'");
         }
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderFirstName} type Guid, got ''");
+            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderFirstName} expected");
         }
         var firstName = items.Current;
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderLastName} type Guid, got ''");
+            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderLastName} expected");
         }
         var lastName = items.Current;
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderEmail} type Guid, got ''");
+            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderEmail} expected");
         }
         var email = items.Current;
         var identityProviderLinks = ParseCSVIdentityProviderLinks(items, numIdps).ToList();
@@ -418,17 +535,17 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             if(!items.MoveNext())
             {
-                throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderProviderAlias}, got ''");
+                throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderProviderAlias} expected");
             }
             var identityProviderAlias = items.Current;
             if(!items.MoveNext())
             {
-                throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderProviderUserId}, got ''");
+                throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderProviderUserId} expected");
             }
             var identityProviderUserId = items.Current;
             if(!items.MoveNext())
             {
-                throw new ControllerArgumentException($"invalid format: expected value for {_settings.CSVSettings.HeaderProviderUserName}, got ''");
+                throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderProviderUserName} expected");
             }
             var identityProviderUserName = items.Current;
             yield return (identityProviderAlias, identityProviderUserId, identityProviderUserName);
@@ -484,7 +601,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         if (!identityProviderIds.Any())
         {
-            throw new ControllerArgumentException("at lease one identityProviderId must be specified", nameof(identityProviderIds));
+            throw new ControllerArgumentException("at least one identityProviderId must be specified", nameof(identityProviderIds));
         }
         var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(iamUserId, identityProviderIds).ToListAsync().ConfigureAwait(false);
 

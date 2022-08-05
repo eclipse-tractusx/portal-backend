@@ -19,6 +19,7 @@ public interface IProvisioningManager
     Task AddProviderUserLinkToCentralUserAsync(string userId, string alias, string providerUserId, string providerUserName);
     Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias);
     Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
+    Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
     Task<bool> DeleteSharedRealmUserAsync(string idpName, string userIdShared);
     Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
     Task<string> SetupClientAsync(string redirectUrl);
