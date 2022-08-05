@@ -27,6 +27,7 @@ public class IdentityProviderController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "view_idp")]
     [Route("owncompany/identityproviders")]
     public Task<IEnumerable<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
         this.WithIamUserId(async iamUserId =>
@@ -34,6 +35,7 @@ public class IdentityProviderController : ControllerBase
             .AsEnumerable());
 
     [HttpPost]
+    [Authorize(Roles = "add_idp")]
     [Route("owncompany/identityproviders")]
     public Task<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
         this.WithIamUserId(async iamUserId =>
@@ -43,16 +45,19 @@ public class IdentityProviderController : ControllerBase
         });
 
     [HttpGet]
+    [Authorize(Roles = "view_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}", Name=nameof(GetOwnCompanyIdentityProvider))]
     public Task<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProvider(identityProviderId, iamUserId));
 
     [HttpPut]
+    [Authorize(Roles = "setup_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}")]
     public Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
         this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProvider(identityProviderId, details, iamUserId));
 
     [HttpDelete]
+    [Authorize(Roles = "delete_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}")]
     public Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(async iamUserId =>
@@ -62,11 +67,13 @@ public class IdentityProviderController : ControllerBase
         });
 
     [HttpGet]
+    [Authorize(Roles = "view_user_management")]
     [Route("owncompany/users")]
     public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, iamUserId));
 
     [HttpGet]
+    [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/usersfile")]
     public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds) {
         var (stream, contentType, fileName, encoding) = this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, iamUserId));
@@ -74,7 +81,7 @@ public class IdentityProviderController : ControllerBase
     }
 
     [HttpPost]
-//    [Authorize(Roles = "upload_documents")]
+    [Authorize(Roles = "modify_user_account")]
     [Consumes("multipart/form-data")]
     [Route("owncompany/usersfile")]
     [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
@@ -86,6 +93,7 @@ public class IdentityProviderController : ControllerBase
 
 
     [HttpPost]
+    [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider")]
     public Task<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData) =>
         this.WithIamUserId(async iamUserId => 
@@ -98,16 +106,19 @@ public class IdentityProviderController : ControllerBase
         });
 
     [HttpPut]
+    [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
     public Task<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
         this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData, iamUserId));
 
     [HttpGet]
+    [Authorize(Roles = "view_user_management")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}", Name = nameof(GetOwnCompanyUserIdentityProviderDataAsync))]
     public Task<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, iamUserId));
 
     [HttpDelete]
+    [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
     public Task<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(async iamUserId =>
