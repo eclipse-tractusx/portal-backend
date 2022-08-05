@@ -1,4 +1,5 @@
-﻿namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Settings used in business logic concerning service account.
@@ -27,7 +28,7 @@ public static class ServiceAccountSettingsExtensions
             section.Bind(x);
             if (String.IsNullOrWhiteSpace(x.ClientId))
             {
-                throw new Exception($"{nameof(ServiceAccountSettings)}: {nameof(x.ClientId)} must not be null or empty");
+                throw new ConfigurationException($"{nameof(ServiceAccountSettings)}: {nameof(x.ClientId)} must not be null or empty");
             }
         });
 
