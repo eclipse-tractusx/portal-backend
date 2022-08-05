@@ -22,7 +22,7 @@ public static class MigrationBuilderExtensions
             .ToList();
         var auditTableName = $"{snakeCaseStrategy.GetPropertyName(typeof(TEntity).Name, false)}s";
         var tableName = auditTableName.Replace("audit_", string.Empty);
-        sb.AppendLine($"CREATE OR REPLACE FUNCTION process_{tableName}_audit() RETURNS TRIGGER AS ${auditTableName}$");
+        sb.AppendLine($"CREATE OR REPLACE FUNCTION portal.process_{tableName}_audit() RETURNS TRIGGER AS ${auditTableName}$");
         sb.AppendLine("BEGIN");
         sb.AppendLine("IF (TG_OP = 'DELETE') THEN");
         sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.DELETE, version));
@@ -36,7 +36,7 @@ public static class MigrationBuilderExtensions
         sb.AppendLine($"${auditTableName}$ LANGUAGE plpgsql;");
         sb.AppendLine($"CREATE TRIGGER {auditTableName}");
         sb.AppendLine($"AFTER INSERT OR UPDATE OR DELETE ON portal.{tableName}");
-        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION process_{tableName}_audit();");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION portal.process_{tableName}_audit();");
 
         migrationBuilder.Sql(sb.ToString());
     }
