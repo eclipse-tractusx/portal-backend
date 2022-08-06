@@ -67,16 +67,16 @@ public partial class ProvisioningManager
                 federatedIdentity.UserId,
                 federatedIdentity.UserName));
 
-    public Task AddProviderUserLinkToCentralUserAsync(string userId, string alias, string providerUserId, string providerUserName) =>
+    public Task AddProviderUserLinkToCentralUserAsync(string userId, IdentityProviderLink identityProviderLink) =>
         _CentralIdp.AddUserSocialLoginProviderAsync(
             _Settings.CentralRealm,
             userId,
-            alias,
+            identityProviderLink.Alias,
             new FederatedIdentity()
             {
-                IdentityProvider = alias,
-                UserId = providerUserId,
-                UserName = providerUserName
+                IdentityProvider = identityProviderLink.Alias,
+                UserId = identityProviderLink.UserId,
+                UserName = identityProviderLink.UserName
             });
 
     public Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias) =>
