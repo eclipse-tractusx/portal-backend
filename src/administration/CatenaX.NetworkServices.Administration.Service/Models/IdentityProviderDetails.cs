@@ -27,16 +27,16 @@ namespace CatenaX.NetworkServices.Administration.Service.Models;
 public record IdentityProviderDetails(Guid identityProviderId, string alias, IdentityProviderCategoryId identityProviderCategoryId, string displayName, string redirectUrl, bool enabled)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderDetailsOIDC? oidc { get; init; } = null;
+    public IdentityProviderDetailsOidc? oidc { get; init; } = null;
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderDetailsSAML? saml { get; init; } = null;
+    public IdentityProviderDetailsSaml? saml { get; init; } = null;
 }
 
-public record IdentityProviderDetailsOIDC(string authorizationUrl, string clientId, IamIdentityProviderClientAuthMethod clientAuthMethod)
+public record IdentityProviderDetailsOidc(string authorizationUrl, string clientId, IamIdentityProviderClientAuthMethod clientAuthMethod)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
 }
 
-public record IdentityProviderDetailsSAML(string serviceProviderEntityId, string singleSignOnServiceUrl);
+public record IdentityProviderDetailsSaml(string serviceProviderEntityId, string singleSignOnServiceUrl);

@@ -65,7 +65,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
-                ((string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)) new (
+                new ValueTuple<string,IdentityProviderCategoryId,bool>(
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
                     identityProvider.IdentityProviderCategoryId,
                     identityProvider.Companies.Any(
@@ -77,10 +77,10 @@ public class IdentityProviderRepository : IIdentityProviderRepository
         _context.IdentityProviders
             .Where(identityProvider => identityProvider.Id == identityProviderId)
             .Select(identityProvider =>
-                ((Guid CompanyId, string Alias, int LinkedCompaniesCount)) new (
-                    identityProvider.Companies.Where(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)).SingleOrDefault()!.Id,
+                new ValueTuple<Guid,string,int>(
+                    identityProvider.Companies.SingleOrDefault(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))!.Id,
                     identityProvider.IamIdentityProvider!.IamIdpAlias,
-                    identityProvider.Companies.Count()))
+                    identityProvider.Companies.Count))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetOwnCompanyIdentityProviderCategoryDataUntracked(string iamUserId) =>
@@ -111,7 +111,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
         _context.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => ((string? UserEntityId, string? Alias, bool IsSameCompany)) new (
+            .Select(companyUser => new ValueTuple<string?,string?,bool>(
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Company!.IdentityProviders
                     .Where(identityProvider => identityProvider.Id == identityProviderId)

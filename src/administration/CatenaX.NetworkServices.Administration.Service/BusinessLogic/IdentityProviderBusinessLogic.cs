@@ -66,7 +66,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                         identityProviderDataSAML.RedirectUrl,
                         identityProviderDataSAML.Enabled)
                         {
-                            saml = new IdentityProviderDetailsSAML(
+                            saml = new IdentityProviderDetailsSaml(
                                 identityProviderDataSAML.EntityId,
                                 identityProviderDataSAML.SingleSignOnServiceUrl)
                         };
@@ -225,7 +225,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderDataOIDC.RedirectUrl,
             identityProviderDataOIDC.Enabled)
             {
-                oidc = new IdentityProviderDetailsOIDC(
+                oidc = new IdentityProviderDetailsOidc(
                     identityProviderDataOIDC.AuthorizationUrl,
                     identityProviderDataOIDC.ClientId,
                     identityProviderDataOIDC.ClientAuthMethod)
@@ -246,7 +246,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderDataSAML.RedirectUrl,
             identityProviderDataSAML.Enabled)
             {
-                saml = new IdentityProviderDetailsSAML(
+                saml = new IdentityProviderDetailsSaml(
                     identityProviderDataSAML.EntityId,
                     identityProviderDataSAML.SingleSignOnServiceUrl)
             };
@@ -341,15 +341,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderLinkDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
     {
-        var csvSettings = _settings.CSVSettings;
+        var csvSettings = _settings.CsvSettings;
         return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
     public Task<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId)
     {
-        if (!document.ContentType.Equals(_settings.CSVSettings.ContentType, StringComparison.OrdinalIgnoreCase))
+        if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnsupportedMediaTypeException($"Only contentType {_settings.CSVSettings.ContentType} files are allowed.");
+            throw new UnsupportedMediaTypeException($"Only contentType {_settings.CsvSettings.ContentType} files are allowed.");
         }
         return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, iamUserId);
     }
@@ -365,7 +365,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var (sharedIdpAlias, existingAliase) = await GetOwnCompaniesAliasDataAsync(iamUserId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
-        var reader = new StreamReader(stream, _settings.CSVSettings.Encoding);
+        var reader = new StreamReader(stream, _settings.CsvSettings.Encoding);
 
         var numIdps = await ValidateHeadersReturningNumIdpsAsync(reader).ConfigureAwait(false);
 
@@ -435,7 +435,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(false);
         if (userEntityData == default)
         {
-            throw new ControllerArgumentException($"unexpected value of {_settings.CSVSettings.HeaderUserId}: '{companyUserId}'");
+            throw new ControllerArgumentException($"unexpected value of {_settings.CsvSettings.HeaderUserId}: '{companyUserId}'");
         }
         var (userEntityId, existingFirstName, existingLastName, existingEmail) = userEntityData;
 
@@ -503,7 +503,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private int ParseCSVFirstLineReturningNumIdps(string firstLine)
     {
-        var headers = firstLine.Split(_settings.CSVSettings.Separator).GetEnumerator();
+        var headers = firstLine.Split(_settings.CsvSettings.Separator).GetEnumerator();
         foreach (var csvHeader in CSVHeaders())
         {
             if (!headers.MoveNext())
@@ -538,28 +538,28 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private (Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks) ParseCSVLine(string line, int numIdps, IEnumerable<string> existingAliase)
     {
-        var items = line.Split(_settings.CSVSettings.Separator).AsEnumerable().GetEnumerator();
+        var items = line.Split(_settings.CsvSettings.Separator).AsEnumerable().GetEnumerator();
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderUserId} type Guid expected");
+            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderUserId} type Guid expected");
         }
         if (!Guid.TryParse(items.Current, out var companyUserId))
         {
-            throw new ControllerArgumentException($"invalid format for {_settings.CSVSettings.HeaderUserId} type Guid: '{items.Current}'");
+            throw new ControllerArgumentException($"invalid format for {_settings.CsvSettings.HeaderUserId} type Guid: '{items.Current}'");
         }
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderFirstName} expected");
+            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderFirstName} expected");
         }
         var firstName = items.Current;
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderLastName} expected");
+            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderLastName} expected");
         }
         var lastName = items.Current;
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderEmail} expected");
+            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderEmail} expected");
         }
         var email = items.Current;
         var identityProviderLinks = ParseCSVIdentityProviderLinks(items, numIdps, existingAliase).ToList();
@@ -573,21 +573,21 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             if(!items.MoveNext())
             {
-                throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderProviderAlias} expected");
+                throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderProviderAlias} expected");
             }
             var identityProviderAlias = items.Current;
             if (!existingAliase.Contains(identityProviderAlias))
             {
-                throw new ControllerArgumentException($"unexpected value for {_settings.CSVSettings.HeaderProviderAlias}: {identityProviderAlias}]");
+                throw new ControllerArgumentException($"unexpected value for {_settings.CsvSettings.HeaderProviderAlias}: {identityProviderAlias}]");
             }
             if(!items.MoveNext())
             {
-                throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderProviderUserId} expected");
+                throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderProviderUserId} expected");
             }
             var identityProviderUserId = items.Current;
             if(!items.MoveNext())
             {
-                throw new ControllerArgumentException($"value for {_settings.CSVSettings.HeaderProviderUserName} expected");
+                throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderProviderUserName} expected");
             }
             var identityProviderUserName = items.Current;
             yield return new IdentityProviderLink(identityProviderAlias, identityProviderUserId, identityProviderUserName);
@@ -596,7 +596,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     }
 
     private IEnumerable<string> CSVHeaders() {
-        var csvSettings = _settings.CSVSettings;
+        var csvSettings = _settings.CsvSettings;
         yield return csvSettings.HeaderUserId; 
         yield return csvSettings.HeaderFirstName;
         yield return csvSettings.HeaderLastName;
@@ -604,7 +604,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     }
 
     private IEnumerable<string> CSVIdpHeaders() {
-        var csvSettings = _settings.CSVSettings;
+        var csvSettings = _settings.CsvSettings;
         yield return csvSettings.HeaderProviderAlias;
         yield return csvSettings.HeaderProviderUserId;
         yield return csvSettings.HeaderProviderUserName;
@@ -614,7 +614,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
         var aliase = idpAliasDatas.Select(data => data.Alias).ToList();
-        var csvSettings = _settings.CSVSettings;
+        var csvSettings = _settings.CsvSettings;
 
         bool firstLine = true;
 
@@ -713,7 +713,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         public override async ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var written = _stream.Read(buffer.Span);
-            var remaining = buffer.Length - written;
             while (buffer.Length - written > 0 && await _enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
             {
                 _stream.Position = 0;

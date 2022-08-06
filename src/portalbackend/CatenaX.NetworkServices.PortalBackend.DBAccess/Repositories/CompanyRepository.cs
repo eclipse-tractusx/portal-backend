@@ -64,7 +64,7 @@ public class CompanyRepository : ICompanyRepository
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser!.CompanyUser!.Company)
-            .Select(company => ((string? Name, Guid Id)) new (company!.Name, company.Id))
+            .Select(company => new ValueTuple<string?,Guid>(company!.Name, company.Id))
             .SingleOrDefaultAsync();
 
     public Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
@@ -93,7 +93,7 @@ public class CompanyRepository : ICompanyRepository
         return _context.Companies
             .AsNoTracking()
             .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
-            .Select(company => ((Guid CompanyId, string? BusinessPartnerNumber)) new (
+            .Select(company => new ValueTuple<Guid,string?>(
                 company.Id,
                 bpnRequestCompanyIds.Contains(company.Id) ? company.BusinessPartnerNumber : null
             ))
