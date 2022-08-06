@@ -260,7 +260,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         try
         {
-            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, identityProviderLinkData.userId, identityProviderLinkData.userName).ConfigureAwait(false);
+            await _provisioningManager.AddProviderUserLinkToCentralUserAsync(
+                userEntityId,
+                new IdentityProviderLink(
+                    alias,
+                    identityProviderLinkData.userId,
+                    identityProviderLinkData.userName))
+                .ConfigureAwait(false);
         }
         catch(KeycloakEntityConflictException ce)
         {
@@ -285,7 +291,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}", e);
         }
-        await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, userLinkData.userId, userLinkData.userName).ConfigureAwait(false);
+        await _provisioningManager.AddProviderUserLinkToCentralUserAsync(
+            userEntityId,
+            new IdentityProviderLink(
+                alias,
+                userLinkData.userId,
+                userLinkData.userName))
+            .ConfigureAwait(false);
         
         return new UserIdentityProviderLinkData(
             identityProviderId,
@@ -449,35 +461,26 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var (alias, userId, userName) = identityProviderLink;
         var existingLink = existingLinks.SingleOrDefault(link => link.Alias == alias);
-        if (existingLink == default)
+        if (existingLink == identityProviderLink)
         {
-            if (!string.IsNullOrWhiteSpace(userId) || !string.IsNullOrWhiteSpace(userName))
-            {
-                if (sharedIdpAlias == alias)
-                {
-                    throw new ControllerArgumentException($"unexpected update of already deleted shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{userId}', providerUserName: '{userName}'");
-                }
-                await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, userId, userName).ConfigureAwait(false);
-                return true;
-            }
+            return false;
         }
-        else
+        if (alias == sharedIdpAlias)
         {
-            if (existingLink.UserId != userId || existingLink.UserName != userName)
-            {
-                if (sharedIdpAlias == alias)
-                {
-                    throw new ControllerArgumentException($"unexpected update of existing shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{userId}', providerUserName: '{userName}'");
-                }
-                await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
-                if (!string.IsNullOrWhiteSpace(userId) || !string.IsNullOrWhiteSpace(userName))
-                {
-                    await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, alias, userId, userName);
-                }
-                return true;
-            }
+            throw new ControllerArgumentException($"unexpected update of shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{identityProviderLink.UserId}', providerUserName: '{identityProviderLink.UserName}'");
         }
-        return false;
+        var updated = false;
+        if (existingLink != null)
+        {
+            await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias).ConfigureAwait(false);
+            updated = true;
+        }
+        if (string.IsNullOrWhiteSpace(userId) && string.IsNullOrWhiteSpace(userName))
+        {
+            return updated;
+        }
+        await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, identityProviderLink).ConfigureAwait(false);
+        return true;
     }
 
     private async Task UpdateUserProfileAsync(string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)

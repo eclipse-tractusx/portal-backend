@@ -36,7 +36,7 @@ public interface IProvisioningManager
     Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     Task<IEnumerable<IdentityProviderLink>> GetProviderUserLinkDataForCentralUserIdAsync(IEnumerable<string> identityProviders, string userId);
-    Task AddProviderUserLinkToCentralUserAsync(string userId, string alias, string providerUserId, string providerUserName);
+    Task AddProviderUserLinkToCentralUserAsync(string userId, IdentityProviderLink identityProviderLink);
     Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias);
     Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
     Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
