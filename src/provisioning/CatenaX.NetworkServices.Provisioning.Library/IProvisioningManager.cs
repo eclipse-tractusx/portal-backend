@@ -52,9 +52,9 @@ public interface IProvisioningManager
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
-    Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm)> GetCentralIdentityProviderDataOIDCAsync(string alias);
-    Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId, string? secret = null, IamIdentityProviderSignatureAlgorithm? signatureAlgorithm = null);
-    Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias);
-    Task UpdateCentralIdentityProviderDataSAMLAsync(string alias, string displayName, bool enabled, string entityId, string singleSignOnServiceUrl);
+    Task<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
+    Task UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc);
+    Task<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
+    Task UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
     Task DeleteCentralIdentityProviderAsync(string alias);
 }

@@ -20,7 +20,7 @@
 
 namespace CatenaX.NetworkServices.Provisioning.Library.Enums;
 
-public enum IamClientAuthMethod : int
+public enum IamClientAuthMethod
 {
     JWT = 1,
     SECRET = 2,
