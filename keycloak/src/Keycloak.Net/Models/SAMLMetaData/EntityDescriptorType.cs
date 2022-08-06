@@ -11,11 +11,12 @@ namespace Keycloak.Net.Models.SAMLMetaData
         public string EntityId { get; set; }
 
         [XmlElement(Namespace = "urn:oasis:names:tc:SAML:2.0:metadata",
+            ElementName = "IDPSSODescriptor",
             IsNullable = true)]
-        public IDPSSODescriptorType[] IDPSSODescriptor { get; set; }
+        public IdpSsoDescriptorType[] IdpSsoDescriptor { get; set; }
     }
 
-    public class IDPSSODescriptorType : SSODescriptorType
+    public class IdpSsoDescriptorType : SsoDescriptorType
     {
         [XmlAttribute(AttributeName = "WantAuthnRequestsSigned", DataType = "boolean")]
         public bool WantAuthnRequestsSigned { get; set; }
@@ -82,7 +83,7 @@ namespace Keycloak.Net.Models.SAMLMetaData
         public bool IsDefault { get; set; }
     }
 
-    public class SSODescriptorType : RoleDescriptorType
+    public class SsoDescriptorType : RoleDescriptorType
     {
         [XmlElement(Namespace = "urn:oasis:names:tc:SAML:2.0:metadata",
             IsNullable = true)]

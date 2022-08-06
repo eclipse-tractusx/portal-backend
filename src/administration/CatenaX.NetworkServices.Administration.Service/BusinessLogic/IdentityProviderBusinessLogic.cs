@@ -57,7 +57,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public Task<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string iamUserId)
     {
-        IdentityProviderCategoryId identityProviderCategory = default!;
+        IdentityProviderCategoryId identityProviderCategory;
         switch (protocol)
         {
             case IamIdentityProviderProtocol.SAML:
@@ -77,14 +77,14 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
         var (companyName, companyId) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (companyName == null || companyId == default)
+        if (companyName == null || companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with a company", nameof(iamUserId));
         }
         var alias = await _provisioningManager.CreateOwnIdpAsync(companyName, protocol).ConfigureAwait(false);
         var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory);
         identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProvider.Id));
-        var iamIdentityProvider = identityProviderRepository.CreateIamIdentityProvider(identityProvider, alias);
+        identityProviderRepository.CreateIamIdentityProvider(identityProvider, alias);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         switch (protocol)
@@ -148,7 +148,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     details.oidc.secret,
                     details.oidc.signatureAlgorithm)
                     .ConfigureAwait(false);
-                var identityProviderDataOIDC = await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
+                await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias, category).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 if(details.saml == null)
@@ -162,7 +162,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     details.saml.serviceProviderEntityId,
                     details.saml.singleSignOnServiceUrl)
                     .ConfigureAwait(false);
-                var identityProviderDataSAML = await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
+                await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
                 throw new ControllerArgumentException($"identityProvider '{identityProviderId}' category '{category.ToString()}' cannot be updated");
@@ -177,7 +177,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
         var (companyId, alias, companyCount) = result;
-        if (companyId == default)
+        if (companyId == Guid.Empty)
         {
             throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
         }
@@ -186,7 +186,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             if (alias != null)
             {
-                _portalRepositories.Remove(new IamIdentityProvider(alias, default!));
+                _portalRepositories.Remove(new IamIdentityProvider(alias, Guid.Empty));
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             }
             _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default)));
@@ -389,7 +389,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
             nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         }
-        return new IdentityProviderUpdateStats(numUpdates, numUnchanged, errors.Count(), numLines, errors);
+        return new IdentityProviderUpdateStats(numUpdates, numUnchanged, errors.Count, numLines, errors);
     }
 
     private async Task<int> ValidateHeadersReturningNumIdpsAsync(StreamReader reader)
@@ -466,16 +466,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         if (sharedIdpAlias != null)
         {
-            var sharedIdpLink = existingLinks.Where(link => link.Alias == sharedIdpAlias).SingleOrDefault();
-            if (sharedIdpLink != default)
+            var sharedIdpLink = existingLinks.SingleOrDefault(link => link.Alias == sharedIdpAlias);
+            if (sharedIdpLink != default && !await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "").ConfigureAwait(false))
             {
-                if (!await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "").ConfigureAwait(false))
-                {
-                    throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
-                }
+                throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
             }
         }
-        _portalRepositories.Attach(new CompanyUser(companyUserId, default, default, default), companyUser =>
+        _portalRepositories.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default), companyUser =>
         {
             companyUser.Firstname = profile.FirstName;
             companyUser.Lastname = profile.LastName;
@@ -646,7 +643,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
             .GetOwnCompanyUserQuery(iamUserId)
             .Select(companyUser =>
-                ((Guid, string?, string?, string?, string?)) new (
+                new ValueTuple<Guid, string?, string?, string?, string?>(
                     companyUser.Id,
                     companyUser.Firstname,
                     companyUser.Lastname,
@@ -664,7 +661,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private class AsyncEnumerableStringStream : Stream
+    private sealed class AsyncEnumerableStringStream : Stream
     {
         public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()
         {
@@ -693,13 +690,11 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         public override void Write(byte [] buffer, int offset, int count) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
+        public override async ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var position = offset;
-            var remaining = count;
-            var written = _stream.Read(buffer, position, remaining);
-            remaining = remaining - written;
-            while (remaining > 0 && await _enumerator.MoveNextAsync(token).ConfigureAwait(false))
+            var written = _stream.Read(buffer.Span);
+            var remaining = buffer.Length - written;
+            while (buffer.Length - written > 0 && await _enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
             {
                 _stream.Position = 0;
                 _stream.SetLength(0);
@@ -707,11 +702,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 _writer.Flush();
                 _stream.Position = 0;
 
-                position = position + written;
-                written = _stream.Read(buffer, position, remaining);
-                remaining = remaining - written;
+                written += _stream.Read(buffer.Span.Slice(written));
             }
-            return count - remaining;
+            return written;
         }
     }
 
@@ -734,10 +727,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ForbiddenException($"user {iamUserId} does not belong to company of companyUserId {companyUserId}");
         }
-        return ((string UserEntityId, string Alias)) new (
+        return new ValueTuple<string, string>(
             userAliasData.UserEntityId,
             userAliasData.Alias);
     }
 
-    private record UserProfile(string? FirstName, string? LastName, string? Email);
+    private sealed record UserProfile(string? FirstName, string? LastName, string? Email);
 }
