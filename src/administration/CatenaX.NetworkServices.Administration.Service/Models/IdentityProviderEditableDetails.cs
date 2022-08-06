@@ -26,13 +26,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Models;
 public record IdentityProviderEditableDetails(string displayName, string redirectUrl, bool enabled)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderEditableDetailsOIDC? oidc { get; init; } = null;
+    public IdentityProviderEditableDetailsOidc? oidc { get; init; } = null;
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IdentityProviderEditableDetailsSAML? saml { get; init; } = null;
+    public IdentityProviderEditableDetailsSaml? saml { get; init; } = null;
 }
 
-public record IdentityProviderEditableDetailsOIDC(string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId)
+public record IdentityProviderEditableDetailsOidc(string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? secret { get; init; } = null;
@@ -41,4 +41,4 @@ public record IdentityProviderEditableDetailsOIDC(string authorizationUrl, IamId
     public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
 }
 
-public record IdentityProviderEditableDetailsSAML(string serviceProviderEntityId, string singleSignOnServiceUrl);
+public record IdentityProviderEditableDetailsSaml(string serviceProviderEntityId, string singleSignOnServiceUrl);

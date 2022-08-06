@@ -25,10 +25,10 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
 public class IdentityProviderSettings
 {
-    public IdentityProviderCSVSettings CSVSettings { get; set; } = null!;
+    public IdentityProviderCsvSettings CsvSettings { get; set; } = null!;
 }
 
-public class IdentityProviderCSVSettings
+public class IdentityProviderCsvSettings
 {
     public string Charset { get; set; } = null!;
     public Encoding Encoding { get; set; } = null!;
@@ -52,11 +52,11 @@ public static class IdentityProviderSettingsExtension
         services.Configure<IdentityProviderSettings>(x =>
             {
                 section.Bind(x);
-                if(x.CSVSettings == null)
+                if(x.CsvSettings == null)
                 {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(x.CSVSettings)} must not be null");
+                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(x.CsvSettings)} must not be null");
                 }
-                var csvSettings = x.CSVSettings;
+                var csvSettings = x.CsvSettings;
                 if (string.IsNullOrWhiteSpace(csvSettings.FileName))
                 {
                     throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.FileName)} must not be null or empty");
