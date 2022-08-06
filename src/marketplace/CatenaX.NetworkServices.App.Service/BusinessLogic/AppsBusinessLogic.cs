@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -162,24 +163,36 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
     {
         var assignedAppData = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, iamUserId).ConfigureAwait(false);
-
         if(assignedAppData == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscription, isMemberOfCompanyProvidingApp) = assignedAppData;
-
+        var (subscription, isMemberOfCompanyProvidingApp, appName) = assignedAppData;
         if(!isMemberOfCompanyProvidingApp)
         {
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
-        if (subscription == null || subscription.AppSubscriptionStatusId != PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.PENDING)
+        if (subscription is not {AppSubscriptionStatusId: AppSubscriptionStatusId.PENDING})
         {
             throw new ArgumentException("No pending subscription for provided parameters existing.");
         }
-        subscription.AppSubscriptionStatusId = PortalBackend.PortalEntities.Enums.AppSubscriptionStatusId.ACTIVE;
+        subscription.AppSubscriptionStatusId = AppSubscriptionStatusId.ACTIVE;
+
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        _portalRepositories.GetInstance<INotificationRepository>().Create(subscription.RequesterId,
+            NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
+            notification =>
+            {
+                notification.CreatorUserId = companyUserId;
+                notification.Content = JsonSerializer.Serialize(new
+                {
+                    AppName = appName
+                });
+            });
+        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
