@@ -59,14 +59,13 @@ public partial class ProvisioningManager
             .Where(federatedIdentity => federatedIdentity.IdentityProvider == identityProvider)
             .SingleOrDefault()?.UserId;
 
-    public async Task<IEnumerable<(string Alias, string UserId, string UserName)>> GetProviderUserLinkDataForCentralUserIdAsync(IEnumerable<string> identityProviders, string userId) =>
+    public async Task<IEnumerable<IdentityProviderLink>> GetProviderUserLinkDataForCentralUserIdAsync(IEnumerable<string> identityProviders, string userId) =>
         (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
             .Where(federatedIdentity => identityProviders.Any(identityProvider => federatedIdentity.IdentityProvider == identityProvider))
-            .Select(federatedIdentity =>
-                ((string Alias, string UserId, string UserName)) new (
-                    federatedIdentity.IdentityProvider,
-                    federatedIdentity.UserId,
-                    federatedIdentity.UserName));
+            .Select(federatedIdentity => new IdentityProviderLink(
+                federatedIdentity.IdentityProvider,
+                federatedIdentity.UserId,
+                federatedIdentity.UserName));
 
     public Task AddProviderUserLinkToCentralUserAsync(string userId, string alias, string providerUserId, string providerUserName) =>
         _CentralIdp.AddUserSocialLoginProviderAsync(
