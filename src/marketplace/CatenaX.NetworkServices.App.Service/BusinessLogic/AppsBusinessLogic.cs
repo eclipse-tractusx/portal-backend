@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json;
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -116,31 +117,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new NotFoundException($"App {appId} does not exist");
         }
-
-        var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
-
-        var companyAppSubscriptionData = await companyAssignedAppRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
-        if (companyAppSubscriptionData == default)
-        {
-            throw new ArgumentException($"user {iamUserId} is not assigned with a company");
-        }
-
-        var (companyId, companyAssignedApp) = companyAppSubscriptionData;
-
-        if (companyAssignedApp == null)
-        {
-            companyAssignedApp = companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING);
-        }
-        else
-        {
-            if(companyAssignedApp.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE || companyAssignedApp.AppSubscriptionStatusId == AppSubscriptionStatusId.PENDING)
-            {
-                throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
-            }
-            companyAssignedApp.AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING;
-        }
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        
+        var (requesterId, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
         {
@@ -153,8 +133,22 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.ProviderContactEmail)}");
             }
-            throw new Exception($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+            throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }
+
+        var notificationContent = new
+        {
+            appDetails.AppName,
+            RequestorCompanyName = companyName,
+            UserEmail = requesterEmail,
+        };
+        _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.SalesManagerId, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
+            notification =>
+            {
+                notification.CreatorUserId = requesterId;
+                notification.Content = JsonSerializer.Serialize(notificationContent);
+            });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParams = new Dictionary<string, string>
             {
@@ -225,6 +219,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             app.ContactNumber = appInputModel.ContactNumber;
             app.ProviderCompanyId = appInputModel.ProviderCompanyId;
             app.AppStatusId = AppStatusId.CREATED;
+            app.SalesManagerId = appInputModel.SalesManagerId;
         }).Id;
 
         var licenseId = appRepository.CreateAppLicenses(appInputModel.Price).Id;
@@ -284,5 +279,35 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         appRepository.CreateAppAssignedLicense(appId, licenseId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return appId;
+    }
+    
+    private async Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName)> GetCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)
+    {
+        var companyAssignedAppRepository = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>();
+        var companyAppSubscriptionData = await companyAssignedAppRepository
+            .GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
+        if (companyAppSubscriptionData == default)
+        {
+            throw new ArgumentException($"user {iamUserId} is not assigned with a company");
+        }
+
+        var (companyId, companyAssignedApp, companyName) = companyAppSubscriptionData;
+        if (companyAssignedApp == null)
+        {
+            companyAssignedApp = companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING,
+                requesterId);
+        }
+        else
+        {
+            if (companyAssignedApp.AppSubscriptionStatusId is AppSubscriptionStatusId.ACTIVE
+                or AppSubscriptionStatusId.PENDING)
+            {
+                throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
+            }
+
+            companyAssignedApp.AppSubscriptionStatusId = AppSubscriptionStatusId.PENDING;
+        }
+
+        return (companyId, companyAssignedApp, companyName);
     }
 }

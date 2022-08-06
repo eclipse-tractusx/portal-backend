@@ -90,8 +90,8 @@ public interface IAppsBusinessLogic
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
-    /// <param name="userId">ID of the user that initiated app subscription for their company.</param>
-    public Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string userId);
+    /// <param name="iamUserId">ID of the user that initiated app subscription for their company.</param>
+    public Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.

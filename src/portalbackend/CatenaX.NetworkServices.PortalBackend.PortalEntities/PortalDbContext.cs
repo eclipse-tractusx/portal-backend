@@ -158,6 +158,10 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.ProviderCompany)
                 .WithMany(p => p!.ProvidedApps);
 
+            entity.HasOne(x => x.SalesManager)
+                .WithMany(x => x!.SalesManagerOfApps)
+                .HasForeignKey(x => x.SalesManagerId);
+
             entity.HasMany(p => p.Companies)
                 .WithMany(p => p.BoughtApps)
                 .UsingEntity<CompanyAssignedApp>(
