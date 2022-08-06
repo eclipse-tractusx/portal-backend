@@ -72,12 +72,13 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Apps
             .Where(app => app.Id == appId)
-            .Select(app => ((CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)) new (
-                app!.CompanyAssignedApps.Where(assignedApp => assignedApp.CompanyId == companyId).SingleOrDefault(),
-                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .Select(app => new ValueTuple<CompanyAssignedApp?, bool, string>(
+                app.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
+                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
+                app.Name
             ))
             .SingleOrDefaultAsync();
 

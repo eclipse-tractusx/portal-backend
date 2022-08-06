@@ -98,8 +98,8 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">ID of the pending app to be activated.</param>
     /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
-    /// <param name="userId">IAM ID of the user requesting the activation.</param>
-    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId);
+    /// <param name="iamUserId">IAM ID of the user requesting the activation.</param>
+    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId);
 
     /// <summary>
     /// Unsubscribes an app for the current users company.
