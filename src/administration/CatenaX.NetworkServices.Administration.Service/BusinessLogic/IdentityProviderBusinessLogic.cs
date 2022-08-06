@@ -159,14 +159,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     throw new ControllerArgumentException("property 'oidc' must not be null", nameof(details.oidc));
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(
-                    alias,
-                    details.displayName,
-                    details.enabled,
-                    details.oidc.authorizationUrl,
-                    details.oidc.clientAuthMethod,
-                    details.oidc.clientId,
-                    details.oidc.secret,
-                    details.oidc.signatureAlgorithm)
+                    new IdentityProviderEditableConfigOidc(
+                        alias,
+                        details.displayName,
+                        details.enabled,
+                        details.oidc.authorizationUrl,
+                        details.oidc.clientAuthMethod,
+                        details.oidc.clientId,
+                        details.oidc.secret,
+                        details.oidc.signatureAlgorithm))
                     .ConfigureAwait(false);
                 await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias, category).ConfigureAwait(false);
@@ -176,11 +177,12 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     throw new ControllerArgumentException("property 'saml' must not be null", nameof(details.saml));
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(
-                    alias,
-                    details.displayName,
-                    details.enabled,
-                    details.saml.serviceProviderEntityId,
-                    details.saml.singleSignOnServiceUrl)
+                    new IdentityProviderEditableConfigSaml(
+                        alias,
+                        details.displayName,
+                        details.enabled,
+                        details.saml.serviceProviderEntityId,
+                        details.saml.singleSignOnServiceUrl))
                     .ConfigureAwait(false);
                 await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);

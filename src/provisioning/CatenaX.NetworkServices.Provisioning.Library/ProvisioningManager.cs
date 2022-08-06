@@ -207,46 +207,51 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Where(r => r.Composite == true).Select(x => x.Name);
         }
 
-        public async Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm)> GetCentralIdentityProviderDataOIDCAsync(string alias)
+        public async Task<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
-            return ((string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm))
-                new (identityProvider.DisplayName,
-                    redirectUri,
-                    identityProvider.Config.ClientId,
-                    identityProvider.Enabled ?? false,
-                    identityProvider.Config.AuthorizationUrl,
-                    IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
-                    identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
+            return new IdentityProviderConfigOidc(
+                identityProvider.DisplayName,
+                redirectUri,
+                identityProvider.Config.ClientId,
+                identityProvider.Enabled ?? false,
+                identityProvider.Config.AuthorizationUrl,
+                IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
+                identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
         }
 
-        public async Task UpdateCentralIdentityProviderDataOIDCAsync(string alias, string displayName, bool enabled, string authorizationUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId, string? secret = null, IamIdentityProviderSignatureAlgorithm? signatureAlgorithm = null)
+        public Task UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
         {
-            if(secret == null)
+            if(identityProviderConfigOidc.Secret == null)
             {
-                switch(clientAuthMethod)
+                switch(identityProviderConfigOidc.ClientAuthMethod)
                 {
                     case IamIdentityProviderClientAuthMethod.SECRET_BASIC:
                     case IamIdentityProviderClientAuthMethod.SECRET_POST:
                     case IamIdentityProviderClientAuthMethod.SECRET_JWT:
-                        throw new ArgumentException($"secret must not be null for clientAuthMethod {clientAuthMethod.ToString()}");
+                        throw new ArgumentException($"secret must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
                     default:
                         break;
                 }
             }
-            if(!signatureAlgorithm.HasValue)
+            if(!identityProviderConfigOidc.SignatureAlgorithm.HasValue)
             {
-                switch(clientAuthMethod)
+                switch(identityProviderConfigOidc.ClientAuthMethod)
                 {
                     case IamIdentityProviderClientAuthMethod.SECRET_JWT:
                     case IamIdentityProviderClientAuthMethod.JWT:
-                        throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {clientAuthMethod.ToString()}");
+                        throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
                     default:
                         break;
                 }
             }
+            return UpdateCentralIdentityProviderDataOIDCInternalAsync(identityProviderConfigOidc);
+        }
 
+        private async Task UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+        {
+            var (alias, displayName, enabled, authorizationUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;
@@ -258,21 +263,22 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }
 
-        public async Task<(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl)> GetCentralIdentityProviderDataSAMLAsync(string alias)
+        public async Task<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
-            return ((string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl))
-                new (identityProvider.DisplayName,
-                    redirectUri,
-                    identityProvider.Config.ClientId,
-                    identityProvider.Enabled ?? false,
-                    identityProvider.Config.EntityId,
-                    identityProvider.Config.SingleSignOnServiceUrl);
+            return new IdentityProviderConfigSaml(
+                identityProvider.DisplayName,
+                redirectUri,
+                identityProvider.Config.ClientId,
+                identityProvider.Enabled ?? false,
+                identityProvider.Config.EntityId,
+                identityProvider.Config.SingleSignOnServiceUrl);
         }
 
-        public async Task UpdateCentralIdentityProviderDataSAMLAsync(string alias, string displayName, bool enabled, string entityId, string singleSignOnServiceUrl)
+        public async Task UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml)
         {
+            var (alias, displayName, enabled, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;

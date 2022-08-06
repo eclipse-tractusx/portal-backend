@@ -245,7 +245,7 @@ public partial class ProvisioningManager
         }
     }
 
-    private IamIdentityProviderClientAuthMethod IdentityProviderClientAuthTypeToIamClientAuthMethod(string clientAuthMethod)
+    private static IamIdentityProviderClientAuthMethod IdentityProviderClientAuthTypeToIamClientAuthMethod(string clientAuthMethod)
     {
         try
         {
@@ -253,11 +253,11 @@ public partial class ProvisioningManager
         }
         catch (KeyNotFoundException)
         {
-            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}","clientAuthMethod");
+            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}", nameof(clientAuthMethod));
         }
     }
 
-    private string IamIdentityProviderClientAuthMethodToInternal(IamIdentityProviderClientAuthMethod iamClientAuthMethod)
+    private static string IamIdentityProviderClientAuthMethodToInternal(IamIdentityProviderClientAuthMethod iamClientAuthMethod)
     {
         try
         {
@@ -265,7 +265,7 @@ public partial class ProvisioningManager
         }
         catch (KeyNotFoundException)
         {
-            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}","authMethod");
+            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}", nameof(iamClientAuthMethod));
         }
     }
 
