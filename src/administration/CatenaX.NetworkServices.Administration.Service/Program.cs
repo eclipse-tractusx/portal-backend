@@ -122,7 +122,7 @@ builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
-                .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviders"));
+                .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
