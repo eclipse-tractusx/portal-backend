@@ -18,13 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Keycloak.Net.Models.IdentityProviders;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {
-    public IdentityProvider CentralIdentityProvider { get; set; }
-    public IdentityProvider SamlIdentityProvider { get; set; }
-    public IdentityProvider OidcIdentityProvider { get; set; }
+    public IdentityProvider CentralIdentityProvider { get; init; } = null!;
+    public IdentityProvider SamlIdentityProvider { get; init; } = null!;
+    public IdentityProvider OidcIdentityProvider { get; init; } = null!;
+
+    public ProvisioningSettings ValidateIdentityProviderTemplates()
+    {
+        new ConfigurationValidation<ProvisioningSettings>()
+            .NotNull(CentralIdentityProvider, ()=>nameof(CentralIdentityProvider))
+            .NotNull(SamlIdentityProvider, ()=>nameof(SamlIdentityProvider))
+            .NotNull(OidcIdentityProvider, ()=>nameof(OidcIdentityProvider));
+        return this;
+    }
 }
