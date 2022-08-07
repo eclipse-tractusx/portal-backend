@@ -28,7 +28,7 @@ public class ServiceAccountController : ControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Creates a new technical user / service account with selected role under the same org as the requester
     /// </summary>
     /// <param name="serviceAccountCreationInfo"></param>
     /// <returns></returns>
