@@ -93,6 +93,11 @@ public class GeneralHttpErrorHandler
             {
                 statusCode = HttpStatusCode.UnsupportedMediaType;
             }
+            else if (error is ConfigurationException)
+            {
+                statusCode = HttpStatusCode.InternalServerError;
+                messageFunc = error => (error.Source, new [] { $"Invalid service configuration: {error.Message}" } );
+            }
             else
             {
                 statusCode = HttpStatusCode.InternalServerError;
