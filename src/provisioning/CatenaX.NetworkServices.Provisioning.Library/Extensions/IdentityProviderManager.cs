@@ -18,11 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Flurl;
 using Keycloak.Net.Models.IdentityProviders;
 using Keycloak.Net.Models.OpenIDConfiguration;
+using System.Net;
 using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
@@ -75,6 +77,10 @@ public partial class ProvisioningManager
     private async Task<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url)
     {
         var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url).ConfigureAwait(false);
+        if (!metadata.Any())
+        {
+            throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);
+        }
         var changed = CloneIdentityProvider(identityProvider);
         changed.Config ??= new Config();
         foreach(var (key, value) in metadata)
