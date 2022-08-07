@@ -163,7 +163,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                         alias,
                         details.displayName,
                         details.enabled,
-                        details.oidc.authorizationUrl,
+                        details.oidc.metadataUrl,
                         details.oidc.clientAuthMethod,
                         details.oidc.clientId,
                         details.oidc.secret,

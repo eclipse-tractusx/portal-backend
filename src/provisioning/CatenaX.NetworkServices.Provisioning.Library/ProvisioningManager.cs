@@ -251,11 +251,11 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         private async Task UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
         {
-            var (alias, displayName, enabled, authorizationUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            var (alias, displayName, enabled, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
+            var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;
-            identityProvider.Config.AuthorizationUrl = authorizationUrl;
+            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
             identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
             identityProvider.Config.ClientId = clientId;
             identityProvider.Config.ClientSecret = secret;
@@ -282,6 +282,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;
+            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
             identityProvider.Config.EntityId = entityId;
             identityProvider.Config.SingleSignOnServiceUrl = singleSignOnServiceUrl;
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
