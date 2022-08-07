@@ -25,23 +25,23 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
 public class IdentityProviderSettings
 {
-    public IdentityProviderCsvSettings CsvSettings { get; set; } = null!;
+    public IdentityProviderCsvSettings CsvSettings { get; init; } = null!;
 }
 
 public class IdentityProviderCsvSettings
 {
-    public string Charset { get; set; } = null!;
-    public Encoding Encoding { get; set; } = null!;
-    public string FileName { get; set; } = null!;
-    public string ContentType { get; set; } = null!;
-    public string Separator { get; set; } = null!;
-    public string HeaderUserId { get; set; } = null!;
-    public string HeaderFirstName { get; set; } = null!;
-    public string HeaderLastName { get; set; } = null!;
-    public string HeaderEmail { get; set; } = null!;
-    public string HeaderProviderAlias { get; set; } = null!;
-    public string HeaderProviderUserId { get; set; } = null!;
-    public string HeaderProviderUserName { get; set; } = null!;
+    public string Charset { get; init; } = null!;
+    public Encoding Encoding { get; set; } = default!;
+    public string FileName { get; init; } = null!;
+    public string ContentType { get; init; } = null!;
+    public string Separator { get; init; } = null!;
+    public string HeaderUserId { get; init; } = null!;
+    public string HeaderFirstName { get; init; } = null!;
+    public string HeaderLastName { get; init; } = null!;
+    public string HeaderEmail { get; init; } = null!;
+    public string HeaderProviderAlias { get; init; } = null!;
+    public string HeaderProviderUserId { get; init; } = null!;
+    public string HeaderProviderUserName { get; init; } = null!;
 }
 
 public static class IdentityProviderSettingsExtension
@@ -52,58 +52,26 @@ public static class IdentityProviderSettingsExtension
         services.Configure<IdentityProviderSettings>(x =>
             {
                 section.Bind(x);
-                if(x.CsvSettings == null)
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(x.CsvSettings)} must not be null");
-                }
                 var csvSettings = x.CsvSettings;
-                if (string.IsNullOrWhiteSpace(csvSettings.FileName))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.FileName)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.ContentType))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.ContentType)} must not be null or empty");
-                }
+                ConfigurationValidation.ValidateNotNull<IdentityProviderSettings>(csvSettings,()=>nameof(x.CsvSettings));
+                ConfigurationValidation.ValidateNotNull<IdentityProviderSettings>(csvSettings.Charset,()=>nameof(csvSettings.Charset));
                 try
                 {
                     csvSettings.Encoding = Encoding.GetEncoding(csvSettings.Charset);
                 }
                 catch(ArgumentException ae)
                 {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.Charset)} is not a valid Charset", ae);
+                    throw new ConfigurationException($"'{nameof(IdentityProviderSettings)}': {nameof(csvSettings.Charset)} '{csvSettings.Charset}' is not a valid Encoding", ae);
                 }
-                if (string.IsNullOrWhiteSpace(csvSettings.Separator))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.Separator)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderUserId))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderUserId)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderFirstName))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderFirstName)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderLastName))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderLastName)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderEmail))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderEmail)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderProviderAlias))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderProviderAlias)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderProviderUserId))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderProviderUserId)} must not be null or empty");
-                }
-                if (string.IsNullOrWhiteSpace(csvSettings.HeaderProviderUserName))
-                {
-                    throw new ConfigurationException($"{nameof(IdentityProviderSettings)}: {nameof(csvSettings.HeaderProviderUserName)} must not be null or empty");
-                }
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.FileName,()=>nameof(csvSettings.FileName));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.ContentType,()=>nameof(csvSettings.ContentType));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.Separator,()=>nameof(csvSettings.Separator));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderUserId,()=>nameof(csvSettings.HeaderUserId));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderFirstName,()=>nameof(csvSettings.HeaderFirstName));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderLastName,()=>nameof(csvSettings.HeaderLastName));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderEmail,()=>nameof(csvSettings.HeaderEmail));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderProviderAlias,()=>nameof(csvSettings.HeaderProviderAlias));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderProviderUserId,()=>nameof(csvSettings.HeaderProviderUserId));
+                ConfigurationValidation.ValidateNotNullOrWhiteSpace<IdentityProviderSettings>(csvSettings.HeaderProviderUserName,()=>nameof(csvSettings.HeaderProviderUserName));
             });
 }
