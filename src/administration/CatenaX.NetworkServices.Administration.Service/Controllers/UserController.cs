@@ -280,7 +280,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
-         /// <summary>
+        /// <summary>
         /// Get company app users by appId
         /// </summary>
         /// <param name="appId">Get company app users by appId</param>
@@ -293,8 +293,22 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/apps/{appId}/users")]
         [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
-            this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(appId,iamUserId, page, size));
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,
+            [FromQuery] int page = 0,
+            [FromQuery] int size = 15,
+            [FromQuery] string? firstName = null,
+            [FromQuery] string? lastName = null,
+            [FromQuery] string? email = null,
+            [FromQuery] string? roleName = null) =>
+            this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
+                appId,
+                iamUserId,
+                page,
+                size,
+                firstName,
+                lastName,
+                email,
+                roleName));
 
         /// <summary>
         /// Adds a user role
