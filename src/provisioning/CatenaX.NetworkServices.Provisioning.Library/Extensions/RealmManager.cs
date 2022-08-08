@@ -6,7 +6,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private async Task CreateSharedRealmAsync(string realm, string name)
+    private async ValueTask CreateSharedRealmAsync(string realm, string name)
     {
         var newRealm = CloneRealm(_Settings.SharedRealm);
         newRealm.Id = realm;
@@ -26,7 +26,7 @@ public partial class ProvisioningManager
         if (!await _SharedIdp.UpdateRealmAsync(alias, realm).ConfigureAwait(false))
         {
             throw new KeycloakNoSuccessException($"failed to update shared realm {alias}");
-        };
+        }
     }
 
     public async ValueTask DeleteSharedRealmAsync(string alias)

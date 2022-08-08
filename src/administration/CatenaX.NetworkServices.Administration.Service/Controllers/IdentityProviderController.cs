@@ -49,42 +49,38 @@ public class IdentityProviderController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_idp")]
     [Route("owncompany/identityproviders")]
-    public Task<IEnumerable<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
-        this.WithIamUserId(async iamUserId =>
-            (await _businessLogic.GetOwnCompanyIdentityProviders(iamUserId).ToListAsync().ConfigureAwait(false))
-            .AsEnumerable());
+    public ValueTask<List<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProvidersAsync(iamUserId).ToListAsync());
 
     [HttpPost]
     [Authorize(Roles = "add_idp")]
     [Route("owncompany/identityproviders")]
-    public Task<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol) =>
-        this.WithIamUserId(async iamUserId =>
-        {
-            var details = await _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, iamUserId).ConfigureAwait(false);
-            return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
-        });
+    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol)
+    {
+        var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, iamUserId)).ConfigureAwait(false);
+        return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
+    }
 
     [HttpGet]
     [Authorize(Roles = "view_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}", Name=nameof(GetOwnCompanyIdentityProvider))]
-    public Task<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProvider(identityProviderId, iamUserId));
+    public ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
+        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId, iamUserId));
 
     [HttpPut]
     [Authorize(Roles = "setup_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}")]
-    public Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
-        this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProvider(identityProviderId, details, iamUserId));
+    public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details) =>
+        this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details, iamUserId));
 
     [HttpDelete]
     [Authorize(Roles = "delete_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}")]
-    public Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
-        this.WithIamUserId(async iamUserId =>
-        {
-            await _businessLogic.DeleteOwnCompanyIdentityProvider(identityProviderId, iamUserId).ConfigureAwait(false);
-            return (ActionResult) NoContent();
-        });
+    public async Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyIdentityProviderAsync(identityProviderId, iamUserId)).ConfigureAwait(false);
+        return (ActionResult) NoContent();
+    }
 
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
@@ -108,42 +104,40 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(IdentityProviderUpdateStats), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-        public Task<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document) =>
+        public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document) =>
             this.WithIamUserId(iamUserId => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, iamUserId));
 
 
     [HttpPost]
     [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider")]
-    public Task<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData) =>
-        this.WithIamUserId(async iamUserId => 
-        {
-            var linkData = await _businessLogic.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderLinkData, iamUserId).ConfigureAwait(false);
-            return (ActionResult<UserIdentityProviderLinkData>) CreatedAtRoute(
-                nameof(GetOwnCompanyUserIdentityProviderDataAsync),
-                new { companyUserId = companyUserId, identityProviderId = linkData.identityProviderId },
-                linkData);
-        });
+    public async ValueTask<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData)
+    {
+        var linkData = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderLinkData, iamUserId)).ConfigureAwait(false);
+        return (ActionResult<UserIdentityProviderLinkData>) CreatedAtRoute(
+            nameof(GetOwnCompanyUserIdentityProviderDataAsync),
+            new { companyUserId = companyUserId, identityProviderId = linkData.identityProviderId },
+            linkData);
+    }
 
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
-    public Task<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
+    public ValueTask<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
         this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData, iamUserId));
 
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}", Name = nameof(GetOwnCompanyUserIdentityProviderDataAsync))]
-    public Task<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
+    public ValueTask<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, iamUserId));
 
     [HttpDelete]
     [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
-    public Task<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
-        this.WithIamUserId(async iamUserId =>
-        {
-            await _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
-            return (ActionResult) NoContent();
-        });
+    public async ValueTask<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId, iamUserId)).ConfigureAwait(false);
+        return (ActionResult) NoContent();
+    }
 }
