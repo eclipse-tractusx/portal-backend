@@ -25,8 +25,6 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Tests.Shared;
-using FakeItEasy;
 using FluentAssertions;
 using Xunit;
 
@@ -35,17 +33,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 /// <summary>
 /// Tests the functionality of the <see cref="NotificationRepository"/>
 /// </summary>
-public class NotificationRepositoryTests
+public class NotificationRepositoryTests : IClassFixture<TestDbFactory>
 {
     private readonly IFixture _fixture;
-    private readonly PortalDbContext _contextFake;
+    private readonly PortalDbContext _context;
     private readonly Guid _companyUserId;
     private readonly string _iamUserId;
     private readonly ICollection<Notification> _readNotifications;
     private readonly ICollection<Notification> _unreadNotifications;
     private List<Notification> _notifications;
 
-    public NotificationRepositoryTests()
+    public NotificationRepositoryTests(TestDbFactory factory)
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -54,12 +52,13 @@ public class NotificationRepositoryTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _companyUserId = Guid.NewGuid();
         _iamUserId = Guid.NewGuid().ToString();
-        _contextFake = A.Fake<PortalDbContext>();
 
         _readNotifications = new List<Notification>();
         _unreadNotifications = new List<Notification>();
         _notifications = new List<Notification>();
-        SetupNotificationDb();
+
+        _context = factory.GetPortalDbContext();
+        SeedDb();
     }
 
     #region GetAllAsDetailsByUserIdUntracked
@@ -68,7 +67,7 @@ public class NotificationRepositoryTests
     public async Task GetAllAsDetailsByUserIdUntracked_WithUnreadStatus_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
+        _fixture.Inject(_context);
 
         var sut = _fixture.Create<NotificationRepository>();
 
@@ -87,7 +86,7 @@ public class NotificationRepositoryTests
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatus_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
+        _fixture.Inject(_context);
 
         var sut = _fixture.Create<NotificationRepository>();
 
@@ -106,7 +105,7 @@ public class NotificationRepositoryTests
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndInfoType_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
+        _fixture.Inject(_context);
 
         var sut = _fixture.Create<NotificationRepository>();
 
@@ -128,7 +127,7 @@ public class NotificationRepositoryTests
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndActionType_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
+        _fixture.Inject(_context);
 
         var sut = _fixture.Create<NotificationRepository>();
 
@@ -153,8 +152,7 @@ public class NotificationRepositoryTests
     public async Task GetNotificationCountAsync_WithReadStatus_ReturnsExpectedCount()
     {
         // Arrange
-        SetupCompanyUserDb();
-        _fixture.Inject(_contextFake);
+        _fixture.Inject(_context);
 
         var sut = _fixture.Create<NotificationRepository>();
 
@@ -169,8 +167,7 @@ public class NotificationRepositoryTests
     public async Task GetNotificationCountAsync_WithoutStatus_ReturnsExpectedCount()
     {
         // Arrange
-        SetupCompanyUserDb();
-        _fixture.Inject(_contextFake);
+        _fixture.Inject(_context);
 
         var sut = _fixture.Create<NotificationRepository>();
 
@@ -183,45 +180,28 @@ public class NotificationRepositoryTests
 
     #endregion
 
-    private void SetupNotificationDb()
+    private void SeedDb()
     {
-        var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
-        {
-            IamUser = new IamUser(_iamUserId, _companyUserId)
-        };
+        var company = new Company(Guid.NewGuid(), "Umberella Corporation", CompanyStatusId.ACTIVE, DateTime.UtcNow);
+        var iamUser = new IamUser(_iamUserId, _companyUserId);
+        var companyUser = new CompanyUser(_companyUserId, company.Id, CompanyUserStatusId.ACTIVE, DateTime.UtcNow);
 
         for (var i = 0; i < 3; i++)
         {
-            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true)
-            {
-                Receiver = companyUser
-            });
+            _readNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true));
         }
 
         for (var i = 0; i < 2; i++)
         {
-            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.Now, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false)
-            {
-                Receiver = companyUser
-            });
+            _unreadNotifications.Add(new Notification(Guid.NewGuid(), _companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false));
         }
 
         _notifications = _readNotifications.Concat(_unreadNotifications).ToList();
-        A.CallTo(() => _contextFake.Notifications).Returns(_notifications.AsFakeDbSet());
-    }
 
-    private void SetupCompanyUserDb()
-    {
-        var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
-        {
-            IamUser = new IamUser(_iamUserId, _companyUserId)
-        };
-
-        foreach (var notification in _notifications)
-        {
-            companyUser.Notifications.Add(notification);
-        }
-
-        A.CallTo(() => _contextFake.CompanyUsers).Returns(new List<CompanyUser>{companyUser}.AsFakeDbSet());
+        _context.Companies.Add(company);
+        _context.CompanyUsers.Add(companyUser);
+        _context.IamUsers.Add(iamUser);
+        _context.Notifications.AddRange(_notifications);
+        _context.SaveChanges();
     }
 }
