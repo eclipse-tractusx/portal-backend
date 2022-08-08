@@ -309,7 +309,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
 
-        var result = (await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(Enumerable.Repeat(alias,1), userEntityId).ConfigureAwait(false)).SingleOrDefault();
+        var result = (await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).ConfigureAwait(false))
+            .SingleOrDefault(identityProviderLink => identityProviderLink.Alias == alias);
+
         if (result == default)
         {
             throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}");
@@ -333,30 +335,37 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    public async IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync(IEnumerable<Guid> identityProviderIds, string iamUserId, bool unlinkedUsersOnly)
     {
-        var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
-        var idPerAlias = idpAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
+        var identityProviderAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
+        var idPerAlias = identityProviderAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
+        var aliase = identityProviderAliasDatas.Select(item => item.Alias).ToList();
 
-        await foreach (var (companyUserId, userProfile, identityProviderLinks) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId, idpAliasDatas).ConfigureAwait(false))
+        await foreach (var (companyUserId, userProfile, identityProviderLinks) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
         {
-            yield return new UserIdentityProviderData(
-                companyUserId,
-                userProfile.FirstName,
-                userProfile.LastName,
-                userProfile.Email,
-                identityProviderLinks.Select(linkData => new UserIdentityProviderLinkData(
-                    idPerAlias[linkData.Alias],
-                    linkData.UserId,
-                    linkData.UserName))
-            );
+            if (!unlinkedUsersOnly
+                || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
+            {
+                yield return new UserIdentityProviderData(
+                    companyUserId,
+                    userProfile.FirstName,
+                    userProfile.LastName,
+                    userProfile.Email,
+                    identityProviderLinks
+                        .Where(identityProviderLink => aliase.Contains(identityProviderLink.Alias))
+                        .Select(linkData => new UserIdentityProviderLinkData(
+                            idPerAlias[linkData.Alias],
+                            linkData.UserId,
+                            linkData.UserName))
+                );
+            }
         }
     }
 
-    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderLinkDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    public (Stream FileStream, string ContentType, string FileName, Encoding Encoding) GetOwnCompanyUsersIdentityProviderLinkDataStream(IEnumerable<Guid> identityProviderIds, string iamUserId, bool unlinkedUsersOnly)
     {
         var csvSettings = _settings.CsvSettings;
-        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
+        return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
     public Task<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId)
@@ -394,7 +403,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             try
             {
                 var (companyUserId, profile, identityProviderLinks) = ParseCSVLine(nextLine, numIdps, existingAliase);
-                var (userEntityId, existingProfile, existingLinks) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId, existingAliase).ConfigureAwait(false);
+                var (userEntityId, existingProfile, existingLinks) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
                 var updated = false;
 
                 foreach (var identityProviderLink in identityProviderLinks)
@@ -444,7 +453,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (sharedIdpAlias, validAliase);
     }
 
-    private async Task<(string UserEntityId, UserProfile ExistingProfile, IEnumerable<IdentityProviderLink> ExistingLinks)> GetExistingUserAndLinkDataAsync(IUserRepository userRepository, Guid companyUserId, Guid companyId, IEnumerable<string> existingAliase)
+    private async Task<(string UserEntityId, UserProfile ExistingProfile, IEnumerable<IdentityProviderLink> ExistingLinks)> GetExistingUserAndLinkDataAsync(IUserRepository userRepository, Guid companyUserId, Guid companyId)
     {
         var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(false);
         if (userEntityData == default)
@@ -453,8 +462,11 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         var (userEntityId, existingFirstName, existingLastName, existingEmail) = userEntityData;
 
-        var existingLinks = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(existingAliase, userEntityId).ConfigureAwait(false);
-        return (userEntityId, new UserProfile(existingFirstName, existingLastName, existingEmail), existingLinks);
+        return (
+            userEntityId,
+            new UserProfile(existingFirstName, existingLastName, existingEmail),
+            await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).ConfigureAwait(false)
+        );
     }
 
     private async Task<bool> UpdateIdentityProviderLinksAsync(string userEntityId, Guid companyUserId, IdentityProviderLink identityProviderLink, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)
@@ -615,7 +627,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         yield return csvSettings.HeaderProviderUserName;
     }
 
-    private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, string iamUserId)
+    private async IAsyncEnumerable<string> GetOwnCompanyUsersIdentityProviderDataLines(IEnumerable<Guid> identityProviderIds, bool unlinkedUsersOnly, string iamUserId)
     {
         var idpAliasDatas = await GetOwnCompanyUsersIdentityProviderAliasDataInternalAsync(identityProviderIds, iamUserId).ConfigureAwait(false);
         var aliase = idpAliasDatas.Select(data => data.Alias).ToList();
@@ -623,24 +635,28 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         bool firstLine = true;
 
-        await foreach (var (companyUserId, userProfile, identityProviderLinks) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId, idpAliasDatas).ConfigureAwait(false))
+        await foreach (var (companyUserId, userProfile, identityProviderLinks) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
         {
             if (firstLine)
             {
                 firstLine = false;
                 yield return string.Join(csvSettings.Separator, CSVHeaders().Concat(idpAliasDatas.SelectMany(data => CSVIdpHeaders())));
             }
-            yield return string.Join(
-                csvSettings.Separator,
-                companyUserId,
-                userProfile.FirstName,
-                userProfile.LastName,
-                userProfile.Email,
-                string.Join(csvSettings.Separator, aliase.SelectMany(alias =>
-                    {
-                        var identityProviderLink = identityProviderLinks.SingleOrDefault(linkData => linkData.Alias == alias);
-                        return new [] { alias, identityProviderLink?.UserId, identityProviderLink?.UserName };
-                    })));
+            if (!unlinkedUsersOnly
+                || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
+            {
+                yield return string.Join(
+                    csvSettings.Separator,
+                    companyUserId,
+                    userProfile.FirstName,
+                    userProfile.LastName,
+                    userProfile.Email,
+                    string.Join(csvSettings.Separator, aliase.SelectMany(alias =>
+                        {
+                            var identityProviderLink = identityProviderLinks.SingleOrDefault(linkData => linkData.Alias == alias);
+                            return new [] { alias, identityProviderLink?.UserId, identityProviderLink?.UserName };
+                        })));
+            }
         }
     }
 
@@ -661,10 +677,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return identityProviderData;
     }
 
-    private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId, IEnumerable<(Guid IdentityProviderId, string Alias)> identityProviderAliasDatas)
+    private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId)
     {
-        var aliase = identityProviderAliasDatas.Select(item => item.Alias).ToList();
-
         await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
             .GetOwnCompanyUserQuery(iamUserId)
             .Select(companyUser =>
@@ -681,7 +695,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 yield return (
                     companyUserId,
                     new UserProfile(firstName, lastName, email),
-                    await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(aliase, userEntityId).ConfigureAwait(false));
+                    await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).ConfigureAwait(false)
+                );
             }
         }
     }
