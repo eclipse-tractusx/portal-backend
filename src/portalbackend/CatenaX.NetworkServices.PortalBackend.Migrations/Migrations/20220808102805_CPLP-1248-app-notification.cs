@@ -15,7 +15,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "company_assigned_apps",
                 type: "uuid",
                 nullable: false,
-                defaultValueSql: "gen_random_uuid()");
+                defaultValue: new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
 
             migrationBuilder.AddColumn<Guid>(
                 name: "sales_manager_id",
@@ -23,7 +23,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "apps",
                 type: "uuid",
                 nullable: false,
-                defaultValueSql: "gen_random_uuid()");
+                defaultValue: new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
 
             migrationBuilder.AlterColumn<Guid>(
                 name: "sales_manager_id",
