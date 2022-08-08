@@ -404,7 +404,7 @@ public class PortalDbContext : DbContext
             x.Ignore(x => x.Company);
             x.Ignore(x => x.AppSubscriptionStatus);
 
-            x.ToTable("audit_company_assigned_apps_cplp_1253_company_assigned_app");
+            x.ToTable("audit_company_assigned_apps_cplp_1254_db_audit");
         });
 
         modelBuilder.Entity<CompanyRole>()
