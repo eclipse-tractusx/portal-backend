@@ -131,32 +131,47 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         switch(category)
         {
+            case IdentityProviderCategoryId.KEYCLOAK_SHARED:
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                 return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias, category).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
             default:
-                throw new ControllerArgumentException($"identityProvider '{identityProviderId}' category '{category.ToString()}' cannot be updated");
+                throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
         }
     }
 
     public async Task<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
     {
-        var (alias, category, isOwnCompany) = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
-        if (!isOwnCompany)
-        {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
-        }
-        if (alias == null)
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
+        var (companyId, alias, category, aliase) = result;
+        if (companyId == Guid.Empty)
+        {
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+        }
+
+        if (!details.enabled && !await aliase
+            .Where(_alias => _alias != alias)
+            .ToAsyncEnumerable()
+            .AnyAwaitAsync(alias => _provisioningManager.IsCentralIdentityProviderEnabled(alias)))
+        {
+            throw new ControllerArgumentException($"cannot disable indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
+        }
+
         switch(category)
         {
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
                 if(details.oidc == null)
                 {
                     throw new ControllerArgumentException("property 'oidc' must not be null", nameof(details.oidc));
+                }
+                if(details.saml != null)
+                {
+                    throw new ControllerArgumentException("property 'saml' must be null", nameof(details.saml));
                 }
                 await _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(
                     new IdentityProviderEditableConfigOidc(
@@ -176,6 +191,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 {
                     throw new ControllerArgumentException("property 'saml' must not be null", nameof(details.saml));
                 }
+                if(details.oidc != null)
+                {
+                    throw new ControllerArgumentException("property 'oidc' must be null", nameof(details.oidc));
+                }
                 await _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(
                     new IdentityProviderEditableConfigSaml(
                         alias,
@@ -186,8 +205,19 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     .ConfigureAwait(false);
                 await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
                 return await GetCentralIdentityProviderDetailsSAMLAsync(identityProviderId, alias).ConfigureAwait(false);
+            case IdentityProviderCategoryId.KEYCLOAK_SHARED:
+                if(details.oidc != null)
+                {
+                    throw new ControllerArgumentException("property 'oidc' must be null", nameof(details.oidc));
+                }
+                if(details.saml != null)
+                {
+                    throw new ControllerArgumentException("property 'saml' must be null", nameof(details.saml));
+                }
+                await _provisioningManager.UpdateCentralIdentityProviderShared(alias, details.displayName, details.enabled).ConfigureAwait(false);
+                return await GetCentralIdentityProviderDetailsOIDCAsync(identityProviderId, alias, category).ConfigureAwait(false);
             default:
-                throw new ControllerArgumentException($"identityProvider '{identityProviderId}' category '{category.ToString()}' cannot be updated");
+                throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
         }
     }
 
@@ -198,17 +228,35 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (companyId, alias, companyCount) = result;
+        var (companyId, companyCount, alias, category, aliase) = result;
         if (companyId == Guid.Empty)
         {
             throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
         }
+
+        if (await _provisioningManager.IsCentralIdentityProviderEnabled(alias).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"cannot delete identityProvider {identityProviderId} as it is enabled");
+        }
+
+        if (!await aliase
+            .Where(_alias => _alias != alias)
+            .ToAsyncEnumerable()
+            .AnyAwaitAsync(alias => _provisioningManager.IsCentralIdentityProviderEnabled(alias)))
+        {
+            throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
+        }
+
         _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
         if (companyCount == 1)
         {
             if (alias != null)
             {
                 _portalRepositories.Remove(new IamIdentityProvider(alias, Guid.Empty));
+                if (category == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                {
+                    await _provisioningManager.DeleteSharedRealmAsync(alias).ConfigureAwait(false);
+                }
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             }
             _portalRepositories.Remove(_portalRepositories.Attach(new IdentityProvider(identityProviderId, default, default)));

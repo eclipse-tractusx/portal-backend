@@ -121,7 +121,7 @@ public partial class ProvisioningManager
         return _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias);
     }
 
-    public async Task UpdateCentralIdentityProviderAsync(string alias, IdentityProvider identityProvider)
+    private async ValueTask UpdateCentralIdentityProviderAsync(string alias, IdentityProvider identityProvider)
     {
         if (! await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
         {
@@ -129,7 +129,7 @@ public partial class ProvisioningManager
         }
     }
 
-    public async Task DeleteCentralIdentityProviderAsync(string alias)
+    public async ValueTask DeleteCentralIdentityProviderAsync(string alias)
     {
         if (! await _CentralIdp.DeleteIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
         {

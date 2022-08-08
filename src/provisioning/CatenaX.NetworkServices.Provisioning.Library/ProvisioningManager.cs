@@ -207,7 +207,12 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 .Where(r => r.Composite == true).Select(x => x.Name);
         }
 
-        public async Task<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
+        public async ValueTask<bool> IsCentralIdentityProviderEnabled(string alias)
+        {
+            return (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).Enabled ?? false;
+        }
+
+        public async ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
@@ -221,7 +226,17 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
         }
 
-        public Task UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+        public async ValueTask UpdateCentralIdentityProviderShared(string alias, string displayName, bool enabled)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            identityProvider.DisplayName = displayName;
+            identityProvider.Enabled = enabled;
+            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
+            await UpdateSharedRealmAsync(alias, displayName, enabled);
+            await UpdateCentralIdentityProviderAsync(alias, identityProvider);
+        }
+
+        public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
         {
             if(identityProviderConfigOidc.Secret == null)
             {
@@ -249,7 +264,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return UpdateCentralIdentityProviderDataOIDCInternalAsync(identityProviderConfigOidc);
         }
 
-        private async Task UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+        private async ValueTask UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
         {
             var (alias, displayName, enabled, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
             var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
@@ -263,7 +278,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }
 
-        public async Task<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias)
+        public async ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
@@ -276,7 +291,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 identityProvider.Config.SingleSignOnServiceUrl);
         }
 
-        public async Task UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml)
+        public async ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml)
         {
             var (alias, displayName, enabled, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
