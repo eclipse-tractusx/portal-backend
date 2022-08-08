@@ -1,4 +1,5 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -49,9 +50,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
             var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
-            if (userRoleIds.Count() < _settings.InvitedUserInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
+            if (userRoleIds.Count < _settings.InvitedUserInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
             {
-                throw new Exception($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ",_settings.InvitedUserInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
+                throw new UnexpectedConditionException($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ",_settings.InvitedUserInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
             }
 
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
@@ -72,7 +73,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var assignedClientRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, _settings.InvitedUserInitialRoles).ConfigureAwait(false);
             var unassignedClientRoles = _settings.InvitedUserInitialRoles
                 .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedClientRoles[initialClientRoles.Key])))
-                .Where(clientRoles => clientRoles.roles.Count() > 0);
+                .Where(clientRoles => clientRoles.roles.Any())
+                .ToList();
             
             var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
             var application = applicationRepository.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
@@ -83,15 +85,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleId);
             }
             applicationRepository.CreateInvitation(application.Id, companyUser);
-            var identityprovider = identityProviderRepository.CreateSharedIdentityProvider(company);
-            identityProviderRepository.CreateIamIdentityProvider(identityprovider, idpName);
+            var identityProvider = identityProviderRepository.CreateSharedIdentityProvider(company);
+            identityProviderRepository.CreateIamIdentityProvider(identityProvider, idpName);
             userRepository.CreateIamUser(companyUser, centralUserId);
 
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-            if (unassignedClientRoles.Count() > 0)
+            if (unassignedClientRoles.Any())
             {
-                throw new Exception($"invalid configuration, configured roles were not assigned in keycloak: {string.Join(", ",unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ",clientRoles.roles)}]"))}");
+                throw new UnexpectedConditionException($"invalid configuration, configured roles were not assigned in keycloak: {string.Join(", ",unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ",clientRoles.roles)}]"))}");
             }
 
             var mailParameters = new Dictionary<string, string>
