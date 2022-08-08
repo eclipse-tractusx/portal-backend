@@ -52,9 +52,12 @@ public interface IProvisioningManager
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
-    Task<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
-    Task UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc);
-    Task<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
-    Task UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
-    Task DeleteCentralIdentityProviderAsync(string alias);
+    ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
+    ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
+    ValueTask UpdateCentralIdentityProviderShared(string alias, string displayName, bool enabled);
+    ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc);
+    ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
+    ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
+    ValueTask DeleteCentralIdentityProviderAsync(string alias);
+    ValueTask DeleteSharedRealmAsync(string alias);
 }
