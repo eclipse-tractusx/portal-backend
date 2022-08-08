@@ -44,11 +44,21 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId ) =>
         _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
 
-    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
-        _context.CompanyUsers
-            .AsNoTracking()
-            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
-                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
+        Guid appId,
+        string iamUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        string? roleName = null) =>
+            _context.CompanyUsers
+                .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
+                 && companyUser.IamUser!.UserEntityId == iamUserId)
+                .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+                .Where(companyUser => firstName != null ? companyUser.Firstname == firstName : true
+                    && lastName != null ? companyUser.Lastname == lastName : true
+                    && email != null ? companyUser.Email == email : true
+                    && roleName != null ? companyUser.UserRoles.Any(userRole => userRole.UserRoleText == roleName) : true);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
