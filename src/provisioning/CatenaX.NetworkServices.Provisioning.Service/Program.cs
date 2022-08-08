@@ -79,8 +79,7 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                 .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions",options));
 
-builder.Services.AddTransient<IIdentityProviderBusinessLogic,IdentityProviderBusinessLogic>()
-                .AddTransient<IClientBusinessLogic,ClientBusinessLogic>()
+builder.Services.AddTransient<IClientBusinessLogic,ClientBusinessLogic>()
                 .AddTransient<IKeycloakFactory, KeycloakFactory>()
                 .AddTransient<IProvisioningManager, ProvisioningManager>()
                 .ConfigureKeycloakSettingsMap(builder.Configuration.GetSection("Keycloak"))

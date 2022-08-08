@@ -70,31 +70,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false);
         }
 
-        public async Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret)
-        {
-            var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
-
-            var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(idpName).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
-
-            identityProvider.Config.ClientId = clientId;
-            identityProvider.Config.ClientAuthMethod = clientAuthMethod;
-            identityProvider.Config.ClientSecret = clientSecret;
-
-            await UpdateCentralIdentityProviderAsync(idpName, identityProvider).ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
-
-            await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false);
-
-            return idpName;
-        }
-
         public async Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol)
         {
             var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
@@ -217,8 +192,8 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             identityProvider.DisplayName = displayName;
             identityProvider.Enabled = enabled;
             identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
-            await UpdateSharedRealmAsync(alias, displayName, enabled);
-            await UpdateCentralIdentityProviderAsync(alias, identityProvider);
+            await UpdateSharedRealmAsync(alias, displayName, enabled).ConfigureAwait(false);
+            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }
 
         public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
