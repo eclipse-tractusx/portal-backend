@@ -132,21 +132,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library
             return userIdCentral;
         }
 
-        public async Task<IEnumerable<string>> GetClientRolesAsync(string clientId)
-        {
-            var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
-            return (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false))
-                .Select(g => g.Name);
-        }
-
-        public async Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId)
-        {
-            var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
-            return (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false))
-                .Where(r => r.Composite == true)
-                .Select(g => g.Name);
-        }
-
         public async Task<string> SetupClientAsync(string redirectUrl)
         {
             var clientId = await GetNextClientIdAsync().ConfigureAwait(false);

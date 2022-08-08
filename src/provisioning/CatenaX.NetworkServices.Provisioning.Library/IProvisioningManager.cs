@@ -25,17 +25,15 @@ namespace CatenaX.NetworkServices.Provisioning.Library;
 
 public interface IProvisioningManager
 {
-    Task<string> GetNextCentralIdentityProviderNameAsync();
+    ValueTask<string> GetNextCentralIdentityProviderNameAsync();
     Task<string> GetNextServiceAccountClientIdAsync();
     Task SetupSharedIdpAsync(string idpName, string organisationName);
     Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile);
     Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
-    Task<IEnumerable<string>> GetClientRolesAsync(string clientId);
-    Task<IEnumerable<string>> GetClientRolesCompositeAsync(string clientId);
     Task<string> SetupOwnIdpAsync(string organisationName, string clientId, string metadataUrl, string clientAuthMethod, string? clientSecret);
     Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
-    Task<IEnumerable<IdentityProviderLink>> GetProviderUserLinkDataForCentralUserIdAsync(string userId);
+    IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId);
     Task AddProviderUserLinkToCentralUserAsync(string userId, IdentityProviderLink identityProviderLink);
     Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias);
     Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
@@ -59,5 +57,6 @@ public interface IProvisioningManager
     ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
     ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
     ValueTask DeleteCentralIdentityProviderAsync(string alias);
+    IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
     ValueTask DeleteSharedRealmAsync(string alias);
 }

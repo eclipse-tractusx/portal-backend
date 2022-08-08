@@ -64,7 +64,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                         identityProviderData.CategoryId,
                         identityProviderDataSAML.DisplayName,
                         identityProviderDataSAML.RedirectUrl,
-                        identityProviderDataSAML.Enabled)
+                        identityProviderDataSAML.Enabled,
+                        await _provisioningManager.GetIdentityProviderMappers(identityProviderData.Alias).ToListAsync().ConfigureAwait(false))
                         {
                             saml = new IdentityProviderDetailsSaml(
                                 identityProviderDataSAML.EntityId,
@@ -316,7 +317,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             categoryId,
             identityProviderDataOIDC.DisplayName,
             identityProviderDataOIDC.RedirectUrl,
-            identityProviderDataOIDC.Enabled)
+            identityProviderDataOIDC.Enabled,
+            await _provisioningManager.GetIdentityProviderMappers(alias).ToListAsync().ConfigureAwait(false))
             {
                 oidc = new IdentityProviderDetailsOidc(
                     identityProviderDataOIDC.AuthorizationUrl,
@@ -337,7 +339,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             IdentityProviderCategoryId.KEYCLOAK_SAML,
             identityProviderDataSAML.DisplayName,
             identityProviderDataSAML.RedirectUrl,
-            identityProviderDataSAML.Enabled)
+            identityProviderDataSAML.Enabled,
+            await _provisioningManager.GetIdentityProviderMappers(alias).ToListAsync().ConfigureAwait(false))
             {
                 saml = new IdentityProviderDetailsSaml(
                     identityProviderDataSAML.EntityId,
@@ -400,8 +403,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
 
-        var result = (await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).ConfigureAwait(false))
-            .SingleOrDefault(identityProviderLink => identityProviderLink.Alias == alias);
+        var result = await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).FirstOrDefaultAsync(identityProviderLink => identityProviderLink.Alias == alias).ConfigureAwait(false);
 
         if (result == default)
         {
@@ -432,8 +434,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var idPerAlias = identityProviderAliasDatas.ToDictionary(item => item.Alias, item => item.IdentityProviderId);
         var aliase = identityProviderAliasDatas.Select(item => item.Alias).ToList();
 
-        await foreach (var (companyUserId, userProfile, identityProviderLinks) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
+        await foreach (var (companyUserId, userProfile, links) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
         {
+            var identityProviderLinks = await links.ToListAsync().ConfigureAwait(false);
             if (!unlinkedUsersOnly
                 || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
             {
@@ -494,7 +497,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             try
             {
                 var (companyUserId, profile, identityProviderLinks) = ParseCSVLine(nextLine, numIdps, existingAliase);
-                var (userEntityId, existingProfile, existingLinks) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
+                var (userEntityId, existingProfile, links) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
+                var existingLinks = await links.ToListAsync().ConfigureAwait(false);
                 var updated = false;
 
                 foreach (var identityProviderLink in identityProviderLinks)
@@ -544,7 +548,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (sharedIdpAlias, validAliase);
     }
 
-    private async ValueTask<(string UserEntityId, UserProfile ExistingProfile, IEnumerable<IdentityProviderLink> ExistingLinks)> GetExistingUserAndLinkDataAsync(IUserRepository userRepository, Guid companyUserId, Guid companyId)
+    private async ValueTask<(string UserEntityId, UserProfile ExistingProfile, IAsyncEnumerable<IdentityProviderLink> ExistingLinks)> GetExistingUserAndLinkDataAsync(IUserRepository userRepository, Guid companyUserId, Guid companyId)
     {
         var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(false);
         if (userEntityData == default)
@@ -556,15 +560,15 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (
             userEntityId,
             new UserProfile(existingFirstName, existingLastName, existingEmail),
-            await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).ConfigureAwait(false)
+            _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId)
         );
     }
 
     private async ValueTask<bool> UpdateIdentityProviderLinksAsync(string userEntityId, Guid companyUserId, IdentityProviderLink identityProviderLink, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)
     {
         var (alias, userId, userName) = identityProviderLink;
-        var existingLink = existingLinks.SingleOrDefault(link => link.Alias == alias);
-        if (existingLink == identityProviderLink)
+
+        if (existingLinks.Contains(identityProviderLink))
         {
             return false;
         }
@@ -573,7 +577,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             throw new ControllerArgumentException($"unexpected update of shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{identityProviderLink.UserId}', providerUserName: '{identityProviderLink.UserName}'");
         }
         var updated = false;
-        if (existingLink != null)
+        if (existingLinks.Any(link => link.Alias == alias))
         {
             await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias).ConfigureAwait(false);
             updated = true;
@@ -594,7 +598,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         if (sharedIdpAlias != null)
         {
-            var sharedIdpLink = existingLinks.SingleOrDefault(link => link.Alias == sharedIdpAlias);
+            var sharedIdpLink = existingLinks.FirstOrDefault(link => link.Alias == sharedIdpAlias);
             if (sharedIdpLink != default && !await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "").ConfigureAwait(false))
             {
                 throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
@@ -726,13 +730,14 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
         bool firstLine = true;
 
-        await foreach (var (companyUserId, userProfile, identityProviderLinks) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
+        await foreach (var (companyUserId, userProfile, identityProviderLinksAsync) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(iamUserId).ConfigureAwait(false))
         {
             if (firstLine)
             {
                 firstLine = false;
                 yield return string.Join(csvSettings.Separator, CSVHeaders().Concat(idpAliasDatas.SelectMany(data => CSVIdpHeaders())));
             }
+            var identityProviderLinks = await identityProviderLinksAsync.ToListAsync().ConfigureAwait(false);
             if (!unlinkedUsersOnly
                 || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
             {
@@ -744,7 +749,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userProfile.Email,
                     string.Join(csvSettings.Separator, aliase.SelectMany(alias =>
                         {
-                            var identityProviderLink = identityProviderLinks.SingleOrDefault(linkData => linkData.Alias == alias);
+                            var identityProviderLink = identityProviderLinks.FirstOrDefault(linkData => linkData.Alias == alias);
                             return new [] { alias, identityProviderLink?.UserId, identityProviderLink?.UserName };
                         })));
             }
@@ -768,7 +773,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return identityProviderData;
     }
 
-    private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId)
+    private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IAsyncEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(string iamUserId)
     {
         await foreach(var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
             .GetOwnCompanyUserQuery(iamUserId)
@@ -786,7 +791,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 yield return (
                     companyUserId,
                     new UserProfile(firstName, lastName, email),
-                    await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).ConfigureAwait(false)
+                    _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId)
                 );
             }
         }
