@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using AutoFixture;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Controllers;
 using CatenaX.NetworkServices.Tests.Shared;
