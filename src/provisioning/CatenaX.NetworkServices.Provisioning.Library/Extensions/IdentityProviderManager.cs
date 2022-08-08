@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Flurl;
 using Keycloak.Net.Models.IdentityProviders;
 using Keycloak.Net.Models.OpenIDConfiguration;
@@ -47,10 +48,23 @@ public partial class ProvisioningManager
         { IamIdentityProviderClientAuthMethod.SECRET_JWT, "client_secret_jwt" }
     };
 
-    public async Task<string> GetNextCentralIdentityProviderNameAsync() =>
+    private static readonly IReadOnlyDictionary<string,IdentityProviderMapperType> IdentityProviderKeycloakMapperTypesToEnumDictionary = new Dictionary<string,IdentityProviderMapperType>()
+    {
+        { "hardcoded-user-session-attribute-idp-mapper", IdentityProviderMapperType.HARDCODED_SESSION_ATTRIBUTE },
+        { "hardcoded-attribute-idp-mapper", IdentityProviderMapperType.HARDCODED_ATTRIBUTE },
+        { "oidc-advanced-group-idp-mapper", IdentityProviderMapperType.OIDC_ADVANCED_GROUP },
+        { "oidc-user-attribute-idp-mapper", IdentityProviderMapperType.OIDC_USER_ATTRIBUTE },
+        { "oidc-advanced-role-idp-mapper", IdentityProviderMapperType.OIDC_ADVANCED_ROLE },
+        { "oidc-hardcoded-role-idp-mapper", IdentityProviderMapperType.OIDC_HARDCODED_ROLE },
+        { "oidc-role-idp-mapper", IdentityProviderMapperType.OIDC_ROLE },
+        { "oidc-username-idp-mapper", IdentityProviderMapperType.OIDC_USERNAME },
+        { "keycloak-oidc-role-to-role-idp-mapper", IdentityProviderMapperType.KEYCLOAK_OIDC_ROLE }
+    };
+
+    public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         _Settings.IdpPrefix + (await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false));
 
-    private async Task CreateCentralIdentityProviderAsync(string alias, string organisationName, IdentityProvider identityProvider)
+    private async ValueTask CreateCentralIdentityProviderAsync(string alias, string organisationName, IdentityProvider identityProvider)
     {
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;
@@ -61,7 +75,7 @@ public partial class ProvisioningManager
         }
     }
 
-    private async Task UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
+    private async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
     {
         var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
         identityProvider.Config.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
@@ -74,7 +88,7 @@ public partial class ProvisioningManager
         }
     }
 
-    private async Task<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url)
+    private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url)
     {
         var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url).ConfigureAwait(false);
         if (!metadata.Any())
@@ -137,7 +151,20 @@ public partial class ProvisioningManager
         }
     }
 
-    private async Task EnableCentralIdentityProviderAsync(string alias)
+    public async IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias)
+    {
+        foreach(var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
+        {
+            yield return new IdentityProviderMapperModel(
+                mapper.Id,
+                mapper.Name,
+                KeycloakIdentityProviderMapperTypeToEnum(mapper._IdentityProviderMapper),
+                mapper.Config
+            );
+        }
+    }
+
+    private async ValueTask EnableCentralIdentityProviderAsync(string alias)
     {
         var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
         identityProvider.Enabled = true;
@@ -148,7 +175,7 @@ public partial class ProvisioningManager
         }
     }
 
-    private async Task<string> GetCentralBrokerEndpointOIDCAsync(string alias)
+    private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
         var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false);
         return new Url(openidconfig.Issuer)
@@ -158,7 +185,7 @@ public partial class ProvisioningManager
             .ToString();
     }
 
-    private async Task<string> GetCentralBrokerEndpointSAMLAsync(string alias)
+    private async ValueTask<string> GetCentralBrokerEndpointSAMLAsync(string alias)
     {
         var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(false);
         return new Url(samlDescriptor.EntityId)
@@ -168,7 +195,7 @@ public partial class ProvisioningManager
             .ToString();
     }
 
-    private async Task CreateCentralIdentityProviderTenantMapperAsync(string alias)
+    private async ValueTask CreateCentralIdentityProviderTenantMapperAsync(string alias)
     {
         if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
         {
@@ -187,7 +214,7 @@ public partial class ProvisioningManager
         }
     }
     
-    private async Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName)
+    private async ValueTask CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName)
     {
         if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
         {
@@ -206,7 +233,7 @@ public partial class ProvisioningManager
         }
     }
 
-    private async Task CreateCentralIdentityProviderUsernameMapperAsync(string alias)
+    private async ValueTask CreateCentralIdentityProviderUsernameMapperAsync(string alias)
     {
         if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
         {
@@ -223,19 +250,6 @@ public partial class ProvisioningManager
         {
             throw new KeycloakNoSuccessException($"failed to create username-mapper for identityprovider {alias}");
         }
-    }
-
-    public async Task<string> GetOrganisationFromCentralIdentityProviderMapperAsync(string alias)
-    {
-        var mapperName = _Settings.MappedCompanyAttribute + "-mapper";
-        var mapper = (await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
-            .SingleOrDefault( x => x.Name.Equals(mapperName));
-        var organisation = mapper?.Config["attribute.value"] as string;
-        if (organisation == null)
-        {
-            throw new KeycloakEntityNotFoundException($"unable to retrieve organisation-mapper for {alias}");
-        }
-        return organisation;
     }
 
     private IdentityProvider GetIdentityProviderTemplate(IamIdentityProviderProtocol providerProtocol)
@@ -272,6 +286,18 @@ public partial class ProvisioningManager
         catch (KeyNotFoundException)
         {
             throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}", nameof(iamClientAuthMethod));
+        }
+    }
+
+    private static IdentityProviderMapperType KeycloakIdentityProviderMapperTypeToEnum(string mapperType)
+    {
+        try
+        {
+            return IdentityProviderKeycloakMapperTypesToEnumDictionary[mapperType];
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new ArgumentException($"unexpected value of mapperType: {mapperType}", nameof(mapperType));
         }
     }
 
