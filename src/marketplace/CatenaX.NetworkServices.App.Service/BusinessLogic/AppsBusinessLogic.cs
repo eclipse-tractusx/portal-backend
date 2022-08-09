@@ -130,11 +130,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if (companyAssignedApp == null)
         {
-            companyAssignedApp = companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING, companyUserId);
+            companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING, companyUserId);
         }
         else
         {
-            if(companyAssignedApp.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE || companyAssignedApp.AppSubscriptionStatusId == AppSubscriptionStatusId.PENDING)
+            if(companyAssignedApp.AppSubscriptionStatusId is AppSubscriptionStatusId.ACTIVE or AppSubscriptionStatusId.PENDING)
             {
                 throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
             }
