@@ -22,7 +22,7 @@ public class NotificationControllerTests : IClassFixture<IntegrationTestFactory<
     public NotificationControllerTests(IntegrationTestFactory<Program, PortalDbContext> factory)
     {
         _factory = factory;
-        _factory.SeedDatabase(dbContext =>
+        _factory.SetupDbContext = dbContext =>
         {
             var company = new Company(Guid.NewGuid(), "Umberella Corporation", CompanyStatusId.ACTIVE, DateTime.UtcNow);
             var iamUser = new IamUser(IamUserId, CompanyUserId);
@@ -32,12 +32,16 @@ public class NotificationControllerTests : IClassFixture<IntegrationTestFactory<
 
             for (var i = 0; i < 3; i++)
             {
-                readNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), CompanyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true));
+                readNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(),
+                    CompanyUserId, DateTimeOffset.UtcNow,
+                    i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true));
             }
 
             for (var i = 0; i < 2; i++)
             {
-                unreadNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), CompanyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false));
+                unreadNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(),
+                    CompanyUserId, DateTimeOffset.UtcNow,
+                    i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false));
             }
 
             var notifications = readNotifications.Concat(unreadNotifications).ToList();
@@ -47,7 +51,33 @@ public class NotificationControllerTests : IClassFixture<IntegrationTestFactory<
             dbContext.IamUsers.Add(iamUser);
             dbContext.Notifications.AddRange(notifications);
             dbContext.SaveChanges();
-        });
+        };
+        // _factory.SeedDatabase(dbContext =>
+        // {
+        //     var company = new Company(Guid.NewGuid(), "Umberella Corporation", CompanyStatusId.ACTIVE, DateTime.UtcNow);
+        //     var iamUser = new IamUser(IamUserId, CompanyUserId);
+        //     var companyUser = new CompanyUser(CompanyUserId, company.Id, CompanyUserStatusId.ACTIVE, DateTime.UtcNow);
+        //     var readNotifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
+        //     var unreadNotifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
+        //
+        //     for (var i = 0; i < 3; i++)
+        //     {
+        //         readNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), CompanyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true));
+        //     }
+        //
+        //     for (var i = 0; i < 2; i++)
+        //     {
+        //         unreadNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), CompanyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false));
+        //     }
+        //
+        //     var notifications = readNotifications.Concat(unreadNotifications).ToList();
+        //
+        //     dbContext.Companies.Add(company);
+        //     dbContext.CompanyUsers.Add(companyUser);
+        //     dbContext.IamUsers.Add(iamUser);
+        //     dbContext.Notifications.AddRange(notifications);
+        //     dbContext.SaveChanges();
+        // });
     }
 
     [Fact]
