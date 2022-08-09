@@ -36,12 +36,11 @@ public class TestDbFactory : IAsyncLifetime
         );
 
         var context =  new PortalDbContext(optionsBuilder.Options);
-        context.Database.EnsureCreated();
-        //context.Database.Migrate();
+        context.Database.Migrate();
         return context;
     }
     
     public async Task InitializeAsync() => await _container.StartAsync();
 
-    public new async Task DisposeAsync() => await _container.DisposeAsync();
+    public async Task DisposeAsync() => await _container.DisposeAsync();
 }

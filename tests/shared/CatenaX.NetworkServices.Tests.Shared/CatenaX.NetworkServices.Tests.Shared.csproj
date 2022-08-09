@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.Migrations\CatenaX.NetworkServices.PortalBackend.Migrations.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
 
