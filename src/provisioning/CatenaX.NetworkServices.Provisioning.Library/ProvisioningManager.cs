@@ -186,15 +186,30 @@ namespace CatenaX.NetworkServices.Provisioning.Library
                 identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
         }
 
-        public async ValueTask UpdateCentralIdentityProviderShared(string alias, string displayName, bool enabled)
+        public async ValueTask UpdateSharedIdentityProviderAsync(string alias, string displayName)
         {
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
-            identityProvider.Enabled = enabled;
-            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
-            await UpdateSharedRealmAsync(alias, displayName, enabled).ConfigureAwait(false);
+            await UpdateSharedRealmAsync(alias, displayName).ConfigureAwait(false);
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
         }
+
+        public async ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            identityProvider.Enabled = enabled;
+            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
+            await SetSharedRealmStatusAsync(alias, enabled).ConfigureAwait(false);
+            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+        }
+
+        public async ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled)
+        {
+            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+            identityProvider.Enabled = enabled;
+            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
+            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+        }        
 
         public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
         {
@@ -226,11 +241,9 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         private async ValueTask UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
         {
-            var (alias, displayName, enabled, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
+            var (alias, displayName, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
             var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
-            identityProvider.Enabled = enabled;
-            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
             identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
             identityProvider.Config.ClientId = clientId;
             identityProvider.Config.ClientSecret = secret;
@@ -253,11 +266,9 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
         public async ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml)
         {
-            var (alias, displayName, enabled, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
+            var (alias, displayName, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
             var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             identityProvider.DisplayName = displayName;
-            identityProvider.Enabled = enabled;
-            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
             identityProvider.Config.EntityId = entityId;
             identityProvider.Config.SingleSignOnServiceUrl = singleSignOnServiceUrl;
             await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);

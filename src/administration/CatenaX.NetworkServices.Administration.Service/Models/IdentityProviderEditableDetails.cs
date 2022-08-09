@@ -23,7 +23,7 @@ using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.Administration.Service.Models;
 
-public record IdentityProviderEditableDetails(string displayName, bool enabled)
+public record IdentityProviderEditableDetails(string displayName)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderEditableDetailsOidc? oidc { get; init; } = null;
