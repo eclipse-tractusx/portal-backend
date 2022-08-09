@@ -67,6 +67,12 @@ public class IdentityProviderController : ControllerBase
     public ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId, iamUserId));
 
+    [HttpPost]
+    [Authorize(Roles = "disable_idp")]
+    [Route("owncompany/identityproviders/{identityProviderId}/status")]
+    public ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatus([FromRoute] Guid identityProviderId, [FromQuery] bool enabled) =>
+        this.WithIamUserId(iamUserId => _businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled, iamUserId));
+
     [HttpPut]
     [Authorize(Roles = "setup_idp")]
     [Route("owncompany/identityproviders/{identityProviderId}")]

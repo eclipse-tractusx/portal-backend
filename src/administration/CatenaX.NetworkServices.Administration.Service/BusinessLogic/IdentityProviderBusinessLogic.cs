@@ -149,27 +149,27 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return new ValueTuple<string,IdentityProviderCategoryId>(alias, category);
     }
 
-    public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
+    public async ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatusAsync(Guid identityProviderId, bool enabled, string iamUserId)
     {
-        var (category, alias) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, iamUserId, details.enabled).ConfigureAwait(false);
+        var (category, alias) = await ValidateSetOwnCompanyIdentityProviderStatusArguments(identityProviderId, enabled, iamUserId).ConfigureAwait(false);
 
         switch(category)
         {
             case IdentityProviderCategoryId.KEYCLOAK_OIDC:
-                await UpdateIdentityProviderOidc(alias, details).ConfigureAwait(false);
+                await _provisioningManager.SetCentralIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SAML:
-                await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
+                await _provisioningManager.SetCentralIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias).ConfigureAwait(false);
             case IdentityProviderCategoryId.KEYCLOAK_SHARED:
-                await UpdateIdentityProviderShared(alias, details).ConfigureAwait(false);
+                await _provisioningManager.SetSharedIdentityProviderStatusAsync(alias, enabled).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category).ConfigureAwait(false);
             default:
                 throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
         }
     }
 
-    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateUpdateOwnCompanyIdentityProviderArguments(Guid identityProviderId, string iamUserId, bool enabled)
+    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateSetOwnCompanyIdentityProviderStatusArguments(Guid identityProviderId, bool enabled, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
         if (result == default)
@@ -191,6 +191,40 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return new ValueTuple<IdentityProviderCategoryId, string>(result.IdentityProviderCategory, result.Alias);
     }
 
+    public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
+    {
+        var (category, alias) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, iamUserId).ConfigureAwait(false);
+
+        switch(category)
+        {
+            case IdentityProviderCategoryId.KEYCLOAK_OIDC:
+                await UpdateIdentityProviderOidc(alias, details).ConfigureAwait(false);
+                return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category).ConfigureAwait(false);
+            case IdentityProviderCategoryId.KEYCLOAK_SAML:
+                await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
+                return await GetIdentityProviderDetailsSaml(identityProviderId, alias).ConfigureAwait(false);
+            case IdentityProviderCategoryId.KEYCLOAK_SHARED:
+                await UpdateIdentityProviderShared(alias, details).ConfigureAwait(false);
+                return await GetIdentityProviderDetailsOidc(identityProviderId, alias, category).ConfigureAwait(false);
+            default:
+                throw new ControllerArgumentException($"unexpected value for category '{category.ToString()}' of identityProvider '{identityProviderId}'");
+        }
+    }
+
+    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateUpdateOwnCompanyIdentityProviderArguments(Guid identityProviderId, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+        }
+        if (!result.IsSameCompany)
+        {
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+        }
+        return new ValueTuple<IdentityProviderCategoryId, string>(result.IdentityProviderCategory, result.Alias);
+    }
+
     private async ValueTask UpdateIdentityProviderOidc(string alias, IdentityProviderEditableDetails details)
     {
         if(details.oidc == null)
@@ -205,7 +239,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             new IdentityProviderEditableConfigOidc(
                 alias,
                 details.displayName,
-                details.enabled,
                 details.oidc.metadataUrl,
                 details.oidc.clientAuthMethod,
                 details.oidc.clientId,
@@ -229,7 +262,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             new IdentityProviderEditableConfigSaml(
                 alias,
                 details.displayName,
-                details.enabled,
                 details.saml.serviceProviderEntityId,
                 details.saml.singleSignOnServiceUrl))
             .ConfigureAwait(false);
@@ -246,7 +278,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ControllerArgumentException("property 'saml' must be null", nameof(details.saml));
         }
-        await _provisioningManager.UpdateCentralIdentityProviderShared(alias, details.displayName, details.enabled).ConfigureAwait(false);
+        await _provisioningManager.UpdateSharedIdentityProviderAsync(alias, details.displayName).ConfigureAwait(false);
     }
 
     private async ValueTask ValidateOtherActiveIdentityProvider(string alias, IEnumerable<string> aliase, Action noSuccessAction)

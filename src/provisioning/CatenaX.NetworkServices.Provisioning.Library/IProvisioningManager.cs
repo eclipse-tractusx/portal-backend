@@ -51,7 +51,9 @@ public interface IProvisioningManager
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
     ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
-    ValueTask UpdateCentralIdentityProviderShared(string alias, string displayName, bool enabled);
+    ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled);
+    ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled);
+    ValueTask UpdateSharedIdentityProviderAsync(string alias, string displayName);
     ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc);
     ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
     ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
