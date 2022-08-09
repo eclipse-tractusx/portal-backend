@@ -86,7 +86,7 @@ public class App
     // Navigation properties
     public virtual Company? ProviderCompany { get; set; }
     public virtual AppStatus? AppStatus{ get; set; }
-    public virtual CompanyUser SalesManager { get; set; }
+    public virtual CompanyUser? SalesManager { get; set; }
     public virtual ICollection<AppTag> Tags { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
