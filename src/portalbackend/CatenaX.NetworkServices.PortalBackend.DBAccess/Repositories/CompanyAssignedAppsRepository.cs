@@ -55,10 +55,10 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
                 .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
                  && companyUser.IamUser!.UserEntityId == iamUserId)
                 .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-                .Where(companyUser => firstName != null ? companyUser.Firstname == firstName : true
-                    && lastName != null ? companyUser.Lastname == lastName : true
-                    && email != null ? companyUser.Email == email : true
-                    && roleName != null ? companyUser.UserRoles.Any(userRole => userRole.UserRoleText == roleName) : true);
+                .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser!.Firstname, $"{firstName}%") : true
+                    && lastName != null ? EF.Functions.ILike(companyUser!.Lastname, $"{lastName}%") : true
+                    && email != null ? EF.Functions.ILike(companyUser!.Email, $"{email}%") : true
+                    && roleName != null ? companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName}%")) : true);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
