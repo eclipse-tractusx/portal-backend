@@ -35,13 +35,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
         {
-            if (String.IsNullOrWhiteSpace(invitationData.email))
+            if (string.IsNullOrWhiteSpace(invitationData.email))
             {
-                throw new ArgumentException("email must not be empty", "email");
+                throw new ControllerArgumentException("email must not be empty", "email");
             }
-            if (String.IsNullOrWhiteSpace(invitationData.organisationName))
+            if (string.IsNullOrWhiteSpace(invitationData.organisationName))
             {
-                throw new ArgumentException("organisationName must not be empty", "organisationName");
+                throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
             }
 
             var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
@@ -52,7 +52,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
             if (userRoleIds.Count < _settings.InvitedUserInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
             {
-                throw new UnexpectedConditionException($"invalid configuration, at least one of the configured roles does not exist in the database: {String.Join(", ",_settings.InvitedUserInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
+                throw new UnexpectedConditionException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ",_settings.InvitedUserInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
             }
 
             var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
