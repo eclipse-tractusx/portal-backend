@@ -75,7 +75,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Apps
             .Where(app => app.Id == appId)
-            .Select(app => new ValueTuple<CompanyAssignedApp?, bool, string>(
+            .Select(app => new ValueTuple<CompanyAssignedApp?, bool, string?>(
                 app.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
                 app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
                 app.Name
@@ -96,7 +96,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
         _context.IamUsers
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => ((Guid companyId, CompanyAssignedApp?, string companyName)) new (
+            .Select(company => new ValueTuple<Guid, CompanyAssignedApp?, string>(
                 company!.Id,
                 company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId),
                 company!.Name
