@@ -121,7 +121,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         
         var (requesterId, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
+        var (_, _, companyName) = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
         {
@@ -181,7 +181,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         subscription.AppSubscriptionStatusId = AppSubscriptionStatusId.ACTIVE;
 
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         _portalRepositories.GetInstance<INotificationRepository>().Create(subscription.RequesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
