@@ -203,7 +203,50 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"displayName\": \"displayName2\",\n  \"redirectUrl\": \"https://some.where\",\n  \"enabled\": true,\n  \"oidc\": {\n    \"clientId\": \"myClient1\",\n    \"authorizationUrl\": \"https://some.auth\",\n    \"clientAuthMethod\": \"SECRET_JWT\",\n    \"secret\": \"mysecret\",\n    \"signatureAlgorithm\": \"HS256\"\n  }\n}",
+					"raw": "{\n  \"displayName\": \"own idp (shared)\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdShared}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders",
+						"{{identityProviderIdShared}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{identityProviderId} Copy",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"displayName\": \"own idp (oidc)\",\n  \"oidc\": {\n    \"clientId\": \"central-idp\",\n    \"metadataUrl\": \"https://wsl:8443/iamshared/auth/realms/idp2/.well-known/openid-configuration\",\n    \"clientAuthMethod\": \"JWT\",\n    \"signatureAlgorithm\": \"RS256\"\n  }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -246,7 +289,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"displayName\": \"displayName3\",\n  \"redirectUrl\": \"https://some.where\",\n  \"enabled\": true,\n  \"saml\": {\n    \"serviceProviderEntityId\": \"https://some.id\",\n    \"singleSignOnServiceUrl\": \"https:://saml.login\"\n  }\n}",
+					"raw": "{\n  \"displayName\": \"own idp (saml)\",\n  \"redirectUrl\": \"https://some.where\",\n  \"saml\": {\n    \"serviceProviderEntityId\": \"https://some.id\",\n    \"singleSignOnServiceUrl\": \"https:://saml.login\"\n  }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -288,7 +331,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdSAML}}",
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdShared}}",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -300,7 +343,53 @@
 						"identityprovider",
 						"owncompany",
 						"identityproviders",
-						"{{identityProviderIdSAML}}"
+						"{{identityProviderIdShared}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST status https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{identityProviderId}",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/identityproviders/{{identityProviderIdShared}}/status?enabled=false",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"identityprovider",
+						"owncompany",
+						"identityproviders",
+						"{{identityProviderIdShared}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "enabled",
+							"value": "true",
+							"disabled": true
+						},
+						{
+							"key": "enabled",
+							"value": "false"
+						}
 					]
 				}
 			},
@@ -348,7 +437,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users?identityProviderIds={{identityProviderIdOIDC}}&identityProviderIds={{identityProviderIdShared}}",
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/users?identityProviderIds={{identityProviderIdShared}}",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -364,7 +453,8 @@
 					"query": [
 						{
 							"key": "identityProviderIds",
-							"value": "{{identityProviderIdOIDC}}"
+							"value": "{{identityProviderIdOIDC}}",
+							"disabled": true
 						},
 						{
 							"key": "identityProviderIds",
@@ -373,6 +463,11 @@
 						{
 							"key": "identityProviderIds",
 							"value": "{{identityProviderIdSAML}}",
+							"disabled": true
+						},
+						{
+							"key": "unlinkedUsersOnly",
+							"value": "true",
 							"disabled": true
 						}
 					]
@@ -419,7 +514,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/usersfile?identityProviderIds={{identityProviderIdOIDC}}&identityProviderIds={{identityProviderIdShared}}",
+					"raw": "https://localhost:5001/api/administration/identityprovider/owncompany/usersfile?identityProviderIds={{identityProviderIdOIDC}}&identityProviderIds={{identityProviderIdShared}}&unlinkedUsersOnly=true",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -445,6 +540,10 @@
 							"key": "identityProviderIds",
 							"value": "{{identityProviderIdSAML}}",
 							"disabled": true
+						},
+						{
+							"key": "unlinkedUsersOnly",
+							"value": "true"
 						}
 					]
 				}
