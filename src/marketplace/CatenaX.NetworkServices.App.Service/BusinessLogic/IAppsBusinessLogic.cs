@@ -105,8 +105,8 @@ public interface IAppsBusinessLogic
     /// Unsubscribes an app for the current users company.
     /// </summary>
     /// <param name="appId">ID of the app to unsubscribe from.</param>
-    /// <param name="userId">ID of the user that initiated app unsubscription for their company.</param>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string userId);
+    /// <param name="iamUserId">ID of the user that initiated app unsubscription for their company.</param>
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Creates an application and returns its generated ID.

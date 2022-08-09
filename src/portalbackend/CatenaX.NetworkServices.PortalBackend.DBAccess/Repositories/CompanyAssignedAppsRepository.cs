@@ -72,13 +72,14 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Apps
             .Where(app => app.Id == appId)
-            .Select(app => new ValueTuple<CompanyAssignedApp?, bool, string?>(
+            .Select(app => new ValueTuple<CompanyAssignedApp?, bool, string?, Guid>(
                 app.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
                 app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
-                app.Name
+                app.Name,
+                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId) ? app.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Id : Guid.Empty
             ))
             .SingleOrDefaultAsync();
 
@@ -87,7 +88,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
         _context.Apps
             .Where(app => app.Id == appId)
             .Select(app => ((CompanyAssignedApp? companyAssignedApp, bool _)) new (
-                app!.CompanyAssignedApps.Where(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)).SingleOrDefault(),
+                app!.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 true
             ))
             .SingleOrDefaultAsync();
