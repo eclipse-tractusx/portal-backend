@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace CatenaX.NetworkServices.Keycloak.ErrorHandling;
 
 [Serializable]
-public class UnexpectedConditionException : Exception
+public class KeycloakNoSuccessException : Exception
 {
-    public UnexpectedConditionException() { }
-    public UnexpectedConditionException(string message) : base(message) { }
-    public UnexpectedConditionException(string message, Exception inner) : base(message, inner) { }
-    protected UnexpectedConditionException(
+    public KeycloakNoSuccessException() { }
+    public KeycloakNoSuccessException(string message) : base(message) { }
+    public KeycloakNoSuccessException(string message, System.Exception inner) : base(message, inner) { }
+    protected KeycloakNoSuccessException(
         System.Runtime.Serialization.SerializationInfo info,
         System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }
