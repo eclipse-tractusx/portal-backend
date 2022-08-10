@@ -65,7 +65,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "upload_documents")]
         [Consumes("multipart/form-data")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
-        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
