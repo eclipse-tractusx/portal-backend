@@ -116,8 +116,9 @@ builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
-
+builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
+                .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
+                
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 
