@@ -25,6 +25,7 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Flurl;
 using Keycloak.Net.Models.IdentityProviders;
 using Keycloak.Net.Models.OpenIDConfiguration;
+using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json;
 
@@ -32,23 +33,23 @@ namespace CatenaX.NetworkServices.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private static readonly IReadOnlyDictionary<string,IamIdentityProviderClientAuthMethod> IdentityProviderClientAuthTypesIamClientAuthMethodDictionary = new Dictionary<string,IamIdentityProviderClientAuthMethod>()
+    private static readonly ImmutableDictionary<string,IamIdentityProviderClientAuthMethod> IdentityProviderClientAuthTypesIamClientAuthMethodDictionary = new Dictionary<string,IamIdentityProviderClientAuthMethod>()
     {
         { "private_key_jwt", IamIdentityProviderClientAuthMethod.JWT },
         { "client_secret_post", IamIdentityProviderClientAuthMethod.SECRET_POST },
         { "client_secret_basic", IamIdentityProviderClientAuthMethod.SECRET_BASIC },
         { "client_secret_jwt", IamIdentityProviderClientAuthMethod.SECRET_JWT }
-    };
+    }.ToImmutableDictionary();
 
-    private static readonly IReadOnlyDictionary<IamIdentityProviderClientAuthMethod,string> IamIdentityProviderClientAuthMethodsInternalDictionary = new Dictionary<IamIdentityProviderClientAuthMethod,string>()
+    private static readonly ImmutableDictionary<IamIdentityProviderClientAuthMethod,string> IamIdentityProviderClientAuthMethodsInternalDictionary = new Dictionary<IamIdentityProviderClientAuthMethod,string>()
     {
         { IamIdentityProviderClientAuthMethod.JWT, "private_key_jwt" },
         { IamIdentityProviderClientAuthMethod.SECRET_POST, "client_secret_post" },
         { IamIdentityProviderClientAuthMethod.SECRET_BASIC, "client_secret_basic" },
         { IamIdentityProviderClientAuthMethod.SECRET_JWT, "client_secret_jwt" }
-    };
+    }.ToImmutableDictionary();
 
-    private static readonly IReadOnlyDictionary<string,IdentityProviderMapperType> IdentityProviderKeycloakMapperTypesToEnumDictionary = new Dictionary<string,IdentityProviderMapperType>()
+    private static readonly ImmutableDictionary<string,IdentityProviderMapperType> IdentityProviderKeycloakMapperTypesToEnumDictionary = new Dictionary<string,IdentityProviderMapperType>()
     {
         { "hardcoded-user-session-attribute-idp-mapper", IdentityProviderMapperType.HARDCODED_SESSION_ATTRIBUTE },
         { "hardcoded-attribute-idp-mapper", IdentityProviderMapperType.HARDCODED_ATTRIBUTE },
@@ -59,8 +60,8 @@ public partial class ProvisioningManager
         { "oidc-role-idp-mapper", IdentityProviderMapperType.OIDC_ROLE },
         { "oidc-username-idp-mapper", IdentityProviderMapperType.OIDC_USERNAME },
         { "keycloak-oidc-role-to-role-idp-mapper", IdentityProviderMapperType.KEYCLOAK_OIDC_ROLE }
-    };
-
+    }.ToImmutableDictionary();
+    
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         _Settings.IdpPrefix + (await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false));
 
