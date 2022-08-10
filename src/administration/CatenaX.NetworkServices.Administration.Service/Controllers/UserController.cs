@@ -280,8 +280,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
             this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
-         /// <summary>
-        /// Get company app users by appId
+        /// <summary>
+        /// Get for given app id all the company assigned users
         /// </summary>
         /// <param name="appId">Get company app users by appId</param>
         /// <param name="page">page index start from 0</param>
