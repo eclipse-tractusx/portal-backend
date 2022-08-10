@@ -18,15 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace CatenaX.NetworkServices.Provisioning.Library.Enums;
 
-[Serializable]
-public class UnexpectedConditionException : Exception
+public enum IamIdentityProviderClientAuthMethod
 {
-    public UnexpectedConditionException() { }
-    public UnexpectedConditionException(string message) : base(message) { }
-    public UnexpectedConditionException(string message, Exception inner) : base(message, inner) { }
-    protected UnexpectedConditionException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    JWT = 1,
+    SECRET_BASIC = 2,
+    SECRET_POST = 3,
+    SECRET_JWT = 4,
 }
