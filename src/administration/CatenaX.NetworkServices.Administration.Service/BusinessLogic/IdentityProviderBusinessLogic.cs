@@ -115,7 +115,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             case IamIdentityProviderProtocol.SAML:
                 return await GetIdentityProviderDetailsSaml(identityProvider.Id, alias).ConfigureAwait(false);
             default:
-                throw new UnexpectedConditionException($"unexcepted value of protocol: '{protocol.ToString()}'");
+                throw new UnexpectedConditionException($"unexpected value of protocol: '{protocol.ToString()}'");
         }
     }
 
