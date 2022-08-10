@@ -135,4 +135,18 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size) =>
         this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, adminId));
+
+    /// <summary>
+    /// Get all service account roles
+    /// </summary>
+    /// <param name="languageShortName">OPTIONAL: The language short name.</param>
+    /// <returns>all service account roles</returns>
+    /// <remarks>Example: Get: api/administration/serviceaccount/user/roles</remarks>
+    /// <response code="200">returns all service account roles</response>
+    [HttpGet]
+    [Authorize(Roles = "technical_roles_management")]
+    [Route("user/roles")]
+    [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
+        _logic.GetServiceAccountRolesAsync(languageShortName);        
 }
