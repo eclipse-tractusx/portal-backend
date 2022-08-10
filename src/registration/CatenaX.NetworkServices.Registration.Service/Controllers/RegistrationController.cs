@@ -245,7 +245,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
         /// <summary>
-        /// 
+        /// Post the agreement consent status for the given application.
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4"></param>
         /// <param name="companyRolesAgreementConsents"></param>
