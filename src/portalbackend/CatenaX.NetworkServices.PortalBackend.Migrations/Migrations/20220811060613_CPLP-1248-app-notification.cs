@@ -17,28 +17,20 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 nullable: false,
                 defaultValue: new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "sales_manager_id",
-                schema: "portal",
-                table: "apps",
-                type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "sales_manager_id",
-                schema: "portal",
-                table: "apps",
-                type: "uuid",
-                nullable: false);
-            
             migrationBuilder.AlterColumn<Guid>(
                 name: "requester_id",
                 schema: "portal",
                 table: "company_assigned_apps",
                 type: "uuid",
                 nullable: false);
-            
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "sales_manager_id",
+                schema: "portal",
+                table: "apps",
+                type: "uuid",
+                nullable: true);
+
             migrationBuilder.CreateIndex(
                 name: "ix_apps_sales_manager_id",
                 schema: "portal",
@@ -52,8 +44,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 column: "sales_manager_id",
                 principalSchema: "portal",
                 principalTable: "company_users",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -278,7 +278,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("provider_company_id");
 
-                    b.Property<Guid>("SalesManagerId")
+                    b.Property<Guid?>("SalesManagerId")
                         .HasColumnType("uuid")
                         .HasColumnName("sales_manager_id");
 
@@ -3922,8 +3922,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "SalesManager")
                         .WithMany("SalesManagerOfApps")
                         .HasForeignKey("SalesManagerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_apps_company_users_sales_manager_id");
 
                     b.Navigation("AppStatus");
@@ -4164,7 +4162,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasConstraintName("fk_company_identity_providers_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
-                        .WithMany()
+                        .WithMany("CompanyIdentityProviders")
                         .HasForeignKey("IdentityProviderId")
                         .IsRequired()
                         .HasConstraintName("fk_company_identity_providers_identity_providers_identity_prov");
@@ -4721,6 +4719,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
                 {
+                    b.Navigation("CompanyIdentityProviders");
+
                     b.Navigation("IamIdentityProvider");
                 });
 

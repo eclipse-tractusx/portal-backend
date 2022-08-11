@@ -27,4 +27,4 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="ProviderName">Name of the provider</param>
 /// <param name="ProviderContactEmail">Contact email of the provider</param>
 /// <param name="SalesManagerId">Id of the sales manager for the app</param>
-public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid SalesManagerId);
+public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid? SalesManagerId);
