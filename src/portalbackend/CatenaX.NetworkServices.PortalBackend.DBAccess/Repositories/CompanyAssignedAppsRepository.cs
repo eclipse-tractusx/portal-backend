@@ -44,11 +44,24 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId ) =>
         _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId)).Entity;
 
-    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
-        _context.CompanyUsers
-            .AsNoTracking()
-            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
-                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
+        Guid appId,
+        string iamUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        string? roleName = null) {
+
+        char[] escapeChar = { '%', '_', '[', ']', '^' };
+        return _context.CompanyUsers
+                .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
+                && companyUser.IamUser!.UserEntityId == iamUserId)
+                .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+                .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser!.Firstname, $"{firstName.Trim(escapeChar)}%") : true
+                    && lastName != null ? EF.Functions.ILike(companyUser!.Lastname, $"{lastName.Trim(escapeChar)}%") : true
+                    && email != null ? EF.Functions.ILike(companyUser!.Email, $"{email.Trim(escapeChar)}%") : true
+                    && roleName != null ? companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName.Trim(escapeChar)}%")) : true);
+        }
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
