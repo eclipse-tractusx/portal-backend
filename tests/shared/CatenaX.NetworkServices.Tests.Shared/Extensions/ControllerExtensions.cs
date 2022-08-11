@@ -18,15 +18,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Tests.Shared.Extensions;
 
-public static class HttpExtensions
+/// <summary>
+/// Extension methods for the controller
+/// </summary>
+public static class ControllerExtensions
 {
-    public static async Task<T> GetResultFromContent<T>(this HttpResponseMessage response)
+    /// <summary>
+    /// Creates a claum for the identity user and adds it to the controller context
+    /// </summary>
+    /// <param name="controller">The controller that should be enriched</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public static void AddControllerContextWithClaim(this ControllerBase controller, string iamUserId)
     {
-        var responseString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<T>(responseString) ?? throw new InvalidOperationException();
+        var claimsIdentity = new ClaimsIdentity();
+        claimsIdentity.AddClaims(new[] {new Claim("sub", iamUserId)});
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(claimsIdentity)
+        };
+
+        var controllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        controller.ControllerContext = controllerContext;
     }
 }
