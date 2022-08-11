@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,27 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
-public class CompanyUserAssignedRole : IAuditable
+/// <summary>
+/// Marker interface to define that a entity is auditable
+/// </summary>
+public interface IAuditable
 {
-    protected CompanyUserAssignedRole() {}
-
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
-    {
-        CompanyUserId = companyUserId;
-        UserRoleId = userRoleId;
-    }
+    /// <summary>
+    /// Unique identifier of the entity
+    /// </summary>
+    Guid Id { get; set; }
     
-    public Guid Id { get; set; }
-    public Guid CompanyUserId { get; private set; }
-    public Guid UserRoleId { get; private set; }
-    
-    /// <inheritdoc />
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
+    /// <summary>
+    /// Reference to the <see cref="CompanyUser"/> that changed the entity
+    /// </summary>
+    Guid? LastEditorId { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -19,26 +19,21 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-
-public class CompanyUserAssignedRole : IAuditable
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+ /// <summary>
+ /// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
+ /// </summary>
+public class AuditCompanyUserAssignedRole : CompanyUserAssignedRole, IAuditEntity
 {
-    protected CompanyUserAssignedRole() {}
+    /// <inheritdoc />
+    public Guid AuditId { get; set; }
 
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
-    {
-        CompanyUserId = companyUserId;
-        UserRoleId = userRoleId;
-    }
-    
-    public Guid Id { get; set; }
-    public Guid CompanyUserId { get; private set; }
-    public Guid UserRoleId { get; private set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditOperationId { get; set; }
     
     /// <inheritdoc />
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
+    public new DateTimeOffset DateLastChanged { get; set; }
 }

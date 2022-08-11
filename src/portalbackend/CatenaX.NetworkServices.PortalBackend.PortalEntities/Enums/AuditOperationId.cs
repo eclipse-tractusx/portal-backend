@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,27 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-
-public class CompanyUserAssignedRole : IAuditable
+/// <summary>
+/// Possible operations for the audit table
+/// </summary>
+public enum AuditOperationId
 {
-    protected CompanyUserAssignedRole() {}
+    /// <summary>
+    /// The entity has been inserted
+    /// </summary>
+    INSERT = 1,
 
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
-    {
-        CompanyUserId = companyUserId;
-        UserRoleId = userRoleId;
-    }
-    
-    public Guid Id { get; set; }
-    public Guid CompanyUserId { get; private set; }
-    public Guid UserRoleId { get; private set; }
-    
-    /// <inheritdoc />
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
-}
+    /// <summary>
+    /// The entity has been updated
+    /// </summary>
+    UPDATE = 2,
+
+    /// <summary>
+    /// The entity has been deleted
+    /// </summary>
+    DELETE = 3,
+} 
