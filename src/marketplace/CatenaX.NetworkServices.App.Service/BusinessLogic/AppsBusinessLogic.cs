@@ -136,18 +136,22 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }
 
-        var notificationContent = new
+        if (appDetails.SalesManagerId.HasValue)
         {
-            appDetails.AppName,
-            RequestorCompanyName = companyName,
-            UserEmail = requesterEmail,
-        };
-        _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.SalesManagerId, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
-            notification =>
+            var notificationContent = new
             {
-                notification.CreatorUserId = requesterId;
-                notification.Content = JsonSerializer.Serialize(notificationContent);
-            });
+                appDetails.AppName,
+                RequestorCompanyName = companyName,
+                UserEmail = requesterEmail,
+            };
+            _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
+                notification =>
+                {
+                    notification.CreatorUserId = requesterId;
+                    notification.Content = JsonSerializer.Serialize(notificationContent);
+                });    
+        }
+        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParams = new Dictionary<string, string>

@@ -80,7 +80,7 @@ public class AppInputModel
     /// <summary>
     /// ID of the app's sales manager.
     /// </summary>
-    public Guid SalesManagerId { get; set; }
+    public Guid? SalesManagerId { get; set; }
 
     /// <summary>
     /// IDs of app's use cases.
