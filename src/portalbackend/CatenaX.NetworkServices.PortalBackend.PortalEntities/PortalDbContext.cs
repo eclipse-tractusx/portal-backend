@@ -386,6 +386,11 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyApplicationStatus(e))
             );
 
+        modelBuilder.Entity<CompanyIdentityProvider>()
+            .HasOne(d => d.IdentityProvider)
+            .WithMany(p => p.CompanyIdentityProviders)
+            .HasForeignKey(d => d.IdentityProviderId);
+
         modelBuilder.Entity<CompanyRole>()
             .HasData(
                 Enum.GetValues(typeof(CompanyRoleId))

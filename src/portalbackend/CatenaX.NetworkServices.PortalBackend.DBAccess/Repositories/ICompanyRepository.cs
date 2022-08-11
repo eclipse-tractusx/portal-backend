@@ -36,6 +36,8 @@ public interface ICompanyRepository
     Company CreateCompany(string companyName);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
+    
+    Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 
