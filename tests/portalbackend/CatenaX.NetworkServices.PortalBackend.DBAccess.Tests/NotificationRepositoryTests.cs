@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Tests.Shared.DatabaseRelatedTests;
+using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 using FluentAssertions;
 using Xunit;
 
@@ -68,10 +69,11 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
         
         _dbTestDbFixture.Seed(dbContext =>
-        {
-            dbContext.Notifications.RemoveRange(dbContext.Notifications.ToList());
-            dbContext.Notifications.AddRange(_notifications);
-        });
+            {
+                dbContext.Notifications.RemoveRange(dbContext.Notifications.ToList());
+            },
+            SeedExtensions.SeedNotification(_notifications.ToArray())
+        );
     }
 
     #region GetAllAsDetailsByUserIdUntracked
