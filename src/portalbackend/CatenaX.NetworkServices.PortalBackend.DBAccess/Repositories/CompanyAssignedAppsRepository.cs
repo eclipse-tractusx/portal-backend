@@ -52,15 +52,15 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
         string? email = null,
         string? roleName = null) {
 
-        char[] MyChar = { '%', '_', '[', ']', '^' };
+        char[] escapeChar = { '%', '_', '[', ']', '^' };
         return _context.CompanyUsers
                 .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
                 && companyUser.IamUser!.UserEntityId == iamUserId)
                 .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-                .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser!.Firstname, $"{firstName.Trim(MyChar)}%") : true
-                    && lastName != null ? EF.Functions.ILike(companyUser!.Lastname, $"{lastName.Trim(MyChar)}%") : true
-                    && email != null ? EF.Functions.ILike(companyUser!.Email, $"{email.Trim(MyChar)}%") : true
-                    && roleName != null ? companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName.Trim(MyChar)}%")) : true);
+                .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser!.Firstname, $"{firstName.Trim(escapeChar)}%") : true
+                    && lastName != null ? EF.Functions.ILike(companyUser!.Lastname, $"{lastName.Trim(escapeChar)}%") : true
+                    && email != null ? EF.Functions.ILike(companyUser!.Email, $"{email.Trim(escapeChar)}%") : true
+                    && roleName != null ? companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName.Trim(escapeChar)}%")) : true);
         }
 
     /// <inheritdoc />
