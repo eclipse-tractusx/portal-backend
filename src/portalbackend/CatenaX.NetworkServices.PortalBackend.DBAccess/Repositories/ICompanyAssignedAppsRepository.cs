@@ -36,7 +36,7 @@ public interface ICompanyAssignedAppsRepository
     /// <param name="companyId">Id of the company</param>
     CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId);
 
-    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId);
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
     /// <summary>
     ///

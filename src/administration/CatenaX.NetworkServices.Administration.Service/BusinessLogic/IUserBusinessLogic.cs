@@ -41,7 +41,7 @@ public interface IUserBusinessLogic
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId);
     Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId);
-    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size);
+    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
     /// <summary>
     /// Add Role to User
