@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CatenaX.NetworkServices.Tests.Shared.IntegrationTests;
@@ -11,15 +13,23 @@ public static class ServiceCollectionExtensions
         if (descriptor != null) services.Remove(descriptor);
     }
 
-    public static void EnsureDbCreated<TDbContext>(this IServiceCollection services, Action<TDbContext>? setupDbContext) 
-        where TDbContext : DbContext
+    public static void EnsureDbCreated(this IServiceCollection services, IList<Action<PortalDbContext>>? setupDbActions) 
     {
         var serviceProvider = services.BuildServiceProvider();
 
         using var scope = serviceProvider.CreateScope();
         var scopedServices = scope.ServiceProvider;
-        var context = scopedServices.GetRequiredService<TDbContext>();
+        var context = scopedServices.GetRequiredService<PortalDbContext>();
         context.Database.Migrate();
-        setupDbContext?.Invoke(context);
+        BaseSeed.SeedBasedata().Invoke(context);
+        if (setupDbActions is not null && setupDbActions.Any())
+        {
+            foreach (var setupAction in setupDbActions)
+            {
+                setupAction?.Invoke(context);
+            }
+        }
+
+        context.SaveChanges();
     }
 }

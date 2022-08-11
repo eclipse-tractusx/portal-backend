@@ -13,7 +13,7 @@ public class FakePolicyEvaluator : IPolicyEvaluator
         var testScheme = "FakeScheme";
         var principal = new ClaimsPrincipal();
         principal.AddIdentity(new ClaimsIdentity(new[] {
-            new Claim("sub", "217C7900-BC49-4882-83D9-C3C98083C584"),
+            new Claim("sub", "3d8142f1-860b-48aa-8c2b-1ccb18699f65"),
             new Claim(ClaimTypes.Role, "Administrator"),
             new Claim(ClaimTypes.NameIdentifier, "John")
         }, testScheme));
