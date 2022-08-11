@@ -12,12 +12,11 @@ using Xunit;
 
 namespace CatenaX.NetworkServices.Tests.Shared.IntegrationTests;
 
-public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactory<TProgram>, IAsyncLifetime
+public class IntegrationTestFactory<TProgram> : WebApplicationFactory<TProgram>, IAsyncLifetime
     where TProgram : class 
-    where TDbContext : DbContext
 {
     private readonly TestcontainerDatabase _container;
-    public Action<TDbContext>? SetupDbContext { get; set; }
+    public IList<Action<PortalDbContext>>? SetupDbActions { get; set; }
 
     public IntegrationTestFactory()
     {
@@ -38,14 +37,14 @@ public class IntegrationTestFactory<TProgram, TDbContext> : WebApplicationFactor
     {
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveProdDbContext<TDbContext>();
-            services.AddDbContext<TDbContext>(options =>
+            services.RemoveProdDbContext<PortalDbContext>();
+            services.AddDbContext<PortalDbContext>(options =>
             {
                 options.UseNpgsql(_container.ConnectionString,
                     x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
-            services.EnsureDbCreated(SetupDbContext);
+            services.EnsureDbCreated(SetupDbActions);
             services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
         });
     }

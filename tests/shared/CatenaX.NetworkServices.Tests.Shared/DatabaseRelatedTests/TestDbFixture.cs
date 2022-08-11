@@ -1,17 +1,19 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
+namespace CatenaX.NetworkServices.Tests.Shared.DatabaseRelatedTests;
 
-public class TestDbFactory : IAsyncLifetime
+public class TestDbFixture : IAsyncLifetime
 {
-    private readonly TestcontainerDatabase _container;
-    
-    public TestDbFactory()
+    private PortalDbContext _context = null!;
+    private readonly PostgreSqlTestcontainer _container;
+
+    public TestDbFixture()
     {
         _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
             .WithDatabase(new PostgreSqlTestcontainerConfiguration
@@ -26,21 +28,44 @@ public class TestDbFactory : IAsyncLifetime
             .Build();
     }
 
+    public void Seed(params Action<PortalDbContext>[] seedActions)
+    {
+        foreach (var seedAction in seedActions)
+        {
+            seedAction.Invoke(_context);
+        }
+
+        _context.SaveChanges();
+    }
+
     public PortalDbContext GetPortalDbContext()
     {
+        return _context;
+    }
+
+    /// <inheritdoc />
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync()
+            .ConfigureAwait(false);
+
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
+        
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
             x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-
-        var context =  new PortalDbContext(optionsBuilder.Options);
-        context.Database.Migrate();
-        return context;
+        _context =  new PortalDbContext(optionsBuilder.Options);
+        await _context.Database.MigrateAsync();
+        BaseSeed.SeedBasedata().Invoke(_context);
+        await _context.SaveChangesAsync();
     }
-    
-    public async Task InitializeAsync() => await _container.StartAsync();
 
-    public async Task DisposeAsync() => await _container.DisposeAsync();
+    /// <inheritdoc />
+    public async Task DisposeAsync()
+    {
+        await _container.DisposeAsync()
+            .ConfigureAwait(false);
+    }
 }
