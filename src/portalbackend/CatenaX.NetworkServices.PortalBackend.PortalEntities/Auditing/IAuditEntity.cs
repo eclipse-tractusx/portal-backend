@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,27 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
-public class CompanyUserAssignedRole : IAuditable
+/// <summary>
+/// Marker interface to define that the entity is an audit entity
+/// </summary>
+public interface IAuditEntity : IAuditable
 {
-    protected CompanyUserAssignedRole() {}
+    /// <summary>
+    /// Id of the audited entity
+    /// </summary>
+    Guid AuditId { get; set; }
 
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
-    {
-        CompanyUserId = companyUserId;
-        UserRoleId = userRoleId;
-    }
-    
-    public Guid Id { get; set; }
-    public Guid CompanyUserId { get; private set; }
-    public Guid UserRoleId { get; private set; }
-    
-    /// <inheritdoc />
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
+    /// <summary>
+    /// Date Time of the last change of the entity
+    /// </summary>
+    DateTimeOffset DateLastChanged { get; set; }
+
+    /// <summary>
+    /// Id of the audit operation
+    /// </summary>
+    AuditOperationId AuditOperationId { get; set; }
 }

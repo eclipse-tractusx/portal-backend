@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -92,6 +94,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Language> Languages { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
+
+    public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -298,6 +302,13 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.AppId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+        
+        modelBuilder.Entity<AuditOperation>()
+            .HasData(
+                Enum.GetValues(typeof(AuditOperationId))
+                    .Cast<AuditOperationId>()
+                    .Select(e => new AuditOperation(e))
+            );
 
         modelBuilder.Entity<Company>(entity =>
         {
@@ -491,8 +502,18 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
+            
         });
+        
+        modelBuilder.Entity<AuditCompanyUserAssignedRole>(x =>
+        {
+            x.HasBaseType((Type?)null);
 
+            x.Ignore(x => x.CompanyUser);
+            x.Ignore(x => x.UserRole);
+
+            x.ToTable("audit_company_user_assigned_roles_cplp_1251_audit_company_user_assigned_roles");
+        });
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
             .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 
