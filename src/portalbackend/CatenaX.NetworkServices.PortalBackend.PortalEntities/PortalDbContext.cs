@@ -96,6 +96,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
 
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -385,6 +386,16 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.CompanyApplications)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        
+        modelBuilder.Entity<AuditCompanyApplication>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.ApplicationStatus);
+            x.Ignore(x => x.Company);
+            x.Ignore(x => x.Invitations);
+            x.ToTable("audit_company_applications_cplp_1255_audit_company_applications");
+        });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
             .HasData(
