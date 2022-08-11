@@ -130,4 +130,4 @@ app.Run();
 /// <summary>
 /// Needed for integration Test setup
 /// </summary>
-public static partial class Program { }
+public partial class Program { }
