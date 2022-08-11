@@ -2,6 +2,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
+using CatenaX.NetworkServices.Framework.Models;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -81,4 +82,15 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(userRole => userRole.IamClient!.ClientClientId == keyCloakClientId)
             .Select(userRole => userRole.UserRoleText)
             .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string clientId, string? languageShortName = null) =>
+       _dbContext.UserRoles
+           .AsNoTracking()
+           .Where(userRole => userRole.IamClient!.ClientClientId == clientId)
+           .Select(userRole => new UserRoleWithDescription(
+                   userRole.Id,
+                   userRole.UserRoleText,
+                   userRole.UserRoleDescriptions.SingleOrDefault(desc =>
+                   desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description))
+           .AsAsyncEnumerable();
 }
