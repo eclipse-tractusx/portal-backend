@@ -42,13 +42,14 @@ public class UserRepository : IUserRepository
     }
 
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
-        CompanyUserStatusId companyUserStatusId) =>
+        CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
         _dbContext.CompanyUsers.Add(
             new CompanyUser(
                 Guid.NewGuid(),
                 companyId,
                 companyUserStatusId,
-                DateTimeOffset.UtcNow)
+                DateTimeOffset.UtcNow,
+                lastEditorId)
             {
                 Firstname = firstName,
                 Lastname = lastName,
@@ -89,11 +90,11 @@ public class UserRepository : IUserRepository
                 companyUser.Email))
             .SingleOrDefaultAsync();
 
-    public Task<Guid> GetOwnCompanyId(string iamUserId) =>
+    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => iamUser.CompanyUser!.CompanyId)
+            .Select(iamUser => new ValueTuple<Guid, Guid>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId))
             .SingleOrDefaultAsync();
     
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>

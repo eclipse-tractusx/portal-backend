@@ -305,11 +305,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ControllerArgumentException($"user {iamUserId} is not assigned with a company");
         }
 
-        var (companyId, companyAssignedApp, companyName) = companyAppSubscriptionData;
+        var (companyId, companyAssignedApp, companyName, companyUserId) = companyAppSubscriptionData;
         if (companyAssignedApp == null)
         {
             companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, AppSubscriptionStatusId.PENDING,
-                requesterId);
+                requesterId, companyUserId);
         }
         else
         {

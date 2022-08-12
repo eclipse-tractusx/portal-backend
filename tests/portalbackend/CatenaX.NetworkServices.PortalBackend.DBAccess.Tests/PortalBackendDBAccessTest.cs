@@ -36,7 +36,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
                     id: new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"),
                     companyId: new Guid("220330ac-170d-4e22-8d72-9467ed042149"),
                     companyUserStatusId: PortalEntities.Enums.CompanyUserStatusId.ACTIVE,
-                    dateCreated: DateTime.UtcNow
+                    dateCreated: DateTime.UtcNow,
+                    lastEditorId: new Guid("51F38065-7DB4-43C8-9217-127E88DE1E3C")
                 )
                 );
             mockContext.IamUsers.Add(
