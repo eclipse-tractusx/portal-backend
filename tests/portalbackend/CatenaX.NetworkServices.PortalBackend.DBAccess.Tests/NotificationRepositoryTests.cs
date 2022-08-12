@@ -40,6 +40,7 @@ public class NotificationRepositoryTests
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
     private readonly Guid _companyUserId;
+    private readonly Guid _creatorId;
     private readonly string _iamUserId;
     private readonly ICollection<Notification> _readNotifications;
     private readonly ICollection<Notification> _unreadNotifications;
@@ -53,6 +54,7 @@ public class NotificationRepositoryTests
 
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _companyUserId = Guid.NewGuid();
+        _creatorId = Guid.NewGuid();
         _iamUserId = Guid.NewGuid().ToString();
         _contextFake = A.Fake<PortalDbContext>();
 
@@ -185,7 +187,7 @@ public class NotificationRepositoryTests
 
     private void SetupNotificationDb()
     {
-        var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
+        var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, _creatorId)
         {
             IamUser = new IamUser(_iamUserId, _companyUserId)
         };
@@ -212,7 +214,7 @@ public class NotificationRepositoryTests
 
     private void SetupCompanyUserDb()
     {
-        var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow)
+        var companyUser = new CompanyUser(_companyUserId, Guid.NewGuid(), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, _creatorId)
         {
             IamUser = new IamUser(_iamUserId, _companyUserId)
         };

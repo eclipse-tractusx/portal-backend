@@ -36,7 +36,8 @@ public interface ICompanyAssignedAppsRepository
     /// <param name="companyId">Id of the company</param>
     /// <param name="appSubscriptionStatusId">id of the app subscription status</param>
     /// <param name="requesterId">id of the user that requested the subscription of the app</param>
-    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId);
+    /// <param name="creatorId">id of the creator</param>
+    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
@@ -57,5 +58,5 @@ public interface ICompanyAssignedAppsRepository
 
     Task<(CompanyAssignedApp? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
-    Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
+    Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
 }

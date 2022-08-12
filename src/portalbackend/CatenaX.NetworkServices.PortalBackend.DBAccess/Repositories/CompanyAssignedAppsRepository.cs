@@ -41,8 +41,8 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     }
 
     /// <inheritdoc />
-    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId) =>
-        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(appId, companyId, appSubscriptionStatusId, requesterId)).Entity;
+    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid creatorId) =>
+        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(Guid.NewGuid(), appId, companyId, appSubscriptionStatusId, requesterId, creatorId)).Entity;
 
     public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
         Guid appId,
@@ -106,14 +106,15 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId) =>
+    public Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId) =>
         _context.IamUsers
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new ValueTuple<Guid, CompanyAssignedApp?, string>(
+            .Select(company => new ValueTuple<Guid, CompanyAssignedApp?, string, Guid>(
                 company!.Id,
                 company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId),
-                company!.Name
+                company!.Name,
+                company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
             ))
             .SingleOrDefaultAsync();
 }
