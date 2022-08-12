@@ -537,6 +537,7 @@ public class PortalDbContext : DbContext
             x.Ignore(x => x.Documents);
             x.Ignore(x => x.Invitations);
             x.Ignore(x => x.Apps);
+            x.Ignore(x => x.SalesManagerOfApps);
             x.Ignore(x => x.UserRoles);
             x.Ignore(x => x.CompanyUserAssignedRoles);
             x.Ignore(x => x.CompanyUserAssignedBusinessPartners);

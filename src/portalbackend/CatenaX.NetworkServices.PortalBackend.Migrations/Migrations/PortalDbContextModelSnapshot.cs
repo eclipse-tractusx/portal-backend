@@ -344,10 +344,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("app_url");
 
-                    b.Property<Guid?>("AuditCompanyUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_company_user_id");
-
                     b.Property<string>("ContactEmail")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -404,9 +400,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("AppStatusId")
                         .HasDatabaseName("ix_apps_app_status_id");
-
-                    b.HasIndex("AuditCompanyUserId")
-                        .HasDatabaseName("ix_apps_audit_company_user_id");
 
                     b.HasIndex("ProviderCompanyId")
                         .HasDatabaseName("ix_apps_provider_company_id");
@@ -4088,11 +4081,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_apps_app_statuses_app_status_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", null)
-                        .WithMany("SalesManagerOfApps")
-                        .HasForeignKey("AuditCompanyUserId")
-                        .HasConstraintName("fk_apps_audit_company_users_audit_company_user_id1");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "ProviderCompany")
                         .WithMany("ProvidedApps")
                         .HasForeignKey("ProviderCompanyId")
@@ -4722,11 +4710,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Language");
 
                     b.Navigation("UserRole");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", b =>
-                {
-                    b.Navigation("SalesManagerOfApps");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
