@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220812123620_CPLP-1254-db-audit")]
+    [Migration("20220812133428_CPLP-1254-db-audit")]
     partial class CPLP1254dbaudit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
