@@ -42,21 +42,19 @@ public class CompanyAssignedApp : IAuditable
     /// <param name="appId">App id.</param>
     /// <param name="companyId">Company id.</param>
     /// <param name="appSubscriptionStatusId">app subscription status.</param>
-    /// <param name="lastEditorId">Id of the last editor</param>
-    public CompanyAssignedApp(Guid id, Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid lastEditorId)
+    /// <param name="requesterId">Id of the requester</param>
+    public CompanyAssignedApp(Guid id, Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
     {
         Id = id;
         AppId = appId;
         CompanyId = companyId;
         AppSubscriptionStatusId = appSubscriptionStatusId;
+        RequesterId = requesterId;
         LastEditorId = lastEditorId;
     }
 
     /// <inheritdoc />
     public Guid Id { get; set; }
-
-    /// <inheritdoc />
-    public Guid? LastEditorId { get; set; }
 
     /// <summary>
     /// ID of the company subscribing an app.
@@ -72,6 +70,14 @@ public class CompanyAssignedApp : IAuditable
     /// ID of the app subscription status.
     /// </summary>
     public AppSubscriptionStatusId AppSubscriptionStatusId { get; set; }
+
+    /// <summary>
+    /// Id of the app requester 
+    /// </summary>
+    public Guid RequesterId { get; set; }
+    
+    /// <inheritdoc />
+    public Guid? LastEditorId { get; set; }
 
     // Navigation properties
     /// <summary>

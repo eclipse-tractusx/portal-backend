@@ -25,17 +25,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 nullable: false,
                 defaultValueSql: "gen_random_uuid()");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "id",
-                schema: "portal",
-                table: "company_assigned_apps",
-                type: "uuid",
-                nullable: false);
-
             migrationBuilder.AddColumn<Guid>(
                 name: "last_editor_id",
                 schema: "portal",
                 table: "company_assigned_apps",
+                type: "uuid",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "audit_company_user_id",
+                schema: "portal",
+                table: "apps",
                 type: "uuid",
                 nullable: true);
 
@@ -48,10 +48,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     audit_id = table.Column<Guid>(type: "uuid", nullable: false),
                     date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     audit_operation_id = table.Column<int>(type: "integer", nullable: false),
-                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     app_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    app_subscription_status_id = table.Column<int>(type: "integer", nullable: false)
+                    app_subscription_status_id = table.Column<int>(type: "integer", nullable: false),
+                    requester_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -113,10 +114,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_apps_audit_company_user_id",
+                schema: "portal",
+                table: "apps",
+                column: "audit_company_user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_audit_company_users_cplp_1254_db_audit_company_user_status_",
                 schema: "portal",
                 table: "audit_company_users_cplp_1254_db_audit",
                 column: "company_user_status_id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_apps_audit_company_users_audit_company_user_id1",
+                schema: "portal",
+                table: "apps",
+                column: "audit_company_user_id",
+                principalSchema: "portal",
+                principalTable: "audit_company_users_cplp_1254_db_audit",
+                principalColumn: "id");
             
             migrationBuilder.AddAuditTrigger<AuditCompanyUser>("cplp_1254_db_audit");
             migrationBuilder.AddAuditTrigger<AuditCompanyAssignedApp>("cplp_1254_db_audit");
@@ -126,6 +142,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
         {
             migrationBuilder.DropAuditTrigger<AuditCompanyUser>();
             migrationBuilder.DropAuditTrigger<AuditCompanyAssignedApp>();
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_apps_audit_company_users_audit_company_user_id1",
+                schema: "portal",
+                table: "apps");
 
             migrationBuilder.DropTable(
                 name: "audit_company_assigned_apps_cplp_1254_db_audit",
@@ -138,6 +159,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             migrationBuilder.DropTable(
                 name: "audit_operation",
                 schema: "portal");
+
+            migrationBuilder.DropIndex(
+                name: "ix_apps_audit_company_user_id",
+                schema: "portal",
+                table: "apps");
 
             migrationBuilder.DropColumn(
                 name: "last_editor_id",
@@ -153,6 +179,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "last_editor_id",
                 schema: "portal",
                 table: "company_assigned_apps");
+
+            migrationBuilder.DropColumn(
+                name: "audit_company_user_id",
+                schema: "portal",
+                table: "apps");
         }
     }
 }

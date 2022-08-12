@@ -112,11 +112,11 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var (companyUser, iamUser) = CreateTestUserPair();
 
             A.CallTo(() => _companyAssignedAppsRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUser.UserEntityId))
-                .Returns(((Guid companyId, CompanyAssignedApp? companyAssignedApp)) new (companyUser.CompanyId, null));
-            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING, companyUser.Id))
-                .Returns(new CompanyAssignedApp(Guid.NewGuid(), appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING, companyUser.Id));
+                .Returns(new ValueTuple<Guid, CompanyAssignedApp?, string, Guid>(companyUser.CompanyId, null, "umbrella corporation", companyUser.Id));
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
+                .Returns(new CompanyAssignedApp(Guid.NewGuid(), appId, companyUser.CompanyId, AppSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id));
             A.CallTo(() => _appRepository.GetAppProviderDetailsAsync(appId))
-                .Returns(new AppProviderDetailsData(appName, providerName, providerContactEmail));
+                .Returns(new AppProviderDetailsData(appName, providerName, providerContactEmail, Guid.NewGuid()));
             A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
             _fixture.Inject(_portalRepositories);
@@ -129,7 +129,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.AddOwnCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<AppSubscriptionStatusId>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
+            A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<AppSubscriptionStatusId>._, A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
         }
 

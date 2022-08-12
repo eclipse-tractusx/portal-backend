@@ -485,9 +485,23 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
+            Guid appId, 
+            string iamUserId, 
+            int page, 
+            int size, 
+            string? firstName = null, 
+            string? lastName = null, 
+            string? email = null,
+            string? roleName = null)
         {
-            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(
+                appId, 
+                iamUserId,
+                firstName,
+                lastName,
+                email,
+                roleName);
 
             return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,

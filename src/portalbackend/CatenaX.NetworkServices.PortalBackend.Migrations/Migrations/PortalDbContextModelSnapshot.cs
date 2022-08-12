@@ -59,10 +59,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("last_editor_id");
 
-                    b.HasKey("Id")
-                        .HasName("pk_audit_company_assigned_apps_cplp_1253_company_assigned_app");
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requester_id");
 
-                    b.ToTable("audit_company_assigned_apps_cplp_1253_company_assigned_app", "portal");
+                    b.HasKey("Id")
+                        .HasName("pk_audit_company_assigned_apps_cplp_1254_db_audit");
+
+                    b.ToTable("audit_company_assigned_apps_cplp_1254_db_audit", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", b =>
@@ -340,6 +344,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("app_url");
 
+                    b.Property<Guid?>("AuditCompanyUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_company_user_id");
+
                     b.Property<string>("ContactEmail")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -382,6 +390,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("provider_company_id");
 
+                    b.Property<Guid?>("SalesManagerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sales_manager_id");
+
                     b.Property<string>("ThumbnailUrl")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -393,8 +405,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasIndex("AppStatusId")
                         .HasDatabaseName("ix_apps_app_status_id");
 
+                    b.HasIndex("AuditCompanyUserId")
+                        .HasDatabaseName("ix_apps_audit_company_user_id");
+
                     b.HasIndex("ProviderCompanyId")
                         .HasDatabaseName("ix_apps_provider_company_id");
+
+                    b.HasIndex("SalesManagerId")
+                        .HasDatabaseName("ix_apps_sales_manager_id");
 
                     b.ToTable("apps", "portal");
                 });
@@ -855,6 +873,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Property<Guid?>("LastEditorId")
                         .HasColumnType("uuid")
                         .HasColumnName("last_editor_id");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requester_id");
 
                     b.HasKey("CompanyId", "AppId")
                         .HasName("pk_company_assigned_apps");
@@ -4066,14 +4088,26 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_apps_app_statuses_app_status_id");
 
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", null)
+                        .WithMany("SalesManagerOfApps")
+                        .HasForeignKey("AuditCompanyUserId")
+                        .HasConstraintName("fk_apps_audit_company_users_audit_company_user_id1");
+
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "ProviderCompany")
                         .WithMany("ProvidedApps")
                         .HasForeignKey("ProviderCompanyId")
                         .HasConstraintName("fk_apps_companies_provider_company_id");
 
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "SalesManager")
+                        .WithMany("SalesManagerOfApps")
+                        .HasForeignKey("SalesManagerId")
+                        .HasConstraintName("fk_apps_company_users_sales_manager_id");
+
                     b.Navigation("AppStatus");
 
                     b.Navigation("ProviderCompany");
+
+                    b.Navigation("SalesManager");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
@@ -4307,7 +4341,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasConstraintName("fk_company_identity_providers_companies_company_id");
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
-                        .WithMany()
+                        .WithMany("CompanyIdentityProviders")
                         .HasForeignKey("IdentityProviderId")
                         .IsRequired()
                         .HasConstraintName("fk_company_identity_providers_identity_providers_identity_prov");
@@ -4690,6 +4724,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("UserRole");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", b =>
+                {
+                    b.Navigation("SalesManagerOfApps");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Navigation("Companies");
@@ -4806,6 +4845,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Invitations");
 
                     b.Navigation("Notifications");
+
+                    b.Navigation("SalesManagerOfApps");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
@@ -4862,6 +4903,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
                 {
+                    b.Navigation("CompanyIdentityProviders");
+
                     b.Navigation("IamIdentityProvider");
                 });
 
