@@ -79,6 +79,24 @@ public class UserRepository : IUserRepository
                 && lastName != null ? companyUser.Lastname == lastName : true
                 && email != null ? companyUser.Email == email : true);
 
+    public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
+        _dbContext.CompanyUsers
+            .AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId && companyUser.CompanyId == companyId)
+            .Select(companyUser => new ValueTuple<string,string?,string?,string?>(
+                companyUser.IamUser!.UserEntityId,
+                companyUser.Firstname,
+                companyUser.Lastname,
+                companyUser.Email))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => new ValueTuple<Guid, Guid>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId))
+            .SingleOrDefaultAsync();
+    
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>
         _dbContext.IamUsers
             .Where(iamUser => iamUser.UserEntityId == adminUserId)
@@ -260,6 +278,13 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(cu => cu.IamUser!.UserEntityId == userId)
             .Select(cu => cu.Id)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId) =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(cu => cu.IamUser!.UserEntityId == userId)
+            .Select(cu => new ValueTuple<Guid, string>(cu.Id, cu.Email!))
             .SingleAsync();
 
     /// <inheritdoc />

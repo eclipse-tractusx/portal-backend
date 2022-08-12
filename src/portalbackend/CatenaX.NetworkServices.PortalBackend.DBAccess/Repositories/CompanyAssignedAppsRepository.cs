@@ -41,14 +41,27 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
     }
 
     /// <inheritdoc />
-    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid creatorId) =>
-        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(Guid.NewGuid(), appId, companyId, appSubscriptionStatusId, creatorId)).Entity;
+    public CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid creatorId) =>
+        _context.CompanyAssignedApps.Add(new CompanyAssignedApp(Guid.NewGuid(), appId, companyId, appSubscriptionStatusId, requesterId, creatorId)).Entity;
 
-    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId) =>
-        _context.CompanyUsers
-            .AsNoTracking()
-            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
-                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId));
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
+        Guid appId,
+        string iamUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        string? roleName = null) {
+
+        char[] escapeChar = { '%', '_', '[', ']', '^' };
+        return _context.CompanyUsers
+                .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
+                && companyUser.IamUser!.UserEntityId == iamUserId)
+                .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+                .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser!.Firstname, $"{firstName.Trim(escapeChar)}%") : true
+                    && lastName != null ? EF.Functions.ILike(companyUser!.Lastname, $"{lastName.Trim(escapeChar)}%") : true
+                    && email != null ? EF.Functions.ILike(companyUser!.Email, $"{email.Trim(escapeChar)}%") : true
+                    && roleName != null ? companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName.Trim(escapeChar)}%")) : true);
+        }
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
@@ -72,12 +85,14 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Apps
             .Where(app => app.Id == appId)
-            .Select(app => ((CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)) new (
-                app!.CompanyAssignedApps.Where(assignedApp => assignedApp.CompanyId == companyId).SingleOrDefault(),
-                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .Select(app => new ValueTuple<CompanyAssignedApp?, bool, string?, Guid>(
+                app.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
+                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
+                app.Name,
+                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId) ? app.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Id : Guid.Empty
             ))
             .SingleOrDefaultAsync();
 
@@ -86,18 +101,20 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
         _context.Apps
             .Where(app => app.Id == appId)
             .Select(app => ((CompanyAssignedApp? companyAssignedApp, bool _)) new (
-                app!.CompanyAssignedApps.Where(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)).SingleOrDefault(),
+                app!.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 true
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId) =>
+    public Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId) =>
         _context.IamUsers
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => ((Guid companyId, CompanyAssignedApp?)) new (
+            .Select(company => new ValueTuple<Guid, CompanyAssignedApp?, string, Guid>(
                 company!.Id,
-                company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId)
+                company.CompanyAssignedApps.SingleOrDefault(assignedApp => assignedApp.AppId == appId),
+                company!.Name,
+                company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
             ))
             .SingleOrDefaultAsync();
 }

@@ -50,7 +50,7 @@ public class RegistrationController : ControllerBase
     /// </summary>
     /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4"></param>
     /// <returns>the company with its address</returns>
-    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress
+    /// <remarks>Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
     /// <response code="200">Returns the company with its address.</response>
     /// <response code="400">No applicationId was set.</response>
     /// <response code="404">Application ID not found.</response>
@@ -70,8 +70,10 @@ public class RegistrationController : ControllerBase
     /// <param name="size">size to get number of records</param>
     /// <param name="companyName">search by company name</param>
     /// <returns>Company Application Details</returns>
-    /// <remarks>Example: GET: api/administration/registration/applications?companyName=Car&page=0&size=4</remarks>
-    /// <remarks>Example: GET: api/administration/registration/applications?page=0&size=4</remarks>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/applications?companyName=Car&amp;page=0&amp;size=4 <br />
+    /// Example: GET: api/administration/registration/applications?page=0&amp;size=4
+    /// </remarks>
     /// <response code="200">Result as a Company Application Details</response>
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
@@ -118,13 +120,13 @@ public class RegistrationController : ControllerBase
     public Task<bool> DeclinePartnerRequest([FromRoute] Guid applicationId) =>
             _logic.DeclinePartnerRequest(applicationId);
 
-     /// <summary>
+    /// <summary>
     /// fetch all applications details with company user details.
     /// </summary>
     /// <param name="page">Optional query parameter defining the page index start from 0</param>
     /// <param name="size">Optional query parameter defining the size to get number of records</param>
     /// <returns>All Company Applications Details along with user details</returns>
-    /// <remarks>Example: GET: api/administration/registration/applicationsWithStatus?page=0&size=15</remarks>
+    /// <remarks>Example: GET: api/administration/registration/applicationsWithStatus?page=0&amp;size=15</remarks>
     /// <response code="200">Result as a All Company Applications Details</response>
     [HttpGet]
     [Authorize(Roles = "invite_new_partner")]

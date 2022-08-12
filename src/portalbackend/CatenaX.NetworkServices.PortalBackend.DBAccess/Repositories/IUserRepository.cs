@@ -32,6 +32,8 @@ public interface IUserRepository
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
     IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
+    Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
+    Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
@@ -80,4 +82,12 @@ public interface IUserRepository
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
     IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
         Guid companyUserId);
+
+    /// <summary>
+    /// Gets the company user id and email for the given iam user
+    /// </summary>
+    /// <remarks><b>Returns as UNTRACKED</b></remarks>
+    /// <param name="userId">id of the iamUser</param>
+    /// <returns>Returns the userId and email</returns>
+    Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId);
 }

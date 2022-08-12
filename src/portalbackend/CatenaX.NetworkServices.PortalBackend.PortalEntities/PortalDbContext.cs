@@ -94,9 +94,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Language> Languages { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
-
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
-    
     public virtual DbSet<AuditCompanyAssignedApp> AuditCompanyAssignedApps { get; set; } = default!;
 
     
@@ -164,6 +162,10 @@ public class PortalDbContext : DbContext
         {
             entity.HasOne(d => d.ProviderCompany)
                 .WithMany(p => p!.ProvidedApps);
+
+            entity.HasOne(x => x.SalesManager)
+                .WithMany(x => x!.SalesManagerOfApps)
+                .HasForeignKey(x => x.SalesManagerId);
 
             entity.HasMany(p => p.Companies)
                 .WithMany(p => p.BoughtApps)
@@ -395,6 +397,11 @@ public class PortalDbContext : DbContext
                     .Cast<CompanyApplicationStatusId>()
                     .Select(e => new CompanyApplicationStatus(e))
             );
+
+        modelBuilder.Entity<CompanyIdentityProvider>()
+            .HasOne(d => d.IdentityProvider)
+            .WithMany(p => p.CompanyIdentityProviders)
+            .HasForeignKey(d => d.IdentityProviderId);
 
         modelBuilder.Entity<AuditCompanyAssignedApp>(x =>
         {
