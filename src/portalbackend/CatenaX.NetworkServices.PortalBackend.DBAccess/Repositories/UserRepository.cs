@@ -280,6 +280,13 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
+    public Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId) =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(cu => cu.IamUser!.UserEntityId == userId)
+            .Select(cu => new ValueTuple<Guid, string>(cu.Id, cu.Email!))
+            .SingleAsync();
+
+    /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId) =>
         _dbContext.IamUsers.AsNoTracking()
             .Where(u => u.UserEntityId == userId) // Id is unique, so single user

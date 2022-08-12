@@ -21,14 +21,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
                     id: new Guid("bd0d0302-3ec8-4bfe-99db-b89bdb6c4b94"),
                     companyApplicationId: new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"),
                     companyUserId: new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"),
-                    invitationStatusId: PortalBackend.PortalEntities.Enums.InvitationStatusId.CREATED,
+                    invitationStatusId: PortalEntities.Enums.InvitationStatusId.CREATED,
                     dateCreated: DateTime.UtcNow
-
                 ));
             mockContext.InvitationStatuses.Add(
                 new InvitationStatus
                 (
-                    invitationStatusId: PortalBackend.PortalEntities.Enums.InvitationStatusId.CREATED
+                    invitationStatusId: PortalEntities.Enums.InvitationStatusId.CREATED
                 )
                 );
             mockContext.CompanyUsers.Add(
