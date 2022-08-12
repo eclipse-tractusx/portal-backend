@@ -33,11 +33,13 @@ public class CompanyAssignedApp
     /// <param name="appId">App id.</param>
     /// <param name="companyId">Company id.</param>
     /// <param name="appSubscriptionStatusId">app subscription status.</param>
-    public CompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId)
+    /// <param name="requesterId">Id of the requester</param>
+    public CompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId)
     {
         AppId = appId;
         CompanyId = companyId;
         AppSubscriptionStatusId = appSubscriptionStatusId;
+        RequesterId = requesterId;
     }
 
     /// <summary>
@@ -55,6 +57,11 @@ public class CompanyAssignedApp
     /// </summary>
     public AppSubscriptionStatusId AppSubscriptionStatusId { get; set; }
 
+    /// <summary>
+    /// Id of the app requester 
+    /// </summary>
+    public Guid RequesterId { get; set; }
+    
     // Navigation properties
     /// <summary>
     /// Subscribed app.

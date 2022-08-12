@@ -31,6 +31,7 @@ public class CompanyUser
         Documents = new HashSet<Document>();
         Invitations = new HashSet<Invitation>();
         Apps = new HashSet<App>();
+        SalesManagerOfApps = new HashSet<App>();
         UserRoles = new HashSet<UserRole>();
         CompanyUserAssignedRoles = new HashSet<CompanyUserAssignedRole>();
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
@@ -75,6 +76,7 @@ public class CompanyUser
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<App> Apps { get; private set; }
+    public virtual ICollection<App> SalesManagerOfApps { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
