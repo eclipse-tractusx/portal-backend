@@ -59,7 +59,7 @@ public class DocumentRepository : IDocumentRepository
             .Where(iamUser =>
                 iamUser.UserEntityId == iamUserId
                 && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId))
+            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId && docu.DocumentStatusId != DocumentStatusId.INACTIVE))
             .Select(document =>
                 new UploadDocuments(
                     document!.Id,

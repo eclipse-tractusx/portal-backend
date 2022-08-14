@@ -125,6 +125,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var pwd = new Password();
 
+            var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
             foreach (UserCreationInfo user in usersToCreate)
             {
                 bool success = false;
@@ -142,8 +143,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         Password = password,
                         BusinessPartnerNumber = businessPartnerNumber
                     }).ConfigureAwait(false);
-
-                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
+                    
+                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
                     var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
                     if (validRoles.Count() > 0)
@@ -484,9 +485,23 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
+            Guid appId, 
+            string iamUserId, 
+            int page, 
+            int size, 
+            string? firstName = null, 
+            string? lastName = null, 
+            string? email = null,
+            string? roleName = null)
         {
-            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(
+                appId, 
+                iamUserId,
+                firstName,
+                lastName,
+                email,
+                roleName);
 
             return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
                 page,
