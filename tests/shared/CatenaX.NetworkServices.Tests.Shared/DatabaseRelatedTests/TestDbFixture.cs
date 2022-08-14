@@ -76,7 +76,7 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        _context =  new PortalDbContext(optionsBuilder.Options);
+        _context = new PortalDbContext(optionsBuilder.Options);
         await _context.Database.MigrateAsync();
         BaseSeed.SeedBasedata().Invoke(_context);
         await _context.SaveChangesAsync();

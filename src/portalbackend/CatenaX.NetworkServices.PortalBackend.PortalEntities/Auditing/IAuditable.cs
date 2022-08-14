@@ -18,13 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
-/// Data Object for the AppProvider Details
+/// Marker interface to define that a entity is auditable
 /// </summary>
-/// <param name="AppName">Name of the app</param>
-/// <param name="ProviderName">Name of the provider</param>
-/// <param name="ProviderContactEmail">Contact email of the provider</param>
-/// <param name="SalesManagerId">Id of the sales manager for the app</param>
-public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid? SalesManagerId);
+public interface IAuditable
+{
+    /// <summary>
+    /// Unique identifier of the entity
+    /// </summary>
+    Guid Id { get; set; }
+    
+    /// <summary>
+    /// Reference to the <see cref="CompanyUser"/> that changed the entity
+    /// </summary>
+    Guid? LastEditorId { get; set; }
+}
