@@ -29,6 +29,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// Implementation of <see cref="IAppRepository"/> accessing database with EF Core.
 public class AppRepository : IAppRepository
 {
+    private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext _context;
 
     /// <summary>
@@ -54,11 +55,11 @@ public class AppRepository : IAppRepository
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
-    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
-        _context.AppAssignedClients.AsNoTracking()
+    public Task<List<string>> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
+        _context.AppInstances.AsNoTracking()
             .Where(appClient => appClient.AppId == appId)
             .Select(appClient => appClient.IamClient!.ClientClientId)
-            .SingleOrDefaultAsync();
+            .ToListAsync();
 
     /// <inheritdoc />
     public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
@@ -189,4 +190,17 @@ public class AppRepository : IAppRepository
                 app.DateLastChanged
             ))
             .AsAsyncEnumerable();
+    
+    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
+        _context.Apps
+            .Where(app => app.Id == appId)
+            .SelectMany(app => app.UserRoles)
+            .Select(roles => new ClientRoles(
+                roles.Id,
+                roles.UserRoleText,
+                languageShortName == null ?
+                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description :
+                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+            )).AsAsyncEnumerable();
+
 }

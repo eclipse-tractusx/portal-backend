@@ -29,6 +29,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto.Generators;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -107,7 +108,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
     {
-        if (applicationId == default)
+        if (applicationId == Guid.Empty)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
@@ -117,7 +118,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
     {
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (creatorId == null)
+        if (creatorId == Guid.Empty)
         {
             throw new UnexpectedConditionException($"user {iamUserId} is not associated with a companyuser");
         }
@@ -162,7 +163,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<bool> DeclinePartnerRequest(Guid applicationId)
     {
-        if (applicationId == default)
+        if (applicationId == Guid.NewGuid())
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
@@ -247,7 +248,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
     {
         var failedUserNames = new List<string>();
-        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles).ConfigureAwait(false);
+        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles, applicationId).ConfigureAwait(false);
         await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, initialRolesData.Select(x => x.UserRoleId)).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
@@ -288,7 +289,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
+        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles, applicationId).ConfigureAwait(false);
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
         var invitedUsersData = applicationRepository
@@ -319,10 +320,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return assignedRoles;
     }
 
-    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
+    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles, Guid appId)
     {
         var roleData = await userRolesRepository
-            .GetUserRoleDataUntrackedAsync(roles)
+            .GetUserRoleDataUntrackedAsync(roles, appId)
             .ToListAsync()
             .ConfigureAwait(false);
         if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))

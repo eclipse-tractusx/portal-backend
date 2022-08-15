@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using System.ComponentModel.DataAnnotations;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -43,6 +44,7 @@ public class CompanyAssignedApp : IAuditable
     /// <param name="companyId">Company id.</param>
     /// <param name="appSubscriptionStatusId">app subscription status.</param>
     /// <param name="requesterId">Id of the requester</param>
+    /// <param name="lastEditorId">Id of the editor</param>
     public CompanyAssignedApp(Guid id, Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
     {
         Id = id;
@@ -67,6 +69,11 @@ public class CompanyAssignedApp : IAuditable
     public Guid AppId { get; private set; }
 
     /// <summary>
+    /// ID of the app instance.
+    /// </summary>
+    public Guid? AppInstanceId { get; set; }
+
+    /// <summary>
     /// ID of the app subscription status.
     /// </summary>
     public AppSubscriptionStatusId AppSubscriptionStatusId { get; set; }
@@ -78,6 +85,9 @@ public class CompanyAssignedApp : IAuditable
     
     /// <inheritdoc />
     public Guid? LastEditorId { get; set; }
+    
+    [MaxLength(255)]
+    public string? AppUrl { get; set; }
 
     // Navigation properties
     /// <summary>
@@ -88,6 +98,12 @@ public class CompanyAssignedApp : IAuditable
     /// Subscribing company.
     /// </summary>
     public virtual Company? Company { get; private set; }
+
+    /// <summary>
+    /// Subscribing app instance.
+    /// </summary>
+    public virtual AppInstance? AppInstance { get; private set; }
+
     /// <summary>
     /// Subscription status.
     /// </summary>

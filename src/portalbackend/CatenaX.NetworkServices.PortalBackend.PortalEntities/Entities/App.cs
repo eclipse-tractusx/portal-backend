@@ -33,14 +33,15 @@ public class App
         AppDetailImages = new HashSet<AppDetailImage>();
         Companies = new HashSet<Company>();
         CompanyAssignedApps = new HashSet<CompanyAssignedApp>();
-        IamClients = new HashSet<IamClient>();
         AppLicenses = new HashSet<AppLicense>();
         UseCases = new HashSet<UseCase>();
         CompanyUsers = new HashSet<CompanyUser>();
         Tags = new HashSet<AppTag>();
         SupportedLanguages = new HashSet<Language>();
+        UserRoles = new HashSet<UserRole>();
+        AppInstances = new HashSet<AppInstance>();
     }
-
+    
     public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
     {
         Id = id;
@@ -59,9 +60,6 @@ public class App
 
     [MaxLength(255)]
     public string? ThumbnailUrl { get; set; }
-
-    [MaxLength(255)]
-    public string? AppUrl { get; set; }
 
     [MaxLength(255)]
     public string? MarketingUrl { get; set; }
@@ -84,18 +82,19 @@ public class App
     public DateTimeOffset? DateLastChanged { get; set; }
 
     // Navigation properties
-    public virtual Company? ProviderCompany { get; set; }
     public virtual AppStatus? AppStatus{ get; set; }
-    public virtual CompanyUser? SalesManager { get; set; }
-    public virtual ICollection<AppTag> Tags { get; private set; }
-    public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
     public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
-    public virtual ICollection<IamClient> IamClients { get; private set; }
+    public virtual ICollection<AppInstance> AppInstances { get; private set; }
     public virtual ICollection<AppLicense> AppLicenses { get; private set; }
-    public virtual ICollection<UseCase> UseCases { get; private set; }
+    public virtual ICollection<Company> Companies { get; private set; }
+    public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+    public virtual Company? ProviderCompany { get; set; }
+    public virtual CompanyUser? SalesManager { get; set; }
     public virtual ICollection<Language> SupportedLanguages { get; private set; }
+    public virtual ICollection<AppTag> Tags { get; private set; }
+    public virtual ICollection<UseCase> UseCases { get; private set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
 }
