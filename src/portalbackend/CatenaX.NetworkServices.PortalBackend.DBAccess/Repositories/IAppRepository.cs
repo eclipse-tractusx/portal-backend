@@ -47,7 +47,7 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId"></param>
     /// <returns>Client Name</returns>
-    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId);
+    Task<List<string>> GetAppAssignedClientIdUntrackedAsync(Guid appId);
 
     /// <summary>
     /// Adds an app to the database
@@ -117,4 +117,12 @@ public interface IAppRepository
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
     IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
+    
+    /// <summary>
+    /// Gets the client roles for a specific app
+    /// </summary>
+    /// <param name="appId">id of the app to get the client roles for</param>
+    /// <param name="languageShortName">The language short names</param>
+    /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
+    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 }

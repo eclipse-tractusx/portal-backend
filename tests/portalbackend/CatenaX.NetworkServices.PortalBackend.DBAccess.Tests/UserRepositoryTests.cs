@@ -89,13 +89,14 @@ public class UserRepositoryTests
         }
 
         var iamClient = _fixture.Create<IamClient>();
-        iamClient.Apps.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<App>())
+        var expectedAppInstance = new AppInstance(Guid.NewGuid(), expectedApp.Id, iamClient.Id);
+        iamClient.AppInstances.Add(expectedAppInstance);
+        foreach (var appInstance in _fixture.CreateMany<AppInstance>())
         {
-            iamClient.Apps.Add(app);
+            iamClient.AppInstances.Add(appInstance);
         }
 
-        foreach (var role in _fixture.Build<UserRole>().With(r => r.IamClient, iamClient).CreateMany())
+        foreach (var role in _fixture.Build<UserRole>().With(r => r.App, expectedApp).CreateMany())
         {
             companyUser.UserRoles.Add(role);
         }
