@@ -55,12 +55,12 @@ public class AppRepository : IAppRepository
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
-    public Task<List<string>> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
-        _context.AppInstances.AsNoTracking()
-            .Where(appClient => appClient.AppId == appId)
-            .Select(appClient => appClient.IamClient!.ClientClientId)
-            .ToListAsync();
-
+    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
+        _context.CompanyAssignedApps.AsNoTracking()
+            .Where(appClient => appClient.Id == appId && appClient.CompanyId == companyId)
+            .Select(x => x.AppInstance!.IamClient!.ClientClientId)
+            .SingleOrDefaultAsync();
+    
     /// <inheritdoc />
     public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
     {
@@ -202,5 +202,4 @@ public class AppRepository : IAppRepository
                     roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description :
                     roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
             )).AsAsyncEnumerable();
-
 }

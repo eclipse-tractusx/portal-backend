@@ -17,6 +17,12 @@ public class CompanyIamUser
     public string? IdpName { get; set; }
 
     /// <summary>
+    /// Id of the company
+    /// </summary>
+    /// <value></value>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
     /// Role Ids of User
     /// </summary>
     /// <value></value>

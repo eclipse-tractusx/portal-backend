@@ -28,7 +28,7 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(userRole => userRoleIds.Contains(userRole.Id))
             .Select(userRole => new UserRoleData(
                 userRole.Id,
-                userRole.IamClient!.ClientClientId,
+                userRole.App!.AppInstances.First().IamClient!.ClientClientId,
                 userRole.UserRoleText))
             .ToAsyncEnumerable();
 
