@@ -99,5 +99,8 @@ public class CompanyUser : IAuditable
     /// </summary>
     public virtual ICollection<Service> SalesManagerOfServices { get; private set; }
 
+    /// <summary>
+    /// Mapping between <see cref="CompanyUser"/> and <see cref="CompanyAssignedService"/>
+    /// </summary>
     public virtual ICollection<CompanyAssignedService> RequesterOfCompanyAssignedServices { get; private set; }
 }

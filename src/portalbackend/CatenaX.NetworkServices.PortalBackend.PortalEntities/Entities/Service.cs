@@ -98,27 +98,27 @@ public class Service : IAuditable
     public virtual Company? ProviderCompany { get; set; }
 
     /// <summary>
-    /// Navigation property to the service status
-    /// </summary>
-    public virtual ServiceStatus? ServiceStatus { get; set; }
-
-    /// <summary>
     /// Navigation property to the sales manager
     /// </summary>
     public virtual CompanyUser? SalesManager { get; set; }
 
     /// <summary>
-    /// Mapping to the service licenses
+    /// Navigation property to the service status
     /// </summary>
-    public virtual ICollection<ServiceLicense> ServiceLicenses { get; private set; }
+    public virtual ServiceStatus? ServiceStatus { get; set; }
+
+    /// <summary>
+    /// Mapping to the company assigned services
+    /// </summary>
+    public virtual ICollection<Company> Companies { get; private set; }
     
     /// <summary>
     /// Mapping to the service descriptions
     /// </summary>
     public virtual ICollection<ServiceDescription> ServiceDescriptions { get; private set; }
-    
+
     /// <summary>
-    /// Mapping to the company assigned services
+    /// Mapping to the service licenses
     /// </summary>
-    public virtual ICollection<Company> Companies { get; private set; }
+    public virtual ICollection<ServiceLicense> ServiceLicenses { get; private set; }
 }
