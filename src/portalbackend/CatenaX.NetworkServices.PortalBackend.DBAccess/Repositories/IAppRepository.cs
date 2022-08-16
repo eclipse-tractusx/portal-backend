@@ -46,8 +46,9 @@ public interface IAppRepository
     /// Get Client Name by App Id
     /// </summary>
     /// <param name="appId"></param>
+    /// <param name="companyId"></param>
     /// <returns>Client Name</returns>
-    Task<List<string>> GetAppAssignedClientIdUntrackedAsync(Guid appId);
+    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId);
 
     /// <summary>
     /// Adds an app to the database

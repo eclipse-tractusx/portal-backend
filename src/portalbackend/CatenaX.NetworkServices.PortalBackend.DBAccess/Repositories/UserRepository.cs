@@ -150,10 +150,8 @@ public class UserRepository : IUserRepository
     public Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId)
-            .Select(iamUser =>
-                iamUser.CompanyUser!.Company!.Id)
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
     public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias)> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId) =>
@@ -182,7 +180,8 @@ public class UserRepository : IUserRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault(),
                 RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
-                    companyUserAssignedRole.UserRoleId)
+                    companyUserAssignedRole.UserRoleId),
+                CompanyId = companyUser.CompanyId
             }).SingleOrDefaultAsync();
 
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>

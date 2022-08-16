@@ -73,6 +73,8 @@ public class App
     [MaxLength(255)]
     public string Provider { get; set; }
 
+    public bool IsCoreComponent { get; set; }
+
     public Guid? SalesManagerId { get; set; }
 
     public Guid? ProviderCompanyId { get; set; }

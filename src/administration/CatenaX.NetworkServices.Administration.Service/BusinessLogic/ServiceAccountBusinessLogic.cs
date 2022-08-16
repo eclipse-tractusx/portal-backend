@@ -71,7 +71,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
 
         var userRoleData = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleDataUntrackedAsync(serviceAccountCreationInfos.UserRoleIds).ToListAsync().ConfigureAwait(false);
-
         if (userRoleData.Count != serviceAccountCreationInfos.UserRoleIds.Count())
         {
             var missingRoleIds = serviceAccountCreationInfos.UserRoleIds

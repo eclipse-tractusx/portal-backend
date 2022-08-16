@@ -537,8 +537,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new NotFoundException($"User not found");
             }
             
-            var iamClientIds = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId).ConfigureAwait(false);
-            if (!iamClientIds.Any())
+            var iamClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(iamClientId))
             {
                 throw new ArgumentException($"invalid appId {appId}", nameof(appId));
             }
