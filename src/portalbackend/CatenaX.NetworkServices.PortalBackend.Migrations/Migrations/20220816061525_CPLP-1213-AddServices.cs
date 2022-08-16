@@ -1,4 +1,5 @@
 ﻿using System;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -277,10 +278,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "services",
                 column: "service_status_id");
+
+            migrationBuilder.AddAuditTrigger<AuditService>("audit_services_cplp_1213_add_services");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropAuditTrigger<AuditService>();
+
             migrationBuilder.DropTable(
                 name: "audit_services_cplp_1213_add_services",
                 schema: "portal");
