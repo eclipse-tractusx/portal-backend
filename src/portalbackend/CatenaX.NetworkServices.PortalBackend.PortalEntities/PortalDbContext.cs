@@ -534,24 +534,26 @@ public class PortalDbContext : DbContext
             entity.ToTable("company_users");
         });
         
-        modelBuilder.Entity<AuditCompanyUser>(x =>
+        modelBuilder.Entity<AuditCompanyUser>(entity =>
         {
-            x.HasBaseType((Type?)null);
+            entity.HasBaseType((Type?)null);
 
-            x.Ignore(x => x.Company);
-            x.Ignore(x => x.IamUser);
-            x.Ignore(x => x.Consents);
-            x.Ignore(x => x.Documents);
-            x.Ignore(x => x.Invitations);
-            x.Ignore(x => x.Apps);
-            x.Ignore(x => x.SalesManagerOfApps);
-            x.Ignore(x => x.UserRoles);
-            x.Ignore(x => x.CompanyUserAssignedRoles);
-            x.Ignore(x => x.CompanyUserAssignedBusinessPartners);
-            x.Ignore(x => x.Notifications);
-            x.Ignore(x => x.CreatedNotifications);
+            entity.Ignore(x => x.Company);
+            entity.Ignore(x => x.IamUser);
+            entity.Ignore(x => x.Consents);
+            entity.Ignore(x => x.Documents);
+            entity.Ignore(x => x.Invitations);
+            entity.Ignore(x => x.Apps);
+            entity.Ignore(x => x.SalesManagerOfApps);
+            entity.Ignore(x => x.UserRoles);
+            entity.Ignore(x => x.CompanyUserAssignedRoles);
+            entity.Ignore(x => x.CompanyUserAssignedBusinessPartners);
+            entity.Ignore(x => x.Notifications);
+            entity.Ignore(x => x.CreatedNotifications);
+            entity.Ignore(x => x.SalesManagerOfServices);
+            entity.Ignore(x => x.RequesterOfCompanyAssignedServices);
 
-            x.ToTable("audit_company_users_cplp_1254_db_audit");
+            entity.ToTable("audit_company_users_cplp_1254_db_audit");
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
@@ -753,25 +755,21 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasMany(p => p.ServiceLicenses)
-                .WithMany(p => p.Services)
-                .UsingEntity<ServiceAssignedLicense>(
-                    j => j
-                        .HasOne(d => d.ServiceLicense!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceLicenseId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Service!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.ServiceId, e.ServiceLicenseId });
-                    }
-                );
+            entity.HasOne(e => e.ProviderCompany)
+                .WithMany(e => e.ProvidedServices)
+                .HasForeignKey(e => e.ProviderCompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
+            entity.HasOne(x => x.SalesManager)
+                .WithMany(x => x.SalesManagerOfServices)
+                .HasForeignKey(x => x.SalesManagerId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(e => e.ServiceStatus)
+                .WithMany(e => e.Services)
+                .HasForeignKey(e => e.ServiceStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
             entity.HasMany(p => p.Companies)
                 .WithMany(p => p.CompanyAssignedServices)
                 .UsingEntity<CompanyAssignedService>(
@@ -792,6 +790,10 @@ public class PortalDbContext : DbContext
                             .WithMany(e => e.CompanyAssignedServices)
                             .HasForeignKey(e => e.ServiceSubscriptionStatusId)
                             .OnDelete(DeleteBehavior.ClientSetNull);
+                        j.HasOne(e => e.Requester)
+                            .WithMany(e => e.RequesterOfCompanyAssignedServices)
+                            .HasForeignKey(e => e.RequesterId)
+                            .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.ServiceSubscriptionStatusId)
                             .HasDefaultValue(ServiceSubscriptionStatusId.PENDING);
                     }
@@ -800,30 +802,41 @@ public class PortalDbContext : DbContext
             entity.HasMany(x => x.ServiceDescriptions)
                 .WithOne(x => x.Service)
                 .HasForeignKey(x => x.ServiceId);
-            
-            entity.HasOne(e => e.ProviderCompany)
-                .WithMany(e => e.ProvidedServices)
-                .HasForeignKey(e => e.ProviderCompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(e => e.ServiceStatus)
-                .WithMany(e => e.Services)
-                .HasForeignKey(e => e.ServiceStatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasMany(p => p.ServiceLicenses)
+                .WithMany(p => p.Services)
+                .UsingEntity<ServiceAssignedLicense>(
+                    j => j
+                        .HasOne(d => d.ServiceLicense!)
+                        .WithMany()
+                        .HasForeignKey(d => d.ServiceLicenseId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.Service!)
+                        .WithMany()
+                        .HasForeignKey(d => d.ServiceId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.ServiceId, e.ServiceLicenseId });
+                    }
+                );
+
+            entity.ToTable("services");
         });
 
         modelBuilder.Entity<AuditService>(x =>
         {
             x.HasBaseType((Type?)null);
 
-            x.Ignore(x => x.Companies);
-            x.Ignore(x => x.ServiceStatus);
             x.Ignore(x => x.ProviderCompany);
             x.Ignore(x => x.SalesManager);
+            x.Ignore(x => x.ServiceStatus);
+            x.Ignore(x => x.Companies);
             x.Ignore(x => x.ServiceDescriptions);
             x.Ignore(x => x.ServiceLicenses);
 
-            x.ToTable("audit_services_cplp_1213_services");
+            x.ToTable("audit_services_cplp_1213_add_services");
         });
 
         modelBuilder.Entity<ServiceStatus>()

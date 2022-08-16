@@ -38,16 +38,23 @@ public class ServiceDescription
     /// <summary>
     /// Creates a new instance of <see cref="ServiceDescription"/>
     /// </summary>
+    /// <param name="id">unique identifier</param>
     /// <param name="description">the description for the service</param>
     /// <param name="serviceId">Id of the service</param>
     /// <param name="languageShortName">the language short name</param>
-    public ServiceDescription(string description, Guid serviceId, string languageShortName)
+    public ServiceDescription(Guid id, string description, Guid serviceId, string languageShortName)
         :this()
     {
+        Id = id;
         Description = description;
         ServiceId = serviceId;
         LanguageShortName = languageShortName;
     }
+
+    /// <summary>
+    /// Unique identifier
+    /// </summary>
+    public Guid Id { get; set; }
 
     /// <summary>
     /// the description for the service
