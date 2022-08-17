@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -20,11 +20,11 @@
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyStatusId
+public enum ServiceSubscriptionStatusId
 {
     PENDING = 1,
+    
     ACTIVE = 2,
-    REJECTED = 3,
-    INACTIVE = 4,
-    DELETED = 5
+    
+    INACTIVE = 3
 }

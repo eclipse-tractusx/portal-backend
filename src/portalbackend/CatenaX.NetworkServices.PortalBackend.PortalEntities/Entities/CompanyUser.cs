@@ -41,6 +41,8 @@ public class CompanyUser : IAuditable
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
         CreatedNotifications = new HashSet<Notification>();
+        SalesManagerOfServices = new HashSet<Service>();
+        RequesterOfCompanyAssignedServices = new HashSet<CompanyAssignedService>();
     }
     
     public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId) 
@@ -91,4 +93,14 @@ public class CompanyUser : IAuditable
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
+
+    /// <summary>
+    /// Services the user is the sales manager of
+    /// </summary>
+    public virtual ICollection<Service> SalesManagerOfServices { get; private set; }
+
+    /// <summary>
+    /// Mapping between <see cref="CompanyUser"/> and <see cref="CompanyAssignedService"/>
+    /// </summary>
+    public virtual ICollection<CompanyAssignedService> RequesterOfCompanyAssignedServices { get; private set; }
 }
