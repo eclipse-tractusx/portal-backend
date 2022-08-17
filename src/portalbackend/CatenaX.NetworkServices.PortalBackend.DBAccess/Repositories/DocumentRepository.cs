@@ -59,7 +59,7 @@ public class DocumentRepository : IDocumentRepository
             .Where(iamUser =>
                 iamUser.UserEntityId == iamUserId
                 && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId))
+            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId && docu.DocumentStatusId != DocumentStatusId.INACTIVE))
             .Select(document =>
                 new UploadDocuments(
                     document!.Id,
@@ -72,6 +72,10 @@ public class DocumentRepository : IDocumentRepository
             .Where(x => x.Id == documentId)
             .Select(x => ((Guid DocumentId, bool IsSameUser))new (x.Id, x.CompanyUser!.IamUser!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void Remove(Document document) => 
+        _dbContext.Documents.Remove(document);
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
