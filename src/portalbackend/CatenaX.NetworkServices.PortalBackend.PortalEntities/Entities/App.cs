@@ -79,6 +79,8 @@ public class App
     [MaxLength(255)]
     public string Provider { get; set; }
 
+    public Guid? SalesManagerId { get; set; }
+
     public Guid? ProviderCompanyId { get; set; }
 
     public AppStatusId AppStatusId { get; set; }
@@ -88,6 +90,7 @@ public class App
     // Navigation properties
     public virtual Company? ProviderCompany { get; set; }
     public virtual AppStatus? AppStatus{ get; set; }
+    public virtual CompanyUser? SalesManager { get; set; }
     public virtual ICollection<AppTag> Tags { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }

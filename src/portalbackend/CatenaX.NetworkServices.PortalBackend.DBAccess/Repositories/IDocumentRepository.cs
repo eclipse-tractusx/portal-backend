@@ -51,4 +51,9 @@ public interface IDocumentRepository
     /// <returns>Returns the user id if a document is found for the given id, otherwise null</returns>
     Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
 
+    /// <summary>
+    ///Deleting document record and document file from the portal db/document storage location
+    /// </summary>
+    /// <param name="document">The document that should be removed</param>
+    void Remove(Document document);
 }
