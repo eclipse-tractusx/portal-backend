@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -410,6 +409,7 @@ public class PortalDbContext : DbContext
             x.Ignore(x => x.App);
             x.Ignore(x => x.Company);
             x.Ignore(x => x.AppSubscriptionStatus);
+            x.Ignore(x => x.AppInstance);
 
             x.ToTable("audit_company_assigned_apps_cplp_1254_db_audit");
         });

@@ -551,7 +551,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
             var userRoleWithIds = await userRoleRepository.GetUserRoleWithIdsUntrackedAsync(iamClientId, roles).ToListAsync().ConfigureAwait(false);
-            if (userRoleWithIds.Count != roles.Count())
+            if (userRoleWithIds.Count != roles.Count)
             {
                 throw new ArgumentException($"invalid User roles for client {iamClientId}: [{string.Join(",", roles.Except(userRoleWithIds.Select(x => x.CompanyUserRoleText)))}]", nameof(userRoleInfo));
             }
