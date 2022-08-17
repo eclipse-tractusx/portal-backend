@@ -52,7 +52,7 @@ public interface IDocumentRepository
     Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
 
     /// <summary>
-    /// Removes the given document with from the database
+    ///Deleting document record and document file from the portal db/document storage location
     /// </summary>
     /// <param name="document">The document that should be removed</param>
     void Remove(Document document);
