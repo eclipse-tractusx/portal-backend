@@ -40,7 +40,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
 
-        if (details.DocumentId == default)
+        if (details.DocumentId == Guid.Empty)
         {
             throw new NotFoundException("Document is not existing");
         }
@@ -50,21 +50,15 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             throw new ForbiddenException("User is not allowed to delete this document");
         }
 
-        if (details.DocumentStatusId != DocumentStatusId.PENDING)
+        if (details.DocumentStatusId == DocumentStatusId.LOCKED)
         {
             throw new ArgumentException("Incorrect document status");
         }
 
-        var document = new Document(details.DocumentId);
-        documentRepository.AttachToDatabase(document);
-        document.DocumentStatusId = DocumentStatusId.INACTIVE;
-
-        var consents = details.ConsentIds.Select(x => new Consent(x));
-        _portalRepositories.GetInstance<IConsentRepository>().AttachToDatabase(consents);
-
-        foreach (var consent in consents)
+        documentRepository.Remove(new Document(details.DocumentId));
+        if (details.ConsentIds.Any())
         {
-            consent.ConsentStatusId = ConsentStatusId.INACTIVE;
+            _portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x)));
         }
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
