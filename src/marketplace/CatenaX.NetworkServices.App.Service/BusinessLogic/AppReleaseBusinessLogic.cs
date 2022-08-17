@@ -1,0 +1,83 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+
+namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
+
+/// <summary>
+/// Implementation of <see cref="IAppReleaseBusinessLogic"/>.
+/// </summary>
+public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
+{
+    private readonly IPortalRepositories _portalRepositories;
+    
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="portalRepositories"></param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories)
+    {
+        _portalRepositories = portalRepositories;
+    }
+    
+    /// <inheritdoc/>
+    public async Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
+    {
+        if (appId == null)
+        {
+            throw new ArgumentException($"AppId must not be empty", nameof(appId));
+        }
+        if (updateModel.Descriptions.Any() && string.IsNullOrWhiteSpace(updateModel.Descriptions.Select(x => x.LanguageCode).ElementAt(0)))
+        {
+            throw new ArgumentException($"Language Code must not be empty");
+        }
+        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
+        }
+        var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
+        {
+            app.ContactEmail = updateModel.ContactEmail;
+            app.ContactNumber = updateModel.ContactNumber;
+            app.MarketingUrl = updateModel.ProviderUri;
+        });
+        foreach (var item in updateModel.Descriptions)
+        {
+            int currentIndex=0;
+            newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, result.Descriptions.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
+            currentIndex++;
+        }
+        foreach (var record in updateModel.Images)
+        {
+            newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+}
+
