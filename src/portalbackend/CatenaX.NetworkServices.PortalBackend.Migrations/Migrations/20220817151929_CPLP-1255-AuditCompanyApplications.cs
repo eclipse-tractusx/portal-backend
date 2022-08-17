@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+
 #nullable disable
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
@@ -15,7 +16,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "company_user_assigned_roles",
                 type: "uuid",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValueSql: "gen_random_uuid()");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "last_editor_id",
@@ -67,15 +68,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     table.PrimaryKey("pk_audit_company_user_assigned_roles_cplp_1255_audit_company_a", x => x.id);
                 });
+            
             migrationBuilder.AddAuditTrigger<AuditCompanyUserAssignedRole>("cplp_1255_audit_company_applications");
             migrationBuilder.AddAuditTrigger<AuditCompanyApplication>("cplp_1255_audit_company_applications"); 
-
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropAuditTrigger<AuditCompanyUserAssignedRole>(); 
             migrationBuilder.DropAuditTrigger<AuditCompanyApplication>();
+
             migrationBuilder.DropTable(
                 name: "audit_company_applications_cplp_1255_audit_company_applications",
                 schema: "portal");

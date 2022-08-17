@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220817130509_CPLP-1255-AuditCompanyApplications")]
+    [Migration("20220817151929_CPLP-1255-AuditCompanyApplications")]
     partial class CPLP1255AuditCompanyApplications
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -771,6 +771,64 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AuditService", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AuditId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_id");
+
+                    b.Property<int>("AuditOperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_operation_id");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("contact_email");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<DateTimeOffset>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProviderCompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("provider_company_id");
+
+                    b.Property<Guid?>("SalesManagerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sales_manager_id");
+
+                    b.Property<int>("ServiceStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("service_status_id");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_services_cplp_1213_add_services");
+
+                    b.ToTable("audit_services_cplp_1213_add_services", "portal");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Property<Guid>("Id")
@@ -984,6 +1042,41 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_assigned_roles_company_role_id");
 
                     b.ToTable("company_assigned_roles", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedService", b =>
+                {
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requester_id");
+
+                    b.Property<int>("ServiceSubscriptionStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("service_subscription_status_id");
+
+                    b.HasKey("ServiceId", "CompanyId")
+                        .HasName("pk_company_assigned_services");
+
+                    b.HasIndex("CompanyId")
+                        .HasDatabaseName("ix_company_assigned_services_company_id");
+
+                    b.HasIndex("RequesterId")
+                        .HasDatabaseName("ix_company_assigned_services_requester_id");
+
+                    b.HasIndex("ServiceSubscriptionStatusId")
+                        .HasDatabaseName("ix_company_assigned_services_service_subscription_status_id");
+
+                    b.ToTable("company_assigned_services", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
@@ -1234,6 +1327,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 4,
                             Label = "INACTIVE"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "DELETED"
                         });
                 });
 
@@ -1385,6 +1483,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 2,
                             Label = "INACTIVE"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "DELETED"
                         });
                 });
 
@@ -3930,6 +4033,203 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Service", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("contact_email");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProviderCompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("provider_company_id");
+
+                    b.Property<Guid?>("SalesManagerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sales_manager_id");
+
+                    b.Property<int>("ServiceStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("service_status_id");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_services");
+
+                    b.HasIndex("ProviderCompanyId")
+                        .HasDatabaseName("ix_services_provider_company_id");
+
+                    b.HasIndex("SalesManagerId")
+                        .HasDatabaseName("ix_services_sales_manager_id");
+
+                    b.HasIndex("ServiceStatusId")
+                        .HasDatabaseName("ix_services_service_status_id");
+
+                    b.ToTable("services", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceAssignedLicense", b =>
+                {
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<Guid>("ServiceLicenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_license_id");
+
+                    b.HasKey("ServiceId", "ServiceLicenseId")
+                        .HasName("pk_service_assigned_licenses");
+
+                    b.HasIndex("ServiceLicenseId")
+                        .HasDatabaseName("ix_service_assigned_licenses_service_license_id");
+
+                    b.ToTable("service_assigned_licenses", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceDescription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("LanguageShortName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("language_short_name");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_descriptions");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_service_descriptions_service_id");
+
+                    b.ToTable("service_descriptions", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceLicense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("LicenseText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("license_text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_licenses");
+
+                    b.ToTable("service_licenses", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_statuses");
+
+                    b.ToTable("service_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "CREATED"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "IN_REVIEW"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "INACTIVE"
+                        });
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceSubscriptionStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_subscription_statuses");
+
+                    b.ToTable("service_subscription_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "PENDING"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "INACTIVE"
+                        });
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4393,6 +4693,41 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("CompanyRole");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedService", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_assigned_services_companies_company_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "Requester")
+                        .WithMany("RequesterOfCompanyAssignedServices")
+                        .HasForeignKey("RequesterId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_assigned_services_company_users_requester_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_assigned_services_services_service_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceSubscriptionStatus", "ServiceSubscriptionStatus")
+                        .WithMany("CompanyAssignedServices")
+                        .HasForeignKey("ServiceSubscriptionStatusId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_assigned_services_service_subscription_statuses_ser");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Requester");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("ServiceSubscriptionStatus");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
@@ -4771,6 +5106,63 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Receiver");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Service", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "ProviderCompany")
+                        .WithMany("ProvidedServices")
+                        .HasForeignKey("ProviderCompanyId")
+                        .IsRequired()
+                        .HasConstraintName("fk_services_companies_provider_company_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "SalesManager")
+                        .WithMany("SalesManagerOfServices")
+                        .HasForeignKey("SalesManagerId")
+                        .HasConstraintName("fk_services_company_users_sales_manager_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceStatus", "ServiceStatus")
+                        .WithMany("Services")
+                        .HasForeignKey("ServiceStatusId")
+                        .IsRequired()
+                        .HasConstraintName("fk_services_service_statuses_service_status_id");
+
+                    b.Navigation("ProviderCompany");
+
+                    b.Navigation("SalesManager");
+
+                    b.Navigation("ServiceStatus");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceAssignedLicense", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .IsRequired()
+                        .HasConstraintName("fk_service_assigned_licenses_services_service_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceLicense", "ServiceLicense")
+                        .WithMany()
+                        .HasForeignKey("ServiceLicenseId")
+                        .IsRequired()
+                        .HasConstraintName("fk_service_assigned_licenses_service_licenses_service_license_");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("ServiceLicense");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceDescription", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Service", "Service")
+                        .WithMany("ServiceDescriptions")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_descriptions_services_service_id");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
@@ -4867,6 +5259,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("ProvidedApps");
 
                     b.Navigation("ProvidedConnectors");
+
+                    b.Navigation("ProvidedServices");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
@@ -4921,7 +5315,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Navigation("Notifications");
 
+                    b.Navigation("RequesterOfCompanyAssignedServices");
+
                     b.Navigation("SalesManagerOfApps");
+
+                    b.Navigation("SalesManagerOfServices");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
@@ -5005,6 +5403,21 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.NotificationType", b =>
                 {
                     b.Navigation("Notifications");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Service", b =>
+                {
+                    b.Navigation("ServiceDescriptions");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceStatus", b =>
+                {
+                    b.Navigation("Services");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceSubscriptionStatus", b =>
+                {
+                    b.Navigation("CompanyAssignedServices");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", b =>
