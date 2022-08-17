@@ -565,7 +565,7 @@ public class PortalDbContext : DbContext
             x.Ignore(x => x.CompanyUser);
             x.Ignore(x => x.UserRole);
 
-            x.ToTable("audit_company_user_assigned_roles_cplp_1251_audit_company_user_assigned_roles");
+            x.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications");
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
