@@ -96,7 +96,7 @@ public class UserRepositoryTests
             iamClient.AppInstances.Add(appInstance);
         }
 
-        foreach (var role in _fixture.Build<UserRole>().With(r => r.App, expectedApp).CreateMany())
+        foreach (var role in _fixture.Build<UserRole>().With(r => r.App, expectedApp).With(x => x.AppId, expectedApp.Id).CreateMany())
         {
             companyUser.UserRoles.Add(role);
         }

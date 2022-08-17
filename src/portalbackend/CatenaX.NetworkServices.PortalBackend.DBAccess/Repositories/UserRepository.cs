@@ -301,7 +301,7 @@ public class UserRepository : IUserRepository
             .Select(app => new BusinessAppData(
                 app!.Id,
                 app.Name ?? Constants.ErrorString,
-                app.CompanyAssignedApps.Single().AppUrl ?? Constants.ErrorString,
+                app.CompanyAssignedApps.FirstOrDefault(x => x.AppId == app.Id) == null ? Constants.ErrorString : app.CompanyAssignedApps.First(x => x.AppId == app.Id).AppUrl ?? Constants.ErrorString,
                 app.ThumbnailUrl ?? Constants.ErrorString,
                 app.Provider
             )).AsAsyncEnumerable();
