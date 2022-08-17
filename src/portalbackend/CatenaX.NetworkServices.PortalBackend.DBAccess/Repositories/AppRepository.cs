@@ -49,7 +49,8 @@ public class AppRepository : IAppRepository
         _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
             c.Name,
             c.Provider,
-            c.ContactEmail
+            c.ContactEmail,
+            c.SalesManagerId
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>

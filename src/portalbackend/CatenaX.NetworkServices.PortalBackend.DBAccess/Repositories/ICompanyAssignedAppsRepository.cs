@@ -34,9 +34,12 @@ public interface ICompanyAssignedAppsRepository
     /// </summary>
     /// <param name="appId">Id of the assigned app</param>
     /// <param name="companyId">Id of the company</param>
-    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId);
+    /// <param name="appSubscriptionStatusId">id of the app subscription status</param>
+    /// <param name="requesterId">id of the user that requested the subscription of the app</param>
+    /// <param name="creatorId">id of the creator</param>
+    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
-    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId);
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
     /// <summary>
     ///
@@ -51,9 +54,9 @@ public interface ICompanyAssignedAppsRepository
     /// <returns>Returns a IAsyncEnumerable of the found <see cref="AppCompanySubscriptionStatusData"/></returns>
     IAsyncEnumerable<AppCompanySubscriptionStatusData> GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
-    Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
+    Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
 
     Task<(CompanyAssignedApp? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
-    Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
+    Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
 }

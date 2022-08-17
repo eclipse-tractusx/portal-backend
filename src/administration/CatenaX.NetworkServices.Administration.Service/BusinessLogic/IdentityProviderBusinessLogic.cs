@@ -506,7 +506,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var companyId = await userRepository.GetOwnCompanyId(iamUserId).ConfigureAwait(false);
+        var (companyId, creatorId) = await userRepository.GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with a company");
@@ -540,7 +540,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
                 if (existingProfile != profile)
                 {
-                    await UpdateUserProfileAsync(userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias).ConfigureAwait(false);
+                    await UpdateUserProfileAsync(userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias, creatorId).ConfigureAwait(false);
                     updated = true;
                 }
                 if (updated)
@@ -622,7 +622,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return true;
     }
 
-    private async ValueTask UpdateUserProfileAsync(string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias)
+    private async ValueTask UpdateUserProfileAsync(string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias, Guid creatorId)
     {
         if (!await _provisioningManager.UpdateCentralUserAsync(userEntityId, profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "").ConfigureAwait(false))
         {
@@ -636,7 +636,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
             }
         }
-        _portalRepositories.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default), companyUser =>
+        _portalRepositories.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default, creatorId), companyUser =>
         {
             companyUser.Firstname = profile.FirstName;
             companyUser.Lastname = profile.LastName;
