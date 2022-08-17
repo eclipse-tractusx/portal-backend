@@ -29,7 +29,6 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Crypto.Generators;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
