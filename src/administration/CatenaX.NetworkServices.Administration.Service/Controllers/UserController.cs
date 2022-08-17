@@ -286,6 +286,10 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="appId">Get company app users by appId</param>
         /// <param name="page">page index start from 0</param>
         /// <param name="size">size to get number of records</param>
+        /// <param name="firstName">First Name of User</param>
+        /// <param name="lastName">Last Name of User</param>
+        /// <param name="email">Email Id of User</param>
+        /// <param name="roleName">User role name</param>
         /// <returns>Returns the company users with assigned role for the requested app id</returns>
         /// <remarks>Example: GET: /api/administration/user/owncompany/apps/5cf74ef8-e0b7-4984-a872-474828beb5d3/users?page=0&size=15</remarks>
         /// <response code="200">Result as a Company App Users Details</response>
@@ -293,8 +297,22 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         [Authorize(Roles = "view_user_management")]
         [Route("owncompany/apps/{appId}/users")]
         [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,[FromQuery] int page = 0, [FromQuery] int size = 15) =>
-            this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(appId,iamUserId, page, size));
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,
+            [FromQuery] int page = 0,
+            [FromQuery] int size = 15,
+            [FromQuery] string? firstName = null,
+            [FromQuery] string? lastName = null,
+            [FromQuery] string? email = null,
+            [FromQuery] string? roleName = null) =>
+            this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
+                appId,
+                iamUserId,
+                page,
+                size,
+                firstName,
+                lastName,
+                email,
+                roleName));
 
         /// <summary>
         /// Adds a user role
