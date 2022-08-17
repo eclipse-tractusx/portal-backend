@@ -94,7 +94,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Language> Languages { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
-
+    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+    public virtual DbSet<AuditCompanyAssignedApp> AuditCompanyAssignedApps { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -161,6 +162,10 @@ public class PortalDbContext : DbContext
         {
             entity.HasOne(d => d.ProviderCompany)
                 .WithMany(p => p!.ProvidedApps);
+
+            entity.HasOne(x => x.SalesManager)
+                .WithMany(x => x!.SalesManagerOfApps)
+                .HasForeignKey(x => x.SalesManagerId);
 
             entity.HasMany(p => p.Companies)
                 .WithMany(p => p.BoughtApps)
@@ -302,7 +307,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.AppId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<AuditOperation>()
             .HasData(
                 Enum.GetValues(typeof(AuditOperationId))
@@ -397,6 +402,17 @@ public class PortalDbContext : DbContext
             .HasOne(d => d.IdentityProvider)
             .WithMany(p => p.CompanyIdentityProviders)
             .HasForeignKey(d => d.IdentityProviderId);
+
+        modelBuilder.Entity<AuditCompanyAssignedApp>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.App);
+            x.Ignore(x => x.Company);
+            x.Ignore(x => x.AppSubscriptionStatus);
+
+            x.ToTable("audit_company_assigned_apps_cplp_1254_db_audit");
+        });
 
         modelBuilder.Entity<CompanyRole>()
             .HasData(
@@ -507,9 +523,30 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
-            
+
+            entity.ToTable("company_users");
         });
         
+        modelBuilder.Entity<AuditCompanyUser>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.Company);
+            x.Ignore(x => x.IamUser);
+            x.Ignore(x => x.Consents);
+            x.Ignore(x => x.Documents);
+            x.Ignore(x => x.Invitations);
+            x.Ignore(x => x.Apps);
+            x.Ignore(x => x.SalesManagerOfApps);
+            x.Ignore(x => x.UserRoles);
+            x.Ignore(x => x.CompanyUserAssignedRoles);
+            x.Ignore(x => x.CompanyUserAssignedBusinessPartners);
+            x.Ignore(x => x.Notifications);
+            x.Ignore(x => x.CreatedNotifications);
+
+            x.ToTable("audit_company_users_cplp_1254_db_audit");
+        });
+
         modelBuilder.Entity<AuditCompanyUserAssignedRole>(x =>
         {
             x.HasBaseType((Type?)null);
@@ -519,6 +556,7 @@ public class PortalDbContext : DbContext
 
             x.ToTable("audit_company_user_assigned_roles_cplp_1251_audit_company_user_assigned_roles");
         });
+        
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
             .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 
