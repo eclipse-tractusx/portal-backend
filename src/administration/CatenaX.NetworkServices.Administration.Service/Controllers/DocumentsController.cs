@@ -55,7 +55,7 @@ public class DocumentsController : ControllerBase
     /// <response code="403">The user is not assigned with the Company.</response>
     /// <response code="404">The document was not found.</response>
     [HttpDelete]
-    // [Authorize(Roles = "delete_documents")]
+    [Authorize(Roles = "delete_documents")]
     [Route("{documentId}")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
