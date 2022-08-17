@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-#region
-
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Swagger;
@@ -37,8 +35,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-
-#endregion
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -130,3 +126,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+/// <summary>
+/// Needed for integration Test setup
+/// </summary>
+public partial class Program { }

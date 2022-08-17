@@ -1,6 +1,7 @@
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,5 +46,5 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
-        _logic.ExecuteInvitation(invitationData);
+        this.WithIamUserId(iamUserId => _logic.ExecuteInvitation(invitationData, iamUserId));
 }
