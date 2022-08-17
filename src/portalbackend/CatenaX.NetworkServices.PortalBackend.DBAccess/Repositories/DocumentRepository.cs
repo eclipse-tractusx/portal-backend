@@ -74,6 +74,10 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
+    public void Remove(Document document) => 
+        _dbContext.Documents.Remove(document);
+
+    /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
         this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 }
