@@ -23,25 +23,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "apps");
 
-            migrationBuilder.DropColumn(
+            migrationBuilder.RenameColumn(
                 name: "iam_client_id",
                 schema: "portal",
-                table: "user_roles");
+                table: "user_roles",
+                newName: "app_id");
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "app_id",
+            migrationBuilder.RenameIndex(
+                name: "ix_user_roles_iam_client_id",
                 schema: "portal",
                 table: "user_roles",
-                type: "uuid",
-                nullable: false,
-                defaultValueSql: "gen_random_uuid()");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "app_id",
-                schema: "portal",
-                table: "user_roles",
-                type: "uuid",
-                nullable: false);
+                newName: "ix_user_roles_app_id");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "app_instance_id",
@@ -127,12 +119,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "app_instances",
                 column: "iam_client_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_user_roles_app_id",
-                schema: "portal",
-                table: "user_roles",
-                column: "app_id");
-
             migrationBuilder.AddForeignKey(
                 name: "fk_company_assigned_apps_app_instances_app_instance_id",
                 schema: "portal",
@@ -174,11 +160,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "company_assigned_apps");
 
-            migrationBuilder.DropIndex(
-                name: "ix_user_roles_app_id",
-                schema: "portal",
-                table: "user_roles");
-
             migrationBuilder.DropColumn(
                 name: "app_instance_id",
                 schema: "portal",
@@ -204,6 +185,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "apps");
 
+            migrationBuilder.RenameColumn(
+                name: "app_id",
+                schema: "portal",
+                table: "user_roles",
+                newName: "iam_client_id");
+
+            migrationBuilder.RenameIndex(
+                name: "ix_user_roles_app_id",
+                schema: "portal",
+                table: "user_roles",
+                newName: "ix_user_roles_iam_client_id");
+
             migrationBuilder.AddColumn<string>(
                 name: "app_url",
                 schema: "portal",
@@ -211,26 +204,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 type: "character varying(255)",
                 maxLength: 255,
                 nullable: true);
-
-            migrationBuilder.DropColumn(
-                name: "app_id",
-                schema: "portal",
-                table: "user_roles");
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "iam_client_id",
-                schema: "portal",
-                table: "user_roles",
-                type: "uuid",
-                nullable: false,
-                defaultValueSql: "gen_random_uuid()");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "iam_client_id",
-                schema: "portal",
-                table: "user_roles",
-                type: "uuid",
-                nullable: false);
 
             migrationBuilder.CreateTable(
                 name: "app_assigned_clients",
@@ -262,12 +235,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "ix_app_assigned_clients_iam_client_id",
                 schema: "portal",
                 table: "app_assigned_clients",
-                column: "iam_client_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_user_roles_iam_client_id",
-                schema: "portal",
-                table: "user_roles",
                 column: "iam_client_id");
 
             migrationBuilder.AddForeignKey(
