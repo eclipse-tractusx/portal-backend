@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,13 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyStatusId
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+
+/// <summary>
+/// Audit Entity for a <see cref="Service"/>
+/// </summary>
+public class AuditService : Service, IAuditEntity
 {
-    PENDING = 1,
-    ACTIVE = 2,
-    REJECTED = 3,
-    INACTIVE = 4,
-    DELETED = 5
+    /// <inheritdoc />
+    public Guid AuditId { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset DateLastChanged { get; set; }
+
+    /// <inheritdoc />
+    public AuditOperationId AuditOperationId { get; set; }
 }

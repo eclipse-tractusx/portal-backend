@@ -3,6 +3,7 @@ using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220816061525_CPLP-1213-AddServices")]
+    partial class CPLP1213AddServices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,18 +37,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("app_id");
 
-                    b.Property<Guid?>("AppInstanceId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_instance_id");
-
                     b.Property<int>("AppSubscriptionStatusId")
                         .HasColumnType("integer")
                         .HasColumnName("app_subscription_status_id");
-
-                    b.Property<string>("AppUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("app_url");
 
                     b.Property<Guid>("AuditId")
                         .HasColumnType("uuid")
@@ -348,6 +341,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("app_status_id");
 
+                    b.Property<string>("AppUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("app_url");
+
                     b.Property<string>("ContactEmail")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -369,10 +367,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Property<DateTimeOffset?>("DateReleased")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_released");
-
-                    b.Property<bool>("IsCoreComponent")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_core_component");
 
                     b.Property<string>("MarketingUrl")
                         .HasMaxLength(255)
@@ -416,6 +410,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_apps_sales_manager_id");
 
                     b.ToTable("apps", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
+                {
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("app_id");
+
+                    b.Property<Guid>("IamClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("iam_client_id");
+
+                    b.HasKey("AppId", "IamClientId")
+                        .HasName("pk_app_assigned_clients");
+
+                    b.HasIndex("IamClientId")
+                        .HasDatabaseName("ix_app_assigned_clients_iam_client_id");
+
+                    b.ToTable("app_assigned_clients", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedLicense", b =>
@@ -512,33 +525,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_app_detail_images_app_id");
 
                     b.ToTable("app_detail_images", "portal");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppInstance", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AppId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_id");
-
-                    b.Property<Guid>("IamClientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("iam_client_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_app_instances");
-
-                    b.HasIndex("AppId")
-                        .HasDatabaseName("ix_app_instances_app_id");
-
-                    b.HasIndex("IamClientId")
-                        .HasDatabaseName("ix_app_instances_iam_client_id");
-
-                    b.ToTable("app_instances", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
@@ -927,20 +913,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("app_id");
 
-                    b.Property<Guid?>("AppInstanceId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_instance_id");
-
                     b.Property<int>("AppSubscriptionStatusId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(1)
                         .HasColumnName("app_subscription_status_id");
-
-                    b.Property<string>("AppUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("app_url");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -959,9 +936,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("AppId")
                         .HasDatabaseName("ix_company_assigned_apps_app_id");
-
-                    b.HasIndex("AppInstanceId")
-                        .HasDatabaseName("ix_company_assigned_apps_app_instance_id");
 
                     b.HasIndex("AppSubscriptionStatusId")
                         .HasDatabaseName("ix_company_assigned_apps_app_subscription_status_id");
@@ -4260,9 +4234,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AppId")
+                    b.Property<Guid>("IamClientId")
                         .HasColumnType("uuid")
-                        .HasColumnName("app_id");
+                        .HasColumnName("iam_client_id");
 
                     b.Property<string>("UserRoleText")
                         .IsRequired()
@@ -4273,8 +4247,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasKey("Id")
                         .HasName("pk_user_roles");
 
-                    b.HasIndex("AppId")
-                        .HasDatabaseName("ix_user_roles_app_id");
+                    b.HasIndex("IamClientId")
+                        .HasDatabaseName("ix_user_roles_iam_client_id");
 
                     b.ToTable("user_roles", "portal");
                 });
@@ -4426,6 +4400,26 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("SalesManager");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .IsRequired()
+                        .HasConstraintName("fk_app_assigned_clients_apps_app_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
+                        .WithMany()
+                        .HasForeignKey("IamClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_app_assigned_clients_iam_clients_iam_client_id");
+
+                    b.Navigation("App");
+
+                    b.Navigation("IamClient");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedLicense", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
@@ -4492,27 +4486,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasConstraintName("fk_app_detail_images_apps_app_id");
 
                     b.Navigation("App");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppInstance", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
-                        .WithMany("AppInstances")
-                        .HasForeignKey("AppId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired()
-                        .HasConstraintName("fk_app_instances_apps_app_id");
-
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
-                        .WithMany("AppInstances")
-                        .HasForeignKey("IamClientId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired()
-                        .HasConstraintName("fk_app_instances_iam_clients_iam_client_id");
-
-                    b.Navigation("App");
-
-                    b.Navigation("IamClient");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
@@ -4592,11 +4565,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_company_assigned_apps_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppInstance", "AppInstance")
-                        .WithMany("CompanyAssignedApps")
-                        .HasForeignKey("AppInstanceId")
-                        .HasConstraintName("fk_company_assigned_apps_app_instances_app_instance_id");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionStatus", "AppSubscriptionStatus")
                         .WithMany("AppSubscriptions")
                         .HasForeignKey("AppSubscriptionStatusId")
@@ -4610,8 +4578,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasConstraintName("fk_company_assigned_apps_companies_company_id");
 
                     b.Navigation("App");
-
-                    b.Navigation("AppInstance");
 
                     b.Navigation("AppSubscriptionStatus");
 
@@ -5109,14 +5075,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
                         .WithMany("UserRoles")
-                        .HasForeignKey("AppId")
+                        .HasForeignKey("IamClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_user_roles_apps_app_id");
+                        .HasConstraintName("fk_user_roles_iam_clients_iam_client_id");
 
-                    b.Navigation("App");
+                    b.Navigation("IamClient");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
@@ -5167,18 +5133,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Navigation("AppDetailImages");
 
-                    b.Navigation("AppInstances");
-
                     b.Navigation("CompanyAssignedApps");
 
                     b.Navigation("Tags");
-
-                    b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppInstance", b =>
-                {
-                    b.Navigation("CompanyAssignedApps");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppStatus", b =>
@@ -5324,7 +5281,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", b =>
                 {
-                    b.Navigation("AppInstances");
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
