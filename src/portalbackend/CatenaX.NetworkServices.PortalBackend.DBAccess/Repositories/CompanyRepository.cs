@@ -99,4 +99,11 @@ public class CompanyRepository : ICompanyRepository
             ))
             .AsAsyncEnumerable();
     }
+
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+        _context.Companies
+            .AsNoTracking()
+            .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE)
+            .Select(company => company.BusinessPartnerNumber)
+            .AsAsyncEnumerable();
 }
