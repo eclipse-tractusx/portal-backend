@@ -46,16 +46,21 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
-    public async Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
+    public  Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
         if (appId == null)
         {
-            throw new ArgumentException($"AppId must not be empty", nameof(appId));
+            throw new ArgumentException($"AppId must not be empty");
         }
         if (updateModel.Descriptions.Any() && string.IsNullOrWhiteSpace(updateModel.Descriptions.Select(x => x.LanguageCode).ElementAt(0)))
         {
             throw new ArgumentException($"Language Code must not be empty");
         }
+        
+        return EditAppAsync(appId, updateModel, userId);
+    }
+    private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
+    {
         var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
         if (result == null)
         {
@@ -67,9 +72,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactNumber = updateModel.ContactNumber;
             app.MarketingUrl = updateModel.ProviderUri;
         });
+        int currentIndex=0;
         foreach (var item in updateModel.Descriptions)
         {
-            int currentIndex=0;
             newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, result.Descriptions.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
             currentIndex++;
         }
