@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,13 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-public enum CompanyStatusId
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+
+public class ServiceStatus
 {
-    PENDING = 1,
-    ACTIVE = 2,
-    REJECTED = 3,
-    INACTIVE = 4,
-    DELETED = 5
+    private ServiceStatus()
+    {
+        Label = null!;
+        Services = new HashSet<Service>();
+    }
+
+    public ServiceStatus(ServiceStatusId serviceStatusId) : this()
+    {
+        Id = serviceStatusId;
+        Label = serviceStatusId.ToString();
+    }
+
+    public ServiceStatusId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+    public virtual ICollection<Service> Services { get; private set; }
 }
