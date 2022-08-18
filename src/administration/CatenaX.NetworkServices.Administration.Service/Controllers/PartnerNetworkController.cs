@@ -26,13 +26,9 @@ public class PartnerNetworkController : ControllerBase
         _logic = logic;
     }
 
-    /// <summary>
-    /// Get all member companies
-    /// </summary>
+    /// <summary> Get all member companies</summary>
     /// <returns>Returns all the active member companies bpn.</returns>
-    /// <remarks>
-    /// Example: Get: api/administration/partnernetwork/memberCompanies
-    /// </remarks>
+    /// <remarks>Example: Get: api/administration/partnernetwork/memberCompanies</remarks>
     /// <response code="200">Returns all the active member companies bpn.</response>
 
     [HttpGet]

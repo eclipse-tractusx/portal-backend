@@ -12,6 +12,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.Controllers
 {
     public class PartnerNetworkControllerTest
     {
+   
         private readonly IPartnerNetworkBusinessLogic _logic;
         private readonly PartnerNetworkController _controller;
 
@@ -27,17 +28,18 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.Controllers
         public async Task GetAllMemberCompaniesBPN_Test()
         {
             //Arrange
-            
+          
             A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync());
-
+    
             //Act
             var result = this._controller.GetAllMemberCompaniesBPNAsync();
 
             //Assert
-            A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync()).MustHaveHappenedOnceExactly();
-            //Assert.IsType<string>(strin);
-            //var companyBpnsList = companyBpns.First();
-            //result.Should().Be(IAsyncEnumerable<string>);
+            await foreach (var item in result)
+            {
+                A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync()).MustHaveHappenedOnceExactly();
+                Assert.IsType<string>(result);
+            }
         }
     }
 }
