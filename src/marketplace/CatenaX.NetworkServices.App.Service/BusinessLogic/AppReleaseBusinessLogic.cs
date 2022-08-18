@@ -48,7 +48,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public  Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        if (appId == null)
+        if (appId == default)
         {
             throw new ArgumentException($"AppId must not be empty");
         }
@@ -73,12 +73,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.MarketingUrl = updateModel.ProviderUri;
         });
         int currentIndex=0;
-        foreach (var item in updateModel.Descriptions)
+        foreach (var item in updateModel?.Descriptions)
         {
-            newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, result.Descriptions.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
+            newApp.AppDescriptions.Add(new AppDescription(appId, item?.LanguageCode, item?.LongDescription, result?.Descriptions?.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
             currentIndex++;
         }
-        foreach (var record in updateModel.Images)
+        foreach (var record in updateModel?.Images)
         {
             newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
         }
