@@ -32,12 +32,12 @@ public class AppEditableDetail
     /// <summary>
     /// Description of Language.
     /// </summary>
-    public IEnumerable<Localization> Descriptions { get; set; }
+    public IEnumerable<Localization>? Descriptions { get; set; }
 
     /// <summary>
     /// Image Detail of App
     /// </summary>
-    public IEnumerable<string> Images { get; set; }
+    public IEnumerable<string>? Images { get; set; }
 
     /// <summary>
     /// Provider Url
@@ -63,12 +63,12 @@ public class Localization
     /// <summary>
     /// Language Code
     /// </summary>
-    public string LanguageCode {get;set;}
+    public string? LanguageCode {get;set;}
 
     /// <summary>
     /// Long Description
     /// </summary>
-    public string LongDescription {get;set;}
+    public string? LongDescription {get;set;}
 }
 
 
