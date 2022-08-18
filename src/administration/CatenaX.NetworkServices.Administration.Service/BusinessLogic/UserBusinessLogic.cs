@@ -514,7 +514,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         .Select(companyUser => new CompanyAppUserDetails(
                             companyUser.Id,
                             companyUser.CompanyUserStatusId,
-                            companyUser.UserRoles!.Where(userRole => userRole.App.Id == appId).Select(userRole => userRole.UserRoleText))
+                            companyUser.UserRoles!.Where(userRole => userRole.App!.Id == appId).Select(userRole => userRole.UserRoleText))
                         {
                             FirstName = companyUser.Firstname,
                             LastName = companyUser.Lastname,
