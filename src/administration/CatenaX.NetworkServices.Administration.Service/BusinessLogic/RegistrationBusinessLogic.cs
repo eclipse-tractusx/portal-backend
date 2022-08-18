@@ -247,7 +247,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
     {
         var failedUserNames = new List<string>();
-        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles, applicationId).ConfigureAwait(false);
+        var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles).ConfigureAwait(false);
         await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, initialRolesData.Select(x => x.UserRoleId)).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
@@ -288,7 +288,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles, applicationId).ConfigureAwait(false);
+        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
         var invitedUsersData = applicationRepository
@@ -319,10 +319,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return assignedRoles;
     }
 
-    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles, Guid appId)
+    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
     {
         var roleData = await userRolesRepository
-            .GetUserRoleDataUntrackedAsync(roles, appId)
+            .GetUserRoleDataUntrackedAsync(roles)
             .ToListAsync()
             .ConfigureAwait(false);
         if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))

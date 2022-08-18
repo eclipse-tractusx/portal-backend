@@ -58,13 +58,13 @@ public class UserRolesRepository : IUserRolesRepository
             ))
             .AsAsyncEnumerable();
 
-    public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles, Guid appId)
+    public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
     {
         foreach (var clientRole in clientRoles)
         {
             await foreach (var userRoleData in _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(userRole => userRole.AppId == appId && userRole.App!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
+                .Where(userRole => userRole.App!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
                 .Select(userRole => new UserRoleData(
                     userRole.Id,
                     userRole.App!.AppInstances.Single(ai => ai.IamClient!.ClientClientId == clientRole.Key).IamClient!.ClientClientId,
