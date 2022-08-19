@@ -101,7 +101,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         if (string.IsNullOrEmpty(document.FileName))
         {
-            throw new ArgumentNullException("File name is must not be null");
+            throw new ArgumentException($"File name is must not be null");
         }
         // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
