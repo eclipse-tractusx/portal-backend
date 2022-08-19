@@ -30,14 +30,30 @@ namespace CatenaX.NetworkServices.App.Service.InputModels;
 public class AppEditableDetail
 {
     /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="descriptions"></param>
+    /// <param name="images"></param>
+    /// <param name="providerUri"></param>
+    /// <param name="contactEmail"></param>
+    /// <param name="contactNumber"></param>
+    public AppEditableDetail(IEnumerable<Localization> descriptions, IEnumerable<string> images, string? providerUri, string? contactEmail, string? contactNumber)
+    {
+        Descriptions = descriptions;
+        Images = images;
+        ProviderUri = providerUri;
+        ContactEmail = contactEmail;
+        ContactNumber = contactNumber;
+    }
+    /// <summary>
     /// Description of Language.
     /// </summary>
-    public IEnumerable<Localization>? Descriptions { get; set; }
+    public IEnumerable<Localization> Descriptions { get; set; }
 
     /// <summary>
     /// Image Detail of App
     /// </summary>
-    public IEnumerable<string>? Images { get; set; }
+    public IEnumerable<string> Images { get; set; }
 
     /// <summary>
     /// Provider Url
@@ -61,14 +77,24 @@ public class AppEditableDetail
 public class Localization
 {
     /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="languageCode"></param>
+    /// <param name="longDescription"></param>
+    public Localization(string languageCode, string longDescription)
+    {
+        LanguageCode = languageCode;
+        LongDescription = longDescription;
+    }
+    /// <summary>
     /// Language Code
     /// </summary>
-    public string? LanguageCode {get;set;}
+    public string LanguageCode {get;set;}
 
     /// <summary>
     /// Long Description
     /// </summary>
-    public string? LongDescription {get;set;}
+    public string LongDescription {get;set;}
 }
 
 
