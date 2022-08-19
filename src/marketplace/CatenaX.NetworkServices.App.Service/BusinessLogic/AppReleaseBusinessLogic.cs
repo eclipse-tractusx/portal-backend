@@ -24,6 +24,8 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -48,7 +50,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public  Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        if (appId == null)
+        if (appId == Guid.Empty)
         {
             throw new ArgumentException($"AppId must not be empty");
         }
@@ -56,12 +58,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"Language Code must not be empty");
         }
-        
+
         return EditAppAsync(appId, updateModel, userId);
     }
+
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+         var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
@@ -83,6 +86,55 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+     /// <inheritdoc/>
+    public Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    {
+        if (appId == Guid.Empty)
+        {
+            throw new ArgumentException($"AppId must not be empty");
+        }
+        if (!(documentTypeId == DocumentTypeId.APP_CONTRACT || documentTypeId == DocumentTypeId.DATA_CONTRACT))
+        {
+            throw new ArgumentException($"documentType must  be either APP_CONTRACT or DATA_CONTRACT");
+        }
+        if (string.IsNullOrEmpty(document.FileName))
+        {
+            throw new ArgumentNullException("File name is must not be null");
+        }
+        // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+        if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
+        }
+        return UploadAppDoc(appId, documentTypeId, document, userId);
+    }
+
+    private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    {
+        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
+        if (companyUserId == default)
+        {
+            throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
+        }
+        var documentName = document.FileName;
+        using (var md5 = MD5.Create())
+        {
+            using (var ms = new MemoryStream((int)document.Length))
+            {
+                document.CopyTo(ms);
+                var hash = md5.ComputeHash(ms);
+                var documentContent = ms.GetBuffer();
+                if (ms.Length != document.Length || documentContent.Length != document.Length)
+                {
+                    throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+                }
+                var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
+                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            }
+        }
     }
 }
 

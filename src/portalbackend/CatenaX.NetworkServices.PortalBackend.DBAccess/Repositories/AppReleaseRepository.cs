@@ -42,7 +42,7 @@ public class AppReleaseRepository : IAppReleaseRepository
         this._context = portalDbContext;
     }
 
-    /// <inheritdoc />
+    ///<inheritdoc/>
     public async Task<AppUpdateModel> GetAppByIdAsync(Guid appId, string userId)
     {
         var app = await _context.Apps
@@ -68,4 +68,16 @@ public class AppReleaseRepository : IAppReleaseRepository
         );
     }
     
+    ///<inheritdoc/>
+    public  Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId)
+    =>
+        _context.Apps
+             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED)
+             .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
+             .SingleOrDefaultAsync();
+    
+    ///<inheritdoc/>
+    public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
+        _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
+
 }
