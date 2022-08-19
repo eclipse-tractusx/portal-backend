@@ -114,7 +114,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
-        if (companyUserId == default)
+        if (companyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
         }
