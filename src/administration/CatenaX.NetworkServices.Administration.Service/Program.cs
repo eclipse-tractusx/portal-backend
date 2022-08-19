@@ -125,6 +125,7 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
                 
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
+builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
 
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));

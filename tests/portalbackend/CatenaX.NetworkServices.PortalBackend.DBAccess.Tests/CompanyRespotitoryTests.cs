@@ -146,4 +146,21 @@ public class CompanyRepositoryTests
         
         A.CallTo(() => _contextFake.Companies).Returns(_companies.AsFakeDbSet());
     }
+
+    #region GetAllMemberCompaniesBPN
+
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN__ReturnsBPNList()
+    {
+        // Arrange
+        _fixture.Inject(_contextFake);
+        var sut = _fixture.Create<CompanyRepository>();
+
+        // Act
+        var results = await sut.GetAllMemberCompaniesBPNAsync().ToListAsync();
+
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+    }
+     #endregion
 }
