@@ -33,5 +33,21 @@ public interface IAppReleaseRepository
     /// </summary>
     /// <param name="appId"></param>
     /// <returns>Returns the app provideruri,contact number,email ,description and image detail</returns>
+    
     Task<AppUpdateModel> GetAppByIdAsync(Guid appId, string userId);
+    /// <summary>
+    /// Return the Company User Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Add app Id and Document Id in App Assigned Document table 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <returns></returns>
+    AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
 }

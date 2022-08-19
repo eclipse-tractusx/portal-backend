@@ -39,6 +39,7 @@ public class App
         CompanyUsers = new HashSet<CompanyUser>();
         Tags = new HashSet<AppTag>();
         SupportedLanguages = new HashSet<Language>();
+        Documents = new HashSet<Document>();
     }
 
     public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
@@ -102,4 +103,5 @@ public class App
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     public virtual ICollection<Language> SupportedLanguages { get; private set; }
+    public virtual ICollection<Document> Documents { get; private set; }
 }

@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.App.Service.BusinessLogic;
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +67,34 @@ public class AppReleaseProcessController : ControllerBase
     public async Task<IActionResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Upload document for active apps in the marketplace for given appId for same company as user
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/apprelease/{appId}/documentType/{documentTypeId}/documents</remarks>
+    /// <response code="204">Successfully uploaded the document</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
+    /// <response code="403">The user is not assigned with the app.</response>
+    /// <response code="415">Only PDF files are supported.</response>
+    [HttpPut]
+    [Route("updateappdoc/{appId}/documentType/{documentTypeId}/documents")]
+    [Authorize(Roles = "app_management")]
+    [Consumes("multipart/form-data")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    public async Task<IActionResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document)
+    {
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppDocumentAsync(appId,  documentTypeId,  document, userId)).ConfigureAwait(false);
         return NoContent();
     }
 }

@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -36,4 +37,14 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
+    
+    /// <summary>
+    /// Upload document for given company user for appId
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId);
 }
