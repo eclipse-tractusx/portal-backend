@@ -107,7 +107,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
     {
-        if (applicationId == default)
+        if (applicationId == Guid.Empty)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
@@ -117,7 +117,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
     {
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (creatorId == null)
+        if (creatorId == Guid.Empty)
         {
             throw new UnexpectedConditionException($"user {iamUserId} is not associated with a companyuser");
         }
@@ -162,7 +162,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<bool> DeclinePartnerRequest(Guid applicationId)
     {
-        if (applicationId == default)
+        if (applicationId == Guid.NewGuid())
         {
             throw new ArgumentNullException(nameof(applicationId));
         }

@@ -54,8 +54,7 @@ public class CompanyAssignedAppsRepository : ICompanyAssignedAppsRepository
 
         char[] escapeChar = { '%', '_', '[', ']', '^' };
         return _context.CompanyUsers
-                .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId))
-                && companyUser.IamUser!.UserEntityId == iamUserId)
+                .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.App!.Id == appId) && companyUser.IamUser!.UserEntityId == iamUserId)
                 .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
                 .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser!.Firstname, $"%{firstName.Trim(escapeChar)}%") : true
                     && lastName != null ? EF.Functions.ILike(companyUser!.Lastname, $"%{lastName.Trim(escapeChar)}%") : true
