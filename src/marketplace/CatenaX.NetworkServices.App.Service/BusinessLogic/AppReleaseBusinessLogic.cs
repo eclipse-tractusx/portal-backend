@@ -136,5 +136,47 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             }
         }
     }
+
+    public  Task UpdateAppRoleAsync(Guid appId, IEnumerable<AppEditableClientRoles> appAssignedDesc, string userId)
+    { 
+        if (appId == Guid.Empty)
+        {
+            throw new ArgumentException($"AppId must not be empty");
+        }
+       
+        foreach(var langCode in appAssignedDesc.SelectMany(desc => desc.Descriptions))
+        {
+            if(string.IsNullOrWhiteSpace(langCode.LanguageCode))
+            {
+                throw new ArgumentException($"Language Code must not be empty");
+            }
+        }
+        return  EditAppRoleAsync(appId,appAssignedDesc, userId);
+    }
+
+    private async Task EditAppRoleAsync(Guid appId, IEnumerable<AppEditableClientRoles> appAssignedDesc, string userId)
+    {
+        //var appRoleDescriptions = new List<AppRoleDescription>();
+        //var appEditableClientRoles = new List<AppEditableClientRoles>();
+       // var userRoleDescriptions = new List<UserRoleDescription>();
+        //var userRoles = new List<AppEditableClientRoles>();
+        await foreach (var appRole in _portalRepositories.GetInstance<IAppReleaseRepository>().GetClientRolesAsync(appId, userId).ConfigureAwait(false))
+        {
+            if(appRole == null)
+            {
+               throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
+            }
+         // foreach(var item in appclientRole.Descriptions)
+         // {
+              //appRoleDescriptions.Add(new AppRoleDescription(item.LanguageShortName, item.Description));
+         // }
+         // appEditableClientRoles.Add(new AppEditableClientRoles(appclientRole.Role,appRoleDescriptions));
+        }
+        foreach(var indexItem in appAssignedDesc)
+        {
+
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }
 

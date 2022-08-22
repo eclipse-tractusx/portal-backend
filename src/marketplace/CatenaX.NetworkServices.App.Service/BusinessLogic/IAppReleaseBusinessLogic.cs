@@ -47,4 +47,6 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId);
+
+    Task UpdateAppRoleAsync(Guid appId, IEnumerable<AppEditableClientRoles> appAssignedDesc, string userId);
 }

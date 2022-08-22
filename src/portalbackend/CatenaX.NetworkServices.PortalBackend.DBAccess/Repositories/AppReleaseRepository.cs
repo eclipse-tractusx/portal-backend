@@ -80,4 +80,14 @@ public class AppReleaseRepository : IAppReleaseRepository
     public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
         _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
 
+    public IAsyncEnumerable<AppClientRoles> GetClientRolesAsync(Guid appId, string userId) =>
+           _context.AppAssignedClients
+               .Where(client => client.AppId == appId && client.App.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+               .SelectMany(clients => clients.IamClient!.UserRoles!)
+               .Select(roles => new AppClientRoles(
+                   roles.Id,
+                   roles.UserRoleText,
+                   roles.UserRoleDescriptions.Select(d=>new UserRoleDescription(roles.Id,d.LanguageShortName,d.Description))
+               )).AsAsyncEnumerable();
+
 }

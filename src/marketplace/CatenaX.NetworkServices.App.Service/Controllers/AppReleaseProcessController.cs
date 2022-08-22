@@ -97,4 +97,17 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppDocumentAsync(appId,  documentTypeId,  document, userId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    [HttpPut]
+    [Route("updateapprole/{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateAppRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppEditableClientRoles> appAssignedDesc)
+    {
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+    
 }
