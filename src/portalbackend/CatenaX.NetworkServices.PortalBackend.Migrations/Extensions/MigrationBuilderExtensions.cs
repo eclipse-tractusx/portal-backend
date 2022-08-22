@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -50,7 +50,7 @@ public static class MigrationBuilderExtensions
         migrationBuilder.Sql($"DROP FUNCTION IF EXISTS process_{auditTableName}_audit();");
         migrationBuilder.Sql($"DROP TRIGGER {auditTableName} ON {tableName};");
     }
-    
+
     private static string GenerateInsertStatement(
         IReadOnlyCollection<string> properties,
         NamingStrategy namingStrategy,
