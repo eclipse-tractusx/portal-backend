@@ -50,4 +50,6 @@ public interface IAppReleaseRepository
     /// <param name="documentId"></param>
     /// <returns></returns>
     AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+
+    IAsyncEnumerable<AppClientRoles> GetClientRolesAsync(Guid appId, string userId);
 }
