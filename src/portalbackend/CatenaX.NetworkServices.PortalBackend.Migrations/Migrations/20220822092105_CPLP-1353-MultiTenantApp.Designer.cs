@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220817154540_CPLP-1353-multi-tenant-app")]
-    partial class CPLP1353multitenantapp
+    [Migration("20220822092105_CPLP-1353-MultiTenantApp")]
+    partial class CPLP1353MultiTenantApp
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -25,6 +25,47 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("ApplicationStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("application_status_id");
+
+                    b.Property<Guid>("AuditId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_id");
+
+                    b.Property<int>("AuditOperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_operation_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<DateTimeOffset>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_company_applications_cplp_1255_audit_company_applicat");
+
+                    b.ToTable("audit_company_applications_cplp_1255_audit_company_applications", "portal");
+                });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyAssignedApp", b =>
                 {
@@ -141,6 +182,43 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_audit_company_users_cplp_1254_db_audit_company_user_status_");
 
                     b.ToTable("audit_company_users_cplp_1254_db_audit", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUserAssignedRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AuditId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_id");
+
+                    b.Property<int>("AuditOperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_operation_id");
+
+                    b.Property<Guid>("CompanyUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_user_id");
+
+                    b.Property<DateTimeOffset>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<Guid>("UserRoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_company_user_assigned_roles_cplp_1255_audit_company_a");
+
+                    b.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -842,6 +920,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_last_changed");
 
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
                     b.HasKey("Id")
                         .HasName("pk_company_applications");
 
@@ -1384,6 +1466,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Property<Guid>("UserRoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_role_id");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
 
                     b.HasKey("CompanyUserId", "UserRoleId")
                         .HasName("pk_company_user_assigned_roles");
