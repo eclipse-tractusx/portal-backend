@@ -5,10 +5,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1353multitenantapp : Migration
+    public partial class CPLP1353MultiTenantApp : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE FROM portal.company_service_account_assigned_roles");
+            migrationBuilder.Sql("DELETE FROM portal.company_user_assigned_roles");
+            migrationBuilder.Sql("DELETE FROM portal.user_roles");
+            
             migrationBuilder.DropForeignKey(
                 name: "fk_user_roles_iam_clients_iam_client_id",
                 schema: "portal",
