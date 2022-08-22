@@ -325,7 +325,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <response code="400">Invalid User roles for client</response>
         /// <response code="404">User not found</response>
         [HttpPost]
-        [Authorize(Roles = "modify_user_account")]
+        // [Authorize(Roles = "modify_user_account")]
         [Route("app/{appId}/roles")]
         [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
