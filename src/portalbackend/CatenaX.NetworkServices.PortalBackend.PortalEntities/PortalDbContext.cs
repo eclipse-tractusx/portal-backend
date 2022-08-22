@@ -100,8 +100,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ServiceSubscriptionStatus> ServiceSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<CompanyAssignedService> CompanyAssignedServices { get; set; } = default!;
     public virtual DbSet<ServiceAssignedLicense> ServiceAssignedLicenses { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedApp> AuditCompanyAssignedApps { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
     public virtual DbSet<AuditService> AuditServices { get; set; } = default!;
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -396,6 +398,16 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.CompanyApplications)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        
+        modelBuilder.Entity<AuditCompanyApplication>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.ApplicationStatus);
+            x.Ignore(x => x.Company);
+            x.Ignore(x => x.Invitations);
+            x.ToTable("audit_company_applications_cplp_1255_audit_company_applications");
+        });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
             .HasData(
@@ -554,6 +566,16 @@ public class PortalDbContext : DbContext
             entity.Ignore(x => x.RequesterOfCompanyAssignedServices);
 
             entity.ToTable("audit_company_users_cplp_1254_db_audit");
+        });
+
+        modelBuilder.Entity<AuditCompanyUserAssignedRole>(x =>
+        {
+            x.HasBaseType((Type?)null);
+
+            x.Ignore(x => x.CompanyUser);
+            x.Ignore(x => x.UserRole);
+
+            x.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications");
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()

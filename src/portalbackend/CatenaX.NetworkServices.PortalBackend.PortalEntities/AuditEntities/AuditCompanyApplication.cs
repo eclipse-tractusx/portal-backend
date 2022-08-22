@@ -18,25 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 /// <summary>
-/// Possible operations for the audit table
+/// Audit entity for <see cref="CompanyApplication"/> only needed for configuration purposes
 /// </summary>
-public enum AuditOperationId
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+public class AuditCompanyApplication : CompanyApplication, IAuditEntity
 {
-    /// <summary>
-    /// The entity has been inserted
-    /// </summary>
-    INSERT = 1,
+/// <inheritdoc />
+    public Guid AuditId { get; set; }
 
-    /// <summary>
-    /// The entity has been updated
-    /// </summary>
-    UPDATE = 2,
-
-    /// <summary>
-    /// The entity has been deleted
-    /// </summary>
-    DELETE = 3,
-} 
+    /// <inheritdoc />
+    public AuditOperationId AuditOperationId { get; set; }
+    
+    /// <inheritdoc />
+    public new DateTimeOffset DateLastChanged { get; set; }
+}

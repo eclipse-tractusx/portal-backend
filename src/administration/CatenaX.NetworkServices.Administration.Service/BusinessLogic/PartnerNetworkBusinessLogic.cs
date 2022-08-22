@@ -18,25 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+ 
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
 
-/// <summary>
-/// Possible operations for the audit table
-/// </summary>
-public enum AuditOperationId
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+
+public class PartnerNetworkBusinessLogic : IPartnerNetworkBusinessLogic
 {
-    /// <summary>
-    /// The entity has been inserted
-    /// </summary>
-    INSERT = 1,
+    private readonly IPortalRepositories _portalRepositories;
 
     /// <summary>
-    /// The entity has been updated
+    /// Constructor
     /// </summary>
-    UPDATE = 2,
+    /// <param name="portalRepositories"></param>
+    public PartnerNetworkBusinessLogic(IPortalRepositories portalRepositories)
+    {
+        _portalRepositories = portalRepositories;
+    }
 
-    /// <summary>
-    /// The entity has been deleted
-    /// </summary>
-    DELETE = 3,
-} 
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync();
+}
