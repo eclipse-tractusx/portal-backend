@@ -85,7 +85,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        try
+        {
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception?.InnerException?.Message.Contains("violates unique constraint") ?? false)
+        {
+            throw new ArgumentException($"language code does exist");
+        }
+        
     }
 }
 
