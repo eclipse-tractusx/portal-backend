@@ -20,34 +20,13 @@
 
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Keycloak.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Factory;
-using CatenaX.NetworkServices.Keycloak.Factory.Utils;
-using CatenaX.NetworkServices.Mailing.SendMail;
-using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
-
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.Framework.Cors;
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Framework.Swagger;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using Newtonsoft.Json.Serialization;
+using CatenaX.NetworkServices.Framework.Web;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -62,52 +41,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
-builder.Services.AddCors(options => options.SetupCors(builder.Configuration));
-
-builder.Services.AddControllers()
-                .AddJsonOptions(options => {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
-                });
-
-builder.Services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, VERSION, TAG));
-
-builder.Services.AddAuthentication(x => {
-                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(options => {
-                    builder.Configuration.Bind("JwtBearerOptions", options);
-                    if (!options.RequireHttpsMetadata)
-                    {
-                        options.BackchannelHttpHandler = new HttpClientHandler
-                        {
-                            ServerCertificateCustomValidationCallback = (a, b, c, d) => true
-                        };
-                    }
-                });
-
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
-builder.Services.AddTransient<IAuthorizationHandler,ClaimRequestPathHandler>()
-                    .AddAuthorization(option => {
-                        option.AddPolicy("CheckTenant", policy =>
-                        {
-                            policy.AddRequirements(new ClaimRequestPathRequirement("tenant","tenant"));
-                        });
-                    })
-                    .AddTransient<IHttpContextAccessor,HttpContextAccessor>();
-
-builder.Services.AddTransient<IMailingService, MailingService>()
-                .AddTransient<ISendMail, SendMail>()
-                .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
-
-builder.Services.AddTransient<ITemplateManager, TemplateManager>()
-                .ConfigureTemplateSettings(builder.Configuration.GetSection(Constants.MailingTemplates));
-
-builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
-                .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions",options));
-                    
-builder.Services.AddTransient<IKeycloakFactory, KeycloakFactory>()
-                .ConfigureKeycloakSettingsMap(builder.Configuration.GetSection("Keycloak"));
+builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG)
+                .AddMailingAndTemplateManager(builder.Configuration);
 
 builder.Services.AddTransient<IProvisioningManager, ProvisioningManager>()
                 .ConfigureProvisioningSettings(builder.Configuration.GetSection("Provisioning"));
@@ -132,10 +67,7 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
-
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
-
-builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
@@ -143,39 +75,9 @@ builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactorySe
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-builder.Services.AddDbContext<PortalDbContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("PortalDB")));
-
 builder.Services.AddDbContext<ProvisioningDBContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
-var app = builder.Build();
-
-var debugEnabled = app.Configuration.GetValue<bool?>("DebugEnabled") != null && app.Configuration.GetValue<bool>("DebugEnabled");
-if (debugEnabled)
-{
-    app.UseDeveloperExceptionPage();
-    KeycloakUntrustedCertExceptionHandler.ConfigureExceptions(app.Configuration.GetSection("Keycloak"));
-}
-FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<Program>>(), debugEnabled);
-
-if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null && app.Configuration.GetValue<bool>("SwaggerEnabled"))
-{
-    app.UseSwagger( c => c.RouteTemplate = "/api/administration/swagger/{documentName}/swagger.{json|yaml}");
-    app.UseSwaggerUI(c => {
-        c.SwaggerEndpoint(string.Format("/api/administration/swagger/{0}/swagger.json",VERSION), string.Format("{0} {1}",TAG,VERSION));
-        c.RoutePrefix = "api/administration/swagger";
-    });
-}
-
-app.UseRouting();
-
-app.UseCors(CorsExtensions.AllowSpecificOrigins);
-
-app.UseMiddleware<GeneralHttpErrorHandler>();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+builder.Build()
+    .CreateApp<Program>("administration", VERSION, TAG)
+    .Run();

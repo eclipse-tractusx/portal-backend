@@ -31,9 +31,17 @@ public static class SwaggerGenConfiguration
             }
         });
 
-        var filePath = Path.Combine(AppContext.BaseDirectory, Assembly.GetCallingAssembly().FullName?.Split(',')[0] + ".xml");
-        c.IncludeXmlComments(filePath);
-        
+        try
+        {
+
+            var filePath = Path.Combine(AppContext.BaseDirectory, Assembly.GetCallingAssembly()?.FullName?.Split(',')[0] + ".xml");
+            c.IncludeXmlComments(filePath);
+        }
+        catch
+        {
+            // ignored - only happens while testing
+        }
+
         c.OperationFilter<BaseStatusCodeFilter>();
         c.OperationFilter<AddAuthFilter>();
     }
