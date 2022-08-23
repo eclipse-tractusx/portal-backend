@@ -40,7 +40,6 @@ public static class ServerCertificateValidationExtensions
             Console.WriteLine($"Issuer: {certificateIssuer}");
             Console.WriteLine($"Subject: {certificate.Subject}");
 
-            return true;
             if (certificateIssuer == "CN=devenv-ca")
             {
                 return true;
