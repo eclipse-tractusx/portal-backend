@@ -6,13 +6,25 @@ namespace CatenaX.NetworkServices.App.Service.InputModels;
 /// Model for requesting creation of an application.
 /// </summary>
 public class AppInputModel
-{
+{   
+     /// <summary>
+    /// Private constructor.
+    /// </summary>
+    private AppInputModel()
+    {
+        Provider = string.Empty;
+        Price = string.Empty;
+        UseCaseIds = new HashSet<Guid>();
+        Descriptions = new HashSet<LocalizedDescription>();
+        SupportedLanguageCodes = new HashSet<string>();
+    }
+    
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="provider">Provider of the app.</param>
     /// <param name="price">Price of the app.</param>
-    public AppInputModel(string provider, string price)
+    public AppInputModel(string provider, string price): this()
     {
         Provider = provider;
         Price = price;
@@ -73,12 +85,12 @@ public class AppInputModel
     /// <summary>
     /// IDs of app's use cases.
     /// </summary>
-    public ICollection<Guid> UseCaseIds { get; set; }
+    public virtual ICollection<Guid> UseCaseIds { get; set; }
 
     /// <summary>
     /// Descriptions of the app in different languages.
     /// </summary>
-    public ICollection<LocalizedDescription> Descriptions { get; set; }
+    public virtual ICollection<LocalizedDescription> Descriptions { get; set; }
 
     /// <summary>
     /// Two character language codes for the app's supported languages.
