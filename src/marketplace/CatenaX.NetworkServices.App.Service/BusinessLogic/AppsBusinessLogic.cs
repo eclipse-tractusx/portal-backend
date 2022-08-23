@@ -248,14 +248,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ArgumentException($"Company Id  does not exist"); 
         }
-        if (!appRequestModel.SupportedLanguageCodes.Any())
+        var languageCodes = appRequestModel.SupportedLanguageCodes.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
+        if (languageCodes.Count() == 0)
         {
-            throw new ArgumentException($"Language Code does not exist"); 
+            throw new ArgumentNullException($"Language Code does not exist"); 
         }
-        if (!appRequestModel.UseCaseIds.Any())
+        var useCaseIds = appRequestModel.UseCaseIds.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
+        if (useCaseIds.Count() == 0)
         {
-            throw new ArgumentException($"Use Case does not exist"); 
+            throw new ArgumentNullException($"Use Case does not exist");
         }
+        
+       
         return  this.CreateAppAsync(appRequestModel);
     }
     
@@ -275,10 +279,17 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
               (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-              (appId, uc)));
+              (appId, Guid.Parse(uc))));
         var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
         appRepository.CreateAppAssignedLicense(appId, licenseId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return appId;
+        try
+        {
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            return appId;
+        }
+        catch(Exception exception)when (exception?.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
+        {
+            throw new NotFoundException($"language code or UseCaseId does not exist");
+        }
     }
 }

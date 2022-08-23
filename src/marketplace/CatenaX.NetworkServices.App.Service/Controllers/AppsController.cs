@@ -265,6 +265,8 @@ public class AppsController : ControllerBase
     [Route("createapp")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await _appsBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
