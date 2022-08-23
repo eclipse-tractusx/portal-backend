@@ -4,9 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CatenaX.NetworkServices.Mailing.Template
 {
-    public class TemplateSettings: Dictionary<string,TemplateSetting>
+    public class TemplateSettings
     {
-        public const string Position = "MailingService:Templates";
+        public Dictionary<string, TemplateSetting> Templates { get; set; }
     }
 
     /// <summary>
@@ -29,19 +29,14 @@ namespace CatenaX.NetworkServices.Mailing.Template
         /// </summary>
         public EmailTemplateType? EmailTemplateType { get; set; }
     }
+    
     public static class TemplateSettingsExtention
     {
         public static IServiceCollection ConfigureTemplateSettings(
             this IServiceCollection services,
-            IConfigurationSection section
-            )
+            IConfigurationSection section)
         {
-            return services.Configure<TemplateSettings>(x => section
-                .GetChildren()
-                .Aggregate(x,(y,z) => {
-                    y.Add(z.Key,z.Get<TemplateSetting>());
-                    return y;
-                }));
+            return services.Configure<TemplateSettings>(section);
         }
     }
 }

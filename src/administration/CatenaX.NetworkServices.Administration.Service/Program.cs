@@ -43,6 +43,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -100,7 +101,7 @@ builder.Services.AddTransient<IMailingService, MailingService>()
                 .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
 
 builder.Services.AddTransient<ITemplateManager, TemplateManager>()
-                .ConfigureTemplateSettings(builder.Configuration.GetSection(TemplateSettings.Position));
+                .ConfigureTemplateSettings(builder.Configuration.GetSection(Constants.MailingTemplates));
 
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
                 .Configure<JwtBearerOptions>(options => builder.Configuration.Bind("JwtBearerOptions",options));

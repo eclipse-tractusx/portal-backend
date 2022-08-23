@@ -35,6 +35,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.Framework.Models;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -86,7 +87,7 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
 builder.Services.AddTransient<IMailingService, MailingService>()
                 .AddTransient<ISendMail, SendMail>()
                 .AddTransient<ITemplateManager, TemplateManager>()
-                .ConfigureTemplateSettings(builder.Configuration.GetSection(TemplateSettings.Position))
+                .ConfigureTemplateSettings(builder.Configuration.GetSection(Constants.MailingTemplates))
                 .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
 
 var app = builder.Build();
