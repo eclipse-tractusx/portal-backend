@@ -27,75 +27,21 @@ namespace CatenaX.NetworkServices.App.Service.InputModels;
 /// <summary>
 /// Model for updating an app.
 /// </summary>
-public class AppEditableDetail
-{
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="descriptions"></param>
-    /// <param name="images"></param>
-    /// <param name="providerUri"></param>
-    /// <param name="contactEmail"></param>
-    /// <param name="contactNumber"></param>
-    public AppEditableDetail(IEnumerable<Localization> descriptions, IEnumerable<string> images, string? providerUri, string? contactEmail, string? contactNumber)
-    {
-        Descriptions = descriptions;
-        Images = images;
-        ProviderUri = providerUri;
-        ContactEmail = contactEmail;
-        ContactNumber = contactNumber;
-    }
-    /// <summary>
-    /// Description of Language.
-    /// </summary>
-    public IEnumerable<Localization> Descriptions { get; set; }
-
-    /// <summary>
-    /// Image Detail of App
-    /// </summary>
-    public IEnumerable<string> Images { get; set; }
-
-    /// <summary>
-    /// Provider Url
-    /// </summary>
-    public string? ProviderUri { get; set; }
-
-    /// <summary>
-    /// Contact Email
-    /// </summary>
-    public string? ContactEmail { get; set; }
-
-    /// <summary>
-    /// Contact Number
-    /// </summary>
-    public string? ContactNumber { get; set; }
-}
+/// <param name="Descriptions"></param>
+/// <param name="Images"></param>
+/// <param name="ProviderUri"></param>
+/// <param name="ContactEmail"></param>
+/// <param name="ContactNumber"></param>
+/// <returns></returns>
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
 /// <summary>
-/// Model for updating Language Description
+/// Model for LanguageCode and Description
 /// </summary>
-public class Localization
-{
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="languageCode"></param>
-    /// <param name="longDescription"></param>
-    public Localization(string languageCode, string longDescription)
-    {
-        LanguageCode = languageCode;
-        LongDescription = longDescription;
-    }
-    /// <summary>
-    /// Language Code
-    /// </summary>
-    public string LanguageCode {get;set;}
-
-    /// <summary>
-    /// Long Description
-    /// </summary>
-    public string LongDescription {get;set;}
-}
+/// <param name="LanguageCode"></param>
+/// <param name="LongDescription"></param>
+/// <returns></returns>
+public record Localization(string LanguageCode, string LongDescription);
 
 
 

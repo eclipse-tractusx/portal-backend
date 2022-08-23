@@ -117,4 +117,12 @@ public interface IAppRepository
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
     IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
+
+    /// <summary>
+    /// Gey app data by AppId ,User Id and with status created
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns>Return Async Enumerable of App Data</returns>
+    Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
 }
