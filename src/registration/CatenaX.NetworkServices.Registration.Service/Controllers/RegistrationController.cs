@@ -46,6 +46,7 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
         [ProducesResponseType(typeof(List<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization) => 
             Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1]).ConfigureAwait(false));

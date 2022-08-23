@@ -10,9 +10,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BPN
     {
         private readonly HttpClient _httpClient;
 
-        public BPNAccess(IHttpClientFactory _httpFactory)
+        public BPNAccess(IHttpClientFactory httpFactory)
         {
-            _httpClient = _httpFactory.CreateClient("bpn");
+            _httpClient = httpFactory.CreateClient("bpn");
         }
 
         public async Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token)

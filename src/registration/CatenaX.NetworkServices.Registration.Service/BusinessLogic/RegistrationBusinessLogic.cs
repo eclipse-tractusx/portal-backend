@@ -13,6 +13,7 @@ using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
@@ -29,7 +30,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public RegistrationBusinessLogic(
             IOptions<RegistrationSettings> settings, 
-            IRegistrationDBAccess registrationDBAccess, 
+            IRegistrationDBAccess registrationDbAccess, 
             IMailingService mailingService, 
             IBPNAccess bpnAccess, 
             IProvisioningManager provisioningManager, 
@@ -37,7 +38,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
-            _dbAccess = registrationDBAccess;
+            _dbAccess = registrationDbAccess;
             _mailingService = mailingService;
             _bpnAccess = bpnAccess;
             _provisioningManager = provisioningManager;
@@ -48,8 +49,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
             _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
-        public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token) =>
-            _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
+        public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token)
+        {
+            var regex = new Regex(@"(\w|\d){16}");
+            if (!regex.IsMatch(companyIdentifier))
+            {
+                throw new ArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
+            }
+
+            return _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
+        }
 
         public Task SetIdpAsync(SetIdp idpToSet) =>
             _dbAccess.SetIdp(idpToSet);
