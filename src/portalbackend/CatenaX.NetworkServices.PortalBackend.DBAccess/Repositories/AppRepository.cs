@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -189,4 +190,18 @@ public class AppRepository : IAppRepository
                 app.DateLastChanged
             ))
             .AsAsyncEnumerable();
+
+     /// <inheritdoc />
+    public  Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId)
+    =>
+        _context.Apps
+             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
+             && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+             .Select(a => new ValueTuple<IEnumerable<AppDescription>, IEnumerable<AppDetailImage>>(
+                a.AppDescriptions.Select(d => new AppDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
+                       a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
+                       ))
+             .SingleOrDefaultAsync();
+       
+    
 }

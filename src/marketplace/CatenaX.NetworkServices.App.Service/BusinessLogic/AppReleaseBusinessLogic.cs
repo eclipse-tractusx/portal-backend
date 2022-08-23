@@ -52,20 +52,23 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"AppId must not be empty");
         }
-        if (updateModel.Descriptions.Any() && string.IsNullOrWhiteSpace(updateModel.Descriptions.Select(x => x.LanguageCode).ElementAt(0)))
+        var descriptions = updateModel.Descriptions.Where(item => !String.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
+        if (descriptions.Count() == 0)
         {
             throw new ArgumentException($"Language Code must not be empty");
         }
         
         return EditAppAsync(appId, updateModel, userId);
     }
+
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
-        if (result == null)
+        var result = await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
         }
+        var (description, images) = result;
         var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
@@ -75,7 +78,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         int currentIndex=0;
         foreach (var item in updateModel.Descriptions)
         {
-            newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, result.Descriptions.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
+            newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, description.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
             currentIndex++;
         }
         foreach (var record in updateModel.Images)
