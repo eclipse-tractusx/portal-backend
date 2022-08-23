@@ -6,6 +6,11 @@ namespace CatenaX.NetworkServices.Mailing.Template
 {
     public class TemplateSettings
     {
+        public TemplateSettings()
+        {
+            Templates = new Dictionary<string, TemplateSetting>();
+        }
+
         public Dictionary<string, TemplateSetting> Templates { get; set; }
     }
 
