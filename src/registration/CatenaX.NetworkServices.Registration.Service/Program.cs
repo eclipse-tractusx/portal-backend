@@ -43,6 +43,7 @@ using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
+using CatenaX.NetworkServices.Framework.Models;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -113,7 +114,7 @@ builder.Services.AddHttpClient("bpn", c =>
 builder.Services.AddTransient<IMailingService, MailingService>()
                 .AddTransient<ISendMail, SendMail>()
                 .AddTransient<ITemplateManager, TemplateManager>()
-                .ConfigureTemplateSettings(builder.Configuration.GetSection(TemplateSettings.Position))
+                .ConfigureTemplateSettings(builder.Configuration.GetSection(Constants.MailingTemplates))
                 .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
 
 builder.Services.AddTransient<IKeycloakFactory, KeycloakFactory>()

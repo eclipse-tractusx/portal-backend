@@ -9,24 +9,24 @@ namespace CatenaX.NetworkServices.Mailing.Template
 {
     public class TemplateManager : ITemplateManager
     {
-        private readonly TemplateSettings _Templates;
+        private readonly TemplateSettings _settings;
 
         public TemplateManager(IOptions<TemplateSettings> templateSettings)
         {
-            _Templates = templateSettings.Value;
+            _settings = templateSettings.Value;
         }
 
         Mail ITemplateManager.ApplyTemplate(string id, IDictionary<string, string> parameters)
         {
             try
             {
-                var Template = _Templates[id];
+                var template = _settings.Templates[id];
                 return new Mail(
-                    replaceValues(Template.Subject,parameters),
-                    replaceValues(Template.EmailTemplateType.HasValue 
-                        ? GetTemplateStringFromPath(GetTemplatePathFromType(Template.EmailTemplateType.Value))
-                        : Template.Body,parameters),
-                    Template.EmailTemplateType.HasValue
+                    replaceValues(template.Subject,parameters),
+                    replaceValues(template.EmailTemplateType.HasValue 
+                        ? GetTemplateStringFromPath(GetTemplatePathFromType(template.EmailTemplateType.Value))
+                        : template.Body,parameters),
+                    template.EmailTemplateType.HasValue
                 );
             }
             catch(ArgumentNullException)

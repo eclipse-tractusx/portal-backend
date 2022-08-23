@@ -24,7 +24,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         private readonly IMailingService _mailingService;
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
-        private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly IPortalRepositories _portalRepositories;
         private readonly ILogger<RegistrationBusinessLogic> _logger;
 
@@ -34,7 +33,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             IMailingService mailingService, 
             IBPNAccess bpnAccess, 
             IProvisioningManager provisioningManager, 
-            IPortalBackendDBAccess portalDBAccess, 
             ILogger<RegistrationBusinessLogic> logger, 
             IPortalRepositories portalRepositories)
         {
@@ -43,7 +41,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             _mailingService = mailingService;
             _bpnAccess = bpnAccess;
             _provisioningManager = provisioningManager;
-            _portalDBAccess = portalDBAccess;
             _logger = logger;
             _portalRepositories = portalRepositories;
         }
@@ -61,7 +58,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (string.IsNullOrEmpty(document.FileName))
             {
-                throw new ArgumentNullException("File name is must not be null");
+                throw new ControllerArgumentException("File name is must not be null");
             }
 
             // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
@@ -71,27 +68,25 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
 
             var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
-            if (companyUserId == default)
+            if (companyUserId == Guid.Empty)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
             }
 
             var documentName = document.FileName;
-            using (var md5 = MD5.Create())
+            using var sha256 = SHA256.Create();
+            using var ms = new MemoryStream((int)document.Length);
+            
+            document.CopyTo(ms);
+            var hash = sha256.ComputeHash(ms);
+            var documentContent = ms.GetBuffer();
+            if (ms.Length != document.Length || documentContent.Length != document.Length)
             {
-                using (var ms = new MemoryStream((int)document.Length))
-                {
-                    document.CopyTo(ms);
-                    var hash = md5.ComputeHash(ms);
-                    var documentContent = ms.GetBuffer();
-                    if (ms.Length != document.Length || documentContent.Length != document.Length)
-                    {
-                        throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
-                    }
-                    _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-                    return await _portalRepositories.SaveAsync().ConfigureAwait(false);
-                }
+                throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
             }
+            
+            _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
@@ -99,7 +94,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
 
             var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, iamUserId).ConfigureAwait(false);
-            if (documentDetails.DocumentId == default)
+            if (documentDetails.DocumentId == Guid.Empty)
             {
                 throw new NotFoundException($"document {documentId} does not exist.");
             }
@@ -120,7 +115,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId)
         {
-            await foreach (var applicationWithStatus in _portalDBAccess.GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
+            await foreach (var applicationWithStatus in _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
             {
                 yield return new CompanyApplicationData
                 {
@@ -163,7 +158,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
             }
-            if (companyApplicationData.CompanyUserId == default)
+            if (companyApplicationData.CompanyUserId == Guid.Empty)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
@@ -209,12 +204,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             if (string.IsNullOrEmpty(userCreationInfo.eMail))
             {
-                throw new ArgumentNullException($"email must not be empty");
+                throw new ControllerArgumentException($"email must not be empty");
             }
 
             if (await userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, createdById))
             {
-                throw new ArgumentException($"user with email {userCreationInfo.eMail} does already exist");
+                throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
             }
 
             var applicationData = await companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, createdById).ConfigureAwait(false);
@@ -318,20 +313,19 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         {
             if (status == 0)
             {
-                throw new ArgumentNullException("status must not be null");
+                throw new ControllerArgumentException("status must not be null");
             }
             var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationUserDataAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (applicationUserData == null)
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            if (applicationUserData.CompanyUserId == default)
+            if (applicationUserData.CompanyUserId == Guid.Empty)
             {
                 throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
             }
 
             var application = applicationUserData.CompanyApplication;
-
             switch (application.ApplicationStatusId)
             {
                 case CompanyApplicationStatusId.CREATED:
@@ -395,7 +389,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"CompanyApplication {applicationId} not found");
             }
-            if (applicationStatusUserData.CompanyUserId == default)
+            if (applicationStatusUserData.CompanyUserId == Guid.Empty)
             {
                 throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
             }
@@ -415,7 +409,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"application {applicationId} does not exist");
             }
-            if (companyRoleAgreementConsentData.CompanyUserId == default)
+            if (companyRoleAgreementConsentData.CompanyUserId == Guid.Empty)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
@@ -507,7 +501,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new NotFoundException($"application {applicationId} does not exist");
             }
-            if (applicationUserData.CompanyUserId == default)
+            if (applicationUserData.CompanyUserId == Guid.Empty)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
             }
@@ -534,7 +528,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
         {
-            await foreach (var item in _portalDBAccess.GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
+            await foreach (var item in _portalRepositories.GetInstance<IInvitationRepository>().GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
             {
                 var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
                 yield return new InvitedUser(
@@ -551,7 +545,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> SetInvitationStatusAsync(string iamUserId)
         {
-            var invitationData = await _portalDBAccess.GetInvitationStatusAsync(iamUserId).ConfigureAwait(false);
+            var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(iamUserId).ConfigureAwait(false);
 
             if (invitationData == null)
             {
@@ -564,12 +558,12 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 invitationData.InvitationStatusId = InvitationStatusId.ACCEPTED;
             }
 
-            return await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
         {
-            var registrationData = await _portalDBAccess.GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+            var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
             if (registrationData == null)
             {
                 throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");

@@ -4,6 +4,6 @@ namespace CatenaX.NetworkServices.Mailing.Template
 {
     public interface ITemplateManager
     {
-        Mail ApplyTemplate(String Id, IDictionary<string,string> Parameters);
+        Mail ApplyTemplate(string id, IDictionary<string,string> parameters);
     }
 }
