@@ -48,7 +48,11 @@ public class App
         Provider = provider;
         DateCreated = dateCreated;
     }
-   
+   /// <summary>
+   /// construtor used for the Attach case
+   /// </summary>
+   /// <param name="id"></param>
+   /// <returns></returns>
     public App(Guid id) : this()
     {
         Id = id;
