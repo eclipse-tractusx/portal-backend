@@ -46,8 +46,9 @@ public interface IAppRepository
     /// Get Client Name by App Id
     /// </summary>
     /// <param name="appId"></param>
+    /// <param name="companyId"></param>
     /// <returns>Client Name</returns>
-    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId);
+    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId);
 
     /// <summary>
     /// Adds an app to the database
@@ -117,6 +118,14 @@ public interface IAppRepository
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
     IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
+    
+    /// <summary>
+    /// Gets the client roles for a specific app
+    /// </summary>
+    /// <param name="appId">id of the app to get the client roles for</param>
+    /// <param name="languageShortName">The language short names</param>
+    /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
+    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>
     /// Gey app data by AppId ,User Id and with status created

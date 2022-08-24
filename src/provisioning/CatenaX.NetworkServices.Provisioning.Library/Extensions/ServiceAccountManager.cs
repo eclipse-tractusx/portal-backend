@@ -20,11 +20,11 @@ public partial class ProvisioningManager
 
         var unassignedClientRoles = config.ClientRoles
             .Select(clientRoles => (client: clientRoles.Key, roles: clientRoles.Value.Except(assignedRoles[clientRoles.Key])))
-            .Where(clientRoles => clientRoles.roles.Count() > 0);
-
-        if (unassignedClientRoles.Count() > 0)
+            .Where(clientRoles => clientRoles.roles.Any());
+ 
+        if (unassignedClientRoles.Any())
         {
-            throw new Exception($"inconsistend data. roles were not assigned in keycloak: {String.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{String.Join(", ", clientRoles.roles)}]"))}");
+            throw new Exception($"inconsistend data. roles were not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
         }
 
         return new ServiceAccountData(
