@@ -249,17 +249,23 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ArgumentException($"Company Id  does not exist"); 
         }
         var languageCodes = appRequestModel.SupportedLanguageCodes.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
-        if (languageCodes.Count() == 0)
+        if (!languageCodes.Any())
         {
             throw new ArgumentNullException($"Language Code does not exist"); 
         }
         var useCaseIds = appRequestModel.UseCaseIds.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
-        if (useCaseIds.Count() == 0)
+        if (!useCaseIds.Any())
         {
             throw new ArgumentNullException($"Use Case does not exist");
         }
-        
-       
+        foreach (var item in useCaseIds)
+        {
+            Guid newGuid;
+            if (!Guid.TryParse(item, out newGuid))
+            {
+                  throw new ArgumentNullException($"Use Case does not exist");
+            }
+        }
         return  this.CreateAppAsync(appRequestModel);
     }
     
