@@ -28,6 +28,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -38,16 +39,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
-
+    private readonly AppsSettings _settings;
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService)
+    /// <param name="settings">Settings</param>
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService,IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
+        _settings = settings.Value;
     }
 
     /// <inheritdoc/>
@@ -157,7 +160,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var mailParams = new Dictionary<string, string>
             {
                 { "appProviderName", appDetails.ProviderName},
-                { "appName", appDetails.AppName }
+                { "appName", appDetails.AppName },
+                { "url", _settings.BasePortalAddress },
             };
         await _mailingService.SendMails(appDetails.ProviderContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }

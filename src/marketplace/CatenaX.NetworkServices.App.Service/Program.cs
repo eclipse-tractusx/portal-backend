@@ -81,7 +81,8 @@ builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformatio
 builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
+builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));;
 
 builder.Services.AddTransient<IMailingService, MailingService>()
                 .AddTransient<ISendMail, SendMail>()
