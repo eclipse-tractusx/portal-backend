@@ -204,5 +204,16 @@ public class AppRepository : IAppRepository
                        ))
              .SingleOrDefaultAsync();
        
-    
+    /// <inheritdoc />
+    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
+        _context.Apps
+            .Where(app => app.Id == appId)
+            .SelectMany(app => app.UserRoles)
+            .Select(roles => new ClientRoles(
+                roles.Id,
+                roles.UserRoleText,
+                languageShortName == null ?
+                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description :
+                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+            )).AsAsyncEnumerable();
 }
