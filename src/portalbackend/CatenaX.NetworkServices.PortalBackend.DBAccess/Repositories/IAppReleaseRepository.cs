@@ -29,13 +29,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 public interface IAppReleaseRepository
 {
     /// <summary>
-    /// Get App By Id and User Id
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <returns>Returns the app provideruri,contact number,email ,description and image detail</returns>
-    
-    Task<AppUpdateModel> GetAppByIdAsync(Guid appId, string userId);
-    /// <summary>
     /// Return the Company User Id
     /// </summary>
     /// <param name="appId"></param>
@@ -50,4 +43,5 @@ public interface IAppReleaseRepository
     /// <param name="documentId"></param>
     /// <returns></returns>
     AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+
 }

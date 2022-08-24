@@ -41,32 +41,6 @@ public class AppReleaseRepository : IAppReleaseRepository
     {
         this._context = portalDbContext;
     }
-
-    ///<inheritdoc/>
-    public async Task<AppUpdateModel> GetAppByIdAsync(Guid appId, string userId)
-    {
-        var app = await _context.Apps
-             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
-             && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-             .Select(a => new 
-             {
-                 DetailPictureUris = a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl)),
-                 ProviderUri = a.MarketingUrl,
-                 a.ContactEmail,
-                 a.ContactNumber,
-                 Descriptions = a.AppDescriptions.Select(d => new AppDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort))
-             })
-             .SingleAsync().ConfigureAwait(false);
-
-        return new AppUpdateModel
-        (
-            app.Descriptions,
-            app.DetailPictureUris,
-            app.ProviderUri,
-            app.ContactEmail,
-            app.ContactNumber
-        );
-    }
     
     ///<inheritdoc/>
     public  Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId)
