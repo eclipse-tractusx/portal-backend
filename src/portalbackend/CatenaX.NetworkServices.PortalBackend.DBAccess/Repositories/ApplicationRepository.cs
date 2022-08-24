@@ -162,6 +162,8 @@ public class ApplicationRepository : IApplicationRepository
                         true)))
             .AsAsyncEnumerable();
 
-     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery() =>
-         _dbContext.CompanyApplications.AsNoTracking();
+     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
+         _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
 }

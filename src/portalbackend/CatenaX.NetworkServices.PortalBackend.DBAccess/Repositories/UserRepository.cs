@@ -121,10 +121,9 @@ public class UserRepository : IUserRepository
                     .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
                     .Select(app => new CompanyUserAssignedRoleDetails(
                         app.AppId,
-                        app.App!.IamClients
-                        .SelectMany(iamClient => iamClient.UserRoles
+                        app.App!.UserRoles
                             .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
-                            .Select(role => role.UserRoleText))
+                            .Select(role => role.UserRoleText)
                     ))
                     )
             {
@@ -151,10 +150,8 @@ public class UserRepository : IUserRepository
     public Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId)
-            .Select(iamUser =>
-                iamUser.CompanyUser!.Company!.Id)
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
     public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias)> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId) =>
@@ -183,7 +180,8 @@ public class UserRepository : IUserRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault(),
                 RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
-                    companyUserAssignedRole.UserRoleId)
+                    companyUserAssignedRole.UserRoleId),
+                CompanyId = companyUser.CompanyId
             }).SingleOrDefaultAsync();
 
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
@@ -201,10 +199,9 @@ public class UserRepository : IUserRepository
                     .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
                     .Select(app => new CompanyUserAssignedRoleDetails(
                         app.AppId,
-                        app.App!.IamClients
-                        .SelectMany(iamClient => iamClient.UserRoles
+                        app.App!.UserRoles
                             .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
-                            .Select(role => role.UserRoleText))
+                            .Select(role => role.UserRoleText)
                     ))
                     )
             {
@@ -236,10 +233,9 @@ public class UserRepository : IUserRepository
                     .Where(app => app.AppSubscriptionStatusId == AppSubscriptionStatusId.ACTIVE)
                     .Select(app => new CompanyUserAssignedRoleDetails(
                         app.AppId,
-                        app.App!.IamClients
-                        .SelectMany(iamClient => iamClient.UserRoles
+                        app.App!.UserRoles
                             .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
-                            .Select(role => role.UserRoleText))
+                            .Select(role => role.UserRoleText)
                     ))))
             .SingleOrDefaultAsync();
 
@@ -300,12 +296,12 @@ public class UserRepository : IUserRepository
             .SelectMany(u => u.CompanyUser!.Company!.BoughtApps)
             .Intersect(
                 _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
-                    .SelectMany(u => u.CompanyUser!.UserRoles.SelectMany(r => r.IamClient!.Apps))
+                    .SelectMany(u => u.CompanyUser!.UserRoles.Select(r => r.App))
             )
             .Select(app => new BusinessAppData(
-                app.Id,
+                app!.Id,
                 app.Name ?? Constants.ErrorString,
-                app.AppUrl ?? Constants.ErrorString,
+                app.CompanyAssignedApps.FirstOrDefault(x => x.AppId == app.Id) == null ? Constants.ErrorString : app.CompanyAssignedApps.First(x => x.AppId == app.Id).AppUrl ?? Constants.ErrorString,
                 app.ThumbnailUrl ?? Constants.ErrorString,
                 app.Provider
             )).AsAsyncEnumerable();
