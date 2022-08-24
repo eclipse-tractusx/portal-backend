@@ -10,6 +10,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE FROM portal.company_service_account_assigned_roles;");
+            migrationBuilder.Sql("DELETE FROM portal.company_user_assigned_roles;");
+            migrationBuilder.Sql("DELETE FROM portal.user_roles;");
+            
             migrationBuilder.AddColumn<Guid>(
                 name: "last_editor_id",
                 schema: "portal",

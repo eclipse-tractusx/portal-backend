@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
@@ -85,7 +86,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
             if (userIdShared == null)
             {
-                throw new Exception($"failed to created user {userProfile.UserName} in shared realm {idpName}");
+                throw new UnexpectedConditionException($"failed to created user {userProfile.UserName} in shared realm {idpName}");
             }
 
             var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile(
@@ -99,7 +100,7 @@ namespace CatenaX.NetworkServices.Provisioning.Library
 
             if (userIdCentral == null)
             {
-                throw new Exception($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
+                throw new UnexpectedConditionException($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
             }
 
             await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);

@@ -114,24 +114,33 @@ public static class BaseSeed
             new (new Guid("cf207afb-d213-4c33-becc-0cabeef174a7"), "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com"),
         });
 
+        dbContext.Apps.AddRange(new List<App>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "Catena X", DateTimeOffset.UtcNow)
+            {
+                AppStatusId = AppStatusId.ACTIVE
+            }
+        });
+        
+        dbContext.AppInstances.AddRange(new List<AppInstance>
+        {
+            new (new Guid("89FF0C72-052F-4B1D-B5D5-89F3D61BA0B1"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("0c9051d0-d032-11ec-9d64-0242ac120002")),
+            new (new Guid("B87F5778-928B-4375-B653-0D6F28E2A1C1"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("f032a034-d035-11ec-9d64-0242ac120002")),
+            new (new Guid("C398F1E9-92A2-4C76-89DC-062FBD7CA6F1"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("cf207afb-d213-4c33-becc-0cabeef174a7")),
+        });
+
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
-            new (new Guid("efc20368-9e82-46ff-b88f-6495b9810253"), "EarthCommerce.AdministratorRC_QAS2", new Guid("cf207afb-d213-4c33-becc-0cabeef174a7")),
-            new (new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f"), "EarthCommerce.Advanced.BuyerRC_QAS2", new Guid("cf207afb-d213-4c33-becc-0cabeef174a7")),
-            new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("0c9051d0-d032-11ec-9d64-0242ac120002")),
-            new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632"), "CX Admin", new Guid("0c9051d0-d032-11ec-9d64-0242ac120002")),
-            new (new Guid("7410693c-c893-409e-852f-9ee886ce94a6"), "Company Admin", new Guid("f032a034-d035-11ec-9d64-0242ac120002")),
-            new (new Guid("607818be-4978-41f4-bf63-fa8d2de51154"), "IT Admin", new Guid("0c9051d0-d032-11ec-9d64-0242ac120002")),
+            new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
+            new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632"), "CX Admin", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
+            new (new Guid("7410693c-c893-409e-852f-9ee886ce94a6"), "Company Admin", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
+            new (new Guid("607818be-4978-41f4-bf63-fa8d2de51154"), "IT Admin", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
         });
 
         dbContext.CompanyUserAssignedRoles.AddRange(new List<CompanyUserAssignedRole>
         {
-            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), new Guid("efc20368-9e82-46ff-b88f-6495b9810253")),
-            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")),
-            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("efc20368-9e82-46ff-b88f-6495b9810253")),
-            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991"), new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"), new Guid("7410693c-c893-409e-852f-9ee886ce94a6")),

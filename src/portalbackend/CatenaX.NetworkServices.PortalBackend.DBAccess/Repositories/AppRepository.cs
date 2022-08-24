@@ -30,6 +30,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// Implementation of <see cref="IAppRepository"/> accessing database with EF Core.
 public class AppRepository : IAppRepository
 {
+    private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext _context;
 
     /// <summary>
@@ -55,12 +56,12 @@ public class AppRepository : IAppRepository
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
-    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
-        _context.AppAssignedClients.AsNoTracking()
-            .Where(appClient => appClient.AppId == appId)
-            .Select(appClient => appClient.IamClient!.ClientClientId)
+    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
+        _context.CompanyAssignedApps.AsNoTracking()
+            .Where(appClient => appClient.Id == appId && appClient.CompanyId == companyId)
+            .Select(x => x.AppInstance!.IamClient!.ClientClientId)
             .SingleOrDefaultAsync();
-
+    
     /// <inheritdoc />
     public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
     {

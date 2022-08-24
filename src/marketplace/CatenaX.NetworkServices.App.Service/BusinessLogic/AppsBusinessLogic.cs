@@ -227,7 +227,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             app.Name = appInputModel.Title;
             app.MarketingUrl = appInputModel.ProviderUri;
-            app.AppUrl = appInputModel.AppUri;
             app.ThumbnailUrl = appInputModel.LeadPictureUri;
             app.ContactEmail = appInputModel.ContactEmail;
             app.ContactNumber = appInputModel.ContactNumber;
