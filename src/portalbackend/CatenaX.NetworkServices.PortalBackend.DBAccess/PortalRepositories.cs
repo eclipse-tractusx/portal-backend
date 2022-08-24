@@ -38,6 +38,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(ICountryRepository), context => new CountryRepository(context) },
         { typeof(IDocumentRepository), context => new DocumentRepository(context) },
         { typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
+        { typeof(ILanguageRepository), context => new LanguageRepository(context) },
         { typeof(INotificationRepository), context => new NotificationRepository(context) },
         { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
         { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
