@@ -60,7 +60,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
-                            userRole.IamClient!.ClientClientId,
+                            userRole.App!.AppInstances.First().IamClient!.ClientClientId,
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
@@ -92,7 +92,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
-                            userRole.IamClient!.ClientClientId,
+                            userRole.App!.AppInstances.First().IamClient!.ClientClientId,
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
