@@ -68,4 +68,5 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
         return NoContent();
     }
+    
 }
