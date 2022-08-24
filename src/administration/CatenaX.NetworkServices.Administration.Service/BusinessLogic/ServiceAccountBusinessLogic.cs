@@ -55,29 +55,29 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
-            throw new ArgumentException("other authenticationType values than SECRET are not supported yet", "authenticationType"); //TODO implement other authenticationTypes
+            throw new ControllerArgumentException("other authenticationType values than SECRET are not supported yet", "authenticationType"); //TODO implement other authenticationTypes
         }
-        if (String.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
+        if (string.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
         {
-            throw new ArgumentException("name must not be empty","name");
+            throw new ControllerArgumentException("name must not be empty","name");
         }
 
         var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
-        if (companyId == default)
+        if (companyId == Guid.Empty)
         {
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
         var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
 
-        var userRoleDatas = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleDataUntrackedAsync(serviceAccountCreationInfos.UserRoleIds).ToListAsync().ConfigureAwait(false);
-
-        if (userRoleDatas.Count() != serviceAccountCreationInfos.UserRoleIds.Count())
+        var userRoleData = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleDataUntrackedAsync(serviceAccountCreationInfos.UserRoleIds).ToListAsync().ConfigureAwait(false);
+        if (userRoleData.Count != serviceAccountCreationInfos.UserRoleIds.Count())
         {
             var missingRoleIds = serviceAccountCreationInfos.UserRoleIds
-                .Where(userRoleId => userRoleDatas.All(userRoleData => userRoleData.UserRoleId != userRoleId));
+                .Where(userRoleId => userRoleData.All(userRole => userRole.UserRoleId != userRoleId))
+                .ToList();
             
-            if (missingRoleIds.Count() > 0)
+            if (missingRoleIds.Any())
             {
                 throw new NotFoundException($"{missingRoleIds.First()} is not a valid UserRoleId");
             }
@@ -91,12 +91,12 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                 serviceAccountCreationInfos.Name,
                 serviceAccountCreationInfos.Description,
                 serviceAccountCreationInfos.IamClientAuthMethod,
-                userRoleDatas
-                    .GroupBy(userRoleData =>
-                        userRoleData.ClientClientId)
+                userRoleData
+                    .GroupBy(userRole =>
+                        userRole.ClientClientId)
                     .ToDictionary(group =>
                         group.Key,
-                        group => group.Select(userRoleData => userRoleData.UserRoleText)))).ConfigureAwait(false);
+                        group => group.Select(userRole => userRole.UserRoleText)))).ConfigureAwait(false);
 
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
             companyId,
@@ -110,9 +110,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountData.UserEntityId,
             serviceAccount.Id);
 
-        foreach(var userRoleData in userRoleDatas)
+        foreach(var userRole in userRoleData)
         {
-            serviceAccountsRepository.CreateCompanyServiceAccountAssignedRole(serviceAccount.Id, userRoleData.UserRoleId);
+            serviceAccountsRepository.CreateCompanyServiceAccountAssignedRole(serviceAccount.Id, userRole.UserRoleId);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -122,7 +122,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountCreationInfos.Name,
             serviceAccountCreationInfos.Description,
             serviceAccountCreationInfos.IamClientAuthMethod,
-            userRoleDatas)
+            userRoleData)
         {
             Secret = serviceAccountData.AuthData.Secret
         };

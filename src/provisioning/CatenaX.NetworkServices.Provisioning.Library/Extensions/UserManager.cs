@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net.Models.Users;
 using System.Text.Json;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -114,14 +115,14 @@ public partial class ProvisioningManager
         newUser.Attributes ??= new Dictionary<string,IEnumerable<string>>();
         newUser.Attributes[_Settings.MappedIdpAttribute] = Enumerable.Repeat<string>(alias,1);
         newUser.Attributes[_Settings.MappedCompanyAttribute] = Enumerable.Repeat<string>(profile.OrganisationName,1);
-        if (!String.IsNullOrWhiteSpace(profile.BusinessPartnerNumber))
+        if (!string.IsNullOrWhiteSpace(profile.BusinessPartnerNumber))
         {
             newUser.Attributes[_Settings.MappedBpnAttribute] = Enumerable.Repeat<string>(profile.BusinessPartnerNumber,1);
         }
         var newUserId = await _CentralIdp.CreateAndRetrieveUserIdAsync(_Settings.CentralRealm, newUser).ConfigureAwait(false);
         if (newUserId == null)
         {
-            throw new Exception($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {profile.OrganisationName}");
+            throw new UnexpectedConditionException($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {profile.OrganisationName}");
         }
         return newUserId;
     }
@@ -134,7 +135,7 @@ public partial class ProvisioningManager
             UserName = sharedUserName
         }).ConfigureAwait(false))
         {
-            throw new Exception($"failed to create link in between central user {centralUserId} and shared realm {alias} user {sharedUserId}");
+            throw new UnexpectedConditionException($"failed to create link in between central user {centralUserId} and shared realm {alias} user {sharedUserId}");
         }
     }
 
