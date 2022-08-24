@@ -97,4 +97,5 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppDocumentAsync(appId,  documentTypeId,  document, userId)).ConfigureAwait(false);
         return NoContent();
     }
+
 }
