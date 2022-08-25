@@ -264,18 +264,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var languageCodes = appRequestModel.SupportedLanguageCodes.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
         if (!languageCodes.Any())
         {
-            throw new ArgumentNullException($"Language Codes must not be empty", nameof(appRequestModel.SupportedLanguageCodes)); 
+            throw new ArgumentException($"Language Code does not exist"); 
         }
         
         var useCaseIds = appRequestModel.UseCaseIds.Where(item => !string.IsNullOrWhiteSpace(item)).Distinct().ToList();
         if (!useCaseIds.Any())
         {
-            throw new ArgumentNullException($"Use Case does not exist");
+            throw new ArgumentException($"Use Case does not exist");
         }
         
         if (useCaseIds.Any(item => !Guid.TryParse(item, out _)))
         {
-            throw new ArgumentNullException($"Use Case does not exist");
+            throw new ArgumentException($"Use Case does not exist");
         }
         return  this.CreateAppAsync(appRequestModel);
     }
