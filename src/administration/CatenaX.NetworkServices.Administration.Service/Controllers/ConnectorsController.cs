@@ -67,6 +67,13 @@ public class ConnectorsController : ControllerBase
     public Task<Pagination.Response<ConnectorData>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorDatasForIamUserAsyncEnum(iamUserId, page, size));
 
+    /// <summary>
+    /// Retrieves company connector details for the given connetor id.
+    /// </summary>
+    /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the connector for which the details are to be displayed.</param>
+    /// <remarks>Example: GET: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
+    /// <response code="200">Returns details of the requested connector.</response>
+    /// <response code="404">Connector ID not found.</response>
     [HttpGet]
     [Route("{connectorId}", Name = nameof(GetCompanyConnectorByIdForCurrentUserAsync))]
     [Authorize(Roles = "view_connectors")]
@@ -87,7 +94,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
-    // [Authorize(Roles = "add_connectors")]
+    //[Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorData>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]

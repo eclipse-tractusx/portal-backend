@@ -201,15 +201,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public async Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string createdById)
         {
-            if (String.IsNullOrEmpty(userCreationInfo.eMail))
-            {
-                throw new ArgumentNullException($"email must not be empty");
-            }
-
+            
             var userRepository = _portalRepositories.GetInstance<IUserRepository>();
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
             var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
             var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+
+            if (string.IsNullOrEmpty(userCreationInfo.eMail))
+            {
+                throw new ArgumentNullException($"email must not be empty");
+            }
 
             if (await userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, createdById))
             {
@@ -229,8 +230,9 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var clientId = _settings.KeyCloakClientID;
 
             var roles = userCreationInfo.Roles
-                    .Where(role => !String.IsNullOrWhiteSpace(role))
-                    .Distinct();
+                    .Where(role => !string.IsNullOrWhiteSpace(role))
+                    .Distinct()
+                    .ToList();
 
             var companyRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
                 clientId,
@@ -242,12 +244,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 )
                 .ConfigureAwait(false);
 
-            foreach (var role in roles)
+            var invalidRoles = roles.Where(role => !companyRoleIds.ContainsKey(role)).ToList();
+            if (invalidRoles.Any())
             {
-                if (!companyRoleIds.ContainsKey(role))
-                {
-                    throw new ArgumentException($"invalid Role: {role}");
-                }
+                throw new ArgumentException($"invalid Role(s): {string.Join(",", invalidRoles)}");
             }
 
             var password = new Password().Next();
@@ -264,10 +264,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     Password = password
                 }).ConfigureAwait(false);
 
-            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE);
+            var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
+            var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE, companyUserId);
 
             IEnumerable<string>? unassignedRoles = null;
-            if (roles.Count() > 0)
+            if (roles.Any())
             {
                 var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                 {
@@ -304,10 +305,10 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
 
-            if (unassignedRoles != null && unassignedRoles.Count() > 0)
+            if (unassignedRoles != null && unassignedRoles.Any())
             {
                 //TODO maybe change return type to indicate error-conditions.
-                throw new Exception($"invalid data, failed to assign roles [{String.Join(", ",unassignedRoles)}] in keycloak");
+                throw new UnexpectedConditionException($"invalid data, failed to assign roles [{string.Join(", ",unassignedRoles)}] in keycloak");
             }
 
             return modified;

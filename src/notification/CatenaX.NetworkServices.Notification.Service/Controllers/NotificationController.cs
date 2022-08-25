@@ -60,11 +60,10 @@ public class NotificationController : ControllerBase
     /// <response code="201">Notification was successfully created.</response>
     /// <response code="400">UserId not found or the NotificationType or NotificationStatus don't exist.</response>
     [HttpPost]
-    [Route("{companyUserId}")]
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromRoute] Guid companyUserId,
+    public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromQuery] Guid companyUserId,
         [FromBody] NotificationCreationData data)
     {
         var notificationDetailData = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
@@ -113,7 +112,7 @@ public class NotificationController : ControllerBase
     /// <param name="isRead" example="true">OPTIONAL: Filter for read or unread notifications</param>
     /// <returns>the count of unread notifications</returns>
     /// <remarks>Example: Get: /api/notification/count</remarks>
-    /// <remarks>Example: Get: /api/notification/count?statusId=1</remarks>
+    /// <remarks>Example: Get: /api/notification/count?isRead=true</remarks>
     /// <response code="200">Count of the notifications.</response>
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>
