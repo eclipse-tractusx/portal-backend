@@ -126,4 +126,12 @@ public interface IAppRepository
     /// <param name="languageShortName">The language short names</param>
     /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
+
+    /// <summary>
+    /// Gey app data by AppId ,User Id and with status created
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns>Return Async Enumerable of App Data</returns>
+    Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
 }
