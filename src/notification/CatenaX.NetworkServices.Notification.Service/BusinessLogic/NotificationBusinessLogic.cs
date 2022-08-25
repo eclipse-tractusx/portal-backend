@@ -42,21 +42,21 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> CreateNotificationAsync(string iamUserId,
-        NotificationCreationData creationData, Guid companyUserId)
+        NotificationCreationData creationData, Guid receiverId)
     {
-        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(iamUserId, companyUserId).ToListAsync().ConfigureAwait(false);
+        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(iamUserId, receiverId).ToListAsync().ConfigureAwait(false);
 
-        if (users.All(x => x.CompanyUserId != companyUserId))
-            throw new ArgumentException("User does not exist", nameof(companyUserId));
+        if (users.All(x => x.CompanyUserId != receiverId))
+            throw new ArgumentException("User does not exist", nameof(receiverId));
 
         var (content, notificationTypeId, notificationStatusId, dueDate) =
             creationData;
 
         var notification = _portalRepositories.GetInstance<INotificationRepository>().Create(
-            companyUserId,
+            receiverId,
             notificationTypeId,
             notificationStatusId,
-            notification => 
+            notification =>
             {
                 notification.DueDate = dueDate;
                 notification.CreatorUserId = users.Single(x => x.IsIamUser).CompanyUserId;
@@ -64,7 +64,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return new NotificationDetailData(notification.Id, content, dueDate, notificationTypeId, notificationStatusId);
+        return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notificationStatusId, content, dueDate);
     }
 
     /// <inheritdoc />
@@ -104,7 +104,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     {
         await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
 
-        _portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId), notification => 
+        _portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId), notification =>
         {
             notification.IsRead = isRead;
         });

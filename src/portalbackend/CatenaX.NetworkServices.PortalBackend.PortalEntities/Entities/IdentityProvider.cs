@@ -6,6 +6,7 @@ public class IdentityProvider
 {
     private IdentityProvider() {
         Companies = new HashSet<Company>();
+        CompanyIdentityProviders = new HashSet<CompanyIdentityProvider>();
     }
     
     public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTimeOffset dateCreated) : this()
@@ -25,4 +26,5 @@ public class IdentityProvider
     public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
     public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
     public virtual ICollection<Company> Companies { get; private set; }
+    public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
 }

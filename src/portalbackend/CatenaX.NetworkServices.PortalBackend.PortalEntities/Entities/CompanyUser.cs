@@ -20,37 +20,44 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUser
+public class CompanyUser : IAuditable
 {
-    private CompanyUser()
+    /// <summary>
+    /// Only needed for ef and the audit entity
+    /// </summary>
+    public CompanyUser()
     {
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();
         Invitations = new HashSet<Invitation>();
         Apps = new HashSet<App>();
+        SalesManagerOfApps = new HashSet<App>();
         UserRoles = new HashSet<UserRole>();
         CompanyUserAssignedRoles = new HashSet<CompanyUserAssignedRole>();
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
         CreatedNotifications = new HashSet<Notification>();
+        SalesManagerOfServices = new HashSet<Service>();
+        RequesterOfCompanyAssignedServices = new HashSet<CompanyAssignedService>();
     }
     
-    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated) : this()
+    public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId) 
+        : this()
     {
         Id = id;
         DateCreated = dateCreated;
         CompanyId = companyId;
         CompanyUserStatusId = companyUserStatusId;
+        LastEditorId = lastEditorId;
     }
 
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
     public DateTimeOffset DateCreated { get; private set; }
-
-    public DateTimeOffset? DateLastChanged { get; set; }
 
     [MaxLength(255)]
     public string? Email { get; set; }
@@ -63,9 +70,14 @@ public class CompanyUser
     [MaxLength(255)]
     public string? Lastname { get; set; }
 
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
 
     public CompanyUserStatusId CompanyUserStatusId { get; set; }
+
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    /// <inheritdoc />
+    public Guid? LastEditorId { get; set; }
 
     // Navigation properties
     public virtual Company? Company { get; set; }
@@ -75,9 +87,20 @@ public class CompanyUser
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
     public virtual ICollection<App> Apps { get; private set; }
+    public virtual ICollection<App> SalesManagerOfApps { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
-    public virtual ICollection<Notification> Notifications { get; set; }
+    public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
+
+    /// <summary>
+    /// Services the user is the sales manager of
+    /// </summary>
+    public virtual ICollection<Service> SalesManagerOfServices { get; private set; }
+
+    /// <summary>
+    /// Mapping between <see cref="CompanyUser"/> and <see cref="CompanyAssignedService"/>
+    /// </summary>
+    public virtual ICollection<CompanyAssignedService> RequesterOfCompanyAssignedServices { get; private set; }
 }

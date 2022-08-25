@@ -21,14 +21,13 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
                     id: new Guid("bd0d0302-3ec8-4bfe-99db-b89bdb6c4b94"),
                     companyApplicationId: new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"),
                     companyUserId: new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"),
-                    invitationStatusId: PortalBackend.PortalEntities.Enums.InvitationStatusId.CREATED,
+                    invitationStatusId: PortalEntities.Enums.InvitationStatusId.CREATED,
                     dateCreated: DateTime.UtcNow
-
                 ));
             mockContext.InvitationStatuses.Add(
                 new InvitationStatus
                 (
-                    invitationStatusId: PortalBackend.PortalEntities.Enums.InvitationStatusId.CREATED
+                    invitationStatusId: PortalEntities.Enums.InvitationStatusId.CREATED
                 )
                 );
             mockContext.CompanyUsers.Add(
@@ -37,7 +36,8 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
                     id: new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"),
                     companyId: new Guid("220330ac-170d-4e22-8d72-9467ed042149"),
                     companyUserStatusId: PortalEntities.Enums.CompanyUserStatusId.ACTIVE,
-                    dateCreated: DateTime.UtcNow
+                    dateCreated: DateTime.UtcNow,
+                    lastEditorId: new Guid("51F38065-7DB4-43C8-9217-127E88DE1E3C")
                 )
                 );
             mockContext.IamUsers.Add(

@@ -130,7 +130,7 @@ public class ApplicationRepository : IApplicationRepository
                 companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId) =>
+    public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
@@ -138,10 +138,12 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company!.CompanyUsers
                     .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
                     .Select(companyUser => new WelcomeEmailData(
+                        companyUser.Id,
                         companyUser.Firstname,
                         companyUser.Lastname,
                         companyUser.Email,
-                        companyUser.Company!.Name)))
+                        companyUser.Company!.Name,
+                        companyUser.UserRoles.Any(role => roleIds.Contains(role.Id)))))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
@@ -152,12 +154,16 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company!.CompanyUsers
                     .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => roleIds.Contains(userRole.Id)))
                     .Select(companyUser => new WelcomeEmailData(
+                        companyUser.Id,
                         companyUser.Firstname,
                         companyUser.Lastname,
                         companyUser.Email,
-                        companyUser.Company!.Name)))
+                        companyUser.Company!.Name,
+                        true)))
             .AsAsyncEnumerable();
 
-     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery() =>
-         _dbContext.CompanyApplications.AsNoTracking();
+     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
+         _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
 }

@@ -90,23 +90,23 @@ public interface IAppsBusinessLogic
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
-    /// <param name="userId">ID of the user that initiated app subscription for their company.</param>
-    public Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string userId);
+    /// <param name="iamUserId">ID of the user that initiated app subscription for their company.</param>
+    public Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
     /// </summary>
     /// <param name="appId">ID of the pending app to be activated.</param>
     /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
-    /// <param name="userId">IAM ID of the user requesting the activation.</param>
-    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string userId);
+    /// <param name="iamUserId">IAM ID of the user requesting the activation.</param>
+    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId);
 
     /// <summary>
     /// Unsubscribes an app for the current users company.
     /// </summary>
     /// <param name="appId">ID of the app to unsubscribe from.</param>
-    /// <param name="userId">ID of the user that initiated app unsubscription for their company.</param>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string userId);
+    /// <param name="iamUserId">ID of the user that initiated app unsubscription for their company.</param>
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Creates an application and returns its generated ID.
@@ -115,6 +115,13 @@ public interface IAppsBusinessLogic
     /// <returns>Guid of the created app.</returns>
     public Task<Guid> CreateAppAsync(AppInputModel appInputModel);
 
+    /// <summary>
+    /// Retrieve Company Owned App Data
+    /// </summary>
+    /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
+    /// <returns>Async enumberable of company owned apps data</returns>
+    IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId);
+    
     /// <summary>
     /// Creates an application and returns its generated ID.
     /// </summary>
