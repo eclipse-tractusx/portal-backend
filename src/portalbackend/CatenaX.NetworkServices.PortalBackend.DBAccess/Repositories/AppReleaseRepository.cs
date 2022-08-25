@@ -53,15 +53,31 @@ public class AppReleaseRepository : IAppReleaseRepository
     ///<inheritdoc/>
     public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
         _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
+    
+    ///<inheritdoc/>
+    public Task<Guid> GetAppRolesAsync(Guid appId, string userId) =>
+        _context.Apps
+             .Where(a => a.Id == appId)
+             .Select(x => x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
+             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<AppClientRoles> GetClientRolesAsync(Guid appId, string userId) =>
-           _context.UserRoles
-               .Where(client => client.App.Id == appId && client.App!.ProviderCompany!.CompanyUsers!.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-              // .SelectMany(clients => clients.IamClient!.UserRoles!)
-               .Select(roles => new AppClientRoles(
-                   roles.Id,
-                   roles.UserRoleText,
-                   roles.UserRoleDescriptions.Select(d=>new UserRoleDescription(roles.Id,d.LanguageShortName,d.Description))
-               )).AsAsyncEnumerable();
+    ///<inheritdoc/>
+    public UserRole CreateAppUserRole(Guid appId, string role) =>
+         _context.UserRoles.Add(
+            new UserRole(
+                Guid.NewGuid(),
+                role,
+                appId
+            )).Entity;
+
+    ///<inheritdoc/>
+    public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>
+               _context.UserRoleDescriptions.Add(
+            new UserRoleDescription(
+                roleId,
+                languageCode,
+                description
+            )).Entity;
+    
 
 }

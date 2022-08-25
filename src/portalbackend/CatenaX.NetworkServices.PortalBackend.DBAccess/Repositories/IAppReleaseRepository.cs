@@ -43,6 +43,30 @@ public interface IAppReleaseRepository
     /// <param name="documentId"></param>
     /// <returns></returns>
     AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+    
+    /// <summary>
+    /// Get App Role Id for company user id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<Guid> GetAppRolesAsync(Guid appId,string userId);
+    
+    /// <summary>
+    /// Add User Role for App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    UserRole CreateAppUserRole(Guid appId, string role);
+    
+    /// <summary>
+    /// Add User Role for App Description
+    /// </summary>
+    /// <param name="roleId"></param>
+    /// <param name="languageCode"></param>
+    /// <param name="description"></param>
+    /// <returns></returns>
+    UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
 
-    IAsyncEnumerable<AppClientRoles> GetClientRolesAsync(Guid appId, string userId);
 }

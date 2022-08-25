@@ -145,46 +145,41 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             }
         }
     }
-
-    public  Task UpdateAppRoleAsync(Guid appId, IEnumerable<AppEditableClientRoles> appAssignedDesc, string userId)
-    { 
+    
+    /// <inheritdoc/>
+    public Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
+    {
         if (appId == Guid.Empty)
         {
             throw new ArgumentException($"AppId must not be empty");
         }
-       
-        foreach(var langCode in appAssignedDesc.SelectMany(desc => desc.Descriptions))
+        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !String.IsNullOrWhiteSpace(item.languageCode)).Distinct();
+        if (!descriptions.Any())
         {
-            if(string.IsNullOrWhiteSpace(langCode.LanguageCode))
-            {
-                throw new ArgumentException($"Language Code must not be empty");
-            }
+            throw new ArgumentException($"Language Code must not be empty");
         }
-        return  EditAppRoleAsync(appId,appAssignedDesc, userId);
+
+        return InsertAppUserRoleAsync(appId, appAssignedDesc, userId);
     }
 
-    private async Task EditAppRoleAsync(Guid appId, IEnumerable<AppEditableClientRoles> appAssignedDesc, string userId)
+    private async Task InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
     {
-        //var appRoleDescriptions = new List<AppRoleDescription>();
-        //var appEditableClientRoles = new List<AppEditableClientRoles>();
-       // var userRoleDescriptions = new List<UserRoleDescription>();
-        //var userRoles = new List<AppEditableClientRoles>();
-        await foreach (var appRole in _portalRepositories.GetInstance<IAppReleaseRepository>().GetClientRolesAsync(appId, userId).ConfigureAwait(false))
-        {
-            if(appRole == null)
-            {
-               throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
-            }
-         // foreach(var item in appclientRole.Descriptions)
-         // {
-              //appRoleDescriptions.Add(new AppRoleDescription(item.LanguageShortName, item.Description));
-         // }
-         // appEditableClientRoles.Add(new AppEditableClientRoles(appclientRole.Role,appRoleDescriptions));
-        }
-        foreach(var indexItem in appAssignedDesc)
-        {
+        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppRolesAsync(appId, userId).ConfigureAwait(false);
 
+        if (companyUserId == Guid.Empty)
+        {
+            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
         }
+
+        foreach (var indexItem in appAssignedDesc)
+        {
+            var appRole = _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppUserRole(appId, indexItem.role);
+            foreach (var item in indexItem.descriptions)
+            {
+                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
+            }
+        }
+        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -97,16 +97,24 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppDocumentAsync(appId,  documentTypeId,  document, userId)).ConfigureAwait(false);
         return NoContent();
     }
-
-    [HttpPut]
-    [Route("updateapprole/{appId}")]
+    
+    /// <summary>
+    /// Add role and role description for App 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appAssignedDesc"></param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/addappuserrole/{appId}</remarks>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPost]
+    [Route("addappuserrole/{appId}")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateAppRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppEditableClientRoles> appAssignedDesc)
+    public async Task<IActionResult> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)
     {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
         return NoContent();
     }
     
