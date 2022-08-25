@@ -55,7 +55,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ArgumentException($"AppId must not be empty");
         }
         var descriptions = updateModel.Descriptions.Where(item => !String.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
-        if (descriptions.Count() == 0)
+        if (!descriptions.Any())
         {
             throw new ArgumentException($"Language Code must not be empty");
         }
@@ -65,12 +65,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-         var result = await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
-        if (result == default)
+        var (description, images) = await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        if (!description.Any() && !images.Any())
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
         }
-        var (description, images) = result;
+        
         var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
@@ -110,7 +110,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         if (string.IsNullOrEmpty(document.FileName))
         {
-            throw new ArgumentNullException("File name is must not be null");
+            throw new ArgumentException("File name is must not be null");
         }
         // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
@@ -123,7 +123,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
-        if (companyUserId == default)
+        if (companyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
         }
