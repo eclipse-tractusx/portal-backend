@@ -98,7 +98,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    public Task<int> UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
     {
         if (appId == Guid.Empty)
         {
@@ -120,7 +120,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return UploadAppDoc(appId, documentTypeId, document, userId);
     }
 
-    private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
     {
         var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
@@ -141,7 +141,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 }
                 var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
                 _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
-                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                return await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
         }
     }
