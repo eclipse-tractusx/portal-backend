@@ -82,6 +82,7 @@ builder.Services.AddTransient<IPortalRepositories, PortalRepositories>();
 
 builder.Services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("PortalDb")));
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
+builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Services.AddTransient<IMailingService, MailingService>()
                 .AddTransient<ISendMail, SendMail>()
