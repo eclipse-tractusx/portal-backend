@@ -38,9 +38,19 @@ public class App
         CompanyUsers = new HashSet<CompanyUser>();
         Tags = new HashSet<AppTag>();
         SupportedLanguages = new HashSet<Language>();
+        Documents = new HashSet<Document>();
         UserRoles = new HashSet<UserRole>();
         AppInstances = new HashSet<AppInstance>();
-        Documents = new HashSet<Document>();
+    }
+
+    /// <summary>
+    /// construtor used for the Attach case
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public App(Guid id) : this()
+    {
+        Id = id;
     }
     
     public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
@@ -49,15 +59,7 @@ public class App
         Provider = provider;
         DateCreated = dateCreated;
     }
-   /// <summary>
-   /// construtor used for the Attach case
-   /// </summary>
-   /// <param name="id"></param>
-   /// <returns></returns>
-    public App(Guid id) : this()
-    {
-        Id = id;
-    }
+    
     public Guid Id { get; private set; }
 
     [MaxLength(255)]
@@ -102,11 +104,12 @@ public class App
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+    public virtual ICollection<Document> Documents { get; private set; }
     public virtual Company? ProviderCompany { get; set; }
     public virtual CompanyUser? SalesManager { get; set; }
     public virtual ICollection<Language> SupportedLanguages { get; private set; }
     public virtual ICollection<AppTag> Tags { get; private set; }
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
-    public virtual ICollection<Document> Documents { get; private set; }
+
 }
