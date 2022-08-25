@@ -59,6 +59,14 @@ public class CompanyRepository : ICompanyRepository
                 DateTimeOffset.UtcNow
             )).Entity;
 
+    public Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser!.CompanyUser!.Company)
+            .Select(company => new ValueTuple<string?,Guid>(company!.Name, company.Id))
+            .SingleOrDefaultAsync();
+
     public Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
         _context.IamUsers
             .AsNoTracking()
@@ -78,12 +86,24 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters) =>
-        _context.Companies
+    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(
+        IEnumerable<(Guid companyId, bool bpnRequested)> parameters)
+    {
+        var bpnRequestCompanyIds = parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).ToList();
+        return _context.Companies
             .AsNoTracking()
             .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
-            .Select(company => ((Guid CompanyId, string? BusinessPartnerNumber)) new (
+            .Select(company => new ValueTuple<Guid,string?>(
                 company.Id,
-                parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).Contains(company.Id) ? company.BusinessPartnerNumber : null
-            )).AsAsyncEnumerable();
+                bpnRequestCompanyIds.Contains(company.Id) ? company.BusinessPartnerNumber : null
+            ))
+            .AsAsyncEnumerable();
+    }
+
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+        _context.Companies
+            .AsNoTracking()
+            .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE)
+            .Select(company => company.BusinessPartnerNumber)
+            .AsAsyncEnumerable();
 }

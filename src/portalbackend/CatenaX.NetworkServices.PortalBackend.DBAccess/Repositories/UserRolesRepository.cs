@@ -2,6 +2,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
+using CatenaX.NetworkServices.Framework.Models;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -27,7 +28,7 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(userRole => userRoleIds.Contains(userRole.Id))
             .Select(userRole => new UserRoleData(
                 userRole.Id,
-                userRole.IamClient!.ClientClientId,
+                userRole.App!.AppInstances.First().IamClient!.ClientClientId,
                 userRole.UserRoleText))
             .ToAsyncEnumerable();
 
@@ -37,9 +38,10 @@ public class UserRolesRepository : IUserRolesRepository
         {
             await foreach (var userRoleId in _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
+                .Where(userRole => userRole.App!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
                 .Select(userRole => userRole.Id)
-                .AsAsyncEnumerable().ConfigureAwait(false))
+                .AsAsyncEnumerable()
+                .ConfigureAwait(false))
             {
                 yield return userRoleId;
             }
@@ -49,7 +51,7 @@ public class UserRolesRepository : IUserRolesRepository
     public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(userRole => userRole.IamClient!.ClientClientId == clientClientId && userRoles.Contains(userRole.UserRoleText))
+            .Where(userRole => userRole.App!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientClientId) && userRoles.Contains(userRole.UserRoleText))
             .Select(userRole => new UserRoleWithId(
                 userRole.UserRoleText,
                 userRole.Id
@@ -62,10 +64,10 @@ public class UserRolesRepository : IUserRolesRepository
         {
             await foreach (var userRoleData in _dbContext.UserRoles
                 .AsNoTracking()
-                .Where(userRole => userRole.IamClient!.ClientClientId == clientRole.Key && clientRole.Value.Contains(userRole.UserRoleText))
+                .Where(userRole => userRole.App!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
                 .Select(userRole => new UserRoleData(
                     userRole.Id,
-                    userRole.IamClient!.ClientClientId,
+                    userRole.App!.AppInstances.Single(ai => ai.IamClient!.ClientClientId == clientRole.Key).IamClient!.ClientClientId,
                     userRole.UserRoleText
                 ))
                 .AsAsyncEnumerable())
@@ -78,7 +80,18 @@ public class UserRolesRepository : IUserRolesRepository
      public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(userRole => userRole.IamClient!.ClientClientId == keyCloakClientId)
+            .Where(userRole => userRole.App!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
             .Select(userRole => userRole.UserRoleText)
             .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string clientId, string? languageShortName = null) =>
+       _dbContext.UserRoles
+           .AsNoTracking()
+           .Where(userRole => userRole.App!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientId))
+           .Select(userRole => new UserRoleWithDescription(
+                   userRole.Id,
+                   userRole.UserRoleText,
+                   userRole.UserRoleDescriptions.SingleOrDefault(desc =>
+                   desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description))
+           .AsAsyncEnumerable();
 }

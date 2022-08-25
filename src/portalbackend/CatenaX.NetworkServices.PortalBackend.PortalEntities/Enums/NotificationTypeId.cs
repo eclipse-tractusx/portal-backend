@@ -33,5 +33,45 @@ public enum NotificationTypeId : int
     /// <summary>
     /// Notification requires the user to take some kind of action
     /// </summary>
-    ACTION = 2
+    ACTION = 2,
+
+    /// <summary>
+    /// Welcome message
+    /// </summary>
+    WELCOME = 3,
+
+    /// <summary>
+    /// Welcome use case explination
+    /// </summary>
+    WELCOME_USE_CASES = 4,
+
+    /// <summary>
+    /// Welcome - link to service provider marketplace
+    /// </summary>
+    WELCOME_SERVICE_PROVIDER = 5,
+
+    /// <summary>
+    /// Welcome - link to register connector
+    /// </summary>
+    WELCOME_CONNECTOR_REGISTRATION = 6,
+
+    /// <summary>
+    /// Welcome - link to apps
+    /// </summary>
+    WELCOME_APP_MARKETPLACE = 7,
+
+    /// <summary>
+    /// New App Subscription was requested
+    /// </summary>
+    APP_SUBSCRIPTION_REQUEST = 8,
+
+    /// <summary>
+    /// New App Subscription was activated
+    /// </summary>
+    APP_SUBSCRIPTION_ACTIVATION = 9,
+
+    /// <summary>
+    /// Connector was registered
+    /// </summary>
+    CONNECTOR_REGISTERED = 10
 }

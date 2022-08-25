@@ -36,6 +36,8 @@ public interface ICompanyRepository
     Company CreateCompany(string companyName);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
+    
+    Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 
@@ -46,4 +48,10 @@ public interface ICompanyRepository
     /// <param name="bpnRequested">whether the assigned businessPartnerNumber should be returned</param>
     /// <returns>(CompanyId, BusinessPartnerNumber) for any company that exists</returns>
     IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters);
+
+    /// <summary>
+    /// Get all member companies bpn
+    /// </summary>
+    /// <returns> Business partner numbers of all active companies</returns>
+    IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
 }
