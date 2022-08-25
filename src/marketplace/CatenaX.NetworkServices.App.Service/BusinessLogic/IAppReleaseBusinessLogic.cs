@@ -46,7 +46,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="document"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId);
+    Task<int> UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId);
     
     /// <summary>
     /// Add User Role for App
