@@ -74,25 +74,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactNumber = updateModel.ContactNumber;
             app.MarketingUrl = updateModel.ProviderUri;
         });
-        int currentIndex=0;
         foreach (var item in updateModel.Descriptions)
         {
-            newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, description.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
-            currentIndex++;
+            _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppDescription(appId, item.LanguageCode), appdesc =>
+           {
+               appdesc.DescriptionLong = item.LongDescription;
+           });
         }
         foreach (var record in updateModel.Images)
         {
             newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
         }
-        try
-        {
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception?.InnerException?.Message.Contains("violates unique constraint") ?? false)
-        {
-            throw new ArgumentException($"language code does exist");
-        }
-        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
 
