@@ -55,9 +55,9 @@ public class AppReleaseRepository : IAppReleaseRepository
         _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
 
     public IAsyncEnumerable<AppClientRoles> GetClientRolesAsync(Guid appId, string userId) =>
-           _context.AppAssignedClients
-               .Where(client => client.AppId == appId && client.App!.ProviderCompany!.CompanyUsers!.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-               .SelectMany(clients => clients.IamClient!.UserRoles!)
+           _context.UserRoles
+               .Where(client => client.App.Id == appId && client.App!.ProviderCompany!.CompanyUsers!.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+              // .SelectMany(clients => clients.IamClient!.UserRoles!)
                .Select(roles => new AppClientRoles(
                    roles.Id,
                    roles.UserRoleText,
