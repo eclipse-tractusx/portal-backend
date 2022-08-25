@@ -57,7 +57,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         private const string CompanyName = "Shared Idp Test";
         private const string ClientId = "catenax-portal";
 
-        private readonly Guid _companyAdminRoleId = Guid.NewGuid();
         private readonly IProvisioningManager _provisioningManager;
         private readonly IPortalRepositories _portalRepositories;
         private readonly IApplicationRepository _applicationRepository;
