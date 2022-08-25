@@ -17,20 +17,22 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
- 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class AppClientRoles
-{
-    public AppClientRoles(Guid roleId, string role, IEnumerable<UserRoleDescription> descriptions)
-    {
-        RoleId = roleId;
-        Role = role;
-        Descriptions = descriptions;
-    }
+namespace CatenaX.NetworkServices.App.Service.InputModels;
 
-    public Guid RoleId { get; set; }
-    public string Role { get; set; }
-    public IEnumerable<UserRoleDescription> Descriptions { get; set; }
-}
+/// <summary>
+/// Model for Role
+/// </summary>
+/// <param name="role"></param>
+/// <param name="descriptions"></param>
+/// <returns></returns>
+public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
+
+/// <summary>
+/// Model for Role Description
+/// </summary>
+/// <param name="languageCode"></param>
+/// <param name="description"></param>
+/// <returns></returns>
+public record AppUserRoleDescription(string languageCode, string description);
+
