@@ -18,6 +18,12 @@ public class AppDescription
         DescriptionLong = descriptionLong;
         DescriptionShort = descriptionShort;
     }
+
+    /// <summary>
+    /// construtor used for the Attach case
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="languageShortName"></param>
     public AppDescription(Guid appId, string languageShortName)
     {
         AppId = appId;
