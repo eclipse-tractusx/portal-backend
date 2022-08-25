@@ -125,6 +125,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
             var pwd = new Password();
 
+            var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
             foreach (UserCreationInfo user in usersToCreate)
             {
                 bool success = false;
@@ -142,8 +143,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         Password = password,
                         BusinessPartnerNumber = businessPartnerNumber
                     }).ConfigureAwait(false);
-
-                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE);
+                    
+                    var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
                     var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
                     if (validRoles.Count() > 0)
@@ -244,22 +245,21 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
         {
-
-            var app = await _portalDBAccess.GetAppAssignedClientsAsync(appId).ConfigureAwait(false);
-            if (app.Equals(Guid.Empty))
+            var appRepository = _portalRepositories.GetInstance<IAppRepository>();
+            if (!await appRepository.CheckAppExistsById(appId).ConfigureAwait(false))
             {
                 throw new NotFoundException($"app {appId} does not found");
             }
 
             if (languageShortName != null)
             {
-                var language = await _portalDBAccess.GetLanguageAsync(languageShortName);
+                var language = await _portalRepositories.GetInstance<ILanguageRepository>().GetLanguageAsync(languageShortName);
                 if (language == null)
                 {
                     throw new ArgumentException($"language {languageShortName} does not exist");
                 }
             }
-            await foreach (var roles in _portalDBAccess.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
+            await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
             {
                 yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
             }
@@ -346,7 +346,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 companyUser.DateCreated,
                 userData.BusinessPartnerNumbers,
                 companyUser.Company!.Name,
-                companyUser.CompanyUserStatusId)
+                companyUser.CompanyUserStatusId,
+                userData.AssignedRoles)
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
@@ -483,11 +484,25 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size)
+        public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
+            Guid appId, 
+            string iamUserId, 
+            int page, 
+            int size, 
+            string? firstName = null, 
+            string? lastName = null, 
+            string? email = null,
+            string? roleName = null)
         {
-            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(appId, iamUserId);
+            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(
+                appId, 
+                iamUserId,
+                firstName,
+                lastName,
+                email,
+                roleName);
 
-            return Pagination.CreateResponseAsync<CompanyAppUserDetails>(
+            return Pagination.CreateResponseAsync(
                 page,
                 size,
                 15,
@@ -499,7 +514,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         .Select(companyUser => new CompanyAppUserDetails(
                             companyUser.Id,
                             companyUser.CompanyUserStatusId,
-                            companyUser.UserRoles!.Where(userRole => userRole.IamClient!.Apps.Any(app => app.Id == appId)).Select(userRole => userRole.UserRoleText))
+                            companyUser.UserRoles!.Where(userRole => userRole.App!.Id == appId).Select(userRole => userRole.UserRoleText))
                         {
                             FirstName = companyUser.Firstname,
                             LastName = companyUser.Lastname,
@@ -509,60 +524,66 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 
         public async Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
         {
-            var companyUser = await _portalRepositories.GetInstance<IUserRepository>().GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId).ConfigureAwait(false);
+            var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
+                .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)
+                .ConfigureAwait(false);
             if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
             {
                 throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
             }
+            
             if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
             {
                 throw new NotFoundException($"User not found");
             }
-            var iamClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId).ConfigureAwait(false);
+            
+            var iamClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(iamClientId))
             {
-                throw new ArgumentException(nameof(appId), $"invalid appId {appId}");
+                throw new ArgumentException($"invalid appId {appId}", nameof(appId));
             }
-            var roles = userRoleInfo.Roles.Where(role => !String.IsNullOrWhiteSpace(role)).Distinct();
+            var roles = userRoleInfo.Roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
 
             var success = new List<UserRoleMessage.Message>();
             var warning = new List<UserRoleMessage.Message>();
 
-            if (roles.Count() > 0)
+            if (!roles.Any()) return new UserRoleMessage(success, warning);
+
+            var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            var userRoleWithIds = await userRoleRepository.GetUserRoleWithIdsUntrackedAsync(iamClientId, roles).ToListAsync().ConfigureAwait(false);
+            if (userRoleWithIds.Count != roles.Count)
             {
-                var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-                var userRoleWithIds = await userRoleRepository.GetUserRoleWithIdsUntrackedAsync(iamClientId, roles).ToListAsync().ConfigureAwait(false);
-                if (userRoleWithIds.Count() != roles.Count())
-                {
-                    throw new ArgumentException(nameof(userRoleInfo), $"invalid User roles for client {iamClientId}: [{String.Join(",", roles.Except(userRoleWithIds.Select(x => x.CompanyUserRoleText)))}]");
-                }
-                var unassignedRoleNames = userRoleWithIds.Where(x => !companyUser.RoleIds.Contains(x.CompanyUserRoleId)).Select(x => x.CompanyUserRoleText);
-
-                var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                    {
-                        { iamClientId, unassignedRoleNames }
-                    };
-
-                var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
-
-                foreach (var roleWithId in userRoleWithIds)
-                {
-                    if (assignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
-                    {
-                        userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
-                        success.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_ADDED));
-                    }
-                    else if (unassignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
-                    {
-                        warning.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_DOESNT_EXIST));
-                    }
-                    else
-                    {
-                        success.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_ALREADY_ADDED));
-                    }
-                }
-                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                throw new ArgumentException($"invalid User roles for client {iamClientId}: [{string.Join(",", roles.Except(userRoleWithIds.Select(x => x.CompanyUserRoleText)))}]", nameof(userRoleInfo));
             }
+            var unassignedRoleNames = userRoleWithIds
+                .Where(x => !companyUser.RoleIds.Contains(x.CompanyUserRoleId))
+                .Select(x => x.CompanyUserRoleText)
+                .ToList();
+
+            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+            {
+                { iamClientId, unassignedRoleNames }
+            };
+
+            var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
+
+            foreach (var roleWithId in userRoleWithIds)
+            {
+                if (assignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
+                {
+                    userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
+                    success.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_ADDED));
+                }
+                else if (unassignedRoleNames.Contains(roleWithId.CompanyUserRoleText))
+                {
+                    warning.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_DOESNT_EXIST));
+                }
+                else
+                {
+                    success.Add(new UserRoleMessage.Message(roleWithId.CompanyUserRoleText, UserRoleMessage.Detail.ROLE_ALREADY_ADDED));
+                }
+            }
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return new UserRoleMessage(success, warning);
         }
     

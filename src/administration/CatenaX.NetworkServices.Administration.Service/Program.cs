@@ -28,7 +28,6 @@ using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Mailing.Template;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -41,9 +40,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.Swagger;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Newtonsoft.Json.Serialization;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -117,9 +120,15 @@ builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>();
+builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
+                .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
+                
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
+builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
+
+builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
+                .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
@@ -138,7 +147,6 @@ builder.Services.AddDbContext<PortalDbContext>(options =>
 
 builder.Services.AddDbContext<ProvisioningDBContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
-
 
 var app = builder.Build();
 

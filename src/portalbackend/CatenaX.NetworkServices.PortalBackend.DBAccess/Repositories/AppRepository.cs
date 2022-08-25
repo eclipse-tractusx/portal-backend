@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -29,6 +30,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// Implementation of <see cref="IAppRepository"/> accessing database with EF Core.
 public class AppRepository : IAppRepository
 {
+    private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext _context;
 
     /// <summary>
@@ -49,16 +51,17 @@ public class AppRepository : IAppRepository
         _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
             c.Name,
             c.Provider,
-            c.ContactEmail
+            c.ContactEmail,
+            c.SalesManagerId
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
-    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId) =>
-        _context.AppAssignedClients.AsNoTracking()
-            .Where(appClient => appClient.AppId == appId)
-            .Select(appClient => appClient.IamClient!.ClientClientId)
+    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
+        _context.CompanyAssignedApps.AsNoTracking()
+            .Where(appClient => appClient.Id == appId && appClient.CompanyId == companyId)
+            .Select(x => x.AppInstance!.IamClient!.ClientClientId)
             .SingleOrDefaultAsync();
-
+    
     /// <inheritdoc />
     public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
     {
@@ -174,4 +177,42 @@ public class AppRepository : IAppRepository
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId) =>
+        _context.Apps
+            .AsNoTracking()
+            .Where(app=>app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+            .Select(app => new AllAppData(
+                app.Id,
+                app.Name,
+                app.ThumbnailUrl,
+                app.Provider,
+                app.AppStatusId.ToString(),
+                app.DateLastChanged
+            ))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
+        _context.Apps
+            .Where(app => app.Id == appId)
+            .SelectMany(app => app.UserRoles)
+            .Select(roles => new ClientRoles(
+                roles.Id,
+                roles.UserRoleText,
+                languageShortName == null ?
+                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description :
+                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+            )).AsAsyncEnumerable();
+    
+     /// <inheritdoc />
+    public  Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId)
+    =>
+        _context.Apps
+             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
+             && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+             .Select(a => new ValueTuple<IEnumerable<AppDescription>, IEnumerable<AppDetailImage>>(
+                a.AppDescriptions.Select(d => new AppDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
+                       a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
+                       ))
+             .SingleOrDefaultAsync();
 }

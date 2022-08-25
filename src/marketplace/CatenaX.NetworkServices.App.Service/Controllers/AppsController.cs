@@ -252,6 +252,22 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
+    
+    /// <summary>
+    /// Get all company owned apps.
+    /// </summary>
+    /// <returns>Collection of app data of apps that are provided by the calling users company</returns>
+    /// <remarks>Example: GET: /api/apps/provided</remarks>
+    /// <response code="200">Returns list of apps provided by the user assigned company.</response>
+
+    [HttpGet]
+    [Route("provided")]
+    [Authorize(Roles = "app_management")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AllAppData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<AllAppData> GetAppDataAsync()=>
+        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(userId));
+    
 
     /// <summary>
     /// Creates an app according to request model

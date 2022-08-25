@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities;
 
-internal class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbContext>
+public class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbContext>
 {
     public PortalDbContext CreateDbContext(string[] args)
     {
