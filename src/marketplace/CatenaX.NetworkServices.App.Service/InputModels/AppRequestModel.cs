@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace CatenaX.NetworkServices.App.Service.InputModels;
 
 /// <summary>
@@ -14,4 +12,6 @@ namespace CatenaX.NetworkServices.App.Service.InputModels;
 /// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
 /// <param name="Price">Price</param>
 /// <returns></returns>
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, ICollection<Guid> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);
+
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid? ProviderCompanyId, ICollection<string> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);
+
