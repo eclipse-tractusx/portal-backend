@@ -18,6 +18,11 @@ public class AppDescription
         DescriptionLong = descriptionLong;
         DescriptionShort = descriptionShort;
     }
+    public AppDescription(Guid appId, string languageShortName)
+    {
+        AppId = appId;
+        LanguageShortName = languageShortName;
+    }
     
     [MaxLength(4096)]
     public string DescriptionLong { get; set; }
