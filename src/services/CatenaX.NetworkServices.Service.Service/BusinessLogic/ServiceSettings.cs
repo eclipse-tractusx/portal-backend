@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,15 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+namespace CatenaX.NetworkServices.Service.Service.BusinessLogic;
 
-public enum ServiceStatusId
+/// <summary>
+/// Settings for the service service
+/// </summary>
+public class ServiceSettings
 {
-    CREATED = 1,
-    
-    IN_REVIEW = 2,
-    
-    ACTIVE = 3,
-    
-    INACTIVE = 4
+    public int ApplicationsMaxPageSize { get; set; }
+}
+
+public static class ServiceSettingsExtension
+{
+    public static IServiceCollection ConfigureServiceSettings(
+        this IServiceCollection services,
+        IConfigurationSection section) =>
+        services.Configure<ServiceSettings>(section.Bind);
 }

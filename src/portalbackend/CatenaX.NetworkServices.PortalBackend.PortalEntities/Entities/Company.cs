@@ -42,8 +42,6 @@ public class Company
         UseCases = new HashSet<UseCase>();
         ProvidedConnectors = new HashSet<Connector>();
         HostedConnectors = new HashSet<Connector>();
-        ProvidedServices = new HashSet<Service>();
-        CompanyAssignedServices = new HashSet<Service>();
     }
     
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -90,7 +88,5 @@ public class Company
     public virtual ICollection<IdentityProvider> IdentityProviders { get; private set; }
     public virtual ICollection<App> ProvidedApps { get; private set; }
     public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
-    public virtual ICollection<Service> ProvidedServices { get; private set; }
     public virtual ICollection<UseCase> UseCases { get; private set; }
-    public virtual ICollection<Service> CompanyAssignedServices { get; private set; }
 }

@@ -18,22 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+namespace CatenaX.NetworkServices.Service.Service.BusinessLogic;
 
 /// <summary>
-/// Audit Entity for a <see cref="Service"/>
+/// Business logic for handling service-related operations. Includes persistence layer access.
 /// </summary>
-public class AuditService : Service, IAuditEntity
-{
-    /// <inheritdoc />
-    public Guid AuditId { get; set; }
+public interface IServiceBusinessLogic
+{ 
+    /// <summary>
+    /// Gets all active services from the database
+    /// </summary>
+    /// <returns>All services with pagination</returns>
+    Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size);
 
-    /// <inheritdoc />
-    public DateTimeOffset DateLastChanged { get; set; }
-
-    /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
+    /// <summary>
+    /// Creates a new service offering
+    /// </summary>
+    /// <param name="data">The data to create the service offering</param>
+    /// <param name="iamUserId">the iamUser id</param>
+    /// <returns>The id of the newly created service</returns>
+    Task<Guid> CreateServiceOffering(ServiceOfferingData data, string iamUserId);
 }

@@ -1,17 +1,55 @@
 ﻿using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1213AddServices : Migration
+    public partial class CPLP1427CombineServiceAndApps : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
+            migrationBuilder.DropTable(
                 name: "audit_services_cplp_1213_add_services",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "company_assigned_services",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "service_assigned_licenses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "service_descriptions",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "service_subscription_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "service_licenses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "services",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "service_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_company_assigned_apps",
+                schema: "portal",
+                table: "company_assigned_apps");
+         
+            migrationBuilder.CreateTable(
+                name: "audit_company_assigned_apps_cplp_1427_combine_service_and_apps",
                 schema: "portal",
                 columns: table => new
                 {
@@ -19,14 +57,204 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     audit_id = table.Column<Guid>(type: "uuid", nullable: false),
                     date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     audit_operation_id = table.Column<int>(type: "integer", nullable: false),
-                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    thumbnail_url = table.Column<string>(type: "text", nullable: true),
-                    provider_company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    service_status_id = table.Column<int>(type: "integer", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    app_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    app_subscription_status_id = table.Column<int>(type: "integer", nullable: false),
+                    requester_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    display_name = table.Column<string>(type: "character varying(256)", nullable: true),
+                    description= table.Column<string>(type: "character varying(4096)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("audit_company_assigned_apps_cplp_1427_combine_service_and_a", x => x.id);
+                });
+
+            migrationBuilder.DropColumn(
+                name: "is_core_component",
+                schema: "portal",
+                table: "apps");
+
+            migrationBuilder.AddColumn<string>(
+                name: "description",
+                schema: "portal",
+                table: "company_assigned_apps",
+                type: "character varying(4096)",
+                maxLength: 4096,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "display_name",
+                schema: "portal",
+                table: "company_assigned_apps",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: true);
+
+            migrationBuilder.CreateTable(
+                name: "app_type",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_app_type", x => x.id);
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "app_type",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "APP" },
+                    { 2, "CORE_COMPONENT" },
+                    { 3, "SERVICE" }
+                });
+
+            migrationBuilder.AddColumn<int>(
+                name: "app_type_id",
+                schema: "portal",
+                table: "apps",
+                type: "integer",
+                nullable: false,
+                defaultValue: 1);
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_company_assigned_apps",
+                schema: "portal",
+                table: "company_assigned_apps",
+                column: "id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_assigned_apps_company_id",
+                schema: "portal",
+                table: "company_assigned_apps",
+                column: "company_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_apps_app_type_id",
+                schema: "portal",
+                table: "apps",
+                column: "app_type_id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_apps_app_type_app_type_id",
+                schema: "portal",
+                table: "apps",
+                column: "app_type_id",
+                principalSchema: "portal",
+                principalTable: "app_type",
+                principalColumn: "id",
+                onDelete: ReferentialAction.Cascade);
+            
+            migrationBuilder.AddAuditTrigger<AuditCompanyAssignedApp>("cplp_1427_combine_service_and_apps");
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropAuditTrigger<AuditCompanyAssignedApp>();
+
+            migrationBuilder.DropForeignKey(
+                name: "fk_apps_app_type_app_type_id",
+                schema: "portal",
+                table: "apps");
+
+            migrationBuilder.DropTable(
+                name: "app_type",
+                schema: "portal");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_company_assigned_apps",
+                schema: "portal",
+                table: "company_assigned_apps");
+
+            migrationBuilder.DropIndex(
+                name: "ix_company_assigned_apps_company_id",
+                schema: "portal",
+                table: "company_assigned_apps");
+
+            migrationBuilder.DropIndex(
+                name: "ix_apps_app_type_id",
+                schema: "portal",
+                table: "apps");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_audit_company_assigned_apps_cplp_1427_combine_service_and_a",
+                schema: "portal",
+                table: "audit_company_assigned_apps_cplp_1427_combine_service_and_apps");
+
+            migrationBuilder.DropColumn(
+                name: "description",
+                schema: "portal",
+                table: "company_assigned_apps");
+
+            migrationBuilder.DropColumn(
+                name: "display_name",
+                schema: "portal",
+                table: "company_assigned_apps");
+
+            migrationBuilder.DropColumn(
+                name: "app_type_id",
+                schema: "portal",
+                table: "apps");
+
+            migrationBuilder.DropColumn(
+                name: "description",
+                schema: "portal",
+                table: "audit_company_assigned_apps_cplp_1427_combine_service_and_apps");
+
+            migrationBuilder.DropColumn(
+                name: "display_name",
+                schema: "portal",
+                table: "audit_company_assigned_apps_cplp_1427_combine_service_and_apps");
+
+            migrationBuilder.RenameTable(
+                name: "audit_company_assigned_apps_cplp_1427_combine_service_and_apps",
+                schema: "portal",
+                newName: "audit_company_assigned_apps_cplp_1254_db_audit",
+                newSchema: "portal");
+
+            migrationBuilder.AddColumn<bool>(
+                name: "is_core_component",
+                schema: "portal",
+                table: "apps",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_company_assigned_apps",
+                schema: "portal",
+                table: "company_assigned_apps",
+                columns: new[] { "company_id", "app_id" });
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_audit_company_assigned_apps_cplp_1254_db_audit",
+                schema: "portal",
+                table: "audit_company_assigned_apps_cplp_1254_db_audit",
+                column: "id");
+
+            migrationBuilder.CreateTable(
+                name: "audit_services_cplp_1213_add_services",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_operation_id = table.Column<int>(type: "integer", nullable: false),
                     contact_email = table.Column<string>(type: "text", nullable: true),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    provider_company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     sales_manager_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    service_status_id = table.Column<int>(type: "integer", nullable: false),
+                    thumbnail_url = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,14 +306,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    thumbnail_url = table.Column<string>(type: "text", nullable: true),
                     provider_company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    sales_manager_id = table.Column<Guid>(type: "uuid", nullable: true),
                     service_status_id = table.Column<int>(type: "integer", nullable: false),
                     contact_email = table.Column<string>(type: "text", nullable: true),
-                    sales_manager_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    thumbnail_url = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -117,8 +345,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 {
                     service_id = table.Column<Guid>(type: "uuid", nullable: false),
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    service_subscription_status_id = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
-                    requester_id = table.Column<Guid>(type: "uuid", nullable: false)
+                    requester_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    service_subscription_status_id = table.Column<int>(type: "integer", nullable: false, defaultValue: 1)
                 },
                 constraints: table =>
                 {
@@ -180,8 +408,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false),
                     service_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false),
                     language_short_name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -195,18 +423,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.InsertData(
-                schema: "portal",
-                table: "company_statuses",
-                columns: new[] { "id", "label" },
-                values: new object[] { 5, "DELETED" });
-
-            migrationBuilder.InsertData(
-                schema: "portal",
-                table: "company_user_statuses",
-                columns: new[] { "id", "label" },
-                values: new object[] { 3, "DELETED" });
 
             migrationBuilder.InsertData(
                 schema: "portal",
@@ -278,57 +494,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "services",
                 column: "service_status_id");
-
-            // migrationBuilder.AddAuditTrigger<AuditService>("audit_services_cplp_1213_add_services");
-        }
-
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            // migrationBuilder.DropAuditTrigger<AuditService>();
-
-            migrationBuilder.DropTable(
-                name: "audit_services_cplp_1213_add_services",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "company_assigned_services",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "service_assigned_licenses",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "service_descriptions",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "service_subscription_statuses",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "service_licenses",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "services",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "service_statuses",
-                schema: "portal");
-
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "company_statuses",
-                keyColumn: "id",
-                keyValue: 5);
-
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "company_user_statuses",
-                keyColumn: "id",
-                keyValue: 3);
         }
     }
 }

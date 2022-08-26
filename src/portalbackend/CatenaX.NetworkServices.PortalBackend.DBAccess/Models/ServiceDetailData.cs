@@ -18,30 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-
-public class ServiceSubscriptionStatus
-{
-    private ServiceSubscriptionStatus()
-    {
-        Label = null!;
-        CompanyAssignedServices = new HashSet<CompanyAssignedService>();
-    }
-
-    public ServiceSubscriptionStatus(ServiceSubscriptionStatusId serviceSubscriptionStatusId) : this()
-    {
-        Id = serviceSubscriptionStatusId;
-        Label = serviceSubscriptionStatusId.ToString();
-    }
-
-    public ServiceSubscriptionStatusId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<CompanyAssignedService> CompanyAssignedServices { get; private set; }
-}
+/// <summary>
+/// View model of an application's detailed data specific for service.
+/// </summary>
+/// <param name="Id">ID of the app.</param>
+/// <param name="Title">Title or name of the app.</param>
+/// <param name="Provider">Provider of the app.</param>
+/// <param name="LeadPictureUri">Uri to app's lead picture.</param>
+/// <param name="Price">Pricing information of the app.</param>
+public record ServiceDetailData(Guid Id, string Title, string Provider, string LeadPictureUri, string Price);

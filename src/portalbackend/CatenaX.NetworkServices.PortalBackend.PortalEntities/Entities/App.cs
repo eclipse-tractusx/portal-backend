@@ -28,6 +28,7 @@ public class App
     private App()
     {
         Provider = null!;
+        AppType = null!;
         Agreements = new HashSet<Agreement>();
         AppDescriptions = new HashSet<AppDescription>();
         AppDetailImages = new HashSet<AppDetailImage>();
@@ -53,11 +54,12 @@ public class App
         Id = id;
     }
     
-    public App(Guid id, string provider, DateTimeOffset dateCreated) : this()
+    public App(Guid id, string provider, DateTimeOffset dateCreated, AppTypeId appTypeId) : this()
     {
         Id = id;
         Provider = provider;
         DateCreated = dateCreated;
+        AppTypeId = appTypeId;
     }
     
     public Guid Id { get; private set; }
@@ -84,7 +86,7 @@ public class App
     [MaxLength(255)]
     public string Provider { get; set; }
 
-    public bool IsCoreComponent { get; set; }
+    public AppTypeId AppTypeId { get; set; }
 
     public Guid? SalesManagerId { get; set; }
 
@@ -95,6 +97,9 @@ public class App
     public DateTimeOffset? DateLastChanged { get; set; }
 
     // Navigation properties
+    
+    public virtual AppType? AppType { get; private set; }
+    
     public virtual AppStatus? AppStatus{ get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
