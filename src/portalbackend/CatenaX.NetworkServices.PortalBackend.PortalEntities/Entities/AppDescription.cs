@@ -11,7 +11,7 @@ public class AppDescription
         DescriptionShort = null!;
     }
 
-    public AppDescription(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)
+    public AppDescription(Guid appId, string languageShortName, string? descriptionLong, string? descriptionShort)
     {
         AppId = appId;
         LanguageShortName = languageShortName;
@@ -31,10 +31,10 @@ public class AppDescription
     }
     
     [MaxLength(4096)]
-    public string DescriptionLong { get; set; }
+    public string? DescriptionLong { get; set; }
 
     [MaxLength(255)]
-    public string DescriptionShort { get; set; }
+    public string? DescriptionShort { get; set; }
 
     public Guid AppId { get; private set; }
 
