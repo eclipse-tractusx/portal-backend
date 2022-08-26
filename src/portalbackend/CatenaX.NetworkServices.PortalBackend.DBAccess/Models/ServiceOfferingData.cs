@@ -18,30 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+/// <summary>
+/// Data object to create a new service offering
+/// </summary>
+/// <param name="Title">title of the service offering</param>
+/// <param name="Price">the price</param>
+/// <param name="ThumbnailUrl">url of the thumbnail</param>
+/// <param name="ContactEmail">contact email address</param>
+/// <param name="SalesManager">the sales manager of the service</param>
+/// <param name="Descriptions">the service descriptions</param>
+public record ServiceOfferingData(
+    string Title,
+    string Price,
+    string ThumbnailUrl,
+    string? ContactEmail,
+    Guid SalesManager,
+    IEnumerable<ServiceDescription> Descriptions);
 
-public class ServiceStatus
-{
-    private ServiceStatus()
-    {
-        Label = null!;
-        Services = new HashSet<Service>();
-    }
-
-    public ServiceStatus(ServiceStatusId serviceStatusId) : this()
-    {
-        Id = serviceStatusId;
-        Label = serviceStatusId.ToString();
-    }
-
-    public ServiceStatusId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<Service> Services { get; private set; }
-}
+/// <summary>
+/// Description of a service
+/// </summary>
+/// <param name="LanguageCode">the language code (2-chars)</param>
+/// <param name="Description">the service description</param>
+public record ServiceDescription(string LanguageCode, string Description);

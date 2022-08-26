@@ -34,7 +34,7 @@ public static class MigrationBuilderExtensions
         sb.AppendLine("RETURN NULL;");
         sb.AppendLine("END;");
         sb.AppendLine($"${auditTableName}$ LANGUAGE plpgsql;");
-        sb.AppendLine($"CREATE TRIGGER {auditTableName}");
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {auditTableName}");
         sb.AppendLine($"AFTER INSERT OR UPDATE OR DELETE ON portal.{tableName}");
         sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION portal.process_{tableName}_audit();");
 

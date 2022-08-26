@@ -63,9 +63,9 @@ public class AppRepository : IAppRepository
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public App CreateApp(string provider, Action<App>? setOptionalParameters = null)
+    public App CreateApp(string provider, AppTypeId appType, Action<App>? setOptionalParameters = null)
     {
-        var app = _context.Apps.Add(new App(Guid.NewGuid(), provider, DateTimeOffset.UtcNow)).Entity;
+        var app = _context.Apps.Add(new App(Guid.NewGuid(), provider, DateTimeOffset.UtcNow, appType)).Entity;
         setOptionalParameters?.Invoke(app);
         return app;
     }
@@ -73,7 +73,7 @@ public class AppRepository : IAppRepository
     /// <inheritdoc />
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Apps.AsNoTracking()
-            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow)
+            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.AppTypeId == AppTypeId.APP)
             .Select(a => new {
                 a.Id,
                 a.Name,
@@ -215,4 +215,18 @@ public class AppRepository : IAppRepository
                        a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
                        ))
              .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public IQueryable<ServiceDetailData> GetActiveAppsByTypeAsync() =>
+         _context.Apps
+             .Where(x => x.AppTypeId == AppTypeId.SERVICE && x.AppStatusId == AppStatusId.ACTIVE)
+             .Select(app => new ServiceDetailData(
+                 app.Id,
+                 app.Name ?? Constants.ErrorString,
+                 app.Provider,
+                 app.ThumbnailUrl ?? Constants.ErrorString,
+            app.AppLicenses
+                     .Select(license => license.Licensetext)
+                     .FirstOrDefault() ?? Constants.ErrorString
+             ));
 }

@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -53,9 +54,10 @@ public interface IAppRepository
     /// <summary>
     /// Adds an app to the database
     /// </summary>
-    /// <param name="id">Id of the app</param>
     /// <param name="provider">Provider of the app</param>
-    App CreateApp(string provider, Action<App>? setOptionalParameters = null);
+    /// <param name="appType">Type of the app</param>
+    /// <param name="setOptionalParameters">Action to set the optional parameters</param>
+    App CreateApp(string provider, AppTypeId appType, Action<App>? setOptionalParameters = null);
 
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
@@ -134,4 +136,10 @@ public interface IAppRepository
     /// <param name="userId"></param>
     /// <returns>Return Async Enumerable of App Data</returns>
     Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Gets all service detail data from the persistence storage as queryable 
+    /// </summary>
+    /// <returns>Returns an <see cref="IQueryable{ServiceDetailData}"/></returns>
+    IQueryable<ServiceDetailData> GetActiveAppsByTypeAsync();
 }

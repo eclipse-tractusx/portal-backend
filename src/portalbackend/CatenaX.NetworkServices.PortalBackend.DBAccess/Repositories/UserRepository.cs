@@ -284,6 +284,12 @@ public class UserRepository : IUserRepository
             .SingleAsync();
 
     /// <inheritdoc />
+    public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId) => 
+            _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == salesManagerId)
+                .Select(companyUser => new ValueTuple<Guid, bool, string>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId, companyUser.Company!.Shortname))
+                .ToAsyncEnumerable();
+
+    /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId) =>
         _dbContext.IamUsers.AsNoTracking()
             .Where(u => u.UserEntityId == userId) // Id is unique, so single user

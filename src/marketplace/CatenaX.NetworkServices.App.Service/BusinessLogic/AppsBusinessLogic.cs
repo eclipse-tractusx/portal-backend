@@ -223,7 +223,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
 
-        var appId = appRepository.CreateApp(appInputModel.Provider, app =>
+        var appId = appRepository.CreateApp(appInputModel.Provider, AppTypeId.APP, app =>
         {
             app.Name = appInputModel.Title;
             app.MarketingUrl = appInputModel.ProviderUri;
@@ -284,7 +284,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {   
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
-        var appId = appRepository.CreateApp(appRequestModel.Provider, app =>
+        var appId = appRepository.CreateApp(appRequestModel.Provider, AppTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;

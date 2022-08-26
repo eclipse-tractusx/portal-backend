@@ -79,6 +79,18 @@ public class CompanyAssignedApp : IAuditable
     public AppSubscriptionStatusId AppSubscriptionStatusId { get; set; }
 
     /// <summary>
+    /// Display Name for the company app combination
+    /// </summary>
+    [MaxLength(255)]
+    public string? DisplayName { get; set; }
+    
+    /// <summary>
+    /// Additional description for clarification
+    /// </summary>
+    [MaxLength(4096)]
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Id of the app requester 
     /// </summary>
     public Guid RequesterId { get; set; }

@@ -116,7 +116,7 @@ public static class BaseSeed
 
         dbContext.Apps.AddRange(new List<App>
         {
-            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "Catena X", DateTimeOffset.UtcNow)
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "Catena X", DateTimeOffset.UtcNow, AppTypeId.APP)
             {
                 AppStatusId = AppStatusId.ACTIVE
             }
