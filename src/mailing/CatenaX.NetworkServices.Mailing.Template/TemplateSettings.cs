@@ -41,7 +41,10 @@ namespace CatenaX.NetworkServices.Mailing.Template
             this IServiceCollection services,
             IConfigurationSection section)
         {
-            return services.Configure<TemplateSettings>(section);
+            services.AddOptions<TemplateSettings>()
+                .Bind(section)
+                .ValidateOnStart();
+            return services;
         }
     }
 }

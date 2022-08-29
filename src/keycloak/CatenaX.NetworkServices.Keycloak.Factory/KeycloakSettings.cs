@@ -30,6 +30,7 @@ public static class KeycloakSettingsExtention
         services.Configure<KeycloakSettingsMap>(settingsMap =>
             {
                 section.Bind(settingsMap);
+
                 foreach (var (key, settings) in settingsMap)
                 {
                     if (settings.ConnectionString == null)
