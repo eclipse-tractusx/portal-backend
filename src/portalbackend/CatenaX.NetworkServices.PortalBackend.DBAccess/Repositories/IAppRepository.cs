@@ -81,7 +81,6 @@ public interface IAppRepository
     /// <param name="licenseText">Text of the license</param>
     AppLicense CreateAppLicenses(string licenseText);
 
-
     /// <summary>
     /// Adds an <see cref="AppAssignedLicense"/> to the database
     /// </summary>
@@ -141,5 +140,5 @@ public interface IAppRepository
     /// Gets all service detail data from the persistence storage as queryable 
     /// </summary>
     /// <returns>Returns an <see cref="IQueryable{ServiceDetailData}"/></returns>
-    IQueryable<ServiceDetailData> GetActiveAppsByTypeAsync();
+    IQueryable<ServiceDetailData> GetActiveServices();
 }

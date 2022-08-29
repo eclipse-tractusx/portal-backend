@@ -52,7 +52,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size)
     {
-        var services = _portalRepositories.GetInstance<IAppRepository>().GetActiveAppsByTypeAsync();
+        var services = _portalRepositories.GetInstance<IAppRepository>().GetActiveServices();
         return Pagination.CreateResponseAsync(
             page,
             size,

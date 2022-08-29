@@ -20,12 +20,14 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Service.Service.BusinessLogic;
+using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
@@ -78,6 +80,10 @@ public class ServiceBusinessLogicTests
                 var app = new App(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
                 action?.Invoke(app);
                 apps.Add(app);
+            })
+            .Returns(new App(serviceId)
+            {
+                AppTypeId = AppTypeId.SERVICE 
             });
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
@@ -88,6 +94,21 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Should().Be(serviceId);
         apps.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task CreateNotification_WithWrongIamUser_ReturnsCorrectDetails()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.CreateServiceOffering(new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>()), Guid.NewGuid().ToString());
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("iamUserId");
     }
 
     #endregion
@@ -130,15 +151,17 @@ public class ServiceBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
-        var serviceDetailData = _fixture.CreateMany<ServiceDetailData>(5);
+        var serviceDetailData = new AsyncEnumerableStub<ServiceDetailData>(_fixture.CreateMany<ServiceDetailData>(5));
         
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamUser.UserEntityId, companyUser.Id))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>{new (_companyUser.Id, true), new (_companyUser.Id, false)}.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>().ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(iamUser.UserEntityId))
-            .ReturnsLazily(() => Task.FromResult(companyUser.Id));
-        A.CallTo(() => _appRepository.GetActiveAppsByTypeAsync())
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, companyUser.Id))
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>{new (_companyUser.Id, true, "COMPANYBPN"), new (_companyUser.Id, false, "OTHERCOMPANYBPN")}.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>{new (_companyUser.Id, true, "COMPANYBPN")}.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), companyUser.Id))
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>{new (_companyUser.Id, false, "OTHERCOMPANYBPN")}.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>().ToAsyncEnumerable());
+        A.CallTo(() => _appRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
