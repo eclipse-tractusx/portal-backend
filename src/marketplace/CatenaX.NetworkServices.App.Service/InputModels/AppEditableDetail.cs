@@ -18,29 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using CatenaX.NetworkServices.Framework.Web;
+using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
+namespace CatenaX.NetworkServices.App.Service.InputModels;
 
-var builder = WebApplication.CreateBuilder(args);
+/// <summary>
+/// Model for updating an app.
+/// </summary>
+/// <param name="Descriptions"></param>
+/// <param name="Images"></param>
+/// <param name="ProviderUri"></param>
+/// <param name="ContactEmail"></param>
+/// <param name="ContactNumber"></param>
+/// <returns></returns>
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
-// Add services to the container.
+/// <summary>
+/// Model for LanguageCode and Description
+/// </summary>
+/// <param name="LanguageCode"></param>
+/// <param name="LongDescription"></param>
+/// <returns></returns>
+public record Localization(string LanguageCode, string LongDescription);
 
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
-{
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
-}
 
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG, false)
-                .AddMailingAndTemplateManager(builder.Configuration);
 
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
-builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
-
-builder.Build()
-    .CreateApp<Program>("apps", VERSION, TAG)
-    .Run();

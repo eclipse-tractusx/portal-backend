@@ -18,29 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using CatenaX.NetworkServices.Framework.Web;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+/// <summary>
+/// Repository for accessing apps on persistence layer.
+/// </summary>
+public interface IAppReleaseRepository
 {
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
+    /// <summary>
+    /// Return the Company User Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Add app Id and Document Id in App Assigned Document table 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <returns></returns>
+    AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+
 }
-
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG, false)
-                .AddMailingAndTemplateManager(builder.Configuration);
-
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
-builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
-
-builder.Build()
-    .CreateApp<Program>("apps", VERSION, TAG)
-    .Run();

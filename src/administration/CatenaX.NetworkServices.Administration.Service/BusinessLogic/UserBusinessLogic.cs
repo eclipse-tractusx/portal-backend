@@ -246,7 +246,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
         {
             var appRepository = _portalRepositories.GetInstance<IAppRepository>();
-            if (await appRepository.CheckAppExistsById(appId).ConfigureAwait(false))
+            if (!await appRepository.CheckAppExistsById(appId).ConfigureAwait(false))
             {
                 throw new NotFoundException($"app {appId} does not found");
             }
