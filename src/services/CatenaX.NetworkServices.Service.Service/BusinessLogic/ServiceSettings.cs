@@ -32,6 +32,11 @@ public static class ServiceSettingsExtension
 {
     public static IServiceCollection ConfigureServiceSettings(
         this IServiceCollection services,
-        IConfigurationSection section) =>
-        services.Configure<ServiceSettings>(section.Bind);
+        IConfigurationSection section)
+    {
+        services.AddOptions<ServiceSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        return services;
+    }
 }

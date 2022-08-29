@@ -217,7 +217,7 @@ public class AppRepository : IAppRepository
              .SingleOrDefaultAsync();
 
      /// <inheritdoc />
-     public IQueryable<ServiceDetailData> GetActiveAppsByTypeAsync() =>
+     public IQueryable<ServiceDetailData> GetActiveServices() =>
          _context.Apps
              .Where(x => x.AppTypeId == AppTypeId.SERVICE && x.AppStatusId == AppStatusId.ACTIVE)
              .Select(app => new ServiceDetailData(
