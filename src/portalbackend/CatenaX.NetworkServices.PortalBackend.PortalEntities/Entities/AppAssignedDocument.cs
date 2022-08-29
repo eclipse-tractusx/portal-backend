@@ -18,29 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using CatenaX.NetworkServices.Framework.Web;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+public class AppAssignedDocument
 {
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
+    private AppAssignedDocument() {}
+
+    public AppAssignedDocument(Guid appId, Guid documentId)
+    {
+        AppId = appId;
+        DocumentId = documentId;
+    }
+
+    public Guid AppId { get; private set; }
+    public Guid DocumentId { get; private set; }
+
+    // Navigation properties
+    public virtual App? App { get; private set; }
+    public virtual Document? Document { get; private set; }
 }
 
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG, false)
-                .AddMailingAndTemplateManager(builder.Configuration);
-
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
-builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
-
-builder.Build()
-    .CreateApp<Program>("apps", VERSION, TAG)
-    .Run();
