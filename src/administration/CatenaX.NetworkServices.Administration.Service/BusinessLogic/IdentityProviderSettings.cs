@@ -78,10 +78,16 @@ public static class IdentityProviderSettingsExtension
 {
     public static IServiceCollection ConfigureIdentityProviderSettings(
         this IServiceCollection services,
-        IConfigurationSection section) =>
-        services.Configure<IdentityProviderSettings>(x =>
+        IConfigurationSection section)
+    {
+        services.AddOptions<IdentityProviderSettings>()
+            .Bind(section)
+            .Validate(x =>
             {
-                section.Bind(x);
                 x.Validate();
-            });
+                return true;
+            })
+            .ValidateOnStart();
+        return services;
+    }
 }

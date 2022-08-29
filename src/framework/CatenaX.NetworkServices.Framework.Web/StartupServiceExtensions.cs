@@ -62,7 +62,7 @@ public static class StartupServiceExtensions
             {
                 options.BackchannelHttpHandler = new HttpClientHandler
                 {
-                    ServerCertificateCustomValidationCallback = ServerCertificateValidationExtensions.ServerCertificateCustomValidation
+                    ServerCertificateCustomValidationCallback = ( requestMessage, certificate, chain, sslErrors) => true
                 };
             }
         });
@@ -84,7 +84,9 @@ public static class StartupServiceExtensions
         }
 
         services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
-            .Configure<JwtBearerOptions>(options => configuration.Bind("JwtBearerOptions", options));
+            .AddOptions<JwtBearerOptions>()
+            .Bind(configuration.GetSection("JwtBearerOptions"))
+            .ValidateOnStart();
 
         services.AddTransient<IPortalRepositories, PortalRepositories>();
         services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(configuration.GetConnectionString("PortalDB")));
@@ -92,15 +94,10 @@ public static class StartupServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration)
-    {
-        
+    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
         services.AddTransient<IMailingService, MailingService>()
             .AddTransient<ISendMail, SendMail>()
             .AddTransient<ITemplateManager, TemplateManager>()
             .ConfigureTemplateSettings(configuration.GetSection(Constants.MailingTemplates))
             .ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
-
-        return services;
-    }
 }

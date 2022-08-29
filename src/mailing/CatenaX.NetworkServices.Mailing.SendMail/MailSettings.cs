@@ -13,6 +13,7 @@ namespace CatenaX.NetworkServices.Mailing.SendMail
         public string HttpProxy { get; set; }
         public int HttpProxyPort { get; set; }
     }
+
     public static class MailSettingsExtention
     {
         public static IServiceCollection ConfigureMailSettings(
@@ -20,7 +21,10 @@ namespace CatenaX.NetworkServices.Mailing.SendMail
             IConfigurationSection section
             )
         {
-            return services.Configure<MailSettings>(x => section.Bind(x));
+            services.AddOptions<MailSettings>()
+                .Bind(section)
+                .ValidateOnStart();
+            return services;
         }
     }
 }

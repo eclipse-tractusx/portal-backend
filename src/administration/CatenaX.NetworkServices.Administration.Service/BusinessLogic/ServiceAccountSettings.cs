@@ -23,14 +23,16 @@ public static class ServiceAccountSettingsExtensions
         this IServiceCollection services,
         IConfigurationSection section)
     {
-        return services.Configure<ServiceAccountSettings>(x =>
-        {
-            section.Bind(x);
-            if (String.IsNullOrWhiteSpace(x.ClientId))
+        services.AddOptions<ServiceAccountSettings>()
+            .Bind(section)
+            .Validate(x =>
             {
-                throw new ConfigurationException($"{nameof(ServiceAccountSettings)}: {nameof(x.ClientId)} must not be null or empty");
-            }
-        });
+                if (string.IsNullOrWhiteSpace(x.ClientId))
+                    throw new ConfigurationException($"{nameof(ServiceAccountSettings)}: {nameof(x.ClientId)} must not be null or empty");
 
+                return true;
+            })
+            .ValidateOnStart();
+        return services;
     }
 }
