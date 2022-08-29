@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
