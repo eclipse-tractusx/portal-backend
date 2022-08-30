@@ -76,6 +76,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <param name="appId"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
     /// <remarks>Example: PUT: /api/apps/appreleaseprocess/apprelease/{appId}/documentType/{documentTypeId}/documents</remarks>
     /// <response code="200">Successfully uploaded the document</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
