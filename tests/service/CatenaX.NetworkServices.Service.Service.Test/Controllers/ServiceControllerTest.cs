@@ -97,5 +97,24 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
             A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId)).MustHaveHappenedOnceExactly();
             Assert.IsType<NoContentResult>(result);
         }
+        
+        [Fact]
+        public async Task GetServiceDetails_ReturnsExpectedId()
+        {
+            //Arrange
+            var serviceId = Guid.NewGuid();
+            var serviceDetailData = _fixture.Create<ServiceDetailData>();
+            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._))
+                .Returns(serviceDetailData);
+
+            //Act
+            var result = await this._controller.GetServiceDetails(serviceId).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en")).MustHaveHappenedOnceExactly();
+            Assert.IsType<ServiceDetailData>(result);
+            result.Should().Be(serviceDetailData);
+        }
+
     }
 }

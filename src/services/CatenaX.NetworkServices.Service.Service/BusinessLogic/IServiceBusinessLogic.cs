@@ -49,4 +49,12 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">Id of the user</param>
     /// <returns></returns>
     Task AddServiceSubscription(Guid serviceId, string iamUserId);
+
+    /// <summary>
+    /// Gets the service detail data for the given service
+    /// </summary>
+    /// <param name="serviceId">Id of the service the details should be retrieved for.</param>
+    /// <param name="lang">Shortcode of the language for the text translations</param>
+    /// <returns>Returns the service detail data</returns>
+    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang);
 }

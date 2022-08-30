@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -73,7 +74,7 @@ public class ServiceController : ControllerBase
     [Route("addservice")]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Guid> CreateServiceOffering([FromBody] ServiceOfferingData data) =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOffering(data, iamUserId));
     
@@ -83,13 +84,35 @@ public class ServiceController : ControllerBase
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
     /// <remarks>Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
     /// <response code="204">Returns success</response>
+    /// <response code="400">Company or company user wasn't assigned to the user.</response>
+    /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/subscribe")]
     [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> AddServiceSubscription([FromRoute] Guid serviceId)
     {
         await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AddServiceSubscription(serviceId, iamUserId)).ConfigureAwait(false);
         return this.NoContent();
     }
+
+    /// <summary>
+    /// Adds a new service subscription.
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the wants to retrieve.</param>
+    /// <param name="lang" example="de">OPTIONAL: Short code for the language the translatable text should be returned in.</param>
+    /// <remarks>Example: Get: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <response code="200">Returns the service details.</response>
+    /// <response code="400">The given language code does not exist.</response>
+    /// <response code="404">Service was not found.</response>
+    [HttpGet]
+    [Route("{serviceId}")]
+    [Authorize(Roles = "view_service_offering")]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string lang = "en") => 
+        _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang);
 }
