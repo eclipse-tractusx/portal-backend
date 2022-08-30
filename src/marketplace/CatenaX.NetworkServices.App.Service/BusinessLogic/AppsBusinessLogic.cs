@@ -46,7 +46,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService,IOptions<AppsSettings> settings)
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;

@@ -1,19 +1,16 @@
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
-/// <summary>
-/// settings used in business logic concerning apps.
-/// </summary>
 public class AppsSettings
 {
-    public AppsSettings()
+    public string BasePortalAddress { get; init; } = null!;
+    public void Validate()
     {
-        BasePortalAddress = null!;
+        new ConfigurationValidation<AppsSettings>()
+        .NotNullOrWhiteSpace(BasePortalAddress, () => nameof(BasePortalAddress));
     }
-    /// <summary>
-    /// base portal address for subscription request url
-    /// </summary>
-    public string BasePortalAddress { get; set; }
 }
+
 
 public static class AppsSettingsExtension
 {
@@ -23,10 +20,6 @@ public static class AppsSettingsExtension
         services.Configure<AppsSettings>(x =>
             {
                 section.Bind(x);
-
-                if (String.IsNullOrWhiteSpace(x.BasePortalAddress))
-                {
-                    throw new Exception($"{nameof(AppsSettings)}: {nameof(x.BasePortalAddress)} must not be null or empty");
-                }
+                x.Validate();
             });
 }
