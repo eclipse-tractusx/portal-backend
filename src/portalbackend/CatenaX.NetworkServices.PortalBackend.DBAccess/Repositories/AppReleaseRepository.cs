@@ -55,7 +55,7 @@ public class AppReleaseRepository : IAppReleaseRepository
         _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
     
     ///<inheritdoc/>
-    public Task<Guid> GetAppRolesAsync(Guid appId, string userId) =>
+    public Task<Guid> GetCompanyUserIdAsync(Guid appId, string userId) =>
         _context.Apps
              .Where(a => a.Id == appId)
              .Select(x => x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)

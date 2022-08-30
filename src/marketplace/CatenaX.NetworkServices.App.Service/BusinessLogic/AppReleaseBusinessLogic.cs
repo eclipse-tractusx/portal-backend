@@ -98,7 +98,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<int> UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    public Task<int> UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
         if (appId == Guid.Empty)
         {
@@ -117,10 +117,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
         }
-        return UploadAppDoc(appId, documentTypeId, document, userId);
+        return UploadAppDoc(appId, documentTypeId, document, userId, cancellationToken);
     }
 
-    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
         var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
@@ -132,7 +132,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             using (var ms = new MemoryStream((int)document.Length))
             {
-                document.CopyTo(ms);
+                await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
                 var hash = sha512Hash.ComputeHash(ms);
                 var documentContent = ms.GetBuffer();
                 if (ms.Length != document.Length || documentContent.Length != document.Length)
@@ -164,7 +164,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetAppRolesAsync(appId, userId).ConfigureAwait(false);
+        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdAsync(appId, userId).ConfigureAwait(false);
 
         if (companyUserId == Guid.Empty)
         {
