@@ -193,16 +193,13 @@ public class AppRepository : IAppRepository
             .AsAsyncEnumerable();
 
      /// <inheritdoc />
-    public  Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId)
+    public  Task<Guid> GetAppByIdAsync(Guid appId, string userId)
     =>
         _context.Apps
-             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
-             && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-             .Select(a => new ValueTuple<IEnumerable<AppDescription>, IEnumerable<AppDetailImage>>(
-                a.AppDescriptions.Select(d => new AppDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
-                       a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
-                       ))
-             .SingleOrDefaultAsync();
+            .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
+            && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+            .Select(a => a.Id)
+            .SingleOrDefaultAsync();
        
     /// <inheritdoc />
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>

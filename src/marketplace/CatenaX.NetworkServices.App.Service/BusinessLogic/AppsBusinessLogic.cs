@@ -29,7 +29,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IAppsBusinessLogic"/>.
