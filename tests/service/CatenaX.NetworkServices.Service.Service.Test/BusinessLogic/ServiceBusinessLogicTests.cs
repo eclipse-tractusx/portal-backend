@@ -36,10 +36,14 @@ namespace CatenaX.NetworkServices.Service.Service.Test.BusinessLogic;
 
 public class ServiceBusinessLogicTests
 {
+    private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
+    private readonly string _notAssignedCompanyIdUser = "395f955b-f11b-4a74-ab51-92a526c1973c";
+    private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
     private readonly IAppRepository _appRepository;
+    private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
 
@@ -56,6 +60,7 @@ public class ServiceBusinessLogicTests
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _appRepository = A.Fake<IAppRepository>();
+        _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
         SetupRepositories(companyUser, iamUser);
@@ -64,7 +69,7 @@ public class ServiceBusinessLogicTests
     #region Create Service
 
     [Fact]
-    public async Task CreateNotification_WithValidData_ReturnsCorrectDetails()
+    public async Task CreateServiceOffering_WithValidData_ReturnsCorrectDetails()
     {
         // Arrange
         var serviceId = Guid.NewGuid();
@@ -97,7 +102,7 @@ public class ServiceBusinessLogicTests
     }
 
     [Fact]
-    public async Task CreateNotification_WithWrongIamUser_ReturnsCorrectDetails()
+    public async Task CreateServiceOffering_WithWrongIamUser_ThrowsException()
     {
         // Arrange
         _fixture.Inject(_portalRepositories);
@@ -111,12 +116,27 @@ public class ServiceBusinessLogicTests
         ex.ParamName.Should().Be("iamUserId");
     }
 
+    [Fact]
+    public async Task CreateServiceOffering_WithoutCompanyUser_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.CreateServiceOffering(new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", Guid.NewGuid(), new List<ServiceDescription>()), _iamUser.UserEntityId);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("SalesManager");
+    }
+
     #endregion
 
     #region Get Active Services
 
     [Fact]
-    public async Task ServiceBusinessLogic_GetAllActiveServicesAsync_GetsExpectedEntries()
+    public async Task GetAllActiveServicesAsync_WithDefaultRequest_GetsExpectedEntries()
     {
         // Arrange
         _fixture.Inject(_portalRepositories);
@@ -131,7 +151,7 @@ public class ServiceBusinessLogicTests
 
     
     [Fact]
-    public async Task ServiceBusinessLogic_WithSmallSize_GetsExpectedEntries()
+    public async Task GetAllActiveServicesAsync_WithSmallSize_GetsExpectedEntries()
     {
         // Arrange
         const int expectedCount = 3;
@@ -147,6 +167,84 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Add Service Subscription
+
+    [Fact]
+    public async Task AddServiceSubscription_WithExistingId_CreatesServiceSubscription()
+    {
+        // Arrange
+        var companyAssignedAppId = Guid.NewGuid(); 
+        var companyAssignedApps = new List<CompanyAssignedApp>();
+        A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<AppSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
+            .Invokes(x =>
+            {
+                var appId = x.Arguments.Get<Guid>("appId");
+                var companyId = x.Arguments.Get<Guid>("companyId");
+                var appSubscriptionStatusId = x.Arguments.Get<AppSubscriptionStatusId>("appSubscriptionStatusId");
+                var requesterId = x.Arguments.Get<Guid>("requesterId");
+                var creatorId = x.Arguments.Get<Guid>("creatorId");
+
+                var companyAssignedApp = new CompanyAssignedApp(companyAssignedAppId, appId, companyId, appSubscriptionStatusId, requesterId, creatorId);
+                companyAssignedApps.Add(companyAssignedApp);
+            });
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId);
+
+        // Assert
+        companyAssignedApps.Should().HaveCount(1);
+    }
+    
+    [Fact]
+    public async Task AddServiceSubscription_WithNotExistingId_ThrowsException()
+    {
+        // Arrange
+        var notExistingServiceId = Guid.NewGuid();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.AddServiceSubscription(notExistingServiceId, _iamUser.UserEntityId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        ex.Message.Should().Be($"Service {notExistingServiceId} does not exist");
+    }
+    
+    [Fact]
+    public async Task AddServiceSubscription_NotAssignedCompany_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, _notAssignedCompanyIdUser);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("iamUserId");
+    }
+
+    [Fact]
+    public async Task AddServiceSubscription_NotAssignedCompanyUser_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, Guid.NewGuid().ToString());
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("iamUserId");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
@@ -154,24 +252,39 @@ public class ServiceBusinessLogicTests
         var serviceDetailData = new AsyncEnumerableStub<ServiceDetailData>(_fixture.CreateMany<ServiceDetailData>(5));
         
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, companyUser.Id))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>{new (_companyUser.Id, true, "COMPANYBPN"), new (_companyUser.Id, false, "OTHERCOMPANYBPN")}.ToAsyncEnumerable());
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId), new (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>{new (_companyUser.Id, true, "COMPANYBPN")}.ToAsyncEnumerable());
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), companyUser.Id))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>{new (_companyUser.Id, false, "OTHERCOMPANYBPN")}.ToAsyncEnumerable());
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName)>().ToAsyncEnumerable());
+            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>().ToAsyncEnumerable());
+
+        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryId(iamUser.UserEntityId))
+            .ReturnsLazily(() => (_companyUser.Id, _companyUser.CompanyId));
+        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryId(_notAssignedCompanyIdUser))
+            .ReturnsLazily(() => (_companyUser.Id, Guid.Empty));
+        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryId(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
+            .ReturnsLazily(() => (Guid.Empty, _companyUser.CompanyId));
+        
         A.CallTo(() => _appRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
 
+        A.CallTo(() => _appRepository.CheckAppExistsById(_existingServiceId))
+            .Returns(true);
+        A.CallTo(() => _appRepository.CheckAppExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
+            .Returns(false);
+        
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
+            .With(u => u.CompanyId, _companyUserCompanyId)
             .Create();
         var iamUser = _fixture.Build<IamUser>()
             .With(u => u.CompanyUser, companyUser)

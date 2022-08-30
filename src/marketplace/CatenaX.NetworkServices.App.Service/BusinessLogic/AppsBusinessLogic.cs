@@ -149,7 +149,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 {
                     notification.CreatorUserId = requesterId;
                     notification.Content = JsonSerializer.Serialize(notificationContent);
-                });    
+                });
         }
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

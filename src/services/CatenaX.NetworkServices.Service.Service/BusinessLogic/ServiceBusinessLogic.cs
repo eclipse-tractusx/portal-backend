@@ -24,7 +24,6 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using Flurl.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -92,6 +91,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             app.ThumbnailUrl = data.ThumbnailUrl;
             app.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
             app.AppStatusId = AppStatusId.CREATED;
+            app.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
         });
         var licenseId = appRepository.CreateAppLicenses(data.Price).Id;
         appRepository.CreateAppAssignedLicense(app.Id, licenseId);
@@ -100,6 +100,29 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
         await _portalRepositories.SaveAsync();
         return app.Id;
+    }
+
+    /// <inheritdoc />
+    public async Task AddServiceSubscription(Guid serviceId, string iamUserId)
+    {
+        if (!await _portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(serviceId).ConfigureAwait(false))
+        {
+            throw new NotFoundException($"Service {serviceId} does not exist");
+        }
+
+        var (companyId, companyUserId) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+        if (companyId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
+        }
+        
+        if (companyUserId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
+        }
+
+        _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().CreateCompanyAssignedApp(serviceId, companyId, AppSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     private async Task CheckLanguageCodesExist(ServiceOfferingData data)
