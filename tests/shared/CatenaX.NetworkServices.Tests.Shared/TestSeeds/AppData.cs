@@ -12,6 +12,8 @@ public static class AppData
         },
         new(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "Catena X", DateTimeOffset.UtcNow, AppTypeId.SERVICE)
         {
+            Name = "Newest Service",
+            ContactEmail = "service-test@mail.com",
             AppStatusId = AppStatusId.ACTIVE,
         }
     };

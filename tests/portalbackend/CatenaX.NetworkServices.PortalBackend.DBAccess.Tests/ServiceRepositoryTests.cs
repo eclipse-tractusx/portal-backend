@@ -38,9 +38,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
 {
-    private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly IFixture _fixture;
-    private readonly ICollection<App> _apps;
     private readonly TestDbFixture _dbTestDbFixture;
 
     public ServiceRepositoryTests(TestDbFixture testDbFixture)
@@ -53,7 +51,7 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetAllAsDetailsByUserIdUntracked
+    #region GetActiveServices
 
     [Fact]
     public async Task GetActiveServices_ReturnsExpectedAppCount()
@@ -68,92 +66,41 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(1);
     }
-    //
-    // [Fact]
-    // public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatus_ReturnsExpectedNotificationDetailData()
-    // {
-    //     // Arrange
-    //     var sut = CreateSut();
-    //
-    //     // Act
-    //     var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null).ToListAsync();
-    //
-    //     var readNotificationIds = _readNotifications.Select(notification => notification.Id).ToList();
-    //     // Assert
-    //     results.Should().NotBeNullOrEmpty();
-    //     results.Should().HaveCount(_readNotifications.Count);
-    //     results.Should().AllBeOfType<NotificationDetailData>();
-    //     results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
-    // }
-    //
-    // [Fact]
-    // public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndInfoType_ReturnsExpectedNotificationDetailData()
-    // {
-    //     // Arrange
-    //     var sut = CreateSut();
-    //
-    //     // Act
-    //     var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO).ToListAsync();
-    //
-    //     // Assert
-    //     var readNotificationIds = _readNotifications
-    //         .Where(x => x.NotificationTypeId == NotificationTypeId.INFO)
-    //         .Select(x => x.Id)
-    //         .ToList();
-    //     results.Should().NotBeNullOrEmpty();
-    //     results.Should().HaveCount(1);
-    //     results.Should().AllBeOfType<NotificationDetailData>();
-    //     results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
-    // }
-    //
-    // [Fact]
-    // public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndActionType_ReturnsExpectedNotificationDetailData()
-    // {
-    //     // Arrange
-    //     var sut = CreateSut();
-    //
-    //     // Act
-    //     var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION).ToListAsync();
-    //
-    //     // Assert
-    //     var readNotificationIds = _readNotifications
-    //         .Where(x => x.NotificationTypeId == NotificationTypeId.ACTION)
-    //         .Select(x => x.Id).ToList();
-    //     results.Should().NotBeNullOrEmpty();
-    //     results.Should().HaveCount(2);
-    //     results.Should().AllBeOfType<NotificationDetailData>();
-    //     results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
-    // }
-    //
-    // #endregion
-    //
-    // #region GetNotificationCount
-    //
-    // [Fact]
-    // public async Task GetNotificationCountAsync_WithReadStatus_ReturnsExpectedCount()
-    // {
-    //     // Arrange
-    //     var sut = CreateSut();
-    //
-    //     // Act
-    //     var results = await sut.GetNotificationCountForIamUserAsync(IamUserId, true);
-    //
-    //     // Assert
-    //     results.Count.Should().Be(_readNotifications.Count);
-    // }
-    //
-    // [Fact]
-    // public async Task GetNotificationCountAsync_WithoutStatus_ReturnsExpectedCount()
-    // {
-    //     // Arrange
-    //     var sut = CreateSut();
-    //
-    //     // Act
-    //     var results = await sut.GetNotificationCountForIamUserAsync(IamUserId, null);
-    //
-    //     // Assert
-    //     results.Count.Should().Be(_notifications.Count);
-    // }
+
+    #endregion
+
+    #region GetServiceDetailByIdUntrackedAsync
+
+    [Fact]
+    public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsNull()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        // Act
+        var results = await sut.GetServiceDetailByIdUntrackedAsync(Guid.NewGuid(), "en");
+
+        // Assert
+        results.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetServiceDetailByIdUntrackedAsync_ReturnsServiceDetailData()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "en");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Title.Should().Be("Newest Service");
+        result.ContactEmail.Should().Be("service-test@mail.com");
+        result.Provider.Should<string>().Be("Catena X");
+    }
+
+    #endregion
 
     private AppRepository CreateSut()
     {
@@ -162,6 +109,4 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
         var sut = _fixture.Create<AppRepository>();
         return sut;
     }
-
-    #endregion
 }

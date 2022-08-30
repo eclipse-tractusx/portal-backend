@@ -80,7 +80,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         if (results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
-        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode).ToList());
+        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode).ToList()).ConfigureAwait(false);
 
         var appRepository = _portalRepositories.GetInstance<IAppRepository>();
         var app = appRepository.CreateApp(string.Empty, AppTypeId.SERVICE, app =>
@@ -126,9 +126,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang)
-    {
-        throw new NotImplementedException();
+    public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang)
+    {        
+        var serviceDetailData = await _portalRepositories.GetInstance<IAppRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang).ConfigureAwait(false);
+        if (serviceDetailData is null)
+        {
+            throw new NotFoundException($"Service {serviceId} does not exist");
+        }
+
+        return serviceDetailData;
     }
 
     private async Task CheckLanguageCodesExist(ICollection<string> languageCodes)

@@ -105,13 +105,11 @@ public class ServiceController : ControllerBase
     /// <param name="lang" example="de">OPTIONAL: Short code for the language the translatable text should be returned in.</param>
     /// <remarks>Example: Get: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="200">Returns the service details.</response>
-    /// <response code="400">The given language code does not exist.</response>
     /// <response code="404">Service was not found.</response>
     [HttpGet]
     [Route("{serviceId}")]
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string lang = "en") => 
         _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang);

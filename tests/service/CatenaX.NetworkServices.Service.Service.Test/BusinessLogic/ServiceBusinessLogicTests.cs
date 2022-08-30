@@ -44,6 +44,7 @@ public class ServiceBusinessLogicTests
     private readonly IamUser _iamUser;
     private readonly IAppRepository _appRepository;
     private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
+    private readonly ILanguageRepository _languageRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
 
@@ -61,6 +62,7 @@ public class ServiceBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _appRepository = A.Fake<IAppRepository>();
         _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
+        _languageRepository = A.Fake<ILanguageRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
         SetupRepositories(companyUser, iamUser);
@@ -69,7 +71,7 @@ public class ServiceBusinessLogicTests
     #region Create Service
 
     [Fact]
-    public async Task CreateServiceOffering_WithValidData_ReturnsCorrectDetails()
+    public async Task CreateServiceOffering_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
     {
         // Arrange
         var serviceId = Guid.NewGuid();
@@ -102,6 +104,42 @@ public class ServiceBusinessLogicTests
     }
 
     [Fact]
+    public async Task CreateServiceOffering_WithValidDataAndDescription_ReturnsCorrectDetails()
+    {
+        // Arrange
+        var serviceId = Guid.NewGuid();
+
+        var apps = new List<App>();
+        A.CallTo(() => _appRepository.CreateApp(A<string>._, A<AppTypeId>._, A<Action<App?>>._))
+            .Invokes(x =>
+            {
+                var provider = x.Arguments.Get<string>("provider");
+                var appTypeId = x.Arguments.Get<AppTypeId>("appType");
+                var action = x.Arguments.Get<Action<App?>>("setOptionalParameters");
+
+                var app = new App(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
+                action?.Invoke(app);
+                apps.Add(app);
+            })
+            .Returns(new App(serviceId)
+            {
+                AppTypeId = AppTypeId.SERVICE 
+            });
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var serviceOfferingData = new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>
+        {
+            new ("en", "That's a description with a valid language code")
+        });
+        var result = await sut.CreateServiceOffering(serviceOfferingData, _iamUser.UserEntityId);
+
+        // Assert
+        result.Should().Be(serviceId);
+        apps.Should().HaveCount(1);
+    }
+    [Fact]
     public async Task CreateServiceOffering_WithWrongIamUser_ThrowsException()
     {
         // Arrange
@@ -114,6 +152,26 @@ public class ServiceBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("iamUserId");
+    }
+
+    [Fact]
+    public async Task CreateServiceOffering_WithInvalidLanguage_ThrowsException()
+    {
+        // Arrange
+        var serviceId = Guid.NewGuid();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var serviceOfferingData = new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>
+        {
+            new ("gg", "That's a description with incorrect language short code")
+        });
+        async Task Action() => await sut.CreateServiceOffering(serviceOfferingData, _iamUser.UserEntityId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("languageCodes");
     }
 
     [Fact]
@@ -277,21 +335,6 @@ public class ServiceBusinessLogicTests
         ex.Message.Should().Be($"Service {notExistingServiceId} does not exist");
     }
 
-    [Fact]
-    public async Task GetServiceDetailsAsync_WithoutExistingLanguageCode_ThrowsException()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.GetServiceDetailsAsync(_existingServiceId, "gg");
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("languageCodes");
-    }
-
     #endregion
 
     #region Setup
@@ -299,6 +342,9 @@ public class ServiceBusinessLogicTests
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
         var serviceDetailData = new AsyncEnumerableStub<ServiceDetailData>(_fixture.CreateMany<ServiceDetailData>(5));
+        var serviceDetail = _fixture.Build<ServiceDetailData>()
+            .With(x => x.Id, _existingServiceId)
+            .Create();
         
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId), new (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
@@ -318,15 +364,26 @@ public class ServiceBusinessLogicTests
         
         A.CallTo(() => _appRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
-
+        
+        A.CallTo(() => _appRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en")))
+            .ReturnsLazily(() => serviceDetail);
+        A.CallTo(() => _appRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._))
+            .ReturnsLazily(() => default(ServiceDetailData));
+        
+        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "en"))))
+            .ReturnsLazily(() => new List<string> { "en" });
+        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "gg"))))
+            .ReturnsLazily(() => new List<string>());
+        
         A.CallTo(() => _appRepository.CheckAppExistsById(_existingServiceId))
             .Returns(true);
         A.CallTo(() => _appRepository.CheckAppExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .Returns(false);
         
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
