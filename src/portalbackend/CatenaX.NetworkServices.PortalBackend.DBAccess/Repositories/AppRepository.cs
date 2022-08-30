@@ -231,4 +231,23 @@ public class AppRepository : IAppRepository
                      .Select(license => license.Licensetext)
                      .FirstOrDefault() ?? Constants.ErrorString
              ));
+
+     /// <inheritdoc />
+     public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
+         _context.Apps
+             .Where(x => x.Id == serviceId)
+             .Select(app => new ServiceDetailData(
+                 app.Id,
+                 app.Name ?? Constants.ErrorString,
+                 app.Provider,
+                 app.ThumbnailUrl ?? Constants.ErrorString,
+                 app.ContactEmail,
+                 _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
+                         ? Constants.ErrorString
+                         : app.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
+                 app.AppLicenses
+                     .Select(license => license.Licensetext)
+                     .FirstOrDefault() ?? Constants.ErrorString
+             ))
+             .SingleOrDefaultAsync();
 }

@@ -14,5 +14,5 @@ public interface ILanguageRepository
     /// </summary>
     /// <param name="languageCodes">the language codes that should be checked</param>
     /// <returns>Returns the found language codes</returns>
-    Task<List<string>> GetLanguageCodesUntrackedAsync(IEnumerable<string> languageCodes);
+    Task<List<string>> GetLanguageCodesUntrackedAsync(ICollection<string> languageCodes);
 }

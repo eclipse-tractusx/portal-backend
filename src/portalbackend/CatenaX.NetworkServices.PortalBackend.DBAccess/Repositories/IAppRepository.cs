@@ -141,4 +141,12 @@ public interface IAppRepository
     /// </summary>
     /// <returns>Returns an <see cref="IQueryable{ServiceDetailData}"/></returns>
     IQueryable<ServiceDetailData> GetActiveServices();
+
+    /// <summary>
+    /// Gets the service details for the given id
+    /// </summary>
+    /// <param name="serviceId">the service to get from the persistence storage</param>
+    /// <param name="languageShortName">the language short code for the descriptions</param>
+    /// <returns>Returns the ServiceDetailData or null</returns>
+    Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName);
 }
