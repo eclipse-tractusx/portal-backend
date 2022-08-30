@@ -245,6 +245,55 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Get Service Detail Data
+
+    [Fact]
+    public async Task GetServiceDetailsAsync_WithExistingServiceAndLanguageCode_ReturnsServiceDetailData()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var result = await sut.GetServiceDetailsAsync(_existingServiceId, "en");
+
+        // Assert
+        result.Id.Should().Be(_existingServiceId);
+    }
+
+    [Fact]
+    public async Task GetServiceDetailsAsync_WithoutExistingService_ThrowsException()
+    {
+        // Arrange
+        var notExistingServiceId = Guid.NewGuid();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.GetServiceDetailsAsync(notExistingServiceId, "en");
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        ex.Message.Should().Be($"Service {notExistingServiceId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetServiceDetailsAsync_WithoutExistingLanguageCode_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.GetServiceDetailsAsync(_existingServiceId, "gg");
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("languageCodes");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)

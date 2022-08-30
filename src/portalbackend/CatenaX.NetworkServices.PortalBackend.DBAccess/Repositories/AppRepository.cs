@@ -225,6 +225,8 @@ public class AppRepository : IAppRepository
                  app.Name ?? Constants.ErrorString,
                  app.Provider,
                  app.ThumbnailUrl ?? Constants.ErrorString,
+                 app.ContactEmail,
+                null,
             app.AppLicenses
                      .Select(license => license.Licensetext)
                      .FirstOrDefault() ?? Constants.ErrorString
