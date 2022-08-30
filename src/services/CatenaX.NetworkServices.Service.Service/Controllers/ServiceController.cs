@@ -68,10 +68,28 @@ public class ServiceController : ControllerBase
     /// <param name="data">The data for the new service offering.</param>
     /// <remarks>Example: POST: /api/services/addservice</remarks>
     /// <response code="200">Returns the newly created service id.</response>
+    /// <response code="400">The given service offering data were invalid.</response>
     [HttpPost]
     [Route("addservice")]
-    //[Authorize(Roles = "add_service_offering")]
+    [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status400BadRequest)]
     public Task<Guid> CreateServiceOffering([FromBody] ServiceOfferingData data) =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOffering(data, iamUserId));
+    
+    /// <summary>
+    /// Adds a new service subscription.
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
+    /// <remarks>Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
+    /// <response code="204">Returns success</response>
+    [HttpPost]
+    [Route("{serviceId}/subscribe")]
+    [Authorize(Roles = "subscribe_service")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    public async Task<NoContentResult> AddServiceSubscription([FromRoute] Guid serviceId)
+    {
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AddServiceSubscription(serviceId, iamUserId)).ConfigureAwait(false);
+        return this.NoContent();
+    }
 }

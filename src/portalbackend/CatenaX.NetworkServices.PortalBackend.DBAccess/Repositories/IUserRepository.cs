@@ -97,5 +97,5 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="salesManagerId">The id of the company user to check in the persistence layer.</param>
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId);
 }

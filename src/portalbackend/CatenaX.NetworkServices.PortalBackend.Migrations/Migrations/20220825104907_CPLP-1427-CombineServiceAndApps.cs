@@ -60,6 +60,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     app_id = table.Column<Guid>(type: "uuid", nullable: false),
                     app_subscription_status_id = table.Column<int>(type: "integer", nullable: false),
+                    app_instance_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    app_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     requester_id = table.Column<Guid>(type: "uuid", nullable: false),
                     last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
                     display_name = table.Column<string>(type: "character varying(256)", nullable: true),
