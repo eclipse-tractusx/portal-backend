@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Tests.Shared;
 using CatenaX.NetworkServices.Tests.Shared.Extensions;
 using FakeItEasy;
@@ -56,6 +57,7 @@ public class AppRepositoryTests
         // Arrange
         var apps = _fixture.Build<App>()
             .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
+            .With(a => a.AppTypeId, AppTypeId.APP)
             .CreateMany();
         var appsDbSet = apps.AsFakeDbSet();
         var languagesDbSet = new List<Language>().AsFakeDbSet();
