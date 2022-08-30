@@ -132,6 +132,6 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
-    /// <returns>Return Async Enumerable of App Data</returns>
-    Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
+    /// <returns>Return App Id</returns>
+    Task<Guid> GetAppByIdAsync(Guid appId, string userId);
 }

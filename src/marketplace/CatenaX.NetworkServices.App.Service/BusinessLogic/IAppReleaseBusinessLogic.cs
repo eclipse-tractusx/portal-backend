@@ -21,7 +21,7 @@
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.App.Service.InputModels;
 
-namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling app release-related operations. Includes persistence layer access.

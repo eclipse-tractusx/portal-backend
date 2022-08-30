@@ -27,7 +27,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IAppReleaseBusinessLogic"/>.
@@ -63,8 +63,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var (description, images) = await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
-        if (!description.Any() && !images.Any())
+        var appId= await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        if (appId == Guid.Empty)
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
         }
@@ -76,10 +76,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         });
         foreach (var item in updateModel.Descriptions)
         {
-            _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppDescription(appId, item.LanguageCode), appdesc =>
-           {
-               appdesc.DescriptionLong = item.LongDescription;
-           });
+            _portalRepositories.Attach(new AppDescription(appId, item.LanguageCode), appdesc =>
+            {
+                appdesc.DescriptionLong = item.LongDescription;
+            });
         }
         foreach (var record in updateModel.Images)
         {

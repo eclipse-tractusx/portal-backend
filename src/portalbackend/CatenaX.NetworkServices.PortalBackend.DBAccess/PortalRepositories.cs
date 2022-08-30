@@ -45,7 +45,6 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
         { typeof(IUserRepository), context => new UserRepository(context) },
         { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
-        
     };
 
     public PortalRepositories(PortalDbContext portalDbContext)
