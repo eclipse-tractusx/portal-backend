@@ -63,8 +63,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var appId= await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
-        if (appId == Guid.Empty)
+        var isappExist= await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        if (!isappExist)
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
         }
