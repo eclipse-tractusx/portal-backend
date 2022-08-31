@@ -128,4 +128,12 @@ public interface IAppsBusinessLogic
     /// <param name="appRequestModel"></param>
     /// <returns>Guid of the created app.</returns>
     Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
+    
+    /// <summary>
+    /// Update app status and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
 }

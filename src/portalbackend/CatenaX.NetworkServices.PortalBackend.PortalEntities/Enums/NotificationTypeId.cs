@@ -73,5 +73,10 @@ public enum NotificationTypeId : int
     /// <summary>
     /// Connector was registered
     /// </summary>
-    CONNECTOR_REGISTERED = 10
+    CONNECTOR_REGISTERED = 10,
+    
+    /// <summary>
+    /// App Release was requested
+    /// </summary>
+    APP_RELEASE_REQUEST = 11,
 }

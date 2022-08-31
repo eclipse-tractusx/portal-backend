@@ -215,4 +215,22 @@ public class AppRepository : IAppRepository
                        a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
                        ))
              .SingleOrDefaultAsync();
+
+    public Task<AppReleaseData> GetAppReleaseDataByIdAsync(Guid appId)
+    =>
+        _context.Apps
+            .AsNoTracking()
+            .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED)
+            .Select(c => new AppReleaseData(
+                c.Name,
+                c.ThumbnailUrl,
+                c.Provider,
+                c.SalesManagerId,
+                c.ProviderCompanyId,
+                c.AppStatusId,
+                c.DateLastChanged,
+                c.AppDescriptions.Select(d => new AppDescription(appId, d.LanguageShortName, d.DescriptionLong, d.DescriptionShort))
+            ))
+            .SingleOrDefaultAsync();
+    
 }
