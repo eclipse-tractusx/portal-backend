@@ -128,10 +128,17 @@ public interface IAppRepository
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>
-    /// Gey app data by AppId ,User Id and with status created
+    /// Get app data by AppId ,User Id and with status created
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns>Return Async Enumerable of App Data</returns>
     Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Get App Release data by App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <returns></returns>
+    Task<AppReleaseData> GetAppReleaseDataByIdAsync(Guid appId);
 }

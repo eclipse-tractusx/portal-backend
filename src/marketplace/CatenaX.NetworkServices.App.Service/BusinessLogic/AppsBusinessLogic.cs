@@ -112,7 +112,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
-        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+         var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
         if (appDetails == null)
         {
             throw new NotFoundException($"App {appId} does not exist");
@@ -340,5 +340,71 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
 
         return companyName;
+    }
+    
+    /// <inheritdoc/>
+    public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
+    {
+        var appDetails = await _portalRepositories.GetInstance<IAppRepository>().GetAppReleaseDataByIdAsync(appId).ConfigureAwait(false);
+        if (appDetails == null)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+        
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
+
+        if(appDetails.name is null || appDetails.provider is null || appDetails.thumbnailUrl is null 
+            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null || !appDetails.description.Any() )
+        {
+            var nullProperties = new List<string>();
+            if (appDetails.name is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.name)}");
+            }
+            if(appDetails.provider is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.provider)}");
+            }
+            if(appDetails.thumbnailUrl is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.thumbnailUrl)}");
+            }
+            if(appDetails.salesManagerId is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.salesManagerId)}");
+            }
+            if(appDetails.providerCompanyId is null)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
+            }
+            if(!appDetails.description.Any())
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.description)}");
+            }
+            throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+        }
+        _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
+        {
+            app.AppStatusId = AppStatusId.IN_REVIEW;
+            app.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+        if (appDetails.salesManagerId.HasValue)
+        {
+            var notificationContent = new
+            {
+                appId,
+                RequestorCompanyName = companyName 
+            };
+            _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.salesManagerId.Value, NotificationTypeId.APP_RELEASE_REQUEST, false,
+                notification =>
+                {
+                    notification.CreatorUserId = requesterId;
+                    notification.Content = JsonSerializer.Serialize(notificationContent);
+                }); 
+        }
+        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
