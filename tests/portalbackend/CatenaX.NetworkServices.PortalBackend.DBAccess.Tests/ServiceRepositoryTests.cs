@@ -53,13 +53,40 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
+    #region CreateService
+
+    [Fact]
+    public async Task CreateService_ReturnsExpectedAppCount()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateApp("Catena X", AppTypeId.SERVICE, service =>
+        {
+            service.Name = "Test Service";
+            service.ContactEmail = "test@email.com";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.Name.Should().Be("Test Service");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<App>().Which.Name.Should().Be("Test Service");
+    }
+
+    #endregion
+
     #region GetActiveServices
 
     [Fact]
     public async Task GetActiveServices_ReturnsExpectedAppCount()
     {
         // Arrange
-        var sut = await CreateSut();
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetActiveServices().ToListAsync();
@@ -77,7 +104,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut();
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetServiceDetailByIdUntrackedAsync(Guid.NewGuid(), "en");
@@ -90,7 +117,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_ReturnsServiceDetailData()
     {
         // Arrange
-        var sut = await CreateSut();
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "en");
@@ -104,11 +131,11 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    private async Task<AppRepository> CreateSut()
+    private async Task<(AppRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         _fixture.Inject(context);
         var sut = _fixture.Create<AppRepository>();
-        return sut;
+        return (sut, context);
     }
 }
