@@ -25,12 +25,14 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using Xunit.Extensions.AssemblyFixture;
 
-namespace CatenaX.NetworkServices.Tests.Shared.DatabaseRelatedTests;
+[assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
 
 public class TestDbFixture : IAsyncLifetime
 {
-    private PortalDbContext _context = null!;
+    // private PortalDbContext _context = null!;
     private readonly PostgreSqlTestcontainer _container;
 
     public TestDbFixture()
@@ -48,27 +50,17 @@ public class TestDbFixture : IAsyncLifetime
             .Build();
     }
 
-    public void Seed(params Action<PortalDbContext>[] seedActions)
+    /// <summary>
+    /// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
+    /// </summary>
+    /// <remarks>
+    /// In this method the migrations don't need to get executed since they are already on the testcontainer.
+    /// Because of that the EnsureCreatedAsync is enough.
+    /// </remarks>
+    /// <param name="seedActions">Additional data for the database</param>
+    /// <returns>Returns the created PortalDbContext</returns>
+    public async Task<PortalDbContext> GetPortalDbContext(params Action<PortalDbContext>[] seedActions)
     {
-        foreach (var seedAction in seedActions)
-        {
-            seedAction.Invoke(_context);
-        }
-
-        _context.SaveChanges();
-    }
-
-    public PortalDbContext GetPortalDbContext()
-    {
-        return _context;
-    }
-
-    /// <inheritdoc />
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync()
-            .ConfigureAwait(false);
-
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
         
         optionsBuilder.UseNpgsql(
@@ -76,10 +68,36 @@ public class TestDbFixture : IAsyncLifetime
             x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
-        _context = new PortalDbContext(optionsBuilder.Options);
-        await _context.Database.MigrateAsync();
-        BaseSeed.SeedBasedata().Invoke(_context);
-        await _context.SaveChangesAsync();
+        var context = new PortalDbContext(optionsBuilder.Options);
+        await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
+        foreach (var seedAction in seedActions)
+        {
+            seedAction.Invoke(context);
+        }
+
+        await context.SaveChangesAsync().ConfigureAwait(false);
+        return context;
+    }
+
+    /// <summary>
+    /// This method is used to initially setup the database and run all migrations
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync()
+            .ConfigureAwait(false);
+        
+        var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
+        
+        optionsBuilder.UseNpgsql(
+            _container.ConnectionString,
+            x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
+                .MigrationsHistoryTable("__efmigrations_history_portal")
+        );
+        var context = new PortalDbContext(optionsBuilder.Options);
+        await context.Database.MigrateAsync();
+        BaseSeed.SeedBasedata().Invoke(context);
+        await context.SaveChangesAsync();
     }
 
     /// <inheritdoc />
