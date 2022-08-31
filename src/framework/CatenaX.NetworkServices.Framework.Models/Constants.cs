@@ -34,4 +34,9 @@ public static class Constants
     /// The default language
     /// </summary>
     public const string DefaultLanguage = "en";
+
+    /// <summary>
+    /// Default value for Language Code Error String
+    /// </summary>
+    public const string LanguageCodeErrorString = "InvalidLanguage";
 }
