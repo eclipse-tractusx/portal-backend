@@ -118,7 +118,7 @@ public class AppRepository : IAppRepository
                 UseCases = a.UseCases.Select(u => u.Name),
                 LongDescription =
                     _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
-                    ? null
+                    ? Constants.LanguageCodeErrorString
                     : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
                       ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionLong,
                 Price = a.AppLicenses
