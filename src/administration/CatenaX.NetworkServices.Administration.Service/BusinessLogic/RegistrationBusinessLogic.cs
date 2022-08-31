@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -39,14 +40,22 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
+    private readonly INotificationService _notificationService;
 
-    public RegistrationBusinessLogic(IPortalRepositories portalRepositories, IOptions<RegistrationSettings> configuration, IProvisioningManager provisioningManager, ICustodianService custodianService, IMailingService mailingService)
+    public RegistrationBusinessLogic(
+        IPortalRepositories portalRepositories, 
+        IOptions<RegistrationSettings> configuration, 
+        IProvisioningManager provisioningManager, 
+        ICustodianService custodianService, 
+        IMailingService mailingService,
+        INotificationService notificationService)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
         _provisioningManager = provisioningManager;
         _custodianService = custodianService;
         _mailingService = mailingService;
+        _notificationService = notificationService;
     }
 
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
@@ -142,9 +151,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
 
-        await PostRegistrationWelcomeEmailAndCreateNotificationsAsync(userRolesRepository, applicationRepository, applicationId, creatorId).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
+        await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
+        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x)).ToArray();
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications).ConfigureAwait(false);
         if (assignedRoles == null) return true;
         
         var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
@@ -245,26 +254,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    private async Task PostRegistrationWelcomeEmailAndCreateNotificationsAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId, Guid creatorId)
+    private async Task PostRegistrationWelcomeEmailAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId)
     {
         var failedUserNames = new List<string>();
         var initialRolesData = await GetRoleData(userRolesRepository, _settings.CompanyAdminRoles).ConfigureAwait(false);
         await foreach (var user in applicationRepository.GetWelcomeEmailDataUntrackedAsync(applicationId, initialRolesData.Select(x => x.UserRoleId)).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-
-            if (user.HasRequestedRole)
-            {
-                foreach (var typeId in _settings.WelcomeNotificationTypeIds)
-                {
-                    _portalRepositories.GetInstance<INotificationRepository>().Create(user.CompanyUserId, typeId, false,
-                        notification =>
-                        {
-                            notification.CreatorUserId = creatorId;
-                        });
-                }
-            }
-
             if (string.IsNullOrWhiteSpace(user.Email))
             {
                 failedUserNames.Add(userName);

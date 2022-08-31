@@ -43,6 +43,7 @@
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.Template\CatenaX.NetworkServices.Mailing.Template.csproj" />
     <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />
+    <ProjectReference Include="..\..\notification\CatenaX.NetworkServices.Notification.Library\CatenaX.NetworkServices.Notification.Library.csproj" />
     <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.Library\CatenaX.NetworkServices.Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.DBAccess\CatenaX.NetworkServices.Provisioning.DBAccess.csproj" />

@@ -90,4 +90,11 @@ public interface IUserRepository
     /// <param name="userId">id of the iamUser</param>
     /// <returns>Returns the userId and email</returns>
     Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId);
+
+    /// <summary>
+    /// Gets all company user ids which have the any given user role assigned
+    /// </summary>
+    /// <param name="userRoleIds">User role ids</param>
+    /// <returns>Returns a list of the company user ids</returns>
+    Task<List<Guid>> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
 }
