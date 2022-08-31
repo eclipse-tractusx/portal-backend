@@ -22,21 +22,23 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Tests.Shared.DatabaseRelatedTests;
 using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using Xunit.Extensions.AssemblyFixture;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="ServiceRepositoryTests"/>
 /// </summary>
-public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
+// [Collection("Database collection")]
+public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
@@ -57,7 +59,7 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetActiveServices_ReturnsExpectedAppCount()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut();
 
         // Act
         var results = await sut.GetActiveServices().ToListAsync();
@@ -75,7 +77,7 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsNull()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut();
 
         // Act
         var results = await sut.GetServiceDetailByIdUntrackedAsync(Guid.NewGuid(), "en");
@@ -88,7 +90,7 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_ReturnsServiceDetailData()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "en");
@@ -102,9 +104,9 @@ public class ServiceRepositoryTests : IClassFixture<TestDbFixture>
 
     #endregion
 
-    private AppRepository CreateSut()
+    private async Task<AppRepository> CreateSut()
     {
-        var context = _dbTestDbFixture.GetPortalDbContext();
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         _fixture.Inject(context);
         var sut = _fixture.Create<AppRepository>();
         return sut;
