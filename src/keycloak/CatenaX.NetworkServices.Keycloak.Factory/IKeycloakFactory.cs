@@ -20,10 +20,11 @@
 
 using Keycloak.Net;
 
-namespace CatenaX.NetworkServices.Keycloak.Factory
+namespace CatenaX.NetworkServices.Keycloak.Factory;
+
+public interface IKeycloakFactory
 {
-    public interface IKeycloakFactory
-    {
-        KeycloakClient CreateKeycloakClient(string instance);
-    }
+    KeycloakClient CreateKeycloakClient(string instance);
+
+    KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret);
 }
