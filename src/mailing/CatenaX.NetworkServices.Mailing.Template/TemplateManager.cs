@@ -56,7 +56,7 @@ public class TemplateManager : ITemplateManager
         );
     }
 
-    private async Task<string> GetTemplateStringFromType(EmailTemplateType type)
+    private static async Task<string> GetTemplateStringFromType(EmailTemplateType type)
     {
         var path = typeof(EmailTemplateType)?
             .GetMember(type.ToString())?

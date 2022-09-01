@@ -52,8 +52,6 @@ builder.Services.AddHttpClient("bpn", c =>
     c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");
 });
 
-//builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
-
 builder.Build()
     .CreateApp<Program>("registration", VERSION)
     .Run();
