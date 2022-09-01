@@ -39,6 +39,6 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<CompanyWithAddress> GetOwnCompanyDetailsAsync(string iamUserId) =>
+    public async Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId) =>
         await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyDetailsAsync(iamUserId);
 }

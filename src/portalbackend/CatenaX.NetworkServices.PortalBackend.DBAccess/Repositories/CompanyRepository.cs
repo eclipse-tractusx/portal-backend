@@ -107,14 +107,14 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();
 
-    public Task<CompanyWithAddress> GetOwnCompanyDetailsAsync(string iamUserId) =>
+    public Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId) =>
         _context.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser.CompanyUser!.Company)
             .Select(company => new CompanyWithAddress(
                     company.Id,
-                    company!.Name,
+                    company.Name,
                     company.Address!.City,
                     company.Address!.Streetname,
                     company.Address!.CountryAlpha2Code)
