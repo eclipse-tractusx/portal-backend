@@ -45,12 +45,12 @@ public interface IAppReleaseRepository
     AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
     
     /// <summary>
-    /// Get company user id
+    /// Verify that user is linked to the appId
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<Guid> GetCompanyUserIdAsync(Guid appId,string userId);
+    Task<bool> IsProviderCompanyUserAsync(Guid appId,string userId);
     
     /// <summary>
     /// Add User Role for App Id
