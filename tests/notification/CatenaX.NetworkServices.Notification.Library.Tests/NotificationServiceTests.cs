@@ -27,6 +27,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
+using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Notification.Library.Tests;
 
@@ -77,9 +78,16 @@ public class NotificationServiceTests
             { ClientId, new []{ "CX Admin" } }
         };
         var sut = new NotificationService(_portalRepositories);
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new List<(string?, NotificationTypeId)>();
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO));
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), (default, NotificationTypeId.INFO)).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(1);
@@ -97,15 +105,19 @@ public class NotificationServiceTests
         var sut = new NotificationService(_portalRepositories);
 
         // Act
-        var notificationData = new []
+        var notificationContent = new
         {
-            (default(string), NotificationTypeId.WELCOME),
-            (default(string), NotificationTypeId.WELCOME_USE_CASES),
-            (default(string), NotificationTypeId.WELCOME_APP_MARKETPLACE),
-            (default(string), NotificationTypeId.WELCOME_SERVICE_PROVIDER),
-            (default(string), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION),
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
         };
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), notificationData).ConfigureAwait(false);
+        var content = new List<(string?, NotificationTypeId)>();
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME));
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_USE_CASES));
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_APP_MARKETPLACE));
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_SERVICE_PROVIDER));
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION));
+
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(5);
@@ -125,9 +137,16 @@ public class NotificationServiceTests
             { ClientId, new []{ "Company Admin" } }
         };
         var sut = new NotificationService(_portalRepositories);
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new List<(string?, NotificationTypeId)>();
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO));
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), (default, NotificationTypeId.INFO)).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(3);
@@ -146,9 +165,16 @@ public class NotificationServiceTests
             { ClientId, new []{ "Not Existing" } }
         };
         var sut = new NotificationService(_portalRepositories);
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new List<(string?, NotificationTypeId)>();
+        content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO));
 
         // Act
-        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), (default, NotificationTypeId.INFO)).ConfigureAwait(false);
+        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Action);
