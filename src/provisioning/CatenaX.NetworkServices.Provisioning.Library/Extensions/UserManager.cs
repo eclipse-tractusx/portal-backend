@@ -18,10 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
+using Keycloak.Net;
 using Keycloak.Net.Models.Users;
 using System.Text.Json;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -29,11 +30,12 @@ public partial class ProvisioningManager
 {
     public async Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
     {
-        var user = await _SharedIdp.GetUserAsync(realm, userId).ConfigureAwait(false);
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
+        var user = await sharedKeycloak.GetUserAsync(realm, userId).ConfigureAwait(false);
         user.FirstName = firstName;
         user.LastName = lastName;
         user.Email = email;
-        return await _SharedIdp.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
+        return await sharedKeycloak.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
     }
 
     public async Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email)
@@ -49,8 +51,11 @@ public partial class ProvisioningManager
         return true;
     }
 
-    public Task<bool> DeleteSharedRealmUserAsync(string realm, string userId) =>
-        _SharedIdp.DeleteUserAsync(realm, userId);
+    public async Task<bool> DeleteSharedRealmUserAsync(string realm, string userId)
+    {
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
+        return await sharedKeycloak.DeleteUserAsync(realm, userId).ConfigureAwait(false);
+    }
 
     public Task<bool> DeleteCentralRealmUserAsync(string userId) =>
         _CentralIdp.DeleteUserAsync(_Settings.CentralRealm, userId);
@@ -89,7 +94,7 @@ public partial class ProvisioningManager
             userId,
             alias);
 
-    private async Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile)
+    private async Task<string> CreateSharedRealmUserAsync(KeycloakClient keycloak, string realm, UserProfile profile)
     {
         var newUser = CloneUser(_Settings.SharedUser);
         newUser.UserName = profile.UserName;
@@ -97,10 +102,10 @@ public partial class ProvisioningManager
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
         newUser.Credentials ??= profile.Password == null ? null : Enumerable.Repeat( new Credentials { Type = "Password", Value = profile.Password }, 1);
-        var newUserId = await _SharedIdp.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
+        var newUserId = await keycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
         if (newUserId == null)
         {
-            throw new Exception($"failed to created shared user {profile.UserName} in realm {realm}");
+            throw new KeycloakNoSuccessException($"failed to created shared user {profile.UserName} in realm {realm}");
         }
         return newUserId;
     }
@@ -122,7 +127,7 @@ public partial class ProvisioningManager
         var newUserId = await _CentralIdp.CreateAndRetrieveUserIdAsync(_Settings.CentralRealm, newUser).ConfigureAwait(false);
         if (newUserId == null)
         {
-            throw new UnexpectedConditionException($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {profile.OrganisationName}");
+            throw new KeycloakNoSuccessException($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {profile.OrganisationName}");
         }
         return newUserId;
     }
@@ -135,7 +140,7 @@ public partial class ProvisioningManager
             UserName = sharedUserName
         }).ConfigureAwait(false))
         {
-            throw new UnexpectedConditionException($"failed to create link in between central user {centralUserId} and shared realm {alias} user {sharedUserId}");
+            throw new KeycloakNoSuccessException($"failed to create link in between central user {centralUserId} and shared realm {alias} user {sharedUserId}");
         }
     }
 

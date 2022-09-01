@@ -18,25 +18,37 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Keycloak.Net;
 using Microsoft.Extensions.Options;
 
-namespace CatenaX.NetworkServices.Keycloak.Factory
-{
-    public class KeycloakFactory : IKeycloakFactory
-    {
-        readonly KeycloakSettingsMap _Settings;
-        public KeycloakFactory(IOptions<KeycloakSettingsMap> settings)
-        {
-            _Settings = settings.Value;
-        }
+namespace CatenaX.NetworkServices.Keycloak.Factory;
 
-        public KeycloakClient CreateKeycloakClient(string instance)
+public class KeycloakFactory : IKeycloakFactory
+{
+    readonly KeycloakSettingsMap _Settings;
+    public KeycloakFactory(IOptions<KeycloakSettingsMap> settings)
+    {
+        _Settings = settings.Value;
+    }
+
+    public KeycloakClient CreateKeycloakClient(string instance)
+    {
+        if (!_Settings.TryGetValue(instance, out var settings))
         {
-            KeycloakSettings settings = _Settings[instance];
-            return settings.ClientSecret == null
-                ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
-                : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
+            throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
+        return settings.ClientSecret == null
+            ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
+            : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
+    }
+
+    public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret)
+    {
+        if (!_Settings.TryGetValue(instance, out var settings))
+        {
+            throw new ConfigurationException($"undefined keycloak instance '{instance}'");
+        }
+        return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.AuthRealm);
     }
 }

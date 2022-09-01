@@ -59,5 +59,5 @@ public interface IProvisioningManager
     ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
     ValueTask DeleteCentralIdentityProviderAsync(string alias);
     IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
-    ValueTask DeleteSharedRealmAsync(string alias);
+    ValueTask DeleteSharedIdpRealmAsync(string alias);
 }
