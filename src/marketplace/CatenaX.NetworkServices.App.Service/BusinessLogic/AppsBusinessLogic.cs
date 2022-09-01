@@ -404,9 +404,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             appId,
             RequestorCompanyName = companyName
         };
-        NotificationTypeId typeId;
+       
         string notificationTypeId = string.Concat(_settings.NotificationTypeIds.Select(x=>x).ToArray());
-        Enum.TryParse<NotificationTypeId>(notificationTypeId, out typeId);
+        NotificationTypeId typeId = Enum.Parse<NotificationTypeId>(notificationTypeId);
         var content = new []
         {
             (JsonSerializer.Serialize(notificationContent), typeId)
