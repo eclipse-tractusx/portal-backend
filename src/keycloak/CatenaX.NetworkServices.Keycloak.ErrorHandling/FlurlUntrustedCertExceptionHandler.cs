@@ -18,12 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using Flurl.Http;
+using Flurl.Http.Configuration;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Models;
+namespace CatenaX.NetworkServices.Keycloak.ErrorHandling;
 
-public class ClientSetupData
+public class FlurlUntrustedCertExceptionHandler
 {
-    [JsonPropertyName("redirectUrl")]
-    public string redirectUrl { get; set; } = null!;
+    public static void ConfigureExceptions(IEnumerable<string> urlsToTrust)
+    {
+        foreach (var urlToTrust in urlsToTrust)
+        {
+            FlurlHttp.ConfigureClient(urlToTrust, cli => cli.Settings.HttpClientFactory = new UntrustedCertHttpClientFactory());
+        }
+    }
+}
+
+public class UntrustedCertHttpClientFactory : DefaultHttpClientFactory
+{
+    public override HttpMessageHandler CreateMessageHandler() =>
+        new HttpClientHandler { ServerCertificateCustomValidationCallback = (_,_,_,_) => true };
 }

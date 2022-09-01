@@ -23,9 +23,6 @@
       <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />
       <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.ErrorHandling\CatenaX.NetworkServices.Keycloak.ErrorHandling.csproj" />
       <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Factory\CatenaX.NetworkServices.Keycloak.Factory.csproj" />
-      <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
-      <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.Template\CatenaX.NetworkServices.Mailing.Template.csproj" />
-      <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj" />
       <ProjectReference Include="..\CatenaX.NetworkServices.Framework.Swagger\CatenaX.NetworkServices.Framework.Swagger.csproj" />
     </ItemGroup>

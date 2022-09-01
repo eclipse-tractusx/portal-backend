@@ -21,8 +21,8 @@
 using CatenaX.NetworkServices.Framework.Cors;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.Factory;
 
-using CatenaX.NetworkServices.Keycloak.Factory.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,15 +33,22 @@ namespace CatenaX.NetworkServices.Framework.Web;
 public static class StartupServiceWebApplicationExtensions
 {
     
-    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, string? tag)
+    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version)
     {
         var debugEnabled = app.Configuration.GetValue<bool?>("DebugEnabled") != null &&
                            app.Configuration.GetValue<bool>("DebugEnabled");
         if (debugEnabled)
         {
             app.UseDeveloperExceptionPage();
-            KeycloakUntrustedCertExceptionHandler.ConfigureExceptions(app.Configuration.GetSection("Keycloak"));
+            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                .Select(config => new Uri(config.ConnectionString))
+                .Where(uri => uri.Scheme == "https")
+                .Select(uri => uri.Scheme + "://" + uri.Host)
+                .Distinct();
+            FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
         }
+
+        var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
 
         FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(),
             debugEnabled);
@@ -54,7 +61,7 @@ public static class StartupServiceWebApplicationExtensions
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint($"/api/{apiPath}/swagger/{version}/swagger.json",
-                    $"{tag} {version}");
+                    $"{assemblyName} {version}");
                 c.RoutePrefix = $"api/{apiPath}/swagger";
             });
         }
