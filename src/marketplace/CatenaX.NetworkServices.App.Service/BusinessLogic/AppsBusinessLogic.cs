@@ -407,10 +407,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
        
         string notificationTypeId = string.Concat(_settings.NotificationTypeIds.Select(x=>x).ToArray());
         NotificationTypeId typeId = Enum.Parse<NotificationTypeId>(notificationTypeId);
-        var content = new []
-        {
-            (JsonSerializer.Serialize(notificationContent), typeId)
-        };
+
+        var content = Enumerable.Repeat(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), typeId),1);
 
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
     }
