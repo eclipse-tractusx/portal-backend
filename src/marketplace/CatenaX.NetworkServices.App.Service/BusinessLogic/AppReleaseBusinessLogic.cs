@@ -98,7 +98,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<int> UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
+    public Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
         if (appId == Guid.Empty)
         {
@@ -164,9 +164,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdAsync(appId, userId).ConfigureAwait(false);
+        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().IsProviderCompanyUserAsync(appId, userId).ConfigureAwait(false);
 
-        if (companyUserId == Guid.Empty)
+        if (!companyUserId)
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
         }

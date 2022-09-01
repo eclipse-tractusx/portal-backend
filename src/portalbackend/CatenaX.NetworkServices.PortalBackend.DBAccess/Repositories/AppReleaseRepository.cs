@@ -46,38 +46,39 @@ public class AppReleaseRepository : IAppReleaseRepository
     public  Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId)
     =>
         _context.Apps
-             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED)
-             .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
-             .SingleOrDefaultAsync();
+            .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED)
+            .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
+            .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
     public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
         _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
     
     ///<inheritdoc/>
-    public Task<Guid> GetCompanyUserIdAsync(Guid appId, string userId) =>
+    public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>
         _context.Apps
-             .Where(a => a.Id == appId)
-             .Select(x => x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
-             .SingleOrDefaultAsync();
+            .AnyAsync(a => a.Id == appId && 
+            a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
 
     ///<inheritdoc/>
     public UserRole CreateAppUserRole(Guid appId, string role) =>
-         _context.UserRoles.Add(
+        _context.UserRoles.Add(
             new UserRole(
                 Guid.NewGuid(),
                 role,
                 appId
-            )).Entity;
+            ))
+            .Entity;
 
     ///<inheritdoc/>
     public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>
-               _context.UserRoleDescriptions.Add(
+        _context.UserRoleDescriptions.Add(
             new UserRoleDescription(
                 roleId,
                 languageCode,
                 description
-            )).Entity;
+            ))
+            .Entity;
     
 
 }
