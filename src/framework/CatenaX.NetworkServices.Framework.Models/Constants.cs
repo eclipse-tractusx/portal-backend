@@ -34,9 +34,4 @@ public static class Constants
     /// The default language
     /// </summary>
     public const string DefaultLanguage = "en";
-
-    /// <summary>
-    /// Default path for the mailing template section in the configuration file
-    /// </summary>
-    public const string MailingTemplates = "MailingService";
 }

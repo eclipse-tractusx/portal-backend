@@ -35,5 +35,5 @@ public class AuditCompanyUserAssignedRole : CompanyUserAssignedRole, IAuditEntit
     public AuditOperationId AuditOperationId { get; set; }
     
     /// <inheritdoc />
-    public new DateTimeOffset DateLastChanged { get; set; }
+    public DateTimeOffset DateLastChanged { get; set; }
 }

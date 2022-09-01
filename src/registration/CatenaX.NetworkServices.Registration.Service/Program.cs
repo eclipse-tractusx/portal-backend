@@ -18,17 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.DBAccess;
+using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.FileProviders;
 using CatenaX.NetworkServices.Framework.Web;
 
 var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,14 +38,13 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
-
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG)
-    .AddMailingAndTemplateManager(builder.Configuration);
+builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+                .AddMailingAndTemplateManager(builder.Configuration)
+                .AddPortalRepositories(builder.Configuration)
+                .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
-
-builder.Services.AddTransient<IRegistrationDBAccess, RegistrationDBAccess>();
 
 builder.Services.AddTransient<IBPNAccess, BPNAccess>();
 builder.Services.AddHttpClient("bpn", c =>
@@ -55,14 +52,8 @@ builder.Services.AddHttpClient("bpn", c =>
     c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");
 });
 
-builder.Services.AddTransient<IProvisioningManager, ProvisioningManager>()
-                .ConfigureProvisioningSettings(builder.Configuration.GetSection("Provisioning"));
-
-builder.Services.AddTransient<IDBConnectionFactories, PostgreConnectionFactories>()
-                .ConfigureDBConnectionSettingsMap(builder.Configuration.GetSection("DatabaseAccess"));
-
-builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
+//builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
 
 builder.Build()
-    .CreateApp<Program>("registration", VERSION, TAG)
+    .CreateApp<Program>("registration", VERSION)
     .Run();
