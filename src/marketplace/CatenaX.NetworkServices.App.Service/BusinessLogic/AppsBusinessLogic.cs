@@ -404,12 +404,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             appId,
             RequestorCompanyName = companyName
         };
-       
-        string notificationTypeId = string.Concat(_settings.NotificationTypeIds.Select(x=>x).ToArray());
-        NotificationTypeId typeId = Enum.Parse<NotificationTypeId>(notificationTypeId);
-
-        var content = Enumerable.Repeat(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), typeId),1);
-
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
+        var content = new List<(string?, NotificationTypeId)>();
+        foreach(var typeId in _settings.NotificationTypeIds)
+        {
+            content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), typeId));
+        }
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content.AsEnumerable()).ConfigureAwait(false);
+        
     }
 }
