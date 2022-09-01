@@ -43,7 +43,7 @@ public class NotificationService : INotificationService
     
     /// <inheritdoc />
     public async Task CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId,
-        params (string? content, NotificationTypeId notificationTypeId)[] notifications)
+        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications)
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
