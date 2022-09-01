@@ -283,17 +283,20 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 {
                     var creatorId = x.Arguments.Get<Guid?>("creatorId");
                     var notifications = x.Arguments.Get<(string? content, NotificationTypeId notificationTypeId)[]>("notifications");
-
-                    foreach (var notificationData in notifications)
+                    if(notifications is not null)
                     {
-                        var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
-                            DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
+                        foreach (var notificationData in notifications)
                         {
-                            CreatorUserId = creatorId,
-                            Content = notificationData.content
-                        };
-                        _notifications.Add(notification);
+                            var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
+                                DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
+                            {
+                                CreatorUserId = creatorId,
+                                Content = notificationData.content
+                            };
+                            _notifications.Add(notification);
+                        }
                     }
+                    
                 });
         }
 
