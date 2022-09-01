@@ -32,7 +32,7 @@ public class AddAuthFilter : IOperationFilter
     {
         var authorizeAttributes = context.MethodInfo
             .GetCustomAttributes(true)
-            .Concat(context.MethodInfo.DeclaringType?.GetCustomAttributes(true) ?? new object[0])
+            .Concat(context.MethodInfo.DeclaringType?.GetCustomAttributes(true) ?? Array.Empty<object>())
             .OfType<AuthorizeAttribute>()
             .ToList();
 

@@ -23,7 +23,7 @@ using Flurl.Http.Configuration;
 
 namespace CatenaX.NetworkServices.Keycloak.ErrorHandling;
 
-public class FlurlUntrustedCertExceptionHandler
+public static class FlurlUntrustedCertExceptionHandler
 {
     public static void ConfigureExceptions(IEnumerable<string> urlsToTrust)
     {

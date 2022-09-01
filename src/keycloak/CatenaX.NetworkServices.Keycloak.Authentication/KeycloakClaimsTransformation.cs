@@ -37,27 +37,24 @@ namespace CatenaX.NetworkServices.Keycloak.Authentication
         public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
             var resource_access = principal.Claims.FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
-            if (resource_access != null)
+            if ((resource_access != null) &&
+                ((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out JsonValue audience) ?? false) &&
+                ((audience as JsonObject)?.TryGetValue("roles", out JsonValue roles) ?? false) &&
+                roles is JsonArray)
             {
-                if((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out JsonValue audience) ?? false)
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity();
+                bool rolesAdded = false;
+                foreach(JsonValue role in roles)
                 {
-                    if (((audience as JsonObject)?.TryGetValue("roles", out JsonValue roles) ?? false) && roles is JsonArray)
+                    if (role.JsonType == JsonType.String)
                     {
-                        ClaimsIdentity claimsIdentity = new ClaimsIdentity();
-                        bool rolesAdded = false;
-                        foreach(JsonValue role in roles)
-                        {
-                            if (role.JsonType == JsonType.String)
-                            {
-                                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role,role));
-                                rolesAdded = true;
-                            }
-                        }
-                        if (rolesAdded)
-                        {
-                            principal.AddIdentity(claimsIdentity);
-                        }
+                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role,role));
+                        rolesAdded = true;
                     }
+                }
+                if (rolesAdded)
+                {
+                    principal.AddIdentity(claimsIdentity);
                 }
             }
             return Task.FromResult(principal);
