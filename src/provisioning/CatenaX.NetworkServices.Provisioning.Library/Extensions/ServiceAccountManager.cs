@@ -108,5 +108,5 @@ public partial class ProvisioningManager
     }
 
     private string GetServiceAccountClientId(string realm) =>
-        string.Concat(_Settings.ServiceAccountClientPrefix, "-", realm);
+        _Settings.ServiceAccountClientPrefix + realm;
 }
