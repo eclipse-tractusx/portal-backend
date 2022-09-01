@@ -35,6 +35,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.Notification.Library;
 
 var VERSION = "v2";
 var TAG = typeof(Program).Namespace;
@@ -90,6 +91,9 @@ builder.Services.AddTransient<IMailingService, MailingService>()
                 .ConfigureTemplateSettings(builder.Configuration.GetSection(TemplateSettings.Position))
                 .ConfigureMailSettings(builder.Configuration.GetSection(MailSettings.Position));
 
+builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .ConfigureAppsSettings(builder.Configuration.GetSection("Apps"));
+builder.Services.AddTransient<INotificationService, NotificationService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
