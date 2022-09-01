@@ -28,6 +28,8 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using CatenaX.NetworkServices.Notification.Library;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -38,16 +40,22 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
+    private readonly INotificationService _notificationService;
+    private readonly AppsSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService)
+    /// <param name="notificationService">Notification service.</param>
+    /// <param name="configuration">configuration service.</param>
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOptions<AppsSettings> configuration)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
+        _notificationService = notificationService;
+        _settings = configuration.Value;
     }
 
     /// <inheritdoc/>
@@ -390,21 +398,20 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             app.AppStatusId = AppStatusId.IN_REVIEW;
             app.DateLastChanged = DateTimeOffset.UtcNow;
         });
-        if (appDetails.salesManagerId.HasValue)
+
+        var notificationContent = new
         {
-            var notificationContent = new
-            {
-                appId,
-                RequestorCompanyName = companyName 
-            };
-            _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.salesManagerId.Value, NotificationTypeId.APP_RELEASE_REQUEST, false,
-                notification =>
-                {
-                    notification.CreatorUserId = requesterId;
-                    notification.Content = JsonSerializer.Serialize(notificationContent);
-                }); 
-        }
-        
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            appId,
+            RequestorCompanyName = companyName
+        };
+        NotificationTypeId typeId;
+        string notificationTypeId = string.Concat(_settings.NotificationTypeIds.Select(x=>x).ToArray());
+        Enum.TryParse<NotificationTypeId>(notificationTypeId, out typeId);
+        var content = new []
+        {
+            (JsonSerializer.Serialize(notificationContent), typeId)
+        };
+
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
     }
 }
