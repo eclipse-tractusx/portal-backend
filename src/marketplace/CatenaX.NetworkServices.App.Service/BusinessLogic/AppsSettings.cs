@@ -41,7 +41,6 @@ public static class AppsSettingsExtension
     /// </summary>
     /// <param name="services"></param>
     /// <param name="section"></param>
-    /// <param name="AppsSettings"></param>
     /// <returns></returns>
     public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
