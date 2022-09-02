@@ -152,7 +152,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 RequestorCompanyName = companyName,
                 UserEmail = requesterEmail,
             };
-            _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(appDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
                 notification =>
                 {
                     notification.CreatorUserId = requesterId;
@@ -191,7 +191,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
         subscription.AppSubscriptionStatusId = AppSubscriptionStatusId.ACTIVE;
 
-        _portalRepositories.GetInstance<INotificationRepository>().Create(subscription.RequesterId,
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(subscription.RequesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
             {
@@ -410,6 +410,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), typeId));
         }
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content.AsEnumerable()).ConfigureAwait(false);
-        
+
     }
 }

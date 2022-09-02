@@ -55,12 +55,14 @@ public class NotificationService : INotificationService
             throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
 
-        var receiverIds = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData).ConfigureAwait(false);
-        foreach (var receiver in receiverIds)
+        var notificationList = notifications.ToList();
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData))
         {
-            foreach (var notificationData in notifications)
+            foreach (var notificationData in notificationList)
             {
-                _portalRepositories.GetInstance<INotificationRepository>().Create(
+                notificationRepository.CreateNotification(
                     receiver,
                     notificationData.notificationTypeId,
                     false,

@@ -99,5 +99,5 @@ public interface IUserRepository
     /// </summary>
     /// <param name="userRoleIds">User role ids</param>
     /// <returns>Returns a list of the company user ids</returns>
-    Task<List<Guid>> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
+    IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
 }

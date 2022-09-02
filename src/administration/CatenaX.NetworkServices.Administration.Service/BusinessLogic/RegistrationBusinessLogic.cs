@@ -28,8 +28,8 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
-using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -152,8 +152,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
-        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x)).ToArray();
+
+        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications).ConfigureAwait(false);
+
         if (assignedRoles == null) return true;
         
         var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles

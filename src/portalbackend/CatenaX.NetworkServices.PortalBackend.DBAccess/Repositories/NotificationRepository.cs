@@ -41,7 +41,7 @@ public class NotificationRepository : INotificationRepository
     }
 
     /// <inheritdoc />
-    public Notification Create(Guid receiverUserId, NotificationTypeId notificationTypeId,
+    public Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
         bool isRead, Action<Notification>? setOptionalParameter = null)
     {
         var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,

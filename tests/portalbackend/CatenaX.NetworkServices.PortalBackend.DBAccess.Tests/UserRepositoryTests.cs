@@ -160,7 +160,7 @@ public class UserRepositoryTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCompanyUserWithRoleId(new List<Guid>{ userRoles.First().Id });
+        var result = await sut.GetCompanyUserWithRoleId(new List<Guid>{ userRoles.First().Id }).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
