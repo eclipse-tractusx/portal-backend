@@ -99,7 +99,7 @@ public partial class ProvisioningManager
         return newClientId;
     }
 
-    private async Task<string> GetInternalClientIdOfSharedIdpServiceAccount(KeycloakClient keycloak, string clientId)
+    private static async Task<string> GetInternalClientIdOfSharedIdpServiceAccount(KeycloakClient keycloak, string clientId)
     {
         var internalClientId = (await keycloak.GetClientsAsync("master", clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
         if (internalClientId == null)
