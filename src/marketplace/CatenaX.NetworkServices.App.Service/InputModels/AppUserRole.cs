@@ -18,12 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+namespace CatenaX.NetworkServices.App.Service.InputModels;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Models;
+/// <summary>
+/// Model for Role
+/// </summary>
+/// <param name="role"></param>
+/// <param name="descriptions"></param>
+/// <returns></returns>
+public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
 
-public class ClientSetupData
-{
-    [JsonPropertyName("redirectUrl")]
-    public string redirectUrl { get; set; } = null!;
-}
+/// <summary>
+/// Model for Role Description
+/// </summary>
+/// <param name="languageCode"></param>
+/// <param name="description"></param>
+/// <returns></returns>
+public record AppUserRoleDescription(string languageCode, string description);
+

@@ -43,5 +43,30 @@ public interface IAppReleaseRepository
     /// <param name="documentId"></param>
     /// <returns></returns>
     AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+    
+    /// <summary>
+    /// Verify that user is linked to the appId
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<bool> IsProviderCompanyUserAsync(Guid appId,string userId);
+    
+    /// <summary>
+    /// Add User Role for App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    UserRole CreateAppUserRole(Guid appId, string role);
+    
+    /// <summary>
+    /// Add User Role for App Description
+    /// </summary>
+    /// <param name="roleId"></param>
+    /// <param name="languageCode"></param>
+    /// <param name="description"></param>
+    /// <returns></returns>
+    UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
 
 }
