@@ -57,8 +57,8 @@ public class AppReleaseRepository : IAppReleaseRepository
     ///<inheritdoc/>
     public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>
         _context.Apps
-            .AnyAsync(a => a.Id == appId && 
-            a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
+            .AnyAsync(a => a.Id == appId
+                && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
 
     ///<inheritdoc/>
     public UserRole CreateAppUserRole(Guid appId, string role) =>
@@ -79,6 +79,4 @@ public class AppReleaseRepository : IAppReleaseRepository
                 description
             ))
             .Entity;
-    
-
 }

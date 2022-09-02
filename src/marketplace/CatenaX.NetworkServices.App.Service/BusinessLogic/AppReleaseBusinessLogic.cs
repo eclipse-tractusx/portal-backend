@@ -137,7 +137,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 var documentContent = ms.GetBuffer();
                 if (ms.Length != document.Length || documentContent.Length != document.Length)
                 {
-                    throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+                    throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                 }
                 var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
                 _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
@@ -151,12 +151,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if (appId == Guid.Empty)
         {
-            throw new ArgumentException($"AppId must not be empty");
+            throw new ControllerArgumentException($"AppId must not be empty");
         }
         var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !String.IsNullOrWhiteSpace(item.languageCode)).Distinct();
         if (!descriptions.Any())
         {
-            throw new ArgumentException($"Language Code must not be empty");
+            throw new ControllerArgumentException($"Language Code must not be empty");
         }
 
         return InsertAppUserRoleAsync(appId, appAssignedDesc, userId);
@@ -164,23 +164,21 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().IsProviderCompanyUserAsync(appId, userId).ConfigureAwait(false);
+        var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
 
-        if (!companyUserId)
+        if (!await appReleaseRepository.IsProviderCompanyUserAsync(appId, userId).ConfigureAwait(false))
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
         }
 
         foreach (var indexItem in appAssignedDesc)
         {
-            var appRole = _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppUserRole(appId, indexItem.role);
+            var appRole = appReleaseRepository.CreateAppUserRole(appId, indexItem.role);
             foreach (var item in indexItem.descriptions)
             {
-                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
+                appReleaseRepository.CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
             }
         }
-        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
-
