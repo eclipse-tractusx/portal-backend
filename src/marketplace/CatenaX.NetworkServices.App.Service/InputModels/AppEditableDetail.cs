@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.App.Service.InputModels;
+namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 
 /// <summary>
 /// Model for updating an app.

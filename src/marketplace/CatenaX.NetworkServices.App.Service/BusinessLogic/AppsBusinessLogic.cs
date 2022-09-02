@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Mailing.SendMail;

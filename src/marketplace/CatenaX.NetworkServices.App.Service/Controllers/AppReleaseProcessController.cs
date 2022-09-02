@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -27,7 +27,7 @@ using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.App.Service.Controllers;
+namespace CatenaX.NetworkServices.Apps.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for updating applications.
