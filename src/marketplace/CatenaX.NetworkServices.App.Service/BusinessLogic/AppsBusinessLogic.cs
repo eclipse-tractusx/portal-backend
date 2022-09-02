@@ -258,17 +258,26 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
-            throw new ControllerArgumentException($"Company Id must be specified", nameof(appRequestModel.ProviderCompanyId)); 
+            throw new ArgumentException($"Company Id  does not exist"); 
         }
-        if (!appRequestModel.SupportedLanguageCodes.Any())
+
+        var languageCodes = appRequestModel.SupportedLanguageCodes.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
+        if (!languageCodes.Any())
         {
-            throw new ControllerArgumentException($"Language Codes must not be empty", nameof(appRequestModel.SupportedLanguageCodes)); 
+            throw new ArgumentException($"Language Code does not exist"); 
         }
-        if (!appRequestModel.UseCaseIds.Any())
+        
+        var useCaseIds = appRequestModel.UseCaseIds.Where(item => !string.IsNullOrWhiteSpace(item)).Distinct().ToList();
+        if (!useCaseIds.Any())
         {
-            throw new ControllerArgumentException($"Use Cases must not be empty", nameof(appRequestModel.UseCaseIds)); 
+            throw new ArgumentException($"Use Case does not exist");
         }
-        return CreateAppAsync(appRequestModel);
+        
+        if (useCaseIds.Any(item => !Guid.TryParse(item, out _)))
+        {
+            throw new ArgumentException($"Use Case does not exist");
+        }
+        return  this.CreateAppAsync(appRequestModel);
     }
     
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
@@ -282,16 +291,25 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
             app.AppStatusId = AppStatusId.CREATED;
         }).Id;
+
         appRepository.AddAppDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
               (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-              (appId, uc)));
+              (appId, Guid.Parse(uc))));
         var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
         appRepository.CreateAppAssignedLicense(appId, licenseId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return appId;
+
+        try
+        {
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            return appId;
+        }
+        catch(Exception exception)when (exception?.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
+        {
+            throw new NotFoundException($"language code or UseCaseId does not exist");
+        }
     }
     
     private async Task<string> GetCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)

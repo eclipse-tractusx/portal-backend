@@ -19,32 +19,29 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.App.Service.InputModels;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
-/// Business logic for handling app release-related operations. Includes persistence layer access.
+/// Repository for accessing apps on persistence layer.
 /// </summary>
-public interface IAppReleaseBusinessLogic
+public interface IAppReleaseRepository
 {
     /// <summary>
-    /// Update an App
+    /// Return the Company User Id
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="updateModel"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
+    Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId);
     
     /// <summary>
-    /// Upload document for given company user for appId
+    /// Add app Id and Document Id in App Assigned Document table 
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="documentTypeId"></param>
-    /// <param name="document"></param>
-    /// <param name="userId"></param>
+    /// <param name="documentId"></param>
     /// <returns></returns>
-    Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId);
+    AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+
 }
