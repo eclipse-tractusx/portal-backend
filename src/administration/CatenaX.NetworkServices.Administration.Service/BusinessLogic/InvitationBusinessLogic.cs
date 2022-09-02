@@ -28,6 +28,7 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
+
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
 {
     public class InvitationBusinessLogic : IInvitationBusinessLogic

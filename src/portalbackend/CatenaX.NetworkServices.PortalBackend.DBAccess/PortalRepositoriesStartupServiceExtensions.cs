@@ -18,12 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
 
-public class ClientSetupData
+public static class PortalRepositoriesStartupServiceExtensions
 {
-    [JsonPropertyName("redirectUrl")]
-    public string redirectUrl { get; set; } = null!;
+    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration) =>
+        services.AddTransient<IPortalRepositories, PortalRepositories>()
+            .AddDbContext<PortalDbContext>(o => o.UseNpgsql(configuration.GetConnectionString("PortalDB")));
 }
