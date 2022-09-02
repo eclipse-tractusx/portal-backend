@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
    <None Update="EmailTemplates\appprovider_subscription_request.html">
      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
    </None>

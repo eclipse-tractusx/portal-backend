@@ -6,8 +6,8 @@ namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 /// Model for requesting creation of an application.
 /// </summary>
 public class AppInputModel
-{
-    /// <summary>
+{   
+     /// <summary>
     /// Private constructor.
     /// </summary>
     private AppInputModel()
@@ -18,7 +18,7 @@ public class AppInputModel
         Descriptions = new HashSet<LocalizedDescription>();
         SupportedLanguageCodes = new HashSet<string>();
     }
-
+    
     /// <summary>
     /// Constructor.
     /// </summary>

@@ -38,17 +38,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Swagger\CatenaX.NetworkServices.Framework.Swagger.csproj" />
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj" />
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Web\CatenaX.NetworkServices.Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
-    <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.Template\CatenaX.NetworkServices.Mailing.Template.csproj" />
-    <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.Library\CatenaX.NetworkServices.Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.DBAccess\CatenaX.NetworkServices.Provisioning.DBAccess.csproj" />
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj" />
-    <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.ErrorHandling\CatenaX.NetworkServices.Keycloak.ErrorHandling.csproj" />
   </ItemGroup>
 
 <ItemGroup>
