@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,12 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-public class ClientSetupData
+public interface IInvitationRepository
 {
-    [JsonPropertyName("redirectUrl")]
-    public string redirectUrl { get; set; } = null!;
+    IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
+    Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
 }
