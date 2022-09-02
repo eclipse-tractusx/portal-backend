@@ -18,16 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
@@ -65,7 +62,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var isappExist= await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        var isappExist= await _portalRepositories.GetInstance<IAppRepository>().IsAppProviderUserAsync(appId, userId).ConfigureAwait(false);
         if (!isappExist)
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
@@ -139,4 +136,3 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
     }
 }
-

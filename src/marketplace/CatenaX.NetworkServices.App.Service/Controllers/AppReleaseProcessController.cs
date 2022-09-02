@@ -21,7 +21,6 @@
 using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;

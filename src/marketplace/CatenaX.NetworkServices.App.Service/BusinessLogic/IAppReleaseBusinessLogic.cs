@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
