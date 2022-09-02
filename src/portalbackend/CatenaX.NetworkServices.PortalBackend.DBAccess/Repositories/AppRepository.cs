@@ -193,11 +193,10 @@ public class AppRepository : IAppRepository
             .AsAsyncEnumerable();
 
      /// <inheritdoc />
-    public  Task<bool> GetAppByIdAsync(Guid appId, string userId)
-    =>
+    public Task<bool> IsAppProviderUserAsync(Guid appId, string userId) =>
         _context.Apps
             .AnyAsync(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
-            && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
+                && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
        
     /// <inheritdoc />
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>

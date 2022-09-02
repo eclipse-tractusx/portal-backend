@@ -133,5 +133,5 @@ public interface IAppRepository
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns>Return App Id</returns>
-    Task<bool> GetAppByIdAsync(Guid appId, string userId);
+    Task<bool> IsAppProviderUserAsync(Guid appId, string userId);
 }
