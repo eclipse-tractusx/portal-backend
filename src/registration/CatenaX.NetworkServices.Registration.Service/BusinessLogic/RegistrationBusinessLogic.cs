@@ -150,7 +150,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 throw new ArgumentException("City must not be empty");
             }
-            if (String.IsNullOrWhiteSpace(companyWithAddress.Streetname))
+            if (String.IsNullOrWhiteSpace(companyWithAddress.StreetName))
             {
                 throw new ArgumentException("Streetname must not be empty");
             }
@@ -178,14 +178,14 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             {
                 company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
                         companyWithAddress.City,
-                        companyWithAddress.Streetname,
+                        companyWithAddress.StreetName,
                         companyWithAddress.CountryAlpha2Code
                     );
             }
             else
             {
                 company.Address.City = companyWithAddress.City;
-                company.Address.Streetname = companyWithAddress.Streetname;
+                company.Address.Streetname = companyWithAddress.StreetName;
                 company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
             }
             company.Address.Zipcode = companyWithAddress.Zipcode;
