@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.App.Service.InputModels;
+namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 
 /// <summary>
 /// Simple model to specify descriptions for a language.

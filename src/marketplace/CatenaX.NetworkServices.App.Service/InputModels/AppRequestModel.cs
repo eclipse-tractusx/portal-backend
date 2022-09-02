@@ -1,4 +1,4 @@
-namespace CatenaX.NetworkServices.App.Service.InputModels;
+namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 
 /// <summary>
 /// Request Model for App Creation.

@@ -22,7 +22,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;

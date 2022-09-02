@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
