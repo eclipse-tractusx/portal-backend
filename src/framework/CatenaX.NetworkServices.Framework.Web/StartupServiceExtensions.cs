@@ -18,30 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json.Serialization;
 using CatenaX.NetworkServices.Framework.Cors;
-using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Framework.Swagger;
 using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Keycloak.Factory;
-using CatenaX.NetworkServices.Mailing.SendMail;
-using CatenaX.NetworkServices.Mailing.Template;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices(this IServiceCollection services, IConfigurationRoot configuration, string version, string? tag, bool addAuthorization = true)
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version)
     {
         services.AddCors(options => options.SetupCors(configuration));
 
@@ -50,7 +43,7 @@ public static class StartupServiceExtensions
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
             });
 
-        services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen(c, version, tag));
+        services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen<TProgram>(c, version));
 
         services.AddAuthentication(x =>
         {
@@ -62,42 +55,27 @@ public static class StartupServiceExtensions
             {
                 options.BackchannelHttpHandler = new HttpClientHandler
                 {
-                    ServerCertificateCustomValidationCallback = ( requestMessage, certificate, chain, sslErrors) => true
+                    ServerCertificateCustomValidationCallback = (_,_,_,_) => true
                 };
             }
         });
 
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        if(addAuthorization)
-        {
-            services.AddTransient<IAuthorizationHandler, ClaimRequestPathHandler>()
+        services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
+            .AddOptions<JwtBearerOptions>()
+            .Bind(configuration.GetSection("JwtBearerOptions"))
+            .ValidateOnStart();
+
+        return services;
+    }
+
+    public static IServiceCollection AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration) =>
+        services.AddTransient<IAuthorizationHandler, ClaimRequestPathHandler>()
             .AddAuthorization(option =>
             {
                 option.AddPolicy("CheckTenant",
                     policy => { policy.AddRequirements(new ClaimRequestPathRequirement("tenant", "tenant")); });
             })
             .AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-            
-            services.AddTransient<IKeycloakFactory, KeycloakFactory>()
-                .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"));
-        }
-
-        services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
-            .AddOptions<JwtBearerOptions>()
-            .Bind(configuration.GetSection("JwtBearerOptions"))
-            .ValidateOnStart();
-
-        services.AddTransient<IPortalRepositories, PortalRepositories>();
-        services.AddDbContext<PortalDbContext>(o => o.UseNpgsql(configuration.GetConnectionString("PortalDB")));
-
-        return services;
-    }
-
-    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddTransient<IMailingService, MailingService>()
-            .AddTransient<ISendMail, SendMail>()
-            .AddTransient<ITemplateManager, TemplateManager>()
-            .ConfigureTemplateSettings(configuration.GetSection(Constants.MailingTemplates))
-            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
 }

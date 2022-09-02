@@ -214,15 +214,15 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.Id == companyUserId
                                   && companyUser.Company!.CompanyUsers.Any(companyUser =>
                                       companyUser.IamUser!.UserEntityId == adminUserId))
-            .Select(companyUser => new CompanyIamUser
+            .Select(companyUser => new CompanyIamUser(
+                companyUser.CompanyId,
+                companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
+                    companyUserAssignedRole.UserRoleId))
             {
                 TargetIamUserId = companyUser.IamUser!.UserEntityId,
                 IdpName = companyUser.Company!.IdentityProviders
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault(),
-                RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
-                    companyUserAssignedRole.UserRoleId),
-                CompanyId = companyUser.CompanyId
+                    .SingleOrDefault()
             }).SingleOrDefaultAsync();
 
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
