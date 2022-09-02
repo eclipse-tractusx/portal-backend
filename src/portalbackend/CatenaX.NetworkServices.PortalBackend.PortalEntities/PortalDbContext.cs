@@ -105,7 +105,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
     public virtual DbSet<AuditService> AuditServices { get; set; } = default!;
-    
+    public virtual DbSet<AppAssignedDocument> AppAssignedDocuments { get; set; } = default!;
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -257,6 +257,24 @@ public class PortalDbContext : DbContext
                     j =>
                     {
                         j.HasKey(e => new { e.AppId, e.UseCaseId });
+                    });
+            
+            entity.HasMany(p => p.Documents)
+                .WithMany(p => p.Apps)
+                .UsingEntity<AppAssignedDocument>(
+                    j => j
+                        .HasOne(d => d.Document!)
+                        .WithMany()
+                        .HasForeignKey(d => d.DocumentId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.App!)
+                        .WithMany()
+                        .HasForeignKey(d => d.AppId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.AppId, e.DocumentId });
                     });
 
             entity.HasMany(p => p.CompanyAssignedApps)
