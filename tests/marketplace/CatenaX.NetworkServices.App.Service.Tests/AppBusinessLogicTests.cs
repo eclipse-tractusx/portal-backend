@@ -20,7 +20,7 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
+using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
