@@ -1,3 +1,4 @@
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using Xunit;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -49,7 +50,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests
                 );
             mockContext.SaveChanges();
 
-            var backendDBAccess = new PortalBackendDBAccess(mockContext);
+            var backendDBAccess = new InvitationRepository(mockContext);
             //Act
             var results = backendDBAccess.GetInvitedUserDetailsUntrackedAsync(id);
 

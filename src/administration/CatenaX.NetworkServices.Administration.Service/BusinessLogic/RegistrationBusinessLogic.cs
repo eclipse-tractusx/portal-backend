@@ -51,7 +51,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
     {
-        if (applicationId == default)
+        if (applicationId == Guid.Empty)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }

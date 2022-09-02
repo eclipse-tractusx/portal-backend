@@ -233,12 +233,12 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     .Select(companyUser => new CompanyUserData(
                     companyUser.IamUser!.UserEntityId,
                     companyUser.Id,
-                    companyUser.CompanyUserStatusId)
+                    companyUser.CompanyUserStatusId,
+                    companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
                 {
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
-                    Email = companyUser.Email,
-                    Roles = companyUser.UserRoles.Select(userRole => userRole.UserRoleText)
+                    Email = companyUser.Email
                 })
                 .AsAsyncEnumerable()));
         }
