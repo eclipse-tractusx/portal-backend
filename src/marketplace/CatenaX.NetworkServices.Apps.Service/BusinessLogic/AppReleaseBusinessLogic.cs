@@ -75,7 +75,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ConflictException($"app {appId} is not in status CREATED");
         }
-        _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
+        _portalRepositories.Attach(new App(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
             app.ContactNumber = updateModel.ContactNumber;
