@@ -12,6 +12,7 @@ on:
 
     branches:
       - 'main'
+      - 'feature/CPLP-1432_add-latest-tag-at-image-build'
   workflow_dispatch:
 
 env:
@@ -50,7 +51,7 @@ jobs:
           file: docker/Dockerfile-administration-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
