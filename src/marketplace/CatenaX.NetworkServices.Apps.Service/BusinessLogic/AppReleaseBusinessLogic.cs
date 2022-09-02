@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.Apps.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
@@ -97,7 +97,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    public Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
         if (appId == Guid.Empty)
         {
@@ -116,10 +116,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
         }
-        return UploadAppDoc(appId, documentTypeId, document, userId);
+        return UploadAppDoc(appId, documentTypeId, document, userId, cancellationToken);
     }
 
-    private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId)
+    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
         var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
@@ -131,17 +131,53 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             using (var ms = new MemoryStream((int)document.Length))
             {
-                document.CopyTo(ms);
+                await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
                 var hash = sha512Hash.ComputeHash(ms);
                 var documentContent = ms.GetBuffer();
                 if (ms.Length != document.Length || documentContent.Length != document.Length)
                 {
-                    throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+                    throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                 }
                 var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
                 _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
-                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                return await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
         }
+    }
+    
+    /// <inheritdoc/>
+    public Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
+    {
+        if (appId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"AppId must not be empty");
+        }
+        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !String.IsNullOrWhiteSpace(item.languageCode)).Distinct();
+        if (!descriptions.Any())
+        {
+            throw new ControllerArgumentException($"Language Code must not be empty");
+        }
+
+        return InsertAppUserRoleAsync(appId, appAssignedDesc, userId);
+    }
+
+    private async Task InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
+    {
+        var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
+
+        if (!await appReleaseRepository.IsProviderCompanyUserAsync(appId, userId).ConfigureAwait(false))
+        {
+            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
+        }
+
+        foreach (var indexItem in appAssignedDesc)
+        {
+            var appRole = appReleaseRepository.CreateAppUserRole(appId, indexItem.role);
+            foreach (var item in indexItem.descriptions)
+            {
+                appReleaseRepository.CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
+            }
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
