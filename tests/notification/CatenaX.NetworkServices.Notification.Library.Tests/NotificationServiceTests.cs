@@ -194,13 +194,13 @@ public class NotificationServiceTests
             .Returns(new List<Guid>().ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == UserRoleId))))
-            .Returns(new List<Guid> { UserId1, UserId2, UserId3 });
+            .Returns(new List<Guid> { UserId1, UserId2, UserId3 }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == CxAdminRoleId))))
-            .Returns(new List<Guid> { CxAdminUserId });
+            .Returns(new List<Guid> { CxAdminUserId }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId))))
-            .Returns(new List<Guid>());
+            .Returns(new List<Guid>().ToAsyncEnumerable());
 
-        A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
             .Invokes(x =>
             {
                 var receiverId = x.Arguments.Get<Guid>("receiverUserId");
