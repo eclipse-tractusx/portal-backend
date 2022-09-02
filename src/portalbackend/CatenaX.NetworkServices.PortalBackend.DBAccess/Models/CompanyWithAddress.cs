@@ -23,11 +23,11 @@ using System.Text.Json.Serialization;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public record CompanyWithAddress(
-    [property: JsonPropertyName("companyId")] Guid companyId,
-    [property: JsonPropertyName("name")] string name,
-    [property: JsonPropertyName("city")] string city,
-    [property: JsonPropertyName("streetName")] string streetName,
-    [property: JsonPropertyName("countryAlpha2Code")] string countryAlpha2Code)
+    [property: JsonPropertyName("companyId")] Guid CompanyId,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("city")] string City,
+    [property: JsonPropertyName("streetName")] string StreetName,
+    [property: JsonPropertyName("countryAlpha2Code")] string CountryAlpha2Code)
 {
     [JsonPropertyName("bpn")]
     public string? BusinessPartnerNumber { get; set; }
