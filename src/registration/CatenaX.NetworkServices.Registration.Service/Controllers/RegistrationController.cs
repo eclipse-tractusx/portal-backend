@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.Keycloak.Authentication;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.Model;
@@ -111,23 +131,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId) =>
            this.WithIamUserId(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId,user));
-
-        /// <summary>
-        /// Sets the idp to the given company
-        /// </summary>
-        /// <param name="idpToSet">Information to set the idp</param>
-        /// <returns>Returns OK</returns>
-        /// <remarks>Example: Put: /api/registration/idp</remarks>
-        /// <response code="200">Successfully set the idp</response>
-        [HttpPut]
-        [Authorize(Roles = "invite_user")]
-        [Route("idp")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> SetIdpAsync([FromBody] SetIdp idpToSet)
-        {
-            await _registrationBusinessLogic.SetIdpAsync(idpToSet).ConfigureAwait(false);
-            return Ok();
-        }
 
         /// <summary>
         /// Get all composite client roles

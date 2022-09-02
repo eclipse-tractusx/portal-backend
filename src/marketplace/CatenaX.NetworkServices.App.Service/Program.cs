@@ -19,11 +19,12 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
+using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
 using CatenaX.NetworkServices.Framework.Web;
 
 var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,12 +36,13 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG, false)
-                .AddMailingAndTemplateManager(builder.Configuration);
+builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+                .AddMailingAndTemplateManager(builder.Configuration)
+                .AddPortalRepositories(builder.Configuration);
 
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Build()
-    .CreateApp<Program>("apps", VERSION, TAG)
+    .CreateApp<Program>("apps", VERSION)
     .Run();

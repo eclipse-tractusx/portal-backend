@@ -20,10 +20,10 @@
 
 using CatenaX.NetworkServices.Framework.Web;
 using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,12 +35,13 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", false, false);
 }
 
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG);
+builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+                .AddPortalRepositories(builder.Configuration);
 
 builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>();
 
 builder.Build()
-    .CreateApp<Program>("notification", VERSION, TAG)
+    .CreateApp<Program>("notification", VERSION)
     .Run();
 
 /// <summary>

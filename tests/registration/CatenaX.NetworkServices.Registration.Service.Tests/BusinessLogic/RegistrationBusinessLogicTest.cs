@@ -1,3 +1,23 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using AutoFixture;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -7,7 +27,6 @@ using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Registration.Service.Model;
-using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using FakeItEasy;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
@@ -25,7 +44,6 @@ public class RegistrationBusinessLogicTest
     public RegistrationBusinessLogicTest()
     {
         _fixture = new Fixture();
-        var dbAccess = A.Fake<IRegistrationDBAccess>();
         var mailingService = A.Fake<IMailingService>();
         var bpnAccess = A.Fake<IBPNAccess>();
         _provisioningManager = A.Fake<IProvisioningManager>();
@@ -36,7 +54,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => portalRepositories.GetInstance<IInvitationRepository>())
             .Returns(_invitationRepository);
-        this._logic = new RegistrationBusinessLogic(settings, dbAccess, mailingService, bpnAccess, _provisioningManager, logger, portalRepositories);
+        this._logic = new RegistrationBusinessLogic(settings, mailingService, bpnAccess, _provisioningManager, logger, portalRepositories);
     }
 
     [Fact]

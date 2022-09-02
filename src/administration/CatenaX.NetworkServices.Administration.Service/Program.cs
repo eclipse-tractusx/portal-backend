@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -29,7 +30,6 @@ using Microsoft.Extensions.FileProviders;
 using CatenaX.NetworkServices.Framework.Web;
 
 var VERSION = "v2";
-var TAG = typeof(Program).Namespace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,12 +41,11 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
     builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
 }
 
-builder.Services.AddDefaultServices(builder.Configuration, VERSION, TAG)
-                .AddMailingAndTemplateManager(builder.Configuration);
+builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+                .AddMailingAndTemplateManager(builder.Configuration)
+                .AddPortalRepositories(builder.Configuration)
+                .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddTransient<IProvisioningManager, ProvisioningManager>()
-                .ConfigureProvisioningSettings(builder.Configuration.GetSection("Provisioning"));
-                    
 builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
                 .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
 
@@ -79,5 +78,5 @@ builder.Services.AddDbContext<ProvisioningDBContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
 builder.Build()
-    .CreateApp<Program>("administration", VERSION, TAG)
+    .CreateApp<Program>("administration", VERSION)
     .Run();

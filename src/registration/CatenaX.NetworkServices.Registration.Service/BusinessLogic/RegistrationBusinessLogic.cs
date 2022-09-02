@@ -1,4 +1,24 @@
-﻿using CatenaX.NetworkServices.Framework.ErrorHandling;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -9,7 +29,6 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Registration.Service.BPN;
 using CatenaX.NetworkServices.Registration.Service.BPN.Model;
 using CatenaX.NetworkServices.Registration.Service.Model;
-using CatenaX.NetworkServices.Registration.Service.RegistrationAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
@@ -21,7 +40,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
     public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         private readonly RegistrationSettings _settings;
-        private readonly IRegistrationDBAccess _dbAccess;
         private readonly IMailingService _mailingService;
         private readonly IBPNAccess _bpnAccess;
         private readonly IProvisioningManager _provisioningManager;
@@ -30,7 +48,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
         public RegistrationBusinessLogic(
             IOptions<RegistrationSettings> settings, 
-            IRegistrationDBAccess registrationDbAccess, 
             IMailingService mailingService, 
             IBPNAccess bpnAccess, 
             IProvisioningManager provisioningManager, 
@@ -38,7 +55,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             IPortalRepositories portalRepositories)
         {
             _settings = settings.Value;
-            _dbAccess = registrationDbAccess;
             _mailingService = mailingService;
             _bpnAccess = bpnAccess;
             _provisioningManager = provisioningManager;
@@ -59,9 +75,6 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
 
             return _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
         }
-
-        public Task SetIdpAsync(SetIdp idpToSet) =>
-            _dbAccess.SetIdp(idpToSet);
 
         public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
         {
