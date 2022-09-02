@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\administration\CatenaX.NetworkServices.Administration.Service\CatenaX.NetworkServices.Administration.Service.csproj" />
-    <ProjectReference Include="..\..\..\src\marketplace\CatenaX.NetworkServices.App.Service\CatenaX.NetworkServices.App.Service.csproj" />
+    <ProjectReference Include="..\..\..\src\marketplace\CatenaX.NetworkServices.Apps.Service\CatenaX.NetworkServices.Apps.Service.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\shared\CatenaX.NetworkServices.Tests.Shared\CatenaX.NetworkServices.Tests.Shared.csproj" />
   </ItemGroup>
