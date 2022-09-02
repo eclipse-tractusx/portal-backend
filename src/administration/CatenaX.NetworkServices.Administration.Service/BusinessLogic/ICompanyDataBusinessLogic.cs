@@ -18,13 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Keycloak.Net;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.Keycloak.Factory;
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
-public interface IKeycloakFactory
+public interface ICompanyDataBusinessLogic
 {
-    KeycloakClient CreateKeycloakClient(string instance);
-
-    KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret);
+    Task<CompanyWithAddress> GetOwnCompanyDetailsAsync(string iamUserId);
 }

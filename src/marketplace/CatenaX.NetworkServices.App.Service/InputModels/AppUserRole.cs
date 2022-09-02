@@ -18,13 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Keycloak.Net;
+namespace CatenaX.NetworkServices.App.Service.InputModels;
 
-namespace CatenaX.NetworkServices.Keycloak.Factory;
+/// <summary>
+/// Model for Role
+/// </summary>
+/// <param name="role"></param>
+/// <param name="descriptions"></param>
+/// <returns></returns>
+public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
 
-public interface IKeycloakFactory
-{
-    KeycloakClient CreateKeycloakClient(string instance);
+/// <summary>
+/// Model for Role Description
+/// </summary>
+/// <param name="languageCode"></param>
+/// <param name="description"></param>
+/// <returns></returns>
+public record AppUserRoleDescription(string languageCode, string description);
 
-    KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret);
-}

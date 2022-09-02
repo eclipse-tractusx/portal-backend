@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
@@ -27,252 +26,270 @@ using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net;
 using Microsoft.Extensions.Options;
 
-namespace CatenaX.NetworkServices.Provisioning.Library
+namespace CatenaX.NetworkServices.Provisioning.Library;
+
+public partial class ProvisioningManager : IProvisioningManager
 {
-    public partial class ProvisioningManager : IProvisioningManager
+    private readonly KeycloakClient _CentralIdp;
+    private readonly IKeycloakFactory _Factory;
+    private readonly IProvisioningDBAccess? _ProvisioningDBAccess;
+    private readonly ProvisioningSettings _Settings;
+
+    public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<ProvisioningSettings> options)
     {
-        private readonly KeycloakClient _CentralIdp;
-        private readonly KeycloakClient _SharedIdp;
-        private readonly IProvisioningDBAccess? _ProvisioningDBAccess;
-        private readonly ProvisioningSettings _Settings;
+        _CentralIdp = keycloakFactory.CreateKeycloakClient("central");
+        _Factory = keycloakFactory;
+        _Settings = options.Value;
+        _ProvisioningDBAccess = provisioningDBAccess;
+    }
 
-        public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<ProvisioningSettings> options)
+    public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options)
+        : this(keycloakFactory, null, options)
+    {
+    }
+
+    public async Task SetupSharedIdpAsync(string idpName, string organisationName)
+    {
+        await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
+
+        var (clientId, secret) = await CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
+        var sharedKeycloak = _Factory.CreateKeycloakClient("shared", clientId, secret);
+
+        await CreateSharedRealmAsync(sharedKeycloak, idpName, organisationName).ConfigureAwait(false);
+
+        await UpdateCentralIdentityProviderUrlsAsync(idpName, await sharedKeycloak.GetOpenIDConfigurationAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
+
+        await CreateSharedRealmIdentityProviderClientAsync(sharedKeycloak, idpName, new IdentityProviderClientConfig(
+            await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false)+"/*",
+            await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
+        )).ConfigureAwait(false);
+
+        await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false);
+    }
+
+    public async ValueTask DeleteSharedIdpRealmAsync(string alias)
+    {
+        var sharedKeycloak = _Factory.CreateKeycloakClient("shared");
+        if (! await sharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false))
         {
-            _CentralIdp = keycloakFactory.CreateKeycloakClient("central");
-            _SharedIdp = keycloakFactory.CreateKeycloakClient("shared");
-            _Settings = options.Value;
-            _ProvisioningDBAccess = provisioningDBAccess;
+            throw new KeycloakNoSuccessException($"failed to delete shared realm {alias}");
+        }
+        await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
+    }
+
+    public async Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol)
+    {
+        var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderAsync(idpName, organisationName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
+
+        return idpName;
+    }
+
+    public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile)
+    {
+        var sharedKeycloak = await GetSharedKeycloakClient(idpName).ConfigureAwait(false);
+        var userIdShared = await CreateSharedRealmUserAsync(sharedKeycloak, idpName, userProfile).ConfigureAwait(false);
+
+        if (userIdShared == null)
+        {
+            throw new KeycloakNoSuccessException($"failed to created user {userProfile.UserName} in shared realm {idpName}");
         }
 
-        public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options)
-            : this(keycloakFactory, null, options)
+        var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile(
+            idpName + "." + userIdShared,
+            userProfile.Email,
+            userProfile.OrganisationName) {
+                FirstName = userProfile.FirstName,
+                LastName = userProfile.LastName,
+                BusinessPartnerNumber = userProfile.BusinessPartnerNumber
+            }).ConfigureAwait(false);
+
+        if (userIdCentral == null)
         {
+            throw new KeycloakNoSuccessException($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
         }
 
-        public async Task SetupSharedIdpAsync(string idpName, string organisationName)
+        await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);
+
+        return userIdCentral;
+    }
+
+    public async Task<string> SetupClientAsync(string redirectUrl)
+    {
+        var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
+        var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
+        await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
+        return clientId;
+    }
+
+    public async Task AddBpnAttributetoUserAsync(string userId, IEnumerable<string> bpns)
+    {
+        var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+        user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
+        user.Attributes[_Settings.MappedBpnAttribute] = (user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
+            ? existingBpns.Concat(bpns).Distinct()
+            : bpns;
+        if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))
         {
-            await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
+            throw new KeycloakNoSuccessException($"failed to set bpns {bpns} for central user {userId}");
+        }
+    }
 
-            await CreateSharedRealmAsync(idpName, organisationName).ConfigureAwait(false);
-
-            await UpdateCentralIdentityProviderUrlsAsync(idpName, await GetSharedRealmOpenIDConfigAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
-
-            await CreateSharedRealmIdentityProviderClientAsync(idpName, new IdentityProviderClientConfig(
-                await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false)+"/*",
-                await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
-            )).ConfigureAwait(false);
-
-            await EnableCentralIdentityProviderAsync(idpName).ConfigureAwait(false);
+    public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
+    {
+        var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+        
+        if (user.Attributes == null || !user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
+        {
+            throw new KeycloakEntityNotFoundException($"attribute {_Settings.MappedBpnAttribute} not found in the mappers of user {userId}");
         }
 
-        public async Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol)
+        user.Attributes[_Settings.MappedBpnAttribute] = existingBpns.Where(bpn => bpn != businessPartnerNumber);
+
+        if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false))
         {
-            var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-
-            await CreateCentralIdentityProviderAsync(idpName, organisationName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
-
-            return idpName;
+            throw new KeycloakNoSuccessException($"failed to delete bpn for central user {userId}");
         }
 
-        public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile)
-        {
-            var userIdShared = await CreateSharedRealmUserAsync(idpName, userProfile).ConfigureAwait(false);
+    }
 
-            if (userIdShared == null)
+    public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)
+    {
+        var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
+        if (providerUserId == null)
+        {
+            throw new KeycloakEntityNotFoundException($"userId {userId} is not linked to shared realm {realm}");
+        }
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
+        return await sharedKeycloak.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
+    }
+
+    public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
+    {
+        var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
+        return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
+            .Where(r => r.Composite == true).Select(x => x.Name);
+    }
+
+    public async ValueTask<bool> IsCentralIdentityProviderEnabled(string alias)
+    {
+        return (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).Enabled ?? false;
+    }
+
+    public async ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
+        return new IdentityProviderConfigOidc(
+            identityProvider.DisplayName,
+            redirectUri,
+            identityProvider.Config.ClientId,
+            identityProvider.Enabled ?? false,
+            identityProvider.Config.AuthorizationUrl,
+            IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
+            identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
+    }
+
+    public async ValueTask UpdateSharedIdentityProviderAsync(string alias, string displayName)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        identityProvider.DisplayName = displayName;
+        var sharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
+        await UpdateSharedRealmAsync(sharedKeycloak, alias, displayName).ConfigureAwait(false);
+        await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+    }
+
+    public async ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        identityProvider.Enabled = enabled;
+        identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
+        var sharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
+        await SetSharedRealmStatusAsync(sharedKeycloak, alias, enabled).ConfigureAwait(false);
+        await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+    }
+
+    public async ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        identityProvider.Enabled = enabled;
+        identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
+        await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+    }        
+
+    public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+    {
+        if(identityProviderConfigOidc.Secret == null)
+        {
+            switch(identityProviderConfigOidc.ClientAuthMethod)
             {
-                throw new UnexpectedConditionException($"failed to created user {userProfile.UserName} in shared realm {idpName}");
+                case IamIdentityProviderClientAuthMethod.SECRET_BASIC:
+                case IamIdentityProviderClientAuthMethod.SECRET_POST:
+                case IamIdentityProviderClientAuthMethod.SECRET_JWT:
+                    throw new ArgumentException($"secret must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
+                default:
+                    break;
             }
-
-            var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile(
-                idpName + "." + userIdShared,
-                userProfile.Email,
-                userProfile.OrganisationName) {
-                    FirstName = userProfile.FirstName,
-                    LastName = userProfile.LastName,
-                    BusinessPartnerNumber = userProfile.BusinessPartnerNumber
-                }).ConfigureAwait(false);
-
-            if (userIdCentral == null)
+        }
+        if(!identityProviderConfigOidc.SignatureAlgorithm.HasValue)
+        {
+            switch(identityProviderConfigOidc.ClientAuthMethod)
             {
-                throw new UnexpectedConditionException($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
-            }
-
-            await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);
-
-            return userIdCentral;
-        }
-
-        public async Task<string> SetupClientAsync(string redirectUrl)
-        {
-            var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
-            var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
-            await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
-            return clientId;
-        }
-
-        public async Task AddBpnAttributetoUserAsync(string userId, IEnumerable<string> bpns)
-        {
-            var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
-            if (user == null)
-            {
-                throw new Exception($"failed to retrieve central user {userId}");
-            }
-            user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
-            user.Attributes[_Settings.MappedBpnAttribute] = (user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
-                ? existingBpns.Concat(bpns).Distinct()
-                : bpns;
-            if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))
-            {
-                throw new Exception($"failed to set bpns {bpns} for central user {userId}");
+                case IamIdentityProviderClientAuthMethod.SECRET_JWT:
+                case IamIdentityProviderClientAuthMethod.JWT:
+                    throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
+                default:
+                    break;
             }
         }
+        return UpdateCentralIdentityProviderDataOIDCInternalAsync(identityProviderConfigOidc);
+    }
 
-        public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
-        {
-            var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
-            
-            if (user.Attributes == null || !user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
-            {
-                throw new KeycloakEntityNotFoundException($"attribute {_Settings.MappedBpnAttribute} not found in the mappers of user {userId}");
-            }
+    private async ValueTask UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
+    {
+        var (alias, displayName, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
+        var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
+        identityProvider.DisplayName = displayName;
+        identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
+        identityProvider.Config.ClientId = clientId;
+        identityProvider.Config.ClientSecret = secret;
+        identityProvider.Config.ClientAssertionSigningAlg = signatureAlgorithm?.ToString();
+        await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+    }
 
-            user.Attributes[_Settings.MappedBpnAttribute] = existingBpns.Where(bpn => bpn != businessPartnerNumber);
+    public async ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
+        return new IdentityProviderConfigSaml(
+            identityProvider.DisplayName,
+            redirectUri,
+            identityProvider.Config.ClientId,
+            identityProvider.Enabled ?? false,
+            identityProvider.Config.EntityId,
+            identityProvider.Config.SingleSignOnServiceUrl);
+    }
 
-            if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false))
-            {
-                throw new Exception($"failed to delete bpn for central user {userId}");
-            }
+    public async ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml)
+    {
+        var (alias, displayName, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        identityProvider.DisplayName = displayName;
+        identityProvider.Config.EntityId = entityId;
+        identityProvider.Config.SingleSignOnServiceUrl = singleSignOnServiceUrl;
+        await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+    }
 
-        }
-
-        public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)
-        {
-            var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
-            if (providerUserId == null)
-            {
-                throw new ArgumentOutOfRangeException($"userId {userId} is not linked to shared realm {realm}");
-            }
-            return await _SharedIdp.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
-        }
-
-        public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
-        {
-            var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
-            return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
-                .Where(r => r.Composite == true).Select(x => x.Name);
-        }
-
-        public async ValueTask<bool> IsCentralIdentityProviderEnabled(string alias)
-        {
-            return (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).Enabled ?? false;
-        }
-
-        public async ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
-        {
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            var redirectUri = await GetCentralBrokerEndpointOIDCAsync(alias).ConfigureAwait(false);
-            return new IdentityProviderConfigOidc(
-                identityProvider.DisplayName,
-                redirectUri,
-                identityProvider.Config.ClientId,
-                identityProvider.Enabled ?? false,
-                identityProvider.Config.AuthorizationUrl,
-                IdentityProviderClientAuthTypeToIamClientAuthMethod(identityProvider.Config.ClientAuthMethod),
-                identityProvider.Config.ClientAssertionSigningAlg == null ? null : Enum.Parse<IamIdentityProviderSignatureAlgorithm>(identityProvider.Config.ClientAssertionSigningAlg));
-        }
-
-        public async ValueTask UpdateSharedIdentityProviderAsync(string alias, string displayName)
-        {
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            identityProvider.DisplayName = displayName;
-            await UpdateSharedRealmAsync(alias, displayName).ConfigureAwait(false);
-            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
-        }
-
-        public async ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled)
-        {
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            identityProvider.Enabled = enabled;
-            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
-            await SetSharedRealmStatusAsync(alias, enabled).ConfigureAwait(false);
-            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
-        }
-
-        public async ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled)
-        {
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            identityProvider.Enabled = enabled;
-            identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
-            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
-        }        
-
-        public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
-        {
-            if(identityProviderConfigOidc.Secret == null)
-            {
-                switch(identityProviderConfigOidc.ClientAuthMethod)
-                {
-                    case IamIdentityProviderClientAuthMethod.SECRET_BASIC:
-                    case IamIdentityProviderClientAuthMethod.SECRET_POST:
-                    case IamIdentityProviderClientAuthMethod.SECRET_JWT:
-                        throw new ArgumentException($"secret must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
-                    default:
-                        break;
-                }
-            }
-            if(!identityProviderConfigOidc.SignatureAlgorithm.HasValue)
-            {
-                switch(identityProviderConfigOidc.ClientAuthMethod)
-                {
-                    case IamIdentityProviderClientAuthMethod.SECRET_JWT:
-                    case IamIdentityProviderClientAuthMethod.JWT:
-                        throw new ArgumentException($"signatureAlgorithm must not be null for clientAuthMethod {identityProviderConfigOidc.ClientAuthMethod.ToString()}");
-                    default:
-                        break;
-                }
-            }
-            return UpdateCentralIdentityProviderDataOIDCInternalAsync(identityProviderConfigOidc);
-        }
-
-        private async ValueTask UpdateCentralIdentityProviderDataOIDCInternalAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
-        {
-            var (alias, displayName, metadataUrl, clientAuthMethod, clientId, secret, signatureAlgorithm) = identityProviderConfigOidc;
-            var identityProvider = await SetIdentityProviderMetadataFromUrlAsync(await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false), metadataUrl).ConfigureAwait(false);
-            identityProvider.DisplayName = displayName;
-            identityProvider.Config.ClientAuthMethod = IamIdentityProviderClientAuthMethodToInternal(clientAuthMethod);
-            identityProvider.Config.ClientId = clientId;
-            identityProvider.Config.ClientSecret = secret;
-            identityProvider.Config.ClientAssertionSigningAlg = signatureAlgorithm?.ToString();
-            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
-        }
-
-        public async ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias)
-        {
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            var redirectUri = await GetCentralBrokerEndpointSAMLAsync(alias).ConfigureAwait(false);
-            return new IdentityProviderConfigSaml(
-                identityProvider.DisplayName,
-                redirectUri,
-                identityProvider.Config.ClientId,
-                identityProvider.Enabled ?? false,
-                identityProvider.Config.EntityId,
-                identityProvider.Config.SingleSignOnServiceUrl);
-        }
-
-        public async ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml)
-        {
-            var (alias, displayName, entityId, singleSignOnServiceUrl) = identityProviderEditableConfigSaml;
-            var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-            identityProvider.DisplayName = displayName;
-            identityProvider.Config.EntityId = entityId;
-            identityProvider.Config.SingleSignOnServiceUrl = singleSignOnServiceUrl;
-            await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
-        }
+    private async Task<KeycloakClient> GetSharedKeycloakClient(string realm)
+    {
+        var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(false);
+        return _Factory.CreateKeycloakClient("shared", clientId, secret);
     }
 }
