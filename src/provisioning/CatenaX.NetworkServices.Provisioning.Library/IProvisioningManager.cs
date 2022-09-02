@@ -37,7 +37,7 @@ public interface IProvisioningManager
     Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias);
     Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
     Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
-    Task<bool> DeleteSharedRealmUserAsync(string idpName, string userIdShared);
+    Task<bool> DeleteSharedRealmUserAsync(string realm, string userId);
     Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
     Task<string> SetupClientAsync(string redirectUrl);
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
@@ -59,5 +59,5 @@ public interface IProvisioningManager
     ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
     ValueTask DeleteCentralIdentityProviderAsync(string alias);
     IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
-    ValueTask DeleteSharedRealmAsync(string alias);
+    ValueTask DeleteSharedIdpRealmAsync(string alias);
 }

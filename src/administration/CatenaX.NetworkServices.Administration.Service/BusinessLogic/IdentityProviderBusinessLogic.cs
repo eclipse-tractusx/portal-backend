@@ -304,7 +304,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 _portalRepositories.Remove(new IamIdentityProvider(alias, Guid.Empty));
                 if (category == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                 {
-                    await _provisioningManager.DeleteSharedRealmAsync(alias).ConfigureAwait(false);
+                    await _provisioningManager.DeleteSharedIdpRealmAsync(alias).ConfigureAwait(false);
                 }
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(false);
             }
