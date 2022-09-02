@@ -33,6 +33,9 @@ public static class ConnectorsSettingsExtensions
         IConfigurationSection section
         )
     {
-        return services.Configure<ConnectorsSettings>(x => section.Bind(x));
+        services.AddOptions<ConnectorsSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        return services;
     }
 }
