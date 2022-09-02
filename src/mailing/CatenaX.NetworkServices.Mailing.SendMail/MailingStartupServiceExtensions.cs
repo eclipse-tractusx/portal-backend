@@ -18,12 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.Mailing.Template;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Models;
+namespace CatenaX.NetworkServices.Mailing.SendMail;
 
-public class ClientSetupData
+public static class MailingStartupServiceExtensions
 {
-    [JsonPropertyName("redirectUrl")]
-    public string redirectUrl { get; set; } = null!;
+    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
+        services.AddTransient<IMailingService, MailingService>()
+            .AddTransient<ISendMail, SendMail>()
+            .AddTransient<ITemplateManager, TemplateManager>()
+            .ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position))
+            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
 }
