@@ -113,11 +113,11 @@ public class CompanyRepository : ICompanyRepository
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser.CompanyUser!.Company)
             .Select(company => new CompanyWithAddress(
-                    company.Id,
-                    company.Name,
-                    company.Address!.City,
-                    company.Address!.Streetname,
-                    company.Address!.CountryAlpha2Code)
+                company!.Id,
+                company.Name,
+                company.Address!.City,
+                company.Address!.Streetname,
+                company.Address!.CountryAlpha2Code)
             {
                 BusinessPartnerNumber = company.BusinessPartnerNumber,
                 Region = company.Address!.Region,

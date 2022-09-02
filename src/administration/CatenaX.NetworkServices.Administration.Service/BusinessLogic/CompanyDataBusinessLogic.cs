@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
- 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -39,6 +39,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId) =>
-        await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyDetailsAsync(iamUserId);
+    public async Task<CompanyWithAddress> GetOwnCompanyDetailsAsync(string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyDetailsAsync(iamUserId).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new ConflictException($"user {iamUserId} is not associated with any company");
+        }
+        return result;
+    }
 }
