@@ -62,9 +62,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        if (!await _portalRepositories.GetInstance<IAppRepository>().IsAppProviderUserAsync(appId, userId).ConfigureAwait(false))
+        var appResult = await _portalRepositories.GetInstance<IAppRepository>().IsAppCreatedAndProviderUserAsync(appId, userId).ConfigureAwait(false);
+        if (appResult == default)
         {
-            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
+            throw new NotFoundException($"app {appId} does not exist");
+        }
+        if (!appResult.IsProviderUser)
+        {
+            throw new ForbiddenException($"user {userId} is not eligible to edit app {appId}");
+        }
+        if (!appResult.IsAppCreated)
+        {
+            throw new ConflictException($"app {appId} is not in status CREATED");
         }
         _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
         {

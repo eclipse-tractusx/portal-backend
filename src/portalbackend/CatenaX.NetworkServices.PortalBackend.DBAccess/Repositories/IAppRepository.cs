@@ -128,10 +128,12 @@ public interface IAppRepository
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>
-    /// Gey app data by AppId ,User Id and with status created
+    /// Check whether the app is in status created and whether the
+    /// loggedin user belongs to the apps provider company
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
-    /// <returns>Return App Id</returns>
-    Task<bool> IsAppProviderUserAsync(Guid appId, string userId);
+    /// <returns>ValueTuple, first item is true if the app is in status CREATED,
+    /// second item is true if the user is eligible to edit it</returns>
+    Task<(bool IsAppCreated, bool IsProviderUser)> IsAppCreatedAndProviderUserAsync(Guid appId, string userId);
 }
