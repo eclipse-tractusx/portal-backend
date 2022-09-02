@@ -22,8 +22,8 @@ namespace CatenaX.NetworkServices.Mailing.Template
             {
                 var template = _settings.Templates[id];
                 return new Mail(
-                    replaceValues(template.Subject,parameters),
-                    replaceValues(template.EmailTemplateType.HasValue 
+                    ReplaceValues(template.Subject,parameters),
+                    ReplaceValues(template.EmailTemplateType.HasValue 
                         ? GetTemplateStringFromPath(GetTemplatePathFromType(template.EmailTemplateType.Value))
                         : template.Body,parameters),
                     template.EmailTemplateType.HasValue
@@ -48,9 +48,8 @@ namespace CatenaX.NetworkServices.Mailing.Template
         private static string GetTemplateStringFromPath(string path) =>
             File.ReadAllText(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path);
 
-        private string replaceValues(string template, IDictionary<string,string> parameters)
-        {
-            return Regex.Replace(
+        private static string ReplaceValues(string template, IDictionary<string,string> parameters) => 
+            Regex.Replace(
                 template,
                 @"\{(\w+)\}", //replaces any text surrounded by { and }
                 m =>
@@ -59,6 +58,5 @@ namespace CatenaX.NetworkServices.Mailing.Template
                     return parameters.TryGetValue(m.Groups[1].Value, out value) ? value : "null";
                 }
             );
-        }
     }
 }
