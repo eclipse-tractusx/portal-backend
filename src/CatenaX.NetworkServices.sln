@@ -40,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Reg
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "marketplace", "marketplace", "{3DD94567-71F8-4A68-A7DB-C95237F2F638}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.App.Service", "marketplace\CatenaX.NetworkServices.App.Service\CatenaX.NetworkServices.App.Service.csproj", "{635D6465-46C5-4F36-9332-8220E907E023}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Apps.Service", "marketplace\CatenaX.NetworkServices.Apps.Service\CatenaX.NetworkServices.Apps.Service.csproj", "{635D6465-46C5-4F36-9332-8220E907E023}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}"
 EndProject
@@ -58,7 +58,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "administration", "administr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Administration.Service", "administration\CatenaX.NetworkServices.Administration.Service\CatenaX.NetworkServices.Administration.Service.csproj", "{4C4A70A4-18BF-4041-B31D-ED9A7EA1F256}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.App.Service.Tests", "..\tests\marketplace\CatenaX.NetworkServices.App.Service.Tests\CatenaX.NetworkServices.App.Service.Tests.csproj", "{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Apps.Service.Tests", "..\tests\marketplace\CatenaX.NetworkServices.Apps.Service.Tests\CatenaX.NetworkServices.Apps.Service.Tests.csproj", "{DD87FBFA-B75A-4A28-9E9E-2066F9A9D706}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Tests.Shared", "..\tests\shared\CatenaX.NetworkServices.Tests.Shared\CatenaX.NetworkServices.Tests.Shared.csproj", "{5A161CA2-061C-4E72-A8B2-5BB0EE329F9C}"
 EndProject
