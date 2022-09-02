@@ -54,4 +54,5 @@ public interface ICompanyRepository
     /// </summary>
     /// <returns> Business partner numbers of all active companies</returns>
     IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
+    Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId);
 }

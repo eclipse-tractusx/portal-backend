@@ -1,5 +1,27 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
+using Keycloak.Net;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -10,12 +32,8 @@ public partial class ProvisioningManager
 
     public async Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config)
     {
-        var internalClientId = await CreateCentralServiceAccountClient(clientId, config.Name, config.IamClientAuthMethod);
+        var internalClientId = await CreateServiceAccountClient(_CentralIdp, _Settings.CentralRealm, clientId, config.Name, config.IamClientAuthMethod);
         var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        if (serviceAccountUser == null) //TODO this check might be obsolete, verify NotFoundException not being thrown.
-        {
-            throw new Exception($"error retrieving service account user for newly created service-account-client {internalClientId}");
-        }
         var assignedRoles = await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles).ConfigureAwait(false);
 
         var unassignedClientRoles = config.ClientRoles
@@ -24,7 +42,7 @@ public partial class ProvisioningManager
  
         if (unassignedClientRoles.Any())
         {
-            throw new Exception($"inconsistend data. roles were not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
+            throw new KeycloakNoSuccessException($"inconsistend data. roles were not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
         }
 
         return new ServiceAccountData(
@@ -33,17 +51,64 @@ public partial class ProvisioningManager
             await GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false));
     }
 
-    private async Task<string> CreateCentralServiceAccountClient(string clientId, string name, IamClientAuthMethod iamClientAuthMethod)
+    private async Task<(string ClientId, string Secret)> CreateSharedIdpServiceAccountAsync(string realm)
+    {
+        var sharedIdp = _Factory.CreateKeycloakClient("shared");
+        var clientId = GetServiceAccountClientId(realm);
+        var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET);
+        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
+        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
+        if (!await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false))
+        {
+            throw new KeycloakNoSuccessException($"failed to assign role 'create-realm' to shared idp admin service account {clientId}");
+        }
+        var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
+        return new ValueTuple<string,string>(clientId, credentials.Value);
+    }
+
+    private async Task<(string ClientId, string Secret)> GetSharedIdpServiceAccountSecretAsync(string realm)
+    {
+        var clientId = GetServiceAccountClientId(realm);
+        var sharedIdp = _Factory.CreateKeycloakClient("shared");
+        var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(sharedIdp, clientId).ConfigureAwait(false);
+        var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
+        return new ValueTuple<string,string>(clientId, credentials.Value);
+    }
+
+    private async Task DeleteSharedIdpServiceAccountAsync(KeycloakClient keycloak, string realm)
+    {
+        var clientId = GetServiceAccountClientId(realm);
+        var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(keycloak, clientId).ConfigureAwait(false);
+        if (! await keycloak.DeleteClientAsync("master", internalClientId).ConfigureAwait(false))
+        {
+            throw new KeycloakNoSuccessException($"failed to delete client {clientId} in shared idp realm master");
+        }
+    }
+
+    private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod)
     {
         var newClient = CloneClient(_Settings.ServiceAccountClient);
         newClient.ClientId = clientId;
         newClient.Name = name;
         newClient.ClientAuthenticatorType = IamClientAuthMethodToInternal(iamClientAuthMethod);
-        var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
+        var newClientId = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, newClient).ConfigureAwait(false);
         if (newClientId == null)
         {
-            throw new Exception($"failed to create new client {clientId} in central realm");
+            throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
         }
         return newClientId;
     }
+
+    private static async Task<string> GetInternalClientIdOfSharedIdpServiceAccount(KeycloakClient keycloak, string clientId)
+    {
+        var internalClientId = (await keycloak.GetClientsAsync("master", clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
+        if (internalClientId == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found on shared idp");
+        }
+        return internalClientId;
+    }
+
+    private string GetServiceAccountClientId(string realm) =>
+        _Settings.ServiceAccountClientPrefix + realm;
 }
