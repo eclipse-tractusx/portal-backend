@@ -1,3 +1,23 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using CatenaX.NetworkServices.Mailing.Template.Attributes;
 using CatenaX.NetworkServices.Mailing.Template.Enums;
 using CatenaX.NetworkServices.Mailing.Template.Model;
@@ -5,60 +25,61 @@ using Microsoft.Extensions.Options;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace CatenaX.NetworkServices.Mailing.Template
+namespace CatenaX.NetworkServices.Mailing.Template;
+
+public class TemplateManager : ITemplateManager
 {
-    public class TemplateManager : ITemplateManager
+    private readonly TemplateSettings _settings;
+
+    public TemplateManager(IOptions<TemplateSettings> templateSettings)
     {
-        private readonly TemplateSettings _Templates;
+        _settings = templateSettings.Value;
+    }
 
-        public TemplateManager(IOptions<TemplateSettings> templateSettings)
+    public async Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters)
+    {
+        if (!_settings.Templates.TryGetValue(id, out var template))
         {
-            _Templates = templateSettings.Value;
+            throw new NoSuchTemplateException(id);                    
         }
-
-        Mail ITemplateManager.ApplyTemplate(string id, IDictionary<string, string> parameters)
+        var body = template.EmailTemplateType.HasValue
+            ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(false)
+            : template.Body;
+        if (body == null)
         {
-            try
-            {
-                var Template = _Templates[id];
-                return new Mail(
-                    replaceValues(Template.Subject,parameters),
-                    replaceValues(Template.EmailTemplateType.HasValue 
-                        ? GetTemplateStringFromPath(GetTemplatePathFromType(Template.EmailTemplateType.Value))
-                        : Template.Body,parameters),
-                    Template.EmailTemplateType.HasValue
-                );
-            }
-            catch(ArgumentNullException)
-            {
-                throw new NoSuchTemplateException(id);
-            }
-            catch(KeyNotFoundException)
-            {
-                throw new NoSuchTemplateException(id);
-            }
+            throw new NoSuchTemplateException(id);                    
         }
+        return new Mail(
+            ReplaceValues(template.Subject, parameters),
+            ReplaceValues(body, parameters),
+            template.EmailTemplateType.HasValue
+        );
+    }
 
-        private static string GetTemplatePathFromType(EmailTemplateType value) =>
-             typeof(EmailTemplateType)
-                .GetMember(value.ToString())
-                .FirstOrDefault(m => m.DeclaringType == typeof(EmailTemplateType))
-                .GetCustomAttribute<PathAttribute>().Path;
+    private static async Task<string> GetTemplateStringFromType(EmailTemplateType type)
+    {
+        var path = typeof(EmailTemplateType)?
+            .GetMember(type.ToString())?
+            .FirstOrDefault(m => m.DeclaringType == typeof(EmailTemplateType))?
+            .GetCustomAttribute<PathAttribute>()?.Path;
 
-        private static string GetTemplateStringFromPath(string path) =>
-            File.ReadAllText(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path);
-
-        private string replaceValues(string template, IDictionary<string,string> parameters)
+        if (path == null)
         {
-            return Regex.Replace(
-                template,
-                @"\{(\w+)\}", //replaces any text surrounded by { and }
-                m =>
-                {
-                    string value;
-                    return parameters.TryGetValue(m.Groups[1].Value, out value) ? value : "null";
-                }
-            );
+            throw new NoSuchTemplateException(type.ToString());
+        }
+        try
+        {
+            return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(false);
+        }
+        catch(IOException ioe)
+        {
+            throw new NoSuchTemplateException(path, ioe);
         }
     }
+
+    private static string ReplaceValues(string template, IDictionary<string,string> parameters) => 
+        Regex.Replace(
+            template,
+            @"\{(\w+)\}", //replaces any text surrounded by { and }
+            m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");
 }
