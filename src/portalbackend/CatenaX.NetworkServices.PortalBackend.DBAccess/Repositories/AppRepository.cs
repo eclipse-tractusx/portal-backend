@@ -193,13 +193,18 @@ public class AppRepository : IAppRepository
             .AsAsyncEnumerable();
 
      /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser)> IsAppCreatedAndProviderUserAsync(Guid appId, string userId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<string> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
         _context.Apps
+            .AsNoTracking()
+            .AsSplitQuery()
             .Where(a => a.Id == appId)
             .Select(a =>
-                new ValueTuple<bool, bool>(
+                new ValueTuple<bool,bool,IEnumerable<string>,IEnumerable<string>>(
                     a.AppStatusId == AppStatusId.CREATED,
-                    a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)))
+                    a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                    a.AppDescriptions.Select(description => description.LanguageShortName),
+                    a.AppDetailImages.Select(image => image.ImageUrl)
+                ))
             .SingleOrDefaultAsync();
        
     /// <inheritdoc />

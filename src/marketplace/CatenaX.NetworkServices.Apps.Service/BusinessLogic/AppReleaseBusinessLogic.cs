@@ -62,7 +62,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var appResult = await _portalRepositories.GetInstance<IAppRepository>().IsAppCreatedAndProviderUserAsync(appId, userId).ConfigureAwait(false);
+        var appResult = await _portalRepositories.GetInstance<IAppRepository>().GetAppDetailsForUpdateAsync(appId, userId).ConfigureAwait(false);
         if (appResult == default)
         {
             throw new NotFoundException($"app {appId} does not exist");

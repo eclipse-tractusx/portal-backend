@@ -135,5 +135,5 @@ public interface IAppRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser)> IsAppCreatedAndProviderUserAsync(Guid appId, string userId);
+    Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<string> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId);
 }
