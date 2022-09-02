@@ -4,13 +4,9 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class AppDetailImage
 {
-    private AppDetailImage()
+    public AppDetailImage(Guid id, Guid appId, string imageUrl)
     {
-        ImageUrl = null!;
-    }
-
-    public AppDetailImage(Guid appId, string imageUrl)
-    {
+        Id = id;
         AppId = appId;
         ImageUrl = imageUrl;
     }

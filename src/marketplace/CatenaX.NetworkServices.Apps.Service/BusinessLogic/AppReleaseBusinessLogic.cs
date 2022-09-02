@@ -62,12 +62,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var isappExist= await _portalRepositories.GetInstance<IAppRepository>().IsAppProviderUserAsync(appId, userId).ConfigureAwait(false);
-        if (!isappExist)
+        if (!await _portalRepositories.GetInstance<IAppRepository>().IsAppProviderUserAsync(appId, userId).ConfigureAwait(false))
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
         }
-        var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
+        _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
             app.ContactNumber = updateModel.ContactNumber;
@@ -80,9 +79,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 appdesc.DescriptionLong = item.LongDescription!;
             });
         }
+        var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
         foreach (var record in updateModel.Images)
         {
-            newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
+            appReleaseRepository.CreateAppDetailImage(appId, record);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
