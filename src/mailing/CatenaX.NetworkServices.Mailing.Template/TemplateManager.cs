@@ -50,8 +50,8 @@ public class TemplateManager : ITemplateManager
             throw new NoSuchTemplateException(id);                    
         }
         return new Mail(
-            replaceValues(template.Subject, parameters),
-            replaceValues(body, parameters),
+            ReplaceValues(template.Subject, parameters),
+            ReplaceValues(body, parameters),
             template.EmailTemplateType.HasValue
         );
     }
@@ -77,15 +77,9 @@ public class TemplateManager : ITemplateManager
         }
     }
 
-    private string replaceValues(string template, IDictionary<string,string> parameters)
-    {
-        return Regex.Replace(
+    private static string ReplaceValues(string template, IDictionary<string,string> parameters) => 
+        Regex.Replace(
             template,
             @"\{(\w+)\}", //replaces any text surrounded by { and }
-            m =>
-            {
-                return parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null";
-            }
-        );
-    }
+            m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");
 }
