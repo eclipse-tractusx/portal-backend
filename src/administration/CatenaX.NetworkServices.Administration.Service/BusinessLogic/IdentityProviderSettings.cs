@@ -27,10 +27,10 @@ public class IdentityProviderSettings
 {
     public IdentityProviderCsvSettings CsvSettings { get; init; } = null!;
 
-    public void Validate()
+    public bool Validate()
     {
         new ConfigurationValidation<IdentityProviderSettings>().NotNull(CsvSettings,()=>nameof(CsvSettings));
-        CsvSettings.Validate();
+        return CsvSettings.Validate();
     }
 }
 
@@ -49,7 +49,7 @@ public class IdentityProviderCsvSettings
     public string HeaderProviderUserId { get; init; } = null!;
     public string HeaderProviderUserName { get; init; } = null!;
 
-    public void Validate()
+    public bool Validate()
     {
         new ConfigurationValidation<IdentityProviderCsvSettings>()
             .NotNull(Charset,()=>nameof(Charset))
@@ -71,6 +71,8 @@ public class IdentityProviderCsvSettings
         {
             throw new ConfigurationException($"'{nameof(IdentityProviderCsvSettings)}': {nameof(Charset)} '{Charset}' is not a valid Encoding", ae);
         }
+
+        return true;
     }
 }
 
@@ -78,10 +80,12 @@ public static class IdentityProviderSettingsExtension
 {
     public static IServiceCollection ConfigureIdentityProviderSettings(
         this IServiceCollection services,
-        IConfigurationSection section) =>
-        services.Configure<IdentityProviderSettings>(x =>
-            {
-                section.Bind(x);
-                x.Validate();
-            });
+        IConfigurationSection section)
+    {
+        services.AddOptions<IdentityProviderSettings>()
+            .Bind(section)
+            .Validate(x => x.Validate())
+            .ValidateOnStart();
+        return services;
+    }
 }

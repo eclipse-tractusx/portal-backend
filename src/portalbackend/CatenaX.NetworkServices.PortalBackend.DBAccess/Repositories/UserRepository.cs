@@ -41,6 +41,47 @@ public class UserRepository : IUserRepository
         _dbContext = portalDbContext;
     }
 
+    public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.CompanyApplications)
+            .Select(companyApplication => new CompanyApplicationWithStatus
+            {
+                ApplicationId = companyApplication.Id,
+                ApplicationStatus = companyApplication.ApplicationStatusId
+            })
+            .AsAsyncEnumerable();
+
+    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser =>
+                iamUser.UserEntityId == iamUserId
+                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+            .Select(iamUser => iamUser.CompanyUser!.Company)
+            .Select(company => new RegistrationData(
+                company!.Id,
+                company.Name,
+                company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
+                company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                    .Select(consent => new AgreementConsentStatusForRegistrationData(
+                        consent.AgreementId, consent.ConsentStatusId)))
+            {
+                City = company.Address!.City,
+                Streetname = company.Address.Streetname,
+                CountryAlpha2Code = company.Address.CountryAlpha2Code,
+                BusinessPartnerNumber = company.BusinessPartnerNumber,
+                Shortname = company.Shortname,
+                Region = company.Address.Region,
+                Streetadditional = company.Address.Streetadditional,
+                Streetnumber = company.Address.Streetnumber,
+                Zipcode = company.Address.Zipcode,
+                CountryDe = company.Address.Country!.CountryNameDe,
+                TaxId = company.TaxId
+            }).SingleOrDefaultAsync();
+
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
         CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
         _dbContext.CompanyUsers.Add(
@@ -173,15 +214,15 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.Id == companyUserId
                                   && companyUser.Company!.CompanyUsers.Any(companyUser =>
                                       companyUser.IamUser!.UserEntityId == adminUserId))
-            .Select(companyUser => new CompanyIamUser
+            .Select(companyUser => new CompanyIamUser(
+                companyUser.CompanyId,
+                companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
+                    companyUserAssignedRole.UserRoleId))
             {
                 TargetIamUserId = companyUser.IamUser!.UserEntityId,
                 IdpName = companyUser.Company!.IdentityProviders
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault(),
-                RoleIds = companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
-                    companyUserAssignedRole.UserRoleId),
-                CompanyId = companyUser.CompanyId
+                    .SingleOrDefault()
             }).SingleOrDefaultAsync();
 
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>

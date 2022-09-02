@@ -78,8 +78,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="lastName">Last Name of User</param>
         /// <param name="email">Email Id of User</param>
         /// <returns>Paginated Result of Company User Data</returns>
-        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&size=5</remarks>
-        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&size=5&userEntityId="31404026-64ee-4023-a122-3c7fc40e57b1"</remarks>
+        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&amp;size=5</remarks>
+        /// <remarks> Example: GET: api/administration/user/owncompany/users?page=0&amp;size=5&amp;userEntityId="31404026-64ee-4023-a122-3c7fc40e57b1"</remarks>
         /// <response code="200">Result as a Company User Data</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]
@@ -291,7 +291,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Controllers
         /// <param name="email">Email Id of User</param>
         /// <param name="roleName">User role name</param>
         /// <returns>Returns the company users with assigned role for the requested app id</returns>
-        /// <remarks>Example: GET: /api/administration/user/owncompany/apps/5cf74ef8-e0b7-4984-a872-474828beb5d3/users?page=0&size=15</remarks>
+        /// <remarks>Example: GET: /api/administration/user/owncompany/apps/5cf74ef8-e0b7-4984-a872-474828beb5d3/users?page=0&amp;size=15</remarks>
         /// <response code="200">Result as a Company App Users Details</response>
         [HttpGet]
         [Authorize(Roles = "view_user_management")]

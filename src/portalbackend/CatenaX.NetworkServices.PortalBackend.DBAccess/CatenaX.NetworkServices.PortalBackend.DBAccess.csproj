@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.DBAccess\CatenaX.NetworkServices.Framework.DBAccess.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj" />
