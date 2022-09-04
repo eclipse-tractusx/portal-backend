@@ -146,6 +146,38 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         return serviceDetailData;
     }
 
+    /// <inheritdoc />
+    public async Task<Guid> CreateServiceAgreementConsent(Guid serviceId,
+        ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetCompanyIdWithAssignedAppForCompanyUserAsync(serviceId, iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
+        }
+
+        var (companyId, companyAssignedApp, companyName, companyUserId) = result;
+        if (companyAssignedApp is null)
+        {
+            throw new NotFoundException($"Service {serviceId} does not exist");
+        }
+
+        if (!await _portalRepositories.GetInstance<IAgreementRepository>()
+                .CheckAgreementExistsAsync(serviceAgreementConsentData.AgreementId).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException("Agreement not existing", nameof(serviceAgreementConsentData.AgreementId));
+        }
+
+        var (agreementId, consentStatusId) = serviceAgreementConsentData;
+        var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
+        await _portalRepositories.SaveAsync();
+        return consent.Id;
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
+        _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataWithAppIdSet(iamUserId);
+
     private async Task CheckLanguageCodesExist(ICollection<string> languageCodes)
     {
         if (languageCodes.Any())

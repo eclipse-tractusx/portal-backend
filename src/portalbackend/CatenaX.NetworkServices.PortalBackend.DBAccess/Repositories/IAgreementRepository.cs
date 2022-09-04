@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+
+/// <summary>
+/// Repository for accessing agreements on the persistence layer.
+/// </summary>
+public interface IAgreementRepository
 {
     /// <summary>
-    /// Agreement Data
+    /// Checks whether the agreement with the given id exists. 
     /// </summary>
-    /// <param name="AgreementId">Id of the agreement</param>
-    /// <param name="AgreementName">Name of the agreement</param>
-    public record AgreementData(
-        [property: JsonPropertyName("agreementId")] Guid AgreementId,
-        [property: JsonPropertyName("name")] string AgreementName);
+    /// <param name="agreementId">Id of the agreement</param>
+    /// <returns>Returns <c></c></returns>
+    Task<bool> CheckAgreementExistsAsync(Guid agreementId);
+    
+    /// <summary>
+    /// Gets the agreement data that have an app id set
+    /// </summary>
+    /// <param name="iamUserId">Id of the user</param>
+    /// <returns>Returns an async enumerable from agreement data</returns>
+    IAsyncEnumerable<AgreementData> GetAgreementDataWithAppIdSet(string iamUserId);
 }

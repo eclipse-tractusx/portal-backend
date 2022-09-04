@@ -42,6 +42,7 @@ public class ServiceBusinessLogicTests
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
+    private readonly IAgreementRepository _agreementRepository;
     private readonly IAppRepository _appRepository;
     private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
     private readonly ILanguageRepository _languageRepository;
@@ -60,6 +61,7 @@ public class ServiceBusinessLogicTests
         _iamUser = iamUser;
 
         _portalRepositories = A.Fake<IPortalRepositories>();
+        _agreementRepository = A.Fake<IAgreementRepository>();
         _appRepository = A.Fake<IAppRepository>();
         _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
@@ -139,6 +141,7 @@ public class ServiceBusinessLogicTests
         result.Should().Be(serviceId);
         apps.Should().HaveCount(1);
     }
+    
     [Fact]
     public async Task CreateServiceOffering_WithWrongIamUser_ThrowsException()
     {
@@ -336,6 +339,38 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Get Service Agreement
+
+    [Fact]
+    public async Task GetServiceAgreement_WithUserId_ReturnsServiceDetailData()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var result = await sut.GetServiceAgreement(_iamUser.UserEntityId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task GetServiceAgreement_WithoutExistingService_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var agreementData = await sut.GetServiceAgreement(Guid.NewGuid().ToString()).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        agreementData.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
@@ -378,8 +413,15 @@ public class ServiceBusinessLogicTests
             .Returns(true);
         A.CallTo(() => _appRepository.CheckAppExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .Returns(false);
-        
+
+        var agreementData = _fixture.CreateMany<AgreementData>(1);
+        A.CallTo(() => _agreementRepository.GetAgreementDataWithAppIdSet(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+            .Returns(agreementData.ToAsyncEnumerable());
+        A.CallTo(() => _agreementRepository.GetAgreementDataWithAppIdSet(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
+            .Returns(new List<AgreementData>().ToAsyncEnumerable());
+
         A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);

@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+public class AgreementAssignedApp
 {
-    /// <summary>
-    /// Agreement Data
-    /// </summary>
-    /// <param name="AgreementId">Id of the agreement</param>
-    /// <param name="AgreementName">Name of the agreement</param>
-    public record AgreementData(
-        [property: JsonPropertyName("agreementId")] Guid AgreementId,
-        [property: JsonPropertyName("name")] string AgreementName);
+    private AgreementAssignedApp() {}
+
+    public AgreementAssignedApp(Guid agreementId, Guid appId)
+    {
+        AgreementId = agreementId;
+        AppId = appId;
+    }
+
+    public Guid AgreementId { get; private set; }
+    public Guid AppId { get; private set; }
+
+    // Navigation properties
+    public virtual Agreement? Agreement { get; private set; }
+    public virtual App? App { get; private set; }
 }

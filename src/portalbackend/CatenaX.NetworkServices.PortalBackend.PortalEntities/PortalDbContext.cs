@@ -40,6 +40,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Agreement> Agreements { get; set; } = default!;
     public virtual DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
     public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
+    public virtual DbSet<AgreementAssignedApp> AgreementAssignedApps { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
     public virtual DbSet<App> Apps { get; set; } = default!;
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
@@ -152,6 +153,21 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        modelBuilder.Entity<AgreementAssignedApp>(entity =>
+        {
+            entity.HasKey(e => new { e.AgreementId, e.AppId });
+
+            entity.HasOne(d => d.Agreement)
+                .WithMany(p => p!.AgreementAssignedApps)
+                .HasForeignKey(d => d.AgreementId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.App)
+                .WithMany(p => p!.AgreementAssignedApps!)
+                .HasForeignKey(d => d.AppId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<AgreementCategory>()
             .HasData(
                 Enum.GetValues(typeof(AgreementCategoryId))
@@ -167,6 +183,14 @@ public class PortalDbContext : DbContext
             entity.HasOne(x => x.SalesManager)
                 .WithMany(x => x!.SalesManagerOfApps)
                 .HasForeignKey(x => x.SalesManagerId);
+
+            entity.HasOne(x => x.AppType)
+                .WithMany(x => x!.Apps)
+                .HasForeignKey(x => x.AppTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.Property(e => e.AppTypeId)
+                .HasDefaultValue(AppTypeId.APP);
 
             entity.HasMany(p => p.Companies)
                 .WithMany(p => p.BoughtApps)
@@ -421,9 +445,9 @@ public class PortalDbContext : DbContext
         {
             x.HasBaseType((Type?)null);
 
-            x.Ignore(x => x.ApplicationStatus);
-            x.Ignore(x => x.Company);
-            x.Ignore(x => x.Invitations);
+            x.Ignore(y => y.ApplicationStatus);
+            x.Ignore(y => y.Company);
+            x.Ignore(y => y.Invitations);
             x.ToTable("audit_company_applications_cplp_1255_audit_company_applications");
         });
 
@@ -443,10 +467,10 @@ public class PortalDbContext : DbContext
         {
             x.HasBaseType((Type?)null);
 
-            x.Ignore(x => x.App);
-            x.Ignore(x => x.Company);
-            x.Ignore(x => x.AppSubscriptionStatus);
-            x.Ignore(x => x.AppInstance);
+            x.Ignore(y => y.App);
+            x.Ignore(y => y.Company);
+            x.Ignore(y => y.AppSubscriptionStatus);
+            x.Ignore(y => y.AppInstance);
 
             x.ToTable("audit_company_assigned_apps_cplp_1427_combine_service_and_apps");
         });
@@ -628,7 +652,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-
+            
         modelBuilder.Entity<ConsentStatus>()
             .HasData(
                 Enum.GetValues(typeof(ConsentStatusId))
