@@ -1,5 +1,6 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -17,12 +18,19 @@ public class ConsentRepository : IConsentRepository
         _portalDbContext = portalDbContext;
     }
 
-    /// <inheritdoc />
-    public void AttachToDatabase(IEnumerable<Consent> consents) => _portalDbContext.AttachRange(consents.ToArray());
+    /// <inheritdoc/>
+    public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields)
+    {
+        var consent = new Consent(Guid.NewGuid(), agreementId, companyId, companyUserId, consentStatusId, DateTimeOffset.UtcNow);
+        setupOptionalFields?.Invoke(consent);
+        return _portalDbContext.Consents.Add(consent).Entity;
+    }
 
     /// <inheritdoc />
-    public void RemoveConsents(IEnumerable<Consent> consents)
-    {
-        throw new NotImplementedException();
-    }
+    public void AttachToDatabase(IEnumerable<Consent> consents) => 
+        _portalDbContext.AttachRange(consents.ToArray());
+
+    /// <inheritdoc />
+    public void RemoveConsents(IEnumerable<Consent> consents) => 
+        _portalDbContext.RemoveRange(consents);
 }

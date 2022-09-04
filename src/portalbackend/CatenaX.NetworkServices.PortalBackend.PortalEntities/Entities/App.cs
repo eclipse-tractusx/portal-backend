@@ -29,7 +29,7 @@ public class App
     {
         Provider = null!;
         AppType = null!;
-        Agreements = new HashSet<Agreement>();
+        AgreementAssignedApps = new HashSet<AgreementAssignedApp>();
         AppDescriptions = new HashSet<AppDescription>();
         AppDetailImages = new HashSet<AppDetailImage>();
         Companies = new HashSet<Company>();
@@ -101,7 +101,7 @@ public class App
     public virtual AppType? AppType { get; private set; }
     
     public virtual AppStatus? AppStatus{ get; set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
+    public virtual ICollection<AgreementAssignedApp> AgreementAssignedApps { get; private set; }
     public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
     public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }

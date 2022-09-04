@@ -21,6 +21,7 @@
 using AutoFixture;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Service.Service.BusinessLogic;
 using CatenaX.NetworkServices.Service.Service.Controllers;
 using CatenaX.NetworkServices.Tests.Shared;
@@ -116,5 +117,39 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
             result.Should().Be(serviceDetailData);
         }
 
+        [Fact]
+        public async Task CreateServiceAgreementConsent_ReturnsExpectedId()
+        {
+            //Arrange
+            var serviceId = Guid.NewGuid();
+            var consentId = Guid.NewGuid();
+            var serviceAgreementConsentData = new ServiceAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
+            A.CallTo(() => _logic.CreateServiceAgreementConsent(serviceId, A<ServiceAgreementConsentData>._, A<string>._))
+                .ReturnsLazily(() => consentId);
+
+            //Act
+            var result = await this._controller.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+            Assert.IsType<Guid>(result);
+            result.Should().Be(consentId);
+        }
+
+        [Fact]
+        public async Task GetServiceAgreement_ReturnsExpected()
+        {
+            //Arrange
+            var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+            A.CallTo(() => _logic.GetServiceAgreement(A<string>._))
+                .Returns(agreementData);
+
+            //Act
+            var result = await this._controller.GetServiceAgreement().ToListAsync().ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.GetServiceAgreement(IamUserId)).MustHaveHappenedOnceExactly();
+            result.Should().HaveCount(5);
+        }
     }
 }

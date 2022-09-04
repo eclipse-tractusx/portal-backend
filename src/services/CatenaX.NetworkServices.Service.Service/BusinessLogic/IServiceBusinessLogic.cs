@@ -57,4 +57,20 @@ public interface IServiceBusinessLogic
     /// <param name="lang">Shortcode of the language for the text translations</param>
     /// <returns>Returns the service detail data</returns>
     Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang);
+
+    /// <summary>
+    /// Creates new service agreement consents with the given data for the given service
+    /// </summary>
+    /// <param name="serviceId">Id of the service to create the consents for.</param>
+    /// <param name="serviceAgreementConsentData">service agreement consents</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    Task<Guid> CreateServiceAgreementConsent(Guid serviceId, ServiceAgreementConsentData serviceAgreementConsentData,
+        string iamUserId);
+
+    /// <summary>
+    /// Gets the service agreement data
+    /// </summary>
+    /// <param name="iamUserId">id of the iam user</param>
+    /// <returns>Returns IAsyncEnumerable of agreement data</returns>
+    IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId);
 }

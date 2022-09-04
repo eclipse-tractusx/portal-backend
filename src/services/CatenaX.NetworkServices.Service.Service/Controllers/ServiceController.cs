@@ -58,7 +58,7 @@ public class ServiceController : ControllerBase
     /// <response code="200">Returns the list of all active services.</response>
     [HttpGet]
     [Route("active")]
-    [Authorize(Roles = "view_service_offering")]
+    // [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(IAsyncEnumerable<ServiceDetailData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         _serviceBusinessLogic.GetAllActiveServicesAsync(page, size);
@@ -72,7 +72,7 @@ public class ServiceController : ControllerBase
     /// <response code="400">The given service offering data were invalid.</response>
     [HttpPost]
     [Route("addservice")]
-    [Authorize(Roles = "add_service_offering")]
+    // [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Guid> CreateServiceOffering([FromBody] ServiceOfferingData data) =>
@@ -88,7 +88,7 @@ public class ServiceController : ControllerBase
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/subscribe")]
-    [Authorize(Roles = "subscribe_service")]
+    // [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -108,9 +108,39 @@ public class ServiceController : ControllerBase
     /// <response code="404">Service was not found.</response>
     [HttpGet]
     [Route("{serviceId}")]
-    [Authorize(Roles = "view_service_offering")]
+    // [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string lang = "en") => 
         _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang);
+    
+    /// <summary>
+    /// Creates new service agreement consents 
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the wants to retrieve.</param>
+    /// <param name="serviceAgreementConsentData">the service agreement consent.</param>
+    /// <remarks>Example: Post: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/serviceAgreementConsent</remarks>
+    /// <response code="200">Returns the id of the created consent.</response>
+    /// <response code="400">Company or company user wasn't assigned to the user.</response>
+    /// <response code="404">No Service was found for the given id.</response>
+    [HttpPost]
+    [Route("{serviceId}/serviceAgreementConsent")]
+    // [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Guid> CreateServiceAgreementConsent([FromRoute] Guid serviceId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData) =>
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData, iamUserId).ConfigureAwait(false));
+    
+    /// <summary>
+    /// Gets all agreements 
+    /// </summary>
+    /// <remarks>Example: GET: /api/services/serviceAgreementData</remarks>
+    /// <response code="200">Returns the service agreement data.</response>
+    [HttpGet]
+    [Route("serviceAgreementData")]
+    // [Authorize(Roles = "subscribe_service_offering")]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement() =>
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceAgreement(iamUserId));
 }
