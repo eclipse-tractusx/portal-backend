@@ -158,7 +158,6 @@ public class ServiceBusinessLogicTests
     public async Task CreateServiceOffering_WithInvalidLanguage_ThrowsException()
     {
         // Arrange
-        var serviceId = Guid.NewGuid();
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
@@ -341,7 +340,7 @@ public class ServiceBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
-        var serviceDetailData = new AsyncEnumerableStub<ServiceDetailData>(_fixture.CreateMany<ServiceDetailData>(5));
+        var serviceDetailData = new AsyncEnumerableStub<ValueTuple<Guid, string?, string, string?, string?, string?>>(_fixture.CreateMany<ValueTuple<Guid, string?, string, string?, string?, string?>>(5));
         var serviceDetail = _fixture.Build<ServiceDetailData>()
             .With(x => x.Id, _existingServiceId)
             .Create();
@@ -371,9 +370,9 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => default(ServiceDetailData));
         
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "en"))))
-            .ReturnsLazily(() => new List<string> { "en" });
+            .Returns(new List<string> { "en" }.ToAsyncEnumerable());
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "gg"))))
-            .ReturnsLazily(() => new List<string>());
+            .Returns(new List<string>().ToAsyncEnumerable());
         
         A.CallTo(() => _appRepository.CheckAppExistsById(_existingServiceId))
             .Returns(true);
