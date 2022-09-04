@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+
 namespace CatenaX.NetworkServices.Service.Service.BusinessLogic;
 
 /// <summary>
@@ -25,6 +27,7 @@ namespace CatenaX.NetworkServices.Service.Service.BusinessLogic;
 /// </summary>
 public class ServiceSettings
 {
+    [Required]
     public int ApplicationsMaxPageSize { get; set; }
 }
 
@@ -36,6 +39,7 @@ public static class ServiceSettingsExtension
     {
         services.AddOptions<ServiceSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
         return services;
     }

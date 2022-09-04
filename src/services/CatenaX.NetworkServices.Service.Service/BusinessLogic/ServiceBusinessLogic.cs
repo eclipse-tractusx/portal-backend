@@ -61,6 +61,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 services
                     .Skip(skip)
                     .Take(take)
+                    .Select(s =>
+                        new ServiceDetailData(
+                            s.id,
+                            s.name ?? Constants.ErrorString,
+                            s.provider,
+                            s.thumbnailUrl ?? Constants.ErrorString,
+                            s.contactEmail,
+                            null,
+                            s.price ?? Constants.ErrorString))
                     .AsAsyncEnumerable()));
     }
 
@@ -143,6 +152,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         {
             var foundLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>()
                 .GetLanguageCodesUntrackedAsync(languageCodes)
+                .ToListAsync()
                 .ConfigureAwait(false);
             var notFoundLanguageCodes = languageCodes.Where(x => foundLanguageCodes.All(y => y != x)).ToList();
             if (notFoundLanguageCodes.Any())

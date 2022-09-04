@@ -217,20 +217,17 @@ public class AppRepository : IAppRepository
              .SingleOrDefaultAsync();
 
      /// <inheritdoc />
-     public IQueryable<ServiceDetailData> GetActiveServices() =>
+     public IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices() =>
          _context.Apps
              .Where(x => x.AppTypeId == AppTypeId.SERVICE && x.AppStatusId == AppStatusId.ACTIVE)
-             .Select(app => new ServiceDetailData(
-                 app.Id,
-                 app.Name ?? Constants.ErrorString,
+             .Select(app => new ValueTuple<Guid, string?, string, string?, string?, string?>(app.Id,
+                 app.Name,
                  app.Provider,
-                 app.ThumbnailUrl ?? Constants.ErrorString,
+                 app.ThumbnailUrl,
                  app.ContactEmail,
-                null,
-            app.AppLicenses
-                     .Select(license => license.Licensetext)
-                     .FirstOrDefault() ?? Constants.ErrorString
-             ));
+                 app.AppLicenses
+                     .Select(l => l.Licensetext)
+                     .FirstOrDefault()));
 
      /// <inheritdoc />
      public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 

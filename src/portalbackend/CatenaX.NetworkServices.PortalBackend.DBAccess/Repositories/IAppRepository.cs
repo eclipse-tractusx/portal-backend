@@ -140,7 +140,7 @@ public interface IAppRepository
     /// Gets all service detail data from the persistence storage as queryable 
     /// </summary>
     /// <returns>Returns an <see cref="IQueryable{ServiceDetailData}"/></returns>
-    IQueryable<ServiceDetailData> GetActiveServices();
+    IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices();
 
     /// <summary>
     /// Gets the service details for the given id
