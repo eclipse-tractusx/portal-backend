@@ -77,7 +77,7 @@ public class ServiceBusinessLogicTests
         var serviceId = Guid.NewGuid();
 
         var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateApp(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
+        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
             .Invokes(x =>
             {
                 var provider = x.Arguments.Get<string>("provider");
@@ -110,7 +110,7 @@ public class ServiceBusinessLogicTests
         var serviceId = Guid.NewGuid();
 
         var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateApp(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
+        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
             .Invokes(x =>
             {
                 var provider = x.Arguments.Get<string>("provider");
@@ -232,7 +232,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var companyAssignedAppId = Guid.NewGuid(); 
         var companyAssignedApps = new List<OfferSubscription>();
-        A.CallTo(() => _offerSubscriptionsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
             .Invokes(x =>
             {
                 var appId = x.Arguments.Get<Guid>("offerId");
