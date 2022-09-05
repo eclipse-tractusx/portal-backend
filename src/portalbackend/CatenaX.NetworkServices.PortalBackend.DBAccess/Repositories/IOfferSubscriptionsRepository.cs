@@ -32,12 +32,12 @@ public interface IOfferSubscriptionsRepository
     /// <summary>
     /// Adds the given company assigned app to the database
     /// </summary>
-    /// <param name="appId">Id of the assigned app</param>
+    /// <param name="offerId">Id of the assigned app</param>
     /// <param name="companyId">Id of the company</param>
     /// <param name="offerSubscriptionStatusId">id of the app subscription status</param>
     /// <param name="requesterId">id of the user that requested the subscription of the app</param>
     /// <param name="creatorId">id of the creator</param>
-    OfferSubscription CreateCompanyAssignedApp(Guid appId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
+    OfferSubscription CreateCompanyAssignedApp(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 

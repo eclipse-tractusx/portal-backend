@@ -176,7 +176,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "audit_offer_subscription_cplp_1212_change_app_to_offer",
+                name: "audit_offer_subscriptions_cplp_1212_change_app_to_offer",
                 schema: "portal",
                 columns: table => new
                 {
@@ -195,7 +195,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_audit_offer_subscription_cplp_1212_change_app_to_offer", x => x.id);
+                    table.PrimaryKey("pk_audit_offer_subscriptions_cplp_1212_change_app_to_offer", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -626,8 +626,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
             
-            /// Drop the trigger on the old company assigned apps table manually
-            migrationBuilder.Sql($"DROP FUNCTION IF EXISTS process_audit_company_assigned_apps_audit();");
             migrationBuilder.AddAuditTrigger<AuditOfferSubscription>("cplp_1212_change_app_to_offer");
         }
 
@@ -681,7 +679,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "user_roles");
 
             migrationBuilder.DropTable(
-                name: "audit_offer_subscription_cplp_1212_change_app_to_offer",
+                name: "audit_offer_subscriptions_cplp_1212_change_app_to_offer",
                 schema: "portal");
 
             migrationBuilder.DropTable(

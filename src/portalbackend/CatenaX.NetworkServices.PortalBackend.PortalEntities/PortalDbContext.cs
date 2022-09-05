@@ -462,7 +462,7 @@ public class PortalDbContext : DbContext
             x.Ignore(x => x.OfferSubscriptionStatus);
             x.Ignore(x => x.AppSubscriptionDetail);
 
-            x.ToTable("audit_offer_subscription_cplp_1212_change_app_to_offer");
+            x.ToTable("audit_offer_subscriptions_cplp_1212_change_app_to_offer");
         });
 
         modelBuilder.Entity<CompanyRole>()
