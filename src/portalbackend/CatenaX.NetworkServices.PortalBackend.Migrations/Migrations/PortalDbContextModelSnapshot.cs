@@ -219,9 +219,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("requester_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_offer_subscription_cplp_1212_change_app_to_offer");
+                        .HasName("pk_audit_offer_subscriptions_cplp_1212_change_app_to_offer");
 
-                    b.ToTable("audit_offer_subscription_cplp_1212_change_app_to_offer", "portal");
+                    b.ToTable("audit_offer_subscriptions_cplp_1212_change_app_to_offer", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>

@@ -117,11 +117,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 column: "company_user_status_id");
             
             migrationBuilder.AddAuditTrigger<AuditCompanyUser>("cplp_1254_db_audit");
+            // migrationBuilder.AddAuditTrigger<AuditCompanyAssignedApp>("cplp_1254_db_audit");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropAuditTrigger<AuditCompanyUser>();
+            // migrationBuilder.DropAuditTrigger<AuditCompanyAssignedApp>();
 
             migrationBuilder.DropTable(
                 name: "audit_company_assigned_apps_cplp_1254_db_audit",
