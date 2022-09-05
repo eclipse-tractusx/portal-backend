@@ -28,7 +28,7 @@ public class LanguageRepository : ILanguageRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> GetLanguageCodesUntrackedAsync(ICollection<string> languageCodes) =>
+    public IAsyncEnumerable<string> GetLanguageCodesUntrackedAsync(IEnumerable<string> languageCodes) =>
         _portalDbContext.Languages.AsNoTracking()
             .Where(x => languageCodes.Contains(x.ShortName))
             .Select(x => x.ShortName)

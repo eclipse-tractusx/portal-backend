@@ -146,7 +146,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         return serviceDetailData;
     }
 
-    private async Task CheckLanguageCodesExist(ICollection<string> languageCodes)
+    private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {
         if (languageCodes.Any())
         {
@@ -154,7 +154,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 .GetLanguageCodesUntrackedAsync(languageCodes)
                 .ToListAsync()
                 .ConfigureAwait(false);
-            var notFoundLanguageCodes = languageCodes.Where(x => foundLanguageCodes.All(y => y != x)).ToList();
+            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes);
             if (notFoundLanguageCodes.Any())
             {
                 throw new ControllerArgumentException(
