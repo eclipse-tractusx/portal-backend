@@ -56,10 +56,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         return _context.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) && companyUser.IamUser!.UserEntityId == iamUserId)
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-            .Where(companyUser => firstName != null ? EF.Functions.ILike(companyUser.Firstname!, $"%{firstName.Trim(escapeChar)}%") : true
-                && lastName != null ? EF.Functions.ILike(companyUser.Lastname!, $"%{lastName.Trim(escapeChar)}%") : true
-                && email != null ? EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%") : true
-                && roleName != null ? companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName.Trim(escapeChar)}%")) : true);
+            .Where(companyUser => firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName.Trim(escapeChar)}%")
+                && lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName!.Trim(escapeChar)}%")
+                && email == null || EF.Functions.ILike(companyUser.Email!, $"%{email!.Trim(escapeChar)}%")
+                && roleName == null || companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName!.Trim(escapeChar)}%")));
         }
 
     /// <inheritdoc />
