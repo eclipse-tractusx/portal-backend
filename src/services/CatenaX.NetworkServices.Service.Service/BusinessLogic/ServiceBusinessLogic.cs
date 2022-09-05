@@ -89,7 +89,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         if (results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
-        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode).ToList()).ConfigureAwait(false);
+        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var app = appRepository.CreateApp(string.Empty, OfferTypeId.SERVICE, app =>
