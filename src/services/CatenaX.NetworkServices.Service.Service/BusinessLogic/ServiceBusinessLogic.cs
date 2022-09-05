@@ -156,7 +156,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
         }
 
-        var (companyId, companyAssignedApp, companyName, companyUserId) = result;
+        var (companyId, companyAssignedApp, _, companyUserId) = result;
         if (companyAssignedApp is null)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
