@@ -27,12 +27,12 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-public class CompanyAssignedApp : IAuditable
+public class OfferSubscription : IAuditable
 {
     /// <summary>
     /// Only used for the audit table
     /// </summary>
-    protected CompanyAssignedApp()
+    protected OfferSubscription()
     {
     }
 
@@ -40,17 +40,17 @@ public class CompanyAssignedApp : IAuditable
     /// Constructor.
     /// </summary>
     /// <param name="id">Id of the entity..</param>
-    /// <param name="appId">App id.</param>
+    /// <param name="offerId">Offer id.</param>
     /// <param name="companyId">Company id.</param>
-    /// <param name="appSubscriptionStatusId">app subscription status.</param>
+    /// <param name="offerSubscriptionStatusId">app subscription status.</param>
     /// <param name="requesterId">Id of the requester</param>
     /// <param name="lastEditorId">Id of the editor</param>
-    public CompanyAssignedApp(Guid id, Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
+    public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
     {
         Id = id;
-        AppId = appId;
+        OfferId = offerId;
         CompanyId = companyId;
-        AppSubscriptionStatusId = appSubscriptionStatusId;
+        OfferSubscriptionStatusId = offerSubscriptionStatusId;
         RequesterId = requesterId;
         LastEditorId = lastEditorId;
     }
@@ -66,17 +66,12 @@ public class CompanyAssignedApp : IAuditable
     /// <summary>
     /// ID of the apps subscribed by a company.
     /// </summary>
-    public Guid AppId { get; private set; }
-
-    /// <summary>
-    /// ID of the app instance.
-    /// </summary>
-    public Guid? AppInstanceId { get; set; }
+    public Guid OfferId { get; private set; }
 
     /// <summary>
     /// ID of the app subscription status.
     /// </summary>
-    public AppSubscriptionStatusId AppSubscriptionStatusId { get; set; }
+    public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
 
     /// <summary>
     /// Display Name for the company app combination
@@ -97,27 +92,24 @@ public class CompanyAssignedApp : IAuditable
     
     /// <inheritdoc />
     public Guid? LastEditorId { get; set; }
-    
-    [MaxLength(255)]
-    public string? AppUrl { get; set; }
+
+    public Guid? AppSubscriptionDetailId { get; set; }
+
+    public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 
     // Navigation properties
     /// <summary>
     /// Subscribed app.
     /// </summary>
-    public virtual App? App { get; private set; }
+    public virtual Offer? Offer { get; private set; }
+
     /// <summary>
     /// Subscribing company.
     /// </summary>
     public virtual Company? Company { get; private set; }
 
     /// <summary>
-    /// Subscribing app instance.
-    /// </summary>
-    public virtual AppInstance? AppInstance { get; private set; }
-
-    /// <summary>
     /// Subscription status.
     /// </summary>
-    public virtual AppSubscriptionStatus? AppSubscriptionStatus { get; private set; }
+    public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
 }

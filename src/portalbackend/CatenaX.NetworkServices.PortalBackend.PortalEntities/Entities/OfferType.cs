@@ -3,25 +3,25 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AppType
+public class OfferType
 {
-    private AppType()
+    private OfferType()
     {
         Label = null!;
-        Apps = new HashSet<App>();
+        Offers = new HashSet<Offer>();
     }
 
-    public AppType(AppTypeId appTypeId) : this()
+    public OfferType(OfferTypeId offerTypeId) : this()
     {
-        Id = appTypeId;
-        Label = appTypeId.ToString();
+        Id = offerTypeId;
+        Label = offerTypeId.ToString();
     }
 
-    public AppTypeId Id { get; private set; }
+    public OfferTypeId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<App> Apps { get; private set; }
+    public virtual ICollection<Offer> Offers { get; private set; }
 }

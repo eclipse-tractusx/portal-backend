@@ -51,7 +51,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size)
     {
-        var services = _portalRepositories.GetInstance<IAppRepository>().GetActiveServices();
+        var services = _portalRepositories.GetInstance<IOfferRepository>().GetActiveServices();
         return Pagination.CreateResponseAsync(
             page,
             size,
@@ -91,15 +91,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode).ToList()).ConfigureAwait(false);
 
-        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
-        var app = appRepository.CreateApp(string.Empty, AppTypeId.SERVICE, app =>
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var app = appRepository.CreateApp(string.Empty, OfferTypeId.SERVICE, app =>
         {
             app.ContactEmail = data.ContactEmail;
             app.Name = data.Title;
             app.SalesManagerId = data.SalesManager;
             app.ThumbnailUrl = data.ThumbnailUrl;
             app.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
-            app.AppStatusId = AppStatusId.CREATED;
+            app.OfferStatusId = OfferStatusId.CREATED;
             app.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
         });
         var licenseId = appRepository.CreateAppLicenses(data.Price).Id;
@@ -114,7 +114,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public async Task AddServiceSubscription(Guid serviceId, string iamUserId)
     {
-        if (!await _portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(serviceId).ConfigureAwait(false))
+        if (!await _portalRepositories.GetInstance<IOfferRepository>().CheckAppExistsById(serviceId).ConfigureAwait(false))
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
@@ -130,14 +130,14 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
         }
 
-        _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().CreateCompanyAssignedApp(serviceId, companyId, AppSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateCompanyAssignedApp(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang)
     {        
-        var serviceDetailData = await _portalRepositories.GetInstance<IAppRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang).ConfigureAwait(false);
+        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang).ConfigureAwait(false);
         if (serviceDetailData is null)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");

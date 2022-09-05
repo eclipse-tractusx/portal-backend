@@ -2,18 +2,18 @@
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AppDescription
+public class OfferDescription
 {
-    private AppDescription()
+    private OfferDescription()
     {
         LanguageShortName = null!;
         DescriptionLong = null!;
         DescriptionShort = null!;
     }
 
-    public AppDescription(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)
+    public OfferDescription(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)
     {
-        AppId = appId;
+        OfferId = offerId;
         LanguageShortName = languageShortName;
         DescriptionLong = descriptionLong;
         DescriptionShort = descriptionShort;
@@ -25,12 +25,12 @@ public class AppDescription
     [MaxLength(255)]
     public string DescriptionShort { get; set; }
 
-    public Guid AppId { get; private set; }
+    public Guid OfferId { get; private set; }
 
     [StringLength(2, MinimumLength = 2)]
     public string LanguageShortName { get; private set; }
 
     // Navigation properties
-    public virtual App? App { get; private set; }
+    public virtual Offer? Offer { get; private set; }
     public virtual Language? Language { get; private set; }
 }

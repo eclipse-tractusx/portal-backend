@@ -27,7 +27,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// <summary>
 /// Repository for accessing apps on persistence layer.
 /// </summary>
-public interface IAppRepository
+public interface IOfferRepository
 {
     /// <summary>
     /// Checks if an app with the given id exists in the persistence layer. 
@@ -55,9 +55,9 @@ public interface IAppRepository
     /// Adds an app to the database
     /// </summary>
     /// <param name="provider">Provider of the app</param>
-    /// <param name="appType">Type of the app</param>
+    /// <param name="offerType">Type of the app</param>
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
-    App CreateApp(string provider, AppTypeId appType, Action<App>? setOptionalParameters = null);
+    Offer CreateApp(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
 
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
@@ -76,17 +76,17 @@ public interface IAppRepository
     Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName);
 
     /// <summary>
-    /// Adds an <see cref="AppLicense"/> to the database
+    /// Adds an <see cref="OfferLicense"/> to the database
     /// </summary>
     /// <param name="licenseText">Text of the license</param>
-    AppLicense CreateAppLicenses(string licenseText);
+    OfferLicense CreateAppLicenses(string licenseText);
 
     /// <summary>
-    /// Adds an <see cref="AppAssignedLicense"/> to the database
+    /// Adds an <see cref="OfferAssignedLicense"/> to the database
     /// </summary>
     /// <param name="appId">Id of the application</param>
     /// <param name="appLicenseId">Id of the app license</param>
-    AppAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId);
+    OfferAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId);
 
     /// <summary>
     /// Adds the given app favourite to the database
@@ -102,7 +102,7 @@ public interface IAppRepository
     void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases);
 
     /// <summary>
-    /// Adds <see cref="AppDescription"/>s to the database
+    /// Adds <see cref="OfferDescription"/>s to the database
     /// </summary>
     /// <param name="appDescriptions">The app descriptions that should be added to the database</param>
     void AddAppDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions);
@@ -134,7 +134,7 @@ public interface IAppRepository
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns>Return Async Enumerable of App Data</returns>
-    Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
+    Task<(IEnumerable<OfferDescription> descriptions, IEnumerable<OfferDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
     
     /// <summary>
     /// Gets all service detail data from the persistence storage as queryable 

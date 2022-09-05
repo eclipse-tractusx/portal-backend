@@ -34,14 +34,14 @@ using Xunit;
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 
 /// <summary>
-/// Tests the logic of the <see cref="AppRepository"/>
+/// Tests the logic of the <see cref="OfferRepository"/>
 /// </summary>
-public class AppRepositoryTests
+public class OfferRepositoryTests
 {
     private readonly IFixture _fixture;
     private readonly PortalDbContext _contextFake;
 
-    public AppRepositoryTests()
+    public OfferRepositoryTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -55,18 +55,18 @@ public class AppRepositoryTests
     public async Task GetAllActiveApps_ReturnsReleasedAppsSuccessfully()
     {
         // Arrange
-        var apps = _fixture.Build<App>()
+        var apps = _fixture.Build<Offer>()
             .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
-            .With(a => a.AppTypeId, AppTypeId.APP)
+            .With(a => a.OfferTypeId, OfferTypeId.APP)
             .CreateMany();
         var appsDbSet = apps.AsFakeDbSet();
         var languagesDbSet = new List<Language>().AsFakeDbSet();
 
-        A.CallTo(() => _contextFake.Apps).Returns(appsDbSet);
+        A.CallTo(() => _contextFake.Offers).Returns(appsDbSet);
         A.CallTo(() => _contextFake.Languages).Returns(languagesDbSet);
         _fixture.Inject(_contextFake);
 
-        var sut = _fixture.Create<AppRepository>();
+        var sut = _fixture.Create<OfferRepository>();
 
         // Act
         var results = await sut.GetAllActiveAppsAsync(null).ToListAsync();
@@ -82,15 +82,15 @@ public class AppRepositoryTests
     public async Task GetAppDetails_ReturnsAppDetailsSuccessfully()
     {
         // Arrange
-        var apps = _fixture.CreateMany<App>(1);
+        var apps = _fixture.CreateMany<Offer>(1);
         var appsDbSet = apps.AsFakeDbSet();
         var languagesDbSet = new List<Language>().AsFakeDbSet();
 
-        A.CallTo(() => _contextFake.Apps).Returns(appsDbSet);
+        A.CallTo(() => _contextFake.Offers).Returns(appsDbSet);
         A.CallTo(() => _contextFake.Languages).Returns(languagesDbSet);
         _fixture.Inject(_contextFake);
 
-        var sut = _fixture.Create<AppRepository>();
+        var sut = _fixture.Create<OfferRepository>();
 
         // Act
         var result = await sut.GetAppDetailsByIdAsync(apps.Single().Id, Guid.NewGuid().ToString(), null);

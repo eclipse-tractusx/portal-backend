@@ -42,8 +42,8 @@ public class ServiceBusinessLogicTests
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
-    private readonly IAppRepository _appRepository;
-    private readonly ICompanyAssignedAppsRepository _companyAssignedAppsRepository;
+    private readonly IOfferRepository _offerRepository;
+    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
@@ -60,8 +60,8 @@ public class ServiceBusinessLogicTests
         _iamUser = iamUser;
 
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _appRepository = A.Fake<IAppRepository>();
-        _companyAssignedAppsRepository = A.Fake<ICompanyAssignedAppsRepository>();
+        _offerRepository = A.Fake<IOfferRepository>();
+        _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
@@ -76,21 +76,21 @@ public class ServiceBusinessLogicTests
         // Arrange
         var serviceId = Guid.NewGuid();
 
-        var apps = new List<App>();
-        A.CallTo(() => _appRepository.CreateApp(A<string>._, A<AppTypeId>._, A<Action<App?>>._))
+        var apps = new List<Offer>();
+        A.CallTo(() => _offerRepository.CreateApp(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
             .Invokes(x =>
             {
                 var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<AppTypeId>("appType");
-                var action = x.Arguments.Get<Action<App?>>("setOptionalParameters");
+                var appTypeId = x.Arguments.Get<OfferTypeId>("appType");
+                var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
 
-                var app = new App(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
+                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
                 action?.Invoke(app);
                 apps.Add(app);
             })
-            .Returns(new App(serviceId)
+            .Returns(new Offer(serviceId)
             {
-                AppTypeId = AppTypeId.SERVICE 
+                OfferTypeId = OfferTypeId.SERVICE 
             });
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
@@ -109,21 +109,21 @@ public class ServiceBusinessLogicTests
         // Arrange
         var serviceId = Guid.NewGuid();
 
-        var apps = new List<App>();
-        A.CallTo(() => _appRepository.CreateApp(A<string>._, A<AppTypeId>._, A<Action<App?>>._))
+        var apps = new List<Offer>();
+        A.CallTo(() => _offerRepository.CreateApp(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
             .Invokes(x =>
             {
                 var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<AppTypeId>("appType");
-                var action = x.Arguments.Get<Action<App?>>("setOptionalParameters");
+                var appTypeId = x.Arguments.Get<OfferTypeId>("appType");
+                var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
 
-                var app = new App(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
+                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
                 action?.Invoke(app);
                 apps.Add(app);
             })
-            .Returns(new App(serviceId)
+            .Returns(new Offer(serviceId)
             {
-                AppTypeId = AppTypeId.SERVICE 
+                OfferTypeId = OfferTypeId.SERVICE 
             });
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
@@ -231,17 +231,17 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var companyAssignedAppId = Guid.NewGuid(); 
-        var companyAssignedApps = new List<CompanyAssignedApp>();
-        A.CallTo(() => _companyAssignedAppsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<AppSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
+        var companyAssignedApps = new List<OfferSubscription>();
+        A.CallTo(() => _offerSubscriptionsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
             .Invokes(x =>
             {
                 var appId = x.Arguments.Get<Guid>("appId");
                 var companyId = x.Arguments.Get<Guid>("companyId");
-                var appSubscriptionStatusId = x.Arguments.Get<AppSubscriptionStatusId>("appSubscriptionStatusId");
+                var appSubscriptionStatusId = x.Arguments.Get<OfferSubscriptionStatusId>("appSubscriptionStatusId");
                 var requesterId = x.Arguments.Get<Guid>("requesterId");
                 var creatorId = x.Arguments.Get<Guid>("creatorId");
 
-                var companyAssignedApp = new CompanyAssignedApp(companyAssignedAppId, appId, companyId, appSubscriptionStatusId, requesterId, creatorId);
+                var companyAssignedApp = new OfferSubscription(companyAssignedAppId, appId, companyId, appSubscriptionStatusId, requesterId, creatorId);
                 companyAssignedApps.Add(companyAssignedApp);
             });
         _fixture.Inject(_portalRepositories);
@@ -361,12 +361,12 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryId(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
             .ReturnsLazily(() => (Guid.Empty, _companyUser.CompanyId));
         
-        A.CallTo(() => _appRepository.GetActiveServices())
+        A.CallTo(() => _offerRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
         
-        A.CallTo(() => _appRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en")))
+        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en")))
             .ReturnsLazily(() => serviceDetail);
-        A.CallTo(() => _appRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._))
+        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._))
             .ReturnsLazily(() => default(ServiceDetailData));
         
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "en"))))
@@ -374,13 +374,13 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "gg"))))
             .Returns(new List<string>().ToAsyncEnumerable());
         
-        A.CallTo(() => _appRepository.CheckAppExistsById(_existingServiceId))
+        A.CallTo(() => _offerRepository.CheckAppExistsById(_existingServiceId))
             .Returns(true);
-        A.CallTo(() => _appRepository.CheckAppExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
+        A.CallTo(() => _offerRepository.CheckAppExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .Returns(false);
         
-        A.CallTo(() => _portalRepositories.GetInstance<IAppRepository>()).Returns(_appRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>()).Returns(_companyAssignedAppsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
     }

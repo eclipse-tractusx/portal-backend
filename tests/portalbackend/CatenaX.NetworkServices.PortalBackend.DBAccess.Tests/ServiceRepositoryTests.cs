@@ -62,7 +62,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.CreateApp("Catena X", AppTypeId.SERVICE, service =>
+        var results = sut.CreateApp("Catena X", OfferTypeId.SERVICE, service =>
         {
             service.Name = "Test Service";
             service.ContactEmail = "test@email.com";
@@ -75,7 +75,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<App>().Which.Name.Should().Be("Test Service");
+        changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test Service");
     }
 
     #endregion
@@ -131,11 +131,11 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    private async Task<(AppRepository, PortalDbContext)> CreateSut()
+    private async Task<(OfferRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         _fixture.Inject(context);
-        var sut = _fixture.Create<AppRepository>();
+        var sut = _fixture.Create<OfferRepository>();
         return (sut, context);
     }
 }

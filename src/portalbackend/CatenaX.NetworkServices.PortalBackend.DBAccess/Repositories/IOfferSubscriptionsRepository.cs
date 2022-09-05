@@ -27,17 +27,17 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 /// <summary>
 /// Repository for accessing company assigned apps on persistence layer.
 /// </summary>
-public interface ICompanyAssignedAppsRepository
+public interface IOfferSubscriptionsRepository
 {
     /// <summary>
     /// Adds the given company assigned app to the database
     /// </summary>
     /// <param name="appId">Id of the assigned app</param>
     /// <param name="companyId">Id of the company</param>
-    /// <param name="appSubscriptionStatusId">id of the app subscription status</param>
+    /// <param name="offerSubscriptionStatusId">id of the app subscription status</param>
     /// <param name="requesterId">id of the user that requested the subscription of the app</param>
     /// <param name="creatorId">id of the creator</param>
-    CompanyAssignedApp CreateCompanyAssignedApp(Guid appId, Guid companyId, AppSubscriptionStatusId appSubscriptionStatusId, Guid requesterId, Guid creatorId);
+    OfferSubscription CreateCompanyAssignedApp(Guid appId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
@@ -54,9 +54,9 @@ public interface ICompanyAssignedAppsRepository
     /// <returns>Returns a IAsyncEnumerable of the found <see cref="AppCompanySubscriptionStatusData"/></returns>
     IAsyncEnumerable<AppCompanySubscriptionStatusData> GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
-    Task<(CompanyAssignedApp? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
+    Task<(OfferSubscription? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
 
-    Task<(CompanyAssignedApp? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
+    Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
-    Task<(Guid companyId, CompanyAssignedApp? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
+    Task<(Guid companyId, OfferSubscription? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
 }

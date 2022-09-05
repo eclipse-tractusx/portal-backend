@@ -34,7 +34,7 @@ public class AppAssignedDocument
     public Guid DocumentId { get; private set; }
 
     // Navigation properties
-    public virtual App? App { get; private set; }
+    public virtual Offer? App { get; private set; }
     public virtual Document? Document { get; private set; }
 }
 

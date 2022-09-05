@@ -22,4 +22,4 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public record AppWithSubscriptionStatus(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus);
+public record AppWithSubscriptionStatus(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatus);

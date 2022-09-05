@@ -2,15 +2,15 @@
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AppLicense
+public class OfferLicense
 {
-    private AppLicense()
+    private OfferLicense()
     {
         Licensetext = null!;
-        Apps = new HashSet<App>();
+        Apps = new HashSet<Offer>();
     }
 
-    public AppLicense(Guid id, string licensetext) : this()
+    public OfferLicense(Guid id, string licensetext) : this()
     {
         Id = id;
         Licensetext = licensetext;
@@ -22,5 +22,5 @@ public class AppLicense
     public string Licensetext { get; set; }
 
     // Navigation properties
-    public virtual ICollection<App> Apps { get; private set; }
+    public virtual ICollection<Offer> Apps { get; private set; }
 }
