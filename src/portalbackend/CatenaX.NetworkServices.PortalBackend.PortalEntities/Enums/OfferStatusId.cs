@@ -1,6 +1,6 @@
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public enum AppStatusId : int
+public enum OfferStatusId : int
 {
     CREATED = 1,
     IN_REVIEW = 2,

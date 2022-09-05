@@ -31,10 +31,10 @@ public static class SeedExtensions
             dbContext.Addresses.AddRange(additionalAddresses);
         };
     
-    public static Action<PortalDbContext> SeedApps(params App[] additionalApps) => dbContext =>
+    public static Action<PortalDbContext> SeedOffers(params Offer[] additionalOffers) => dbContext =>
     {
-        dbContext.Apps.AddRange(AppData.Apps);
-        dbContext.Apps.AddRange(additionalApps);
+        dbContext.Offers.AddRange(OfferData.Offers);
+        dbContext.Offers.AddRange(additionalOffers);
     };
 
     public static Action<PortalDbContext> SeedAppInstances(params AppInstance[] additionalAppInstances) => dbContext =>

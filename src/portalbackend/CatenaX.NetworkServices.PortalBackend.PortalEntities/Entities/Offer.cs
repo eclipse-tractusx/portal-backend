@@ -23,21 +23,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class App
+public class Offer
 {
-    private App()
+    private Offer()
     {
         Provider = null!;
-        AppType = null!;
+        OfferType = null!;
         Agreements = new HashSet<Agreement>();
-        AppDescriptions = new HashSet<AppDescription>();
-        AppDetailImages = new HashSet<AppDetailImage>();
+        OfferDescriptions = new HashSet<OfferDescription>();
+        OfferDetailImages = new HashSet<OfferDetailImage>();
         Companies = new HashSet<Company>();
-        CompanyAssignedApps = new HashSet<CompanyAssignedApp>();
-        AppLicenses = new HashSet<AppLicense>();
+        OfferSubscriptions = new HashSet<OfferSubscription>();
+        OfferLicenses = new HashSet<OfferLicense>();
         UseCases = new HashSet<UseCase>();
         CompanyUsers = new HashSet<CompanyUser>();
-        Tags = new HashSet<AppTag>();
+        Tags = new HashSet<OfferTag>();
         SupportedLanguages = new HashSet<Language>();
         Documents = new HashSet<Document>();
         UserRoles = new HashSet<UserRole>();
@@ -49,17 +49,17 @@ public class App
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public App(Guid id) : this()
+    public Offer(Guid id) : this()
     {
         Id = id;
     }
     
-    public App(Guid id, string provider, DateTimeOffset dateCreated, AppTypeId appTypeId) : this()
+    public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
     {
         Id = id;
         Provider = provider;
         DateCreated = dateCreated;
-        AppTypeId = appTypeId;
+        OfferTypeId = offerTypeId;
     }
     
     public Guid Id { get; private set; }
@@ -86,34 +86,34 @@ public class App
     [MaxLength(255)]
     public string Provider { get; set; }
 
-    public AppTypeId AppTypeId { get; set; }
+    public OfferTypeId OfferTypeId { get; set; }
 
     public Guid? SalesManagerId { get; set; }
 
     public Guid? ProviderCompanyId { get; set; }
 
-    public AppStatusId AppStatusId { get; set; }
+    public OfferStatusId OfferStatusId { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
     // Navigation properties
     
-    public virtual AppType? AppType { get; private set; }
+    public virtual OfferType? OfferType { get; private set; }
     
-    public virtual AppStatus? AppStatus{ get; set; }
+    public virtual OfferStatus? OfferStatus{ get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
-    public virtual ICollection<AppDetailImage> AppDetailImages { get; private set; }
+    public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
+    public virtual ICollection<OfferDetailImage> OfferDetailImages { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }
-    public virtual ICollection<AppLicense> AppLicenses { get; private set; }
+    public virtual ICollection<OfferLicense> OfferLicenses { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
+    public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual Company? ProviderCompany { get; set; }
     public virtual CompanyUser? SalesManager { get; set; }
     public virtual ICollection<Language> SupportedLanguages { get; private set; }
-    public virtual ICollection<AppTag> Tags { get; private set; }
+    public virtual ICollection<OfferTag> Tags { get; private set; }
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
 }

@@ -3,7 +3,7 @@
 /// <summary>
 /// Status values for app subscriptions.
 /// </summary>
-public enum AppSubscriptionStatusId
+public enum OfferSubscriptionStatusId
 {
     /// <summary>
     /// App subscription not yet confirmed.

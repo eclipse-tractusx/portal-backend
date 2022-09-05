@@ -11,7 +11,7 @@ public class Document
         DocumentName = null!;
         DocumentContent = null!;
         Consents = new HashSet<Consent>();
-        Apps = new HashSet<App>();
+        Apps = new HashSet<Offer>();
     }
     
     /// <summary>
@@ -55,5 +55,5 @@ public class Document
     public virtual DocumentType? DocumentType { get; set; }
     public virtual DocumentStatus? DocumentStatus { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
-    public virtual ICollection<App> Apps { get; private set; }
+    public virtual ICollection<Offer> Apps { get; private set; }
 }

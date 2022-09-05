@@ -27,7 +27,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 /// <summary>
 /// Audit entity for App subscription relationship between companies and apps.
 /// </summary>
-public class AuditCompanyAssignedApp : CompanyAssignedApp, IAuditEntity
+public class AuditOfferSubscription : OfferSubscription, IAuditEntity
 {
     /// <inheritdoc />
     public Guid AuditId { get; set; }
