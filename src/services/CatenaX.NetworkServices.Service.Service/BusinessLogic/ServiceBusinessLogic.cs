@@ -91,24 +91,24 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
 
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var app = appRepository.CreateApp(string.Empty, OfferTypeId.SERVICE, app =>
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var service = offerRepository.CreateOffer(string.Empty, OfferTypeId.SERVICE, service =>
         {
-            app.ContactEmail = data.ContactEmail;
-            app.Name = data.Title;
-            app.SalesManagerId = data.SalesManager;
-            app.ThumbnailUrl = data.ThumbnailUrl;
-            app.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
-            app.OfferStatusId = OfferStatusId.CREATED;
-            app.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
+            service.ContactEmail = data.ContactEmail;
+            service.Name = data.Title;
+            service.SalesManagerId = data.SalesManager;
+            service.ThumbnailUrl = data.ThumbnailUrl;
+            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
+            service.OfferStatusId = OfferStatusId.CREATED;
+            service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
         });
-        var licenseId = appRepository.CreateAppLicenses(data.Price).Id;
-        appRepository.CreateAppAssignedLicense(app.Id, licenseId);
-        appRepository.AddAppDescriptions(data.Descriptions.Select(d =>
-            new ValueTuple<Guid, string, string, string>(app.Id, d.LanguageCode, string.Empty, d.Description)));
+        var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
+        offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
+        offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
+            new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, string.Empty, d.Description)));
 
         await _portalRepositories.SaveAsync();
-        return app.Id;
+        return service.Id;
     }
 
     /// <inheritdoc />
@@ -130,7 +130,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
         }
 
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateCompanyAssignedApp(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

@@ -63,7 +63,7 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public Offer CreateApp(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null)
+    public Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null)
     {
         var app = _context.Offers.Add(new Offer(Guid.NewGuid(), provider, DateTimeOffset.UtcNow, offerType)).Entity;
         setOptionalParameters?.Invoke(app);
@@ -154,11 +154,11 @@ public class OfferRepository : IOfferRepository
     }
 
     /// <inheritdoc />
-    public OfferLicense CreateAppLicenses(string licenseText) =>
+    public OfferLicense CreateOfferLicenses(string licenseText) =>
         _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
-    public OfferAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId) =>
+    public OfferAssignedLicense CreateOfferAssignedLicense(Guid appId, Guid appLicenseId) =>
         _context.OfferAssignedLicenses.Add(new OfferAssignedLicense(appId, appLicenseId)).Entity;
 
     /// <inheritdoc />
@@ -170,7 +170,7 @@ public class OfferRepository : IOfferRepository
         _context.AppAssignedUseCases.AddRange(appUseCases.Select(s => new AppAssignedUseCase(s.appId, s.useCaseId)));
 
     /// <inheritdoc />
-    public void AddAppDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
+    public void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
         _context.OfferDescriptions.AddRange(appDescriptions.Select(s => new OfferDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
 
     /// <inheritdoc />

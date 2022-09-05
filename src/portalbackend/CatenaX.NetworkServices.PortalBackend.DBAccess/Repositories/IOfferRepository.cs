@@ -57,7 +57,7 @@ public interface IOfferRepository
     /// <param name="provider">Provider of the app</param>
     /// <param name="offerType">Type of the app</param>
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
-    Offer CreateApp(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
+    Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
 
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
@@ -79,14 +79,14 @@ public interface IOfferRepository
     /// Adds an <see cref="OfferLicense"/> to the database
     /// </summary>
     /// <param name="licenseText">Text of the license</param>
-    OfferLicense CreateAppLicenses(string licenseText);
+    OfferLicense CreateOfferLicenses(string licenseText);
 
     /// <summary>
     /// Adds an <see cref="OfferAssignedLicense"/> to the database
     /// </summary>
     /// <param name="appId">Id of the application</param>
     /// <param name="appLicenseId">Id of the app license</param>
-    OfferAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId);
+    OfferAssignedLicense CreateOfferAssignedLicense(Guid appId, Guid appLicenseId);
 
     /// <summary>
     /// Adds the given app favourite to the database
@@ -105,7 +105,7 @@ public interface IOfferRepository
     /// Adds <see cref="OfferDescription"/>s to the database
     /// </summary>
     /// <param name="appDescriptions">The app descriptions that should be added to the database</param>
-    void AddAppDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions);
+    void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions);
 
     /// <summary>
     /// Adds <see cref="AppLanguage"/>s to the database

@@ -223,7 +223,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
 
-        var appId = appRepository.CreateApp(appInputModel.Provider, OfferTypeId.APP, app =>
+        var appId = appRepository.CreateOffer(appInputModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appInputModel.Title;
             app.MarketingUrl = appInputModel.ProviderUri;
@@ -235,11 +235,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             app.SalesManagerId = appInputModel.SalesManagerId;
         }).Id;
 
-        var licenseId = appRepository.CreateAppLicenses(appInputModel.Price).Id;
-        appRepository.CreateAppAssignedLicense(appId, licenseId);
+        var licenseId = appRepository.CreateOfferLicenses(appInputModel.Price).Id;
+        appRepository.CreateOfferAssignedLicense(appId, licenseId);
         appRepository.AddAppAssignedUseCases(appInputModel.UseCaseIds.Select(uc =>
             new ValueTuple<Guid, Guid>(appId, uc)));
-        appRepository.AddAppDescriptions(appInputModel.Descriptions.Select(d =>
+        appRepository.AddOfferDescriptions(appInputModel.Descriptions.Select(d =>
             new ValueTuple<Guid, string, string, string>(appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c =>
             new ValueTuple<Guid, string>(appId, c)));
@@ -284,7 +284,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {   
         // Add app to db
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appId = appRepository.CreateApp(appRequestModel.Provider, OfferTypeId.APP, app =>
+        var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
@@ -292,14 +292,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             app.OfferStatusId = OfferStatusId.CREATED;
         }).Id;
 
-        appRepository.AddAppDescriptions(appRequestModel.Descriptions.Select(d =>
+        appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
               (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
               (appId, Guid.Parse(uc))));
-        var licenseId = appRepository.CreateAppLicenses(appRequestModel.Price).Id;
-        appRepository.CreateAppAssignedLicense(appId, licenseId);
+        var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
+        appRepository.CreateOfferAssignedLicense(appId, licenseId);
 
         try
         {
@@ -325,7 +325,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var (companyId, companyAssignedApp, companyName, companyUserId) = companyAppSubscriptionData;
         if (companyAssignedApp == null)
         {
-            companyAssignedAppRepository.CreateCompanyAssignedApp(appId, companyId, OfferSubscriptionStatusId.PENDING,
+            companyAssignedAppRepository.CreateOfferSubscription(appId, companyId, OfferSubscriptionStatusId.PENDING,
                 requesterId, companyUserId);
         }
         else

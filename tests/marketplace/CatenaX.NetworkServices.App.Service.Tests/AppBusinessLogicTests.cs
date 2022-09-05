@@ -113,7 +113,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
 
             A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUser.UserEntityId))
                 .Returns(new ValueTuple<Guid, OfferSubscription?, string, Guid>(companyUser.CompanyId, null, "umbrella corporation", companyUser.Id));
-            A.CallTo(() => _offerSubscriptionsRepository.CreateCompanyAssignedApp(appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
+            A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
                 .Returns(new OfferSubscription(Guid.NewGuid(), appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id));
             A.CallTo(() => _offerRepository.GetAppProviderDetailsAsync(appId))
                 .Returns(new AppProviderDetailsData(appName, providerName, providerContactEmail, Guid.NewGuid()));
@@ -129,7 +129,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             await sut.AddOwnCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
 
             // Assert
-            A.CallTo(() => _offerSubscriptionsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
+            A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
         }
 

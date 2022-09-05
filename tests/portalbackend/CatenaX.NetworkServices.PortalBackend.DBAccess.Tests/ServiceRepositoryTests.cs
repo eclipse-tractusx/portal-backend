@@ -62,7 +62,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.CreateApp("Catena X", OfferTypeId.SERVICE, service =>
+        var results = sut.CreateOffer("Catena X", OfferTypeId.SERVICE, service =>
         {
             service.Name = "Test Service";
             service.ContactEmail = "test@email.com";
