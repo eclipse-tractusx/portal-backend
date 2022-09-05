@@ -63,10 +63,12 @@ builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
 
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
+builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
@@ -74,6 +76,9 @@ builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian
 builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
+
+builder.Services.AddDbContext<ProvisioningDBContext>(options =>
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
 builder.Build()
     .CreateApp<Program>("administration", VERSION)
