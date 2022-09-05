@@ -75,7 +75,7 @@ public class OfferRepositoryTests
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(apps.Count());
         results.Should().AllBeOfType<AppData>();
-        results.Should().AllSatisfy(a => apps.Any(app => app.Id == a.Id));
+        results.Should().AllSatisfy(a => a.Should().Match<AppData>(a => apps.Any(app => app.Id == a.Id)));
     }
 
     [Fact]
