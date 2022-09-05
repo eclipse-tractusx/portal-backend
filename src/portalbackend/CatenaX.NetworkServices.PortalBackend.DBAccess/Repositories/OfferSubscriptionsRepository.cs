@@ -99,7 +99,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     public Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId) =>
         _context.Offers
             .Where(app => app.Id == appId)
-            .Select(app => ((OfferSubscription? companyAssignedApp, bool _)) new (
+            .Select(app => new ValueTuple<OfferSubscription?,bool>(
                 app!.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 true
             ))
