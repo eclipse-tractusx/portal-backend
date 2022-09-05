@@ -30,7 +30,7 @@ public class LanguageRepository : ILanguageRepository
     /// <inheritdoc />
     public IAsyncEnumerable<string> GetLanguageCodesUntrackedAsync(ICollection<string> languageCodes) =>
         _portalDbContext.Languages.AsNoTracking()
-            .Where(x => languageCodes.Any(y => y == x.ShortName))
+            .Where(x => languageCodes.Contains(x.ShortName))
             .Select(x => x.ShortName)
             .AsAsyncEnumerable();
 }
