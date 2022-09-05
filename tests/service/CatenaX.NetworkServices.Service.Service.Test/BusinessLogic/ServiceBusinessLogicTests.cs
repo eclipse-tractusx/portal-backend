@@ -369,9 +369,9 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._))
             .ReturnsLazily(() => default(ServiceDetailData));
         
-        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "en"))))
+        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
             .Returns(new List<string> { "en" }.ToAsyncEnumerable());
-        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<ICollection<string>>.That.Matches(x => x.Count == 1 && x.All(y => y == "gg"))))
+        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "gg"))))
             .Returns(new List<string>().ToAsyncEnumerable());
         
         A.CallTo(() => _offerRepository.CheckAppExistsById(_existingServiceId))
