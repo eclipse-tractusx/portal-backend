@@ -81,7 +81,7 @@ public class ServiceBusinessLogicTests
             .Invokes(x =>
             {
                 var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<OfferTypeId>("appType");
+                var appTypeId = x.Arguments.Get<OfferTypeId>("offerType");
                 var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
 
                 var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
@@ -114,7 +114,7 @@ public class ServiceBusinessLogicTests
             .Invokes(x =>
             {
                 var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<OfferTypeId>("appType");
+                var appTypeId = x.Arguments.Get<OfferTypeId>("offerType");
                 var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
 
                 var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
@@ -200,7 +200,7 @@ public class ServiceBusinessLogicTests
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
-        var result = await sut.GetAllActiveServicesAsync(0, 15);
+        var result = await sut.GetAllActiveServicesAsync(0, 5);
 
         // Assert
         result.Content.Should().HaveCount(5);
@@ -235,9 +235,9 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerSubscriptionsRepository.CreateCompanyAssignedApp(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
             .Invokes(x =>
             {
-                var appId = x.Arguments.Get<Guid>("appId");
+                var appId = x.Arguments.Get<Guid>("offerId");
                 var companyId = x.Arguments.Get<Guid>("companyId");
-                var appSubscriptionStatusId = x.Arguments.Get<OfferSubscriptionStatusId>("appSubscriptionStatusId");
+                var appSubscriptionStatusId = x.Arguments.Get<OfferSubscriptionStatusId>("offerSubscriptionStatusId");
                 var requesterId = x.Arguments.Get<Guid>("requesterId");
                 var creatorId = x.Arguments.Get<Guid>("creatorId");
 

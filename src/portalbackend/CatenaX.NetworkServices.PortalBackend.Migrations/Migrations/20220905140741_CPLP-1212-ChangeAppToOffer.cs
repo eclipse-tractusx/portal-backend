@@ -626,8 +626,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
             
-            /// Drop the trigger on the old company assigned apps table manually
-            migrationBuilder.Sql($"DROP FUNCTION IF EXISTS process_audit_company_assigned_apps_audit();");
             migrationBuilder.AddAuditTrigger<AuditOfferSubscription>("cplp_1212_change_app_to_offer");
         }
 

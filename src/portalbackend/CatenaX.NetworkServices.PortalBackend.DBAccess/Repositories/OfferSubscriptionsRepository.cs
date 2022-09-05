@@ -41,8 +41,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public OfferSubscription CreateCompanyAssignedApp(Guid appId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId) =>
-        _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), appId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
+    public OfferSubscription CreateCompanyAssignedApp(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId) =>
+        _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
 
     public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
         Guid appId,
