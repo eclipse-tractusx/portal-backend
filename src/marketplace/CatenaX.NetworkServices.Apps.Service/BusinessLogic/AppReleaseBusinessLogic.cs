@@ -83,7 +83,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             if (string.IsNullOrWhiteSpace(item.LanguageCode) && appResult.LanguageShortNames.Any())
             {
-                //Remove
                 _portalRepositories.Remove(new AppDescription(appId, appResult.LanguageShortNames.ElementAt(index)));
                 index++;
             }
@@ -110,7 +109,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                (appId, d.LanguageCode!, d.LongDescription!, string.Empty)));
         }
 
-        //var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
         var lstToAddImage = new List<AppEditableImage>();
         int currentIndex = 0;
         foreach (var record in updateModel.Images)
@@ -140,7 +138,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                     
             }
 
-            //appReleaseRepository.CreateAppDetailImage(appId, record.ImageUrl);
         }
         if (lstToAddImage.Count > 0)
         {
