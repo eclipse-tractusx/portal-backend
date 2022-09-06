@@ -177,6 +177,7 @@ public class AppRepository : IAppRepository
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
     
+    ///<inheritdoc />
     public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages)=>
         _context.AppDetailImages.AddRange(appImages.Select(s=> new AppDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
     
@@ -197,17 +198,16 @@ public class AppRepository : IAppRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<string> Descriptions, IEnumerable<string> ImageUrls, IEnumerable<Guid> appImageId)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<string> ImageUrls, IEnumerable<Guid> appImageId)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
         _context.Apps
             .AsNoTracking()
             .AsSplitQuery()
             .Where(a => a.Id == appId)
             .Select(a =>
-                new ValueTuple<bool,bool,IEnumerable<string>,IEnumerable<string>,IEnumerable<string>,IEnumerable<Guid>>(
+                new ValueTuple<bool, bool, IEnumerable<string>, IEnumerable<string>, IEnumerable<Guid>>(
                     a.AppStatusId == AppStatusId.CREATED,
                     a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                     a.AppDescriptions.Select(description => description.LanguageShortName),
-                    a.AppDescriptions.Select(description => description.DescriptionLong),
                     a.AppDetailImages.Select(image => image.ImageUrl),
                     a.AppDetailImages.Select(image => image.Id)
                 ))

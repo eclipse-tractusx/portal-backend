@@ -77,18 +77,26 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.MarketingUrl = updateModel.ProviderUri;
         });
 
+        UpsertRemoveAppDescription(appId, updateModel, appResult.LanguageShortNames, appRepository);
+        UpsertRemoveAppDetailImage(appId, updateModel, appResult.ImageUrls, appResult.appImageId, appRepository);
+        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private void UpsertRemoveAppDescription(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appResult, IAppRepository appRepository)
+    {
         var lstToAdd = new List<Localization>();
         int index = 0;
         foreach (var item in updateModel.Descriptions)
         {
-            if (string.IsNullOrWhiteSpace(item.LanguageCode) && appResult.LanguageShortNames.Any())
+            if (string.IsNullOrWhiteSpace(item.LanguageCode) && appResult.Any())
             {
-                _portalRepositories.Remove(new AppDescription(appId, appResult.LanguageShortNames.ElementAt(index)));
+                _portalRepositories.Remove(new AppDescription(appId, appResult.ElementAt(index)));
                 index++;
             }
             else
             {
-                if (!appResult.LanguageShortNames.Contains(item.LanguageCode))
+                if (!appResult.Contains(item.LanguageCode))
                 {
                     lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
                 }
@@ -99,30 +107,33 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                         appdesc.DescriptionLong = item.LongDescription!;
                     });
                 }
-                    
             }
-
         }
+
         if (lstToAdd.Count > 0)
         {
             appRepository.AddAppDescriptions(lstToAdd.AsEnumerable().Select(d =>
                (appId, d.LanguageCode!, d.LongDescription!, string.Empty)));
         }
 
+    }
+
+    private void UpsertRemoveAppDetailImage(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appImgUrl,IEnumerable<Guid> appImgId, IAppRepository appRepository)
+    {
         var lstToAddImage = new List<AppEditableImage>();
         int currentIndex = 0;
         foreach (var record in updateModel.Images)
         {
             Guid parsedId;
             var imageId = Guid.TryParse(record.AppImageId, out parsedId) ? parsedId : Guid.Empty;
-            if (imageId == Guid.Empty && string.IsNullOrWhiteSpace(record.ImageUrl) && appResult.appImageId.Any())
+            if (imageId == Guid.Empty && string.IsNullOrWhiteSpace(record.ImageUrl) && appImgId.Any())
             {
-                _portalRepositories.Remove(new AppDetailImage(appResult.appImageId.ElementAt(currentIndex)));
+                _portalRepositories.Remove(new AppDetailImage(appImgId.ElementAt(currentIndex)));
                 currentIndex++;
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !appResult.ImageUrls.Contains(record.ImageUrl) && imageId == Guid.Empty)
+                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !appImgUrl.Contains(record.ImageUrl) && imageId == Guid.Empty)
                 {
                     lstToAddImage.Add(new AppEditableImage(null, record.ImageUrl));
                 }
@@ -145,8 +156,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             appRepository.AddAppDetailImages(lstToAddImage.AsEnumerable().Select(d =>
             (appId, d.ImageUrl!)));
         }
-        
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
