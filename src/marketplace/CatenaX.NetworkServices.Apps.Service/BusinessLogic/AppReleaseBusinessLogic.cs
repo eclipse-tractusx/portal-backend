@@ -124,24 +124,23 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         int currentIndex = 0;
         foreach (var record in updateModel.Images)
         {
-            Guid parsedId;
-            var imageId = Guid.TryParse(record.AppImageId, out parsedId) ? parsedId : Guid.Empty;
-            if (imageId == Guid.Empty && string.IsNullOrWhiteSpace(record.ImageUrl) && appImgId.Any())
+            
+            if (!Guid.TryParse(record.AppImageId, out _) && string.IsNullOrWhiteSpace(record.ImageUrl) && appImgId.Any())
             {
                 _portalRepositories.Remove(new AppDetailImage(appImgId.ElementAt(currentIndex)));
-                currentIndex++;
+                
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !appImgUrl.Contains(record.ImageUrl) && imageId == Guid.Empty)
+                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !appImgUrl.Contains(record.ImageUrl) && !Guid.TryParse(record.AppImageId, out _))
                 {
                     lstToAddImage.Add(new AppEditableImage(null, record.ImageUrl));
                 }
                 else
                 {
-                    if (imageId != Guid.Empty)
+                    if (!Guid.TryParse(record.AppImageId, out _))
                     {
-                        _portalRepositories.Attach(new AppDetailImage(imageId), appimg =>
+                        _portalRepositories.Attach(new AppDetailImage(appImgId.ElementAt(currentIndex)), appimg =>
                         { 
                             appimg.ImageUrl = record.ImageUrl!;
                         });
@@ -149,7 +148,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 }
                     
             }
-
+            currentIndex++;
         }
         if (lstToAddImage.Count > 0)
         {
