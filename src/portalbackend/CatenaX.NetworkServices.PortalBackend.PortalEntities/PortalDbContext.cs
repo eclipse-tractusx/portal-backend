@@ -157,7 +157,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<AgreementAssignedOffer>(entity =>
         {
-            entity.HasKey(e => new { e.AgreementId, e.Offer });
+            entity.HasKey(e => new { e.AgreementId, e.OfferId });
 
             entity.HasOne(d => d.Agreement)
                 .WithMany(p => p!.AgreementAssignedOffers)
@@ -166,7 +166,7 @@ public class PortalDbContext : DbContext
 
             entity.HasOne(d => d.Offer)
                 .WithMany(p => p!.AgreementAssignedOffers!)
-                .HasForeignKey(d => d.OfferId)
+                .HasForeignKey(d => d.AgreementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
