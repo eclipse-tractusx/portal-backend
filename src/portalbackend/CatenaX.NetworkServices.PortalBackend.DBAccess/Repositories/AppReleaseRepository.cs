@@ -51,8 +51,8 @@ public class AppReleaseRepository : IAppReleaseRepository
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
-    public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
-        _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
+    public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
+        _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
     
     ///<inheritdoc/>
     public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>

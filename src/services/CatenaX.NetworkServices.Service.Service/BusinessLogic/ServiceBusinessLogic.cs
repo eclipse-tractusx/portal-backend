@@ -112,9 +112,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task AddServiceSubscription(Guid serviceId, string iamUserId)
+    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId)
     {
-        if (!await _portalRepositories.GetInstance<IOfferRepository>().CheckAppExistsById(serviceId).ConfigureAwait(false))
+        if (!await _portalRepositories.GetInstance<IOfferRepository>().CheckServiceExistsById(serviceId).ConfigureAwait(false))
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
@@ -130,8 +130,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
         }
 
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return offerSubscription.Id;
     }
 
     /// <inheritdoc />
@@ -144,6 +145,19 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         }
 
         return serviceDetailData;
+    }
+
+    /// <inheritdoc />
+    public async Task<SubscriptionDetailData> GetSubscriptionDetail(Guid subscriptionId, string iamUserId)
+    {
+        var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId).ConfigureAwait(false);
+        if (subscriptionDetailData is null)
+        {
+            throw new NotFoundException($"Subscription {subscriptionId} does not exist");
+        }
+
+        return subscriptionDetailData;
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

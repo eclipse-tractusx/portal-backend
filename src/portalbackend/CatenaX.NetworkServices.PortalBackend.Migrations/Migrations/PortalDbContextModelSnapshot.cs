@@ -165,65 +165,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditOfferSubscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid?>("AppSubscriptionDetailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_subscription_detail_id");
-
-                    b.Property<Guid>("AuditId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_id");
-
-                    b.Property<int>("AuditOperationId")
-                        .HasColumnType("integer")
-                        .HasColumnName("audit_operation_id");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<DateTimeOffset>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(4096)
-                        .HasColumnType("character varying(4096)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("DisplayName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("display_name");
-
-                    b.Property<Guid?>("LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("last_editor_id");
-
-                    b.Property<Guid>("OfferId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
-                    b.Property<int>("OfferSubscriptionStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("offer_subscription_status_id");
-
-                    b.Property<Guid>("RequesterId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("requester_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_audit_offer_subscriptions_cplp_1212_change_app_to_offer");
-
-                    b.ToTable("audit_offer_subscriptions_cplp_1212_change_app_to_offer", "portal");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Property<Guid>("Id")
@@ -420,25 +361,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedDocument", b =>
-                {
-                    b.Property<Guid>("AppId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_id");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("document_id");
-
-                    b.HasKey("AppId", "DocumentId")
-                        .HasName("pk_app_assigned_documents");
-
-                    b.HasIndex("DocumentId")
-                        .HasDatabaseName("ix_app_assigned_documents_document_id");
-
-                    b.ToTable("app_assigned_documents", "portal");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
                 {
                     b.Property<Guid>("AppId")
@@ -521,11 +443,19 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("app_subscription_url");
 
+                    b.Property<Guid>("OfferSubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_subscription_id");
+
                     b.HasKey("Id")
                         .HasName("pk_app_subscription_details");
 
                     b.HasIndex("AppInstanceId")
                         .HasDatabaseName("ix_app_subscription_details_app_instance_id");
+
+                    b.HasIndex("OfferSubscriptionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_subscription_details_offer_subscription_id");
 
                     b.ToTable("app_subscription_details", "portal");
                 });
@@ -3783,6 +3713,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.ToTable("offers", "portal");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferAssignedDocument", b =>
+                {
+                    b.Property<Guid>("OfferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_id");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.HasKey("OfferId", "DocumentId")
+                        .HasName("pk_offer_assigned_documents");
+
+                    b.HasIndex("DocumentId")
+                        .HasDatabaseName("ix_offer_assigned_documents_document_id");
+
+                    b.ToTable("offer_assigned_documents", "portal");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferAssignedLicense", b =>
                 {
                     b.Property<Guid>("OfferId")
@@ -3926,10 +3875,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("AppSubscriptionDetailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_subscription_detail_id");
-
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
@@ -3964,9 +3909,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_offer_subscriptions");
-
-                    b.HasIndex("AppSubscriptionDetailId")
-                        .HasDatabaseName("ix_offer_subscriptions_app_subscription_detail_id");
 
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_offer_subscriptions_company_id");
@@ -4301,25 +4243,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("DocumentTemplate");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedDocument", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "App")
-                        .WithMany()
-                        .HasForeignKey("AppId")
-                        .IsRequired()
-                        .HasConstraintName("fk_app_assigned_documents_offers_app_id");
-
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", "Document")
-                        .WithMany()
-                        .HasForeignKey("DocumentId")
-                        .IsRequired()
-                        .HasConstraintName("fk_app_assigned_documents_documents_document_id");
-
-                    b.Navigation("App");
-
-                    b.Navigation("Document");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "App")
@@ -4386,7 +4309,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("AppInstanceId")
                         .HasConstraintName("fk_app_subscription_details_app_instances_app_instance_id");
 
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
+                        .WithOne("AppSubscriptionDetail")
+                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", "OfferSubscriptionId")
+                        .IsRequired()
+                        .HasConstraintName("fk_app_subscription_details_offer_subscriptions_offer_subscrip");
+
                     b.Navigation("AppInstance");
+
+                    b.Navigation("OfferSubscription");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
@@ -4860,6 +4791,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("SalesManager");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferAssignedDocument", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .IsRequired()
+                        .HasConstraintName("fk_offer_assigned_documents_documents_document_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
+                        .WithMany()
+                        .HasForeignKey("OfferId")
+                        .IsRequired()
+                        .HasConstraintName("fk_offer_assigned_documents_offers_offer_id");
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Offer");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferAssignedLicense", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
@@ -4911,11 +4861,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", "AppSubscriptionDetail")
-                        .WithMany("OfferSubscriptions")
-                        .HasForeignKey("AppSubscriptionDetailId")
-                        .HasConstraintName("fk_offer_subscriptions_app_subscription_details_app_subscripti");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("OfferSubscriptions")
                         .HasForeignKey("CompanyId")
@@ -4933,8 +4878,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasForeignKey("OfferSubscriptionStatusId")
                         .IsRequired()
                         .HasConstraintName("fk_offer_subscriptions_offer_subscription_statuses_offer_subsc");
-
-                    b.Navigation("AppSubscriptionDetail");
 
                     b.Navigation("Company");
 
@@ -5009,11 +4952,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppInstance", b =>
                 {
                     b.Navigation("AppSubscriptionDetails");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", b =>
-                {
-                    b.Navigation("OfferSubscriptions");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
@@ -5197,6 +5135,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferStatus", b =>
                 {
                     b.Navigation("Offers");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", b =>
+                {
+                    b.Navigation("AppSubscriptionDetail");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>

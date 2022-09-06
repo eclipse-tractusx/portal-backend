@@ -344,6 +344,8 @@ public class UserRepository : IUserRepository
             .Intersect(
                 _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
                     .SelectMany(u => u.CompanyUser!.UserRoles.Select(r => r.Offer))
+                    .Where(x => x != null)
+                    .Select(x => x!)
             )
             .Select(app => new BusinessAppData(
                 app!.Id,

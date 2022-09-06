@@ -92,11 +92,26 @@ public class ServiceController : ControllerBase
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> AddServiceSubscription([FromRoute] Guid serviceId)
+    public async Task<ActionResult<Guid>> AddServiceSubscription([FromRoute] Guid serviceId)
     {
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AddServiceSubscription(serviceId, iamUserId)).ConfigureAwait(false);
-        return this.NoContent();
+        var serviceSubscriptionId = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AddServiceSubscription(serviceId, iamUserId)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetSubscriptionDetail), new { notificationId = serviceSubscriptionId }, serviceSubscriptionId);
     }
+
+    /// <summary>
+    /// Gets the Subscription Detail Data
+    /// </summary>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C646">Id for the subscription the wants to retrieve.</param>
+    /// <remarks>Example: Get: /api/services/subscription/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C646</remarks>
+    /// <response code="200">Returns the subscription details.</response>
+    /// <response code="404">Service was not found.</response>
+    [HttpGet]
+    [Route("/subscription/{subscriptionId}", Name = nameof(GetSubscriptionDetail))]
+    [Authorize(Roles = "view_service_offering")]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) => 
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetail(subscriptionId, iamUserId));
 
     /// <summary>
     /// Adds a new service subscription.

@@ -1,5 +1,4 @@
 ﻿using System;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -14,11 +13,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "fk_agreements_apps_app_id",
                 schema: "portal",
                 table: "agreements");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_app_assigned_documents_apps_app_id",
-                schema: "portal",
-                table: "app_assigned_documents");
 
             migrationBuilder.DropForeignKey(
                 name: "fk_app_assigned_use_cases_apps_app_id",
@@ -56,6 +50,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "user_roles");
 
             migrationBuilder.DropTable(
+                name: "app_assigned_documents",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "app_assigned_licenses",
                 schema: "portal");
 
@@ -69,6 +67,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             migrationBuilder.DropTable(
                 name: "app_tags",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "audit_company_assigned_apps_cplp_1254_db_audit",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -154,49 +156,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "agreements",
                 newName: "ix_agreements_offer_id");
-
-            migrationBuilder.CreateTable(
-                name: "app_subscription_details",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    app_instance_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    app_subscription_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_app_subscription_details", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_app_subscription_details_app_instances_app_instance_id",
-                        column: x => x.app_instance_id,
-                        principalSchema: "portal",
-                        principalTable: "app_instances",
-                        principalColumn: "id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "audit_offer_subscriptions_cplp_1212_change_app_to_offer",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    audit_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    audit_operation_id = table.Column<int>(type: "integer", nullable: false),
-                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    offer_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    offer_subscription_status_id = table.Column<int>(type: "integer", nullable: false),
-                    display_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    description = table.Column<string>(type: "character varying(4096)", maxLength: 4096, nullable: true),
-                    requester_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    app_subscription_detail_id = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_audit_offer_subscriptions_cplp_1212_change_app_to_offer", x => x.id);
-                });
 
             migrationBuilder.CreateTable(
                 name: "offer_licenses",
@@ -302,6 +261,31 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "offer_assigned_documents",
+                schema: "portal",
+                columns: table => new
+                {
+                    offer_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    document_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_offer_assigned_documents", x => new { x.offer_id, x.document_id });
+                    table.ForeignKey(
+                        name: "fk_offer_assigned_documents_documents_document_id",
+                        column: x => x.document_id,
+                        principalSchema: "portal",
+                        principalTable: "documents",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_offer_assigned_documents_offers_offer_id",
+                        column: x => x.offer_id,
+                        principalSchema: "portal",
+                        principalTable: "offers",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "offer_assigned_licenses",
                 schema: "portal",
                 columns: table => new
@@ -385,18 +369,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     display_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     description = table.Column<string>(type: "character varying(4096)", maxLength: 4096, nullable: true),
                     requester_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    app_subscription_detail_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_offer_subscriptions", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_offer_subscriptions_app_subscription_details_app_subscripti",
-                        column: x => x.app_subscription_detail_id,
-                        principalSchema: "portal",
-                        principalTable: "app_subscription_details",
-                        principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_offer_subscriptions_companies_company_id",
                         column: x => x.company_id,
@@ -433,6 +410,33 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         column: x => x.offer_id,
                         principalSchema: "portal",
                         principalTable: "offers",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "app_subscription_details",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    offer_subscription_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    app_instance_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    app_subscription_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_app_subscription_details", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_app_subscription_details_app_instances_app_instance_id",
+                        column: x => x.app_instance_id,
+                        principalSchema: "portal",
+                        principalTable: "app_instances",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_app_subscription_details_offer_subscriptions_offer_subscrip",
+                        column: x => x.offer_subscription_id,
+                        principalSchema: "portal",
+                        principalTable: "offer_subscriptions",
                         principalColumn: "id");
                 });
 
@@ -477,6 +481,19 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 column: "app_instance_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_app_subscription_details_offer_subscription_id",
+                schema: "portal",
+                table: "app_subscription_details",
+                column: "offer_subscription_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_offer_assigned_documents_document_id",
+                schema: "portal",
+                table: "offer_assigned_documents",
+                column: "document_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_offer_assigned_licenses_offer_license_id",
                 schema: "portal",
                 table: "offer_assigned_licenses",
@@ -493,12 +510,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "offer_detail_images",
                 column: "offer_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_offer_subscriptions_app_subscription_detail_id",
-                schema: "portal",
-                table: "offer_subscriptions",
-                column: "app_subscription_detail_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_offer_subscriptions_company_id",
@@ -547,15 +558,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "agreements",
                 column: "offer_id",
-                principalSchema: "portal",
-                principalTable: "offers",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_app_assigned_documents_offers_app_id",
-                schema: "portal",
-                table: "app_assigned_documents",
-                column: "app_id",
                 principalSchema: "portal",
                 principalTable: "offers",
                 principalColumn: "id");
@@ -625,23 +627,14 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalTable: "offers",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
-            
-            migrationBuilder.AddAuditTrigger<AuditOfferSubscription>("cplp_1212_change_app_to_offer");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
-        {            
-            migrationBuilder.DropAuditTrigger<AuditOfferSubscription>();
-
+        {
             migrationBuilder.DropForeignKey(
                 name: "fk_agreements_offers_offer_id",
                 schema: "portal",
                 table: "agreements");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_app_assigned_documents_offers_app_id",
-                schema: "portal",
-                table: "app_assigned_documents");
 
             migrationBuilder.DropForeignKey(
                 name: "fk_app_assigned_use_cases_offers_app_id",
@@ -679,7 +672,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "user_roles");
 
             migrationBuilder.DropTable(
-                name: "audit_offer_subscriptions_cplp_1212_change_app_to_offer",
+                name: "app_subscription_details",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "offer_assigned_documents",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -695,19 +692,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offer_subscriptions",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
                 name: "offer_tags",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offer_licenses",
+                name: "offer_subscriptions",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "app_subscription_details",
+                name: "offer_licenses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -958,6 +951,31 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         column: x => x.service_status_id,
                         principalSchema: "portal",
                         principalTable: "service_statuses",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "app_assigned_documents",
+                schema: "portal",
+                columns: table => new
+                {
+                    app_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    document_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_app_assigned_documents", x => new { x.app_id, x.document_id });
+                    table.ForeignKey(
+                        name: "fk_app_assigned_documents_apps_app_id",
+                        column: x => x.app_id,
+                        principalSchema: "portal",
+                        principalTable: "apps",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_app_assigned_documents_documents_document_id",
+                        column: x => x.document_id,
+                        principalSchema: "portal",
+                        principalTable: "documents",
                         principalColumn: "id");
                 });
 
@@ -1228,6 +1246,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_app_assigned_documents_document_id",
+                schema: "portal",
+                table: "app_assigned_documents",
+                column: "document_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_app_assigned_licenses_app_license_id",
                 schema: "portal",
                 table: "app_assigned_licenses",
@@ -1333,15 +1357,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "fk_agreements_apps_app_id",
                 schema: "portal",
                 table: "agreements",
-                column: "app_id",
-                principalSchema: "portal",
-                principalTable: "apps",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_app_assigned_documents_apps_app_id",
-                schema: "portal",
-                table: "app_assigned_documents",
                 column: "app_id",
                 principalSchema: "portal",
                 principalTable: "apps",
