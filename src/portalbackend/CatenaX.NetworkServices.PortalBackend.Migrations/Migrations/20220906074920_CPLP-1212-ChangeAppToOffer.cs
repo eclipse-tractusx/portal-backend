@@ -627,6 +627,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 principalTable: "offers",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_services_audit();");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_company_assigned_apps_audit();");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
