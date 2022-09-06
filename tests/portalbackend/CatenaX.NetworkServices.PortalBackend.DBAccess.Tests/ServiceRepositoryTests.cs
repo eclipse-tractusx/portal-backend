@@ -110,7 +110,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetServiceDetailByIdUntrackedAsync(Guid.NewGuid(), "en");
 
         // Assert
-        results.Should().BeNull();
+        results.Should().BeSameAs(default);
     }
 
     [Fact]
