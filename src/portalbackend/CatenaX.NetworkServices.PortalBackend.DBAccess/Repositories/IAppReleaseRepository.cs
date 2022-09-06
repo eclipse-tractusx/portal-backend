@@ -69,11 +69,4 @@ public interface IAppReleaseRepository
     /// <returns></returns>
     UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
 
-    /// <summary>
-    /// Add app details image in App Detail Images table 
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="imageUrl"></param>
-    /// <returns></returns>
-    AppDetailImage CreateAppDetailImage(Guid appId, string imageUrl);
 }

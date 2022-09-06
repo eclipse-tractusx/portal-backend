@@ -54,9 +54,6 @@ public class AppReleaseRepository : IAppReleaseRepository
     public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
         _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
     
-    public AppDetailImage CreateAppDetailImage(Guid appId, string imageUrl) =>
-        _context.AppDetailImages.Add(new AppDetailImage(Guid.NewGuid(), appId, imageUrl)).Entity;
-    
     ///<inheritdoc/>
     public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>
         _context.Apps

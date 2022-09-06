@@ -45,7 +45,7 @@ public record Localization(string? LanguageCode, string? LongDescription);
 /// <param name="AppImageId"></param>
 /// <param name="ImageUrl"></param>
 /// <returns></returns>
-public record AppEditableImage(Guid? AppImageId, string? ImageUrl);
+public record AppEditableImage(string? AppImageId, string? ImageUrl);
 
 
 
