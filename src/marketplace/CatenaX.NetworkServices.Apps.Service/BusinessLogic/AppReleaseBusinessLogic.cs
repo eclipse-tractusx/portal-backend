@@ -62,7 +62,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var appResult = await _portalRepositories.GetInstance<IAppRepository>().GetAppDetailsForUpdateAsync(appId, userId).ConfigureAwait(false);
+        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
+        var appResult = await appRepository.GetAppDetailsForUpdateAsync(appId, userId).ConfigureAwait(false);
         if (appResult == default)
         {
             throw new NotFoundException($"app {appId} does not exist");
@@ -75,24 +76,77 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ConflictException($"app {appId} is not in status CREATED");
         }
+        
         _portalRepositories.Attach(new App(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
             app.ContactNumber = updateModel.ContactNumber;
             app.MarketingUrl = updateModel.ProviderUri;
         });
+       
+        var lstToAdd = new List<Localization>();
+        int index = 0;
         foreach (var item in updateModel.Descriptions)
         {
-            _portalRepositories.Attach(new AppDescription(appId, item.LanguageCode), appdesc =>
+            if(string.IsNullOrWhiteSpace(item.LanguageCode) && string.IsNullOrWhiteSpace(item.LongDescription))
             {
-                appdesc.DescriptionLong = item.LongDescription!;
-            });
+                //Remove
+                _portalRepositories.Remove(new AppDescription(appId, appResult.LanguageShortNames.ElementAt(index), appResult.Descriptions.ElementAt(index)));
+                index++;
+            }
+            else
+            {
+                if (!appResult.LanguageShortNames.Contains(item.LanguageCode) && !appResult.Descriptions.Contains(item.LongDescription))
+                {
+                    lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
+                }
+                else
+                    _portalRepositories.Attach(new AppDescription(appId, item.LanguageCode), appdesc =>
+                    {
+                        appdesc.DescriptionLong = item.LongDescription!;
+                    });
+            }
+            
         }
-        var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
+        if(lstToAdd.Count > 0)
+        {
+             appRepository.AddAppDescriptions(lstToAdd.AsEnumerable().Select(d =>
+                (appId, d.LanguageCode, d.LongDescription, string.Empty)));
+        }
+       
+
+        //var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
+        var lstToAddImage = new List<AppEditableImage>();
+        int currentIndex = 0;
         foreach (var record in updateModel.Images)
         {
-            appReleaseRepository.CreateAppDetailImage(appId, record);
+            if(record.AppImageId == Guid.Empty && string.IsNullOrWhiteSpace(record.ImageUrl))
+            {
+                //Remove
+                _portalRepositories.Remove(new AppDetailImage(appResult.appImageId.ElementAt(currentIndex)));
+                currentIndex++;
+            }
+            else
+            {
+                if (!appResult.ImageUrls.Contains(record.ImageUrl) && record.AppImageId==Guid.Empty)
+                {
+                    lstToAddImage.Add(new AppEditableImage(null,record.ImageUrl));
+                }
+                else
+                    _portalRepositories.Attach(new AppDetailImage(record.AppImageId), appimg =>
+                    {
+                        appimg.ImageUrl = record.ImageUrl!;
+                    });
+            }
+            
+            //appReleaseRepository.CreateAppDetailImage(appId, record.ImageUrl);
         }
+        if (lstToAddImage.Count > 0)
+        {
+            appRepository.AddAppDetailImages(lstToAddImage.AsEnumerable().Select(d =>
+            (appId, d.ImageUrl)));
+        }
+        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
