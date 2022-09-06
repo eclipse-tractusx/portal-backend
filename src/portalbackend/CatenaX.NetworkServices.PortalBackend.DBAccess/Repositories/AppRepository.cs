@@ -215,4 +215,8 @@ public class AppRepository : IAppRepository
                        a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
                        ))
              .SingleOrDefaultAsync();
+
+    public IQueryable<App> GetAllInReviewStatusAppsAsync() =>
+        _context.Apps.Where(app => app.AppStatusId == AppStatusId.IN_REVIEW);
+
 }

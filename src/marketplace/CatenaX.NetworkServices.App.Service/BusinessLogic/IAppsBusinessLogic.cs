@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Framework.Models;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -128,4 +129,9 @@ public interface IAppsBusinessLogic
     /// <param name="appRequestModel"></param>
     /// <returns>Guid of the created app.</returns>
     Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
+
+    /// <summary>
+    /// Retrieves all in review status apps in the marketplace.
+    /// </summary>
+    Task<Pagination.Response<AppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
 }

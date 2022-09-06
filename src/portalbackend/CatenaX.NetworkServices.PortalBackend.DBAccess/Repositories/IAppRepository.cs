@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -134,4 +135,9 @@ public interface IAppRepository
     /// <param name="userId"></param>
     /// <returns>Return Async Enumerable of App Data</returns>
     Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
+
+    /// <summary>
+    /// Retrieves all in review status apps in the marketplace.
+    /// </summary>
+    IQueryable<App> GetAllInReviewStatusAppsAsync();
 }

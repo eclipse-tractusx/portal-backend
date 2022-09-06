@@ -21,6 +21,7 @@
 using System.Text.Json;
 using CatenaX.NetworkServices.App.Service.InputModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -341,4 +342,30 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         return companyName;
     }
+    public Task<Pagination.Response<AppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
+    {
+        var apps = _portalRepositories.GetInstance<IAppRepository>().GetAllInReviewStatusAppsAsync();
+
+        return Pagination.CreateResponseAsync(
+              page,
+              size,
+              15,
+              (int skip, int take) => new Pagination.AsyncSource<AppData>(
+                  apps.CountAsync(),
+                  apps.OrderBy(app => app.Id)
+                      .Skip(skip)
+                      .Take(take)
+                      .Select(app => new AppData(
+                          app.Name,
+                          string.Empty,
+                          app.ProviderCompany!.Name,
+                          string.Empty,
+                          app.ThumbnailUrl)
+                      {
+                          Id = app.Id
+                      }).AsAsyncEnumerable()));
+
+    }
+
+    
 }
