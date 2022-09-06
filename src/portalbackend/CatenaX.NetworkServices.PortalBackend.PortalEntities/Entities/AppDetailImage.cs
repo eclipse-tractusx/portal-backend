@@ -10,6 +10,13 @@ public class AppDetailImage
         AppId = appId;
         ImageUrl = imageUrl;
     }
+    
+    public AppDetailImage(Guid id)
+    {
+        Id = id;
+        AppId = Guid.Empty;
+        ImageUrl = null!;
+    }
 
     public Guid Id { get; private set; }
 

@@ -32,6 +32,19 @@ public class AppDescription
         DescriptionShort = null!;
     }
     
+    /// <summary>
+    /// construtor used for the Remove case
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="languageShortName"></param>
+    /// <param name="descriptionLong"></param>
+    public AppDescription(Guid appId, string languageShortName, string descriptionLong)
+    {
+        AppId = appId;
+        LanguageShortName = languageShortName;
+        DescriptionLong = descriptionLong;
+        DescriptionShort = null!;
+    }
     [MaxLength(4096)]
     public string DescriptionLong { get; set; }
 

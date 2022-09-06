@@ -29,7 +29,7 @@ namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<AppEditableImage> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
 /// <summary>
 /// Model for LanguageCode and Description
@@ -37,7 +37,15 @@ public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumera
 /// <param name="LanguageCode"></param>
 /// <param name="LongDescription"></param>
 /// <returns></returns>
-public record Localization(string LanguageCode, string? LongDescription);
+public record Localization(string? LanguageCode, string? LongDescription);
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="AppImageId"></param>
+/// <param name="ImageUrl"></param>
+/// <returns></returns>
+public record AppEditableImage(Guid? AppImageId, string? ImageUrl);
 
 
 
