@@ -101,7 +101,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetServiceDetailByIdUntrackedAsync
 
     [Fact]
-    public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsNull()
+    public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsDefault()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
@@ -110,7 +110,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetServiceDetailByIdUntrackedAsync(Guid.NewGuid(), "en");
 
         // Assert
-        results.Should().BeSameAs(default);
+        (results == default).Should().BeTrue();
     }
 
     [Fact]
