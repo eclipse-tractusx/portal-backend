@@ -132,11 +132,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 {
                     lstToAddImage.Add(new AppEditableImage(null,record.ImageUrl));
                 }
-                else
-                    _portalRepositories.Attach(new AppDetailImage(record.AppImageId), appimg =>
-                    {
-                        appimg.ImageUrl = record.ImageUrl!;
-                    });
+                //else
+                   // _portalRepositories.Attach(new AppDetailImage(record.AppImageId), appimg =>
+                   // {
+                    //    appimg.ImageUrl = record.ImageUrl!;
+                   // });
             }
             
             //appReleaseRepository.CreateAppDetailImage(appId, record.ImageUrl);
