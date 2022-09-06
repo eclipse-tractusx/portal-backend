@@ -135,7 +135,11 @@ public interface IAppRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<string> Descriptions, IEnumerable<string> ImageUrls, IEnumerable<Guid> appImageId)>  GetAppDetailsForUpdateAsync(Guid appId, string userId);
-
+    Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<string> ImageUrls, IEnumerable<Guid> appImageId)>  GetAppDetailsForUpdateAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Add App Detail Images
+    /// </summary>
+    /// <param name="appImages"></param>
     void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
 }
