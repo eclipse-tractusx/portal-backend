@@ -46,6 +46,7 @@ public class OfferSubscription : IAuditable
     /// <param name="requesterId">Id of the requester</param>
     /// <param name="lastEditorId">Id of the editor</param>
     public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
+        : this()
     {
         Id = id;
         OfferId = offerId;
@@ -93,10 +94,6 @@ public class OfferSubscription : IAuditable
     /// <inheritdoc />
     public Guid? LastEditorId { get; set; }
 
-    public Guid? AppSubscriptionDetailId { get; set; }
-
-    public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
-
     // Navigation properties
     /// <summary>
     /// Subscribed app.
@@ -112,4 +109,6 @@ public class OfferSubscription : IAuditable
     /// Subscription status.
     /// </summary>
     public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
+    
+    public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 }

@@ -59,4 +59,12 @@ public interface IOfferSubscriptionsRepository
     Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
     Task<(Guid companyId, OfferSubscription? companyAssignedApp, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedAppForCompanyUserAsync(Guid appId, string iamUserId);
+    
+    /// <summary>
+    /// Gets the subscription detail data for the given id and user
+    /// </summary>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">the iam user id</param>
+    /// <returns>returns the subscription detail data if found</returns>
+    Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId);
 }

@@ -44,7 +44,7 @@ public class OfferRepository : IOfferRepository
 
     /// <inheritdoc />
     public Task<bool> CheckAppExistsById(Guid appId) => 
-        _context.Offers.AnyAsync(x => x.Id == appId);
+        _context.Offers.AnyAsync(x => x.Id == appId && x.OfferTypeId == OfferTypeId.APP);
 
     ///<inheritdoc/>
     public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId) =>
@@ -211,9 +211,13 @@ public class OfferRepository : IOfferRepository
                 && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
             .Select(a => new ValueTuple<IEnumerable<OfferDescription>, IEnumerable<OfferDetailImage>>(
                 a.OfferDescriptions.Select(d => new OfferDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
-                a.OfferDetailImages.Select(adi => new OfferDetailImage(appId,adi.ImageUrl))
+                a.OfferDetailImages.Select(adi => new OfferDetailImage(adi.Id, appId,adi.ImageUrl))
             ))
             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<bool> CheckServiceExistsById(Guid serviceId) => 
+         _context.Offers.AnyAsync(x => x.Id == serviceId && x.OfferTypeId == OfferTypeId.SERVICE);
 
      /// <inheritdoc />
     public IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices() =>

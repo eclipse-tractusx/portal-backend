@@ -116,4 +116,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId) =>
+        _context.OfferSubscriptions
+            .Where(os => os.Id == subscriptionId && os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
+            .Select(os => new SubscriptionDetailData(os.OfferId, os.Offer!.Name!, os.OfferSubscriptionStatusId))
+            .SingleOrDefaultAsync();
 }

@@ -77,16 +77,19 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactNumber = updateModel.ContactNumber;
             app.MarketingUrl = updateModel.ProviderUri;
         });
-        int currentIndex=0;
+
+        var currentIndex = 0;
         foreach (var item in updateModel.Descriptions)
         {
             newApp.OfferDescriptions.Add(new OfferDescription(appId, item.LanguageCode, item.LongDescription, description.Where(x => x.OfferId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
             currentIndex++;
         }
+        
         foreach (var record in updateModel.Images)
         {
-            newApp.OfferDetailImages.Add(new OfferDetailImage(appId, record));
+            newApp.OfferDetailImages.Add(new OfferDetailImage(Guid.NewGuid(), appId, record));
         }
+
         try
         {
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -140,7 +143,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                     throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                 }
                 var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
+                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
                 return await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
         }

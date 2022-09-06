@@ -20,21 +20,21 @@
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AppAssignedDocument
+public class OfferAssignedDocument
 {
-    private AppAssignedDocument() {}
+    private OfferAssignedDocument() {}
 
-    public AppAssignedDocument(Guid appId, Guid documentId)
+    public OfferAssignedDocument(Guid offerId, Guid documentId)
     {
-        AppId = appId;
+        OfferId = offerId;
         DocumentId = documentId;
     }
 
-    public Guid AppId { get; private set; }
+    public Guid OfferId { get; private set; }
     public Guid DocumentId { get; private set; }
 
     // Navigation properties
-    public virtual Offer? App { get; private set; }
+    public virtual Offer? Offer { get; private set; }
     public virtual Document? Document { get; private set; }
 }
 

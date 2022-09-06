@@ -9,8 +9,9 @@ public class OfferDetailImage
         ImageUrl = null!;
     }
 
-    public OfferDetailImage(Guid offerId, string imageUrl)
+    public OfferDetailImage(Guid id, Guid offerId, string imageUrl)
     {
+        Id = id;
         OfferId = offerId;
         ImageUrl = imageUrl;
     }
