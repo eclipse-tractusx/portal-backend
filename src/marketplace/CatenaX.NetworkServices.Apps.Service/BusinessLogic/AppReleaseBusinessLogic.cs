@@ -113,11 +113,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         int currentIndex = 0;
         foreach (var record in updateModel.Images)
         {
-            Guid imageId ;
-            Guid.TryParse(record.AppImageId, out imageId);
+            Guid parsedId;
+            var imageId = Guid.TryParse(record.AppImageId, out parsedId) ? parsedId : Guid.Empty;
             if (imageId == Guid.Empty && string.IsNullOrWhiteSpace(record.ImageUrl) && appResult.appImageId.Any())
             {
-                //Remove
                 _portalRepositories.Remove(new AppDetailImage(appResult.appImageId.ElementAt(currentIndex)));
                 currentIndex++;
             }
@@ -129,11 +128,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 }
                 else
                 {
-                    if(imageId != Guid.Empty)
-                    _portalRepositories.Attach(new AppDetailImage(imageId), appimg =>
+                    if (imageId != Guid.Empty)
                     {
-                        appimg.ImageUrl = record.ImageUrl!;
-                    });
+                        _portalRepositories.Attach(new AppDetailImage(imageId), appimg =>
+                        { 
+                            appimg.ImageUrl = record.ImageUrl!;
+                        });
+                    }
                 }
                     
             }
