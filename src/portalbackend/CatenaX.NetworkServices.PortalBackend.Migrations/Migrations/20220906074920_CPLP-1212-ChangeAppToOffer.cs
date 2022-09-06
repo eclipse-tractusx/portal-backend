@@ -220,6 +220,20 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 table: "agreements",
                 newName: "ix_agreements_offer_id");
 
+            migrationBuilder.AddColumn<string>(
+                name: "display_name",
+                table: "offer_subscriptions",
+                schema: "portal",
+                type: "character varying(255)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "description",
+                table: "offer_subscriptions",
+                schema: "portal",
+                type: "character varying(4096)",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "offer_types",
                 schema: "portal",
@@ -522,6 +536,16 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "fk_user_roles_offers_offer_id",
                 schema: "portal",
                 table: "user_roles");
+
+            migrationBuilder.DropColumn(
+                name: "display_name",
+                table: "offer_subscriptions",
+                schema: "portal");
+
+            migrationBuilder.DropColumn(
+                name: "description",
+                table: "offer_subscriptions",
+                schema: "portal");
 
             migrationBuilder.RenameColumn(
                 name: "offer_id",
