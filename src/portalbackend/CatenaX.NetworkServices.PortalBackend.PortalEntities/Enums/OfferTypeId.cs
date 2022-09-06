@@ -1,6 +1,6 @@
 ﻿namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public enum AppTypeId
+public enum OfferTypeId
 {
     APP = 1,
     CORE_COMPONENT = 2,

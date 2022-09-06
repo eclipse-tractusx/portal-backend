@@ -48,7 +48,7 @@ public interface IServiceBusinessLogic
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
     /// <param name="iamUserId">Id of the user</param>
     /// <returns></returns>
-    Task AddServiceSubscription(Guid serviceId, string iamUserId);
+    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId);
 
     /// <summary>
     /// Gets the service detail data for the given service
@@ -57,6 +57,14 @@ public interface IServiceBusinessLogic
     /// <param name="lang">Shortcode of the language for the text translations</param>
     /// <returns>Returns the service detail data</returns>
     Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang);
+
+    /// <summary>
+    /// Gets the Subscription Details for the given Id
+    /// </summary>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the user</param>
+    /// <returns>Returns the details for the subscription</returns>
+    Task<SubscriptionDetailData> GetSubscriptionDetail(Guid subscriptionId, string iamUserId);
 
     /// <summary>
     /// Creates new service agreement consents with the given data for the given service

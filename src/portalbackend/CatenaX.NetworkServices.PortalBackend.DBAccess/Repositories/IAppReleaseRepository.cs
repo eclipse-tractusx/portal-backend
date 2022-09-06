@@ -39,10 +39,10 @@ public interface IAppReleaseRepository
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="documentId"></param>
     /// <returns></returns>
-    AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId);
+    OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId);
     
     /// <summary>
     /// Verify that user is linked to the appId

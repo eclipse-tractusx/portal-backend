@@ -20,20 +20,20 @@
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AgreementAssignedApp
+public class AgreementAssignedOffer
 {
-    private AgreementAssignedApp() {}
+    private AgreementAssignedOffer() {}
 
-    public AgreementAssignedApp(Guid agreementId, Guid appId)
+    public AgreementAssignedOffer(Guid agreementId, Guid offerId)
     {
         AgreementId = agreementId;
-        AppId = appId;
+        OfferId = offerId;
     }
 
     public Guid AgreementId { get; private set; }
-    public Guid AppId { get; private set; }
+    public Guid OfferId { get; private set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
-    public virtual App? App { get; private set; }
+    public virtual Offer? Offer { get; private set; }
 }

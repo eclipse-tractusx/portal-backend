@@ -46,11 +46,11 @@ public class AgreementRepository : IAgreementRepository
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAgreementDataWithAppIdSet(string iamUserId) =>
         _context.Agreements
-            .Where(x => x.AgreementAssignedApps
+            .Where(x => x.AgreementAssignedOffers
                 .Any(app => 
-                    app.App!.AppTypeId == AppTypeId.SERVICE &&
-                    (app.App!.CompanyAssignedApps.Any(caa => caa.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)) ||
-                    app.App!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
+                    app.Offer!.OfferTypeId == OfferTypeId.SERVICE &&
+                    (app.Offer!.OfferSubscriptions.Any(caa => caa.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)) ||
+                    app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
                 ))
             .Select(x => new AgreementData(x.Id, x.Name))
             .AsAsyncEnumerable();

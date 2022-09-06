@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,23 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public class AppAssignedDocument
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+
+/// <summary>
+/// Audit entity for App subscription relationship between companies and apps.
+/// </summary>
+public class AuditOfferSubscription : OfferSubscription, IAuditEntity
 {
-    private AppAssignedDocument() {}
+    /// <inheritdoc />
+    public Guid AuditId { get; set; }
 
-    public AppAssignedDocument(Guid appId, Guid documentId)
-    {
-        AppId = appId;
-        DocumentId = documentId;
-    }
+    /// <inheritdoc />
+    public DateTimeOffset DateLastChanged { get; set; }
 
-    public Guid AppId { get; private set; }
-    public Guid DocumentId { get; private set; }
-
-    // Navigation properties
-    public virtual App? App { get; private set; }
-    public virtual Document? Document { get; private set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditOperationId { get; set; }
 }
-
