@@ -138,7 +138,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 }
                 else
                 {
-                    if (!Guid.TryParse(record.AppImageId, out _))
+                    if (Guid.TryParse(record.AppImageId, out _))
                     {
                         _portalRepositories.Attach(new AppDetailImage(appImgId.ElementAt(currentIndex)), appimg =>
                         { 
