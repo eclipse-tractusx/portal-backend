@@ -114,7 +114,7 @@ public static class BaseSeed
             new (new Guid("cf207afb-d213-4c33-becc-0cabeef174a7"), "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com"),
         });
 
-        dbContext.Apps.AddRange(AppData.Apps);
+        dbContext.Offers.AddRange(OfferData.Offers);
         dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
 
         dbContext.UserRoles.AddRange(new List<UserRole>

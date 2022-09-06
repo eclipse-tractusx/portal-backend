@@ -54,7 +54,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"AppId must not be empty");
         }
-        var descriptions = updateModel.Descriptions.Where(item => !String.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
+        var descriptions = updateModel.Descriptions.Where(item => !string.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
         if (!descriptions.Any())
         {
             throw new ArgumentException($"Language Code must not be empty");
@@ -65,28 +65,31 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var (description, images) = await _portalRepositories.GetInstance<IAppRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
+        var (description, images) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
         if (!description.Any() && !images.Any())
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
         }
         
-        var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App(appId), app =>
+        var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
             app.ContactNumber = updateModel.ContactNumber;
             app.MarketingUrl = updateModel.ProviderUri;
         });
-        int currentIndex=0;
+
+        var currentIndex = 0;
         foreach (var item in updateModel.Descriptions)
         {
-            newApp.AppDescriptions.Add(new AppDescription(appId, item.LanguageCode, item.LongDescription, description.Where(x => x.AppId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
+            newApp.OfferDescriptions.Add(new OfferDescription(appId, item.LanguageCode, item.LongDescription, description.Where(x => x.OfferId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
             currentIndex++;
         }
+        
         foreach (var record in updateModel.Images)
         {
-            newApp.AppDetailImages.Add(new AppDetailImage(appId, record));
+            newApp.OfferDetailImages.Add(new OfferDetailImage(Guid.NewGuid(), appId, record));
         }
+
         try
         {
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -140,7 +143,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                     throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                 }
                 var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
+                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
                 return await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
         }
@@ -153,7 +156,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException($"AppId must not be empty");
         }
-        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !String.IsNullOrWhiteSpace(item.languageCode)).Distinct();
+        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !string.IsNullOrWhiteSpace(item.languageCode)).Distinct();
         if (!descriptions.Any())
         {
             throw new ControllerArgumentException($"Language Code must not be empty");

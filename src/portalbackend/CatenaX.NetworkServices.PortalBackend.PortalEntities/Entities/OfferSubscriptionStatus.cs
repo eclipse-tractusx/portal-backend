@@ -6,31 +6,31 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 /// <summary>
 /// Value table for app subscription statuses.
 /// </summary>
-public class AppSubscriptionStatus
+public class OfferSubscriptionStatus
 {
     /// <summary>
     /// Constructor.
     /// </summary>
-    private AppSubscriptionStatus()
+    private OfferSubscriptionStatus()
     {
         Label = null!;
-        AppSubscriptions = new HashSet<CompanyAssignedApp>();
+        OfferSubscriptions = new HashSet<OfferSubscription>();
     }
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="appSubscriptionStatusId">Id of the subscription to wrap into entity.</param>
-    public AppSubscriptionStatus(AppSubscriptionStatusId appSubscriptionStatusId) : this()
+    /// <param name="offerSubscriptionStatusId">Id of the subscription to wrap into entity.</param>
+    public OfferSubscriptionStatus(OfferSubscriptionStatusId offerSubscriptionStatusId) : this()
     {
-        Id = appSubscriptionStatusId;
-        Label = appSubscriptionStatusId.ToString();
+        Id = offerSubscriptionStatusId;
+        Label = offerSubscriptionStatusId.ToString();
     }
 
     /// <summary>
     /// Id of the subscription status.
     /// </summary>
-    public AppSubscriptionStatusId Id { get; private set; }
+    public OfferSubscriptionStatusId Id { get; private set; }
 
     /// <summary>
     /// Label of the subscription status.
@@ -43,5 +43,5 @@ public class AppSubscriptionStatus
     /// <summary>
     /// All AppSubscriptions currently with this status.
     /// </summary>
-    public virtual ICollection<CompanyAssignedApp> AppSubscriptions { get; private set; }
+    public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
 }

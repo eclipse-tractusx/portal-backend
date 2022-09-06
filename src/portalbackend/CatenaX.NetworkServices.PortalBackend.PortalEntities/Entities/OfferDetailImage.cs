@@ -2,26 +2,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AppDetailImage
+public class OfferDetailImage
 {
-    private AppDetailImage()
+    private OfferDetailImage()
     {
         ImageUrl = null!;
     }
 
-    public AppDetailImage(Guid appId, string imageUrl)
+    public OfferDetailImage(Guid id, Guid offerId, string imageUrl)
     {
-        AppId = appId;
+        Id = id;
+        OfferId = offerId;
         ImageUrl = imageUrl;
     }
 
     public Guid Id { get; private set; }
 
-    public Guid AppId { get; set; }
+    public Guid OfferId { get; set; }
 
     [MaxLength(255)]
     public string ImageUrl { get; set; }
 
     // Navigation properties
-    public virtual App? App { get; set; }
+    public virtual Offer? Offer { get; set; }
 }

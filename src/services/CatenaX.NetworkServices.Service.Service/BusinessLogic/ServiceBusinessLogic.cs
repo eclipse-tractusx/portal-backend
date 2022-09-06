@@ -51,7 +51,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size)
     {
-        var services = _portalRepositories.GetInstance<IAppRepository>().GetActiveServices();
+        var services = _portalRepositories.GetInstance<IOfferRepository>().GetActiveServices();
         return Pagination.CreateResponseAsync(
             page,
             size,
@@ -91,30 +91,30 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode).ToList()).ConfigureAwait(false);
 
-        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
-        var app = appRepository.CreateApp(string.Empty, AppTypeId.SERVICE, app =>
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var service = offerRepository.CreateOffer(string.Empty, OfferTypeId.SERVICE, service =>
         {
-            app.ContactEmail = data.ContactEmail;
-            app.Name = data.Title;
-            app.SalesManagerId = data.SalesManager;
-            app.ThumbnailUrl = data.ThumbnailUrl;
-            app.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
-            app.AppStatusId = AppStatusId.CREATED;
-            app.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
+            service.ContactEmail = data.ContactEmail;
+            service.Name = data.Title;
+            service.SalesManagerId = data.SalesManager;
+            service.ThumbnailUrl = data.ThumbnailUrl;
+            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
+            service.OfferStatusId = OfferStatusId.CREATED;
+            service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
         });
-        var licenseId = appRepository.CreateAppLicenses(data.Price).Id;
-        appRepository.CreateAppAssignedLicense(app.Id, licenseId);
-        appRepository.AddAppDescriptions(data.Descriptions.Select(d =>
-            new ValueTuple<Guid, string, string, string>(app.Id, d.LanguageCode, string.Empty, d.Description)));
+        var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
+        offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
+        offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
+            new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, string.Empty, d.Description)));
 
         await _portalRepositories.SaveAsync();
-        return app.Id;
+        return service.Id;
     }
 
     /// <inheritdoc />
-    public async Task AddServiceSubscription(Guid serviceId, string iamUserId)
+    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId)
     {
-        if (!await _portalRepositories.GetInstance<IAppRepository>().CheckAppExistsById(serviceId).ConfigureAwait(false))
+        if (!await _portalRepositories.GetInstance<IOfferRepository>().CheckServiceExistsById(serviceId).ConfigureAwait(false))
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
@@ -130,14 +130,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
         }
 
-        _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().CreateCompanyAssignedApp(serviceId, companyId, AppSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return offerSubscription.Id;
     }
 
     /// <inheritdoc />
     public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang)
     {        
-        var serviceDetailData = await _portalRepositories.GetInstance<IAppRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang).ConfigureAwait(false);
+        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang).ConfigureAwait(false);
         if (serviceDetailData is null)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
@@ -147,10 +148,23 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
+    public async Task<SubscriptionDetailData> GetSubscriptionDetail(Guid subscriptionId, string iamUserId)
+    {
+        var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId).ConfigureAwait(false);
+        if (subscriptionDetailData is null)
+        {
+            throw new NotFoundException($"Subscription {subscriptionId} does not exist");
+        }
+
+        return subscriptionDetailData;
+    }
+
+    /// <inheritdoc />
     public async Task<Guid> CreateServiceAgreementConsent(Guid serviceId,
         ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetCompanyIdWithAssignedAppForCompanyUserAsync(serviceId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyIdWithAssignedAppForCompanyUserAsync(serviceId, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
             throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
@@ -186,7 +200,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 .GetLanguageCodesUntrackedAsync(languageCodes)
                 .ToListAsync()
                 .ConfigureAwait(false);
-            var notFoundLanguageCodes = languageCodes.Where(x => foundLanguageCodes.All(y => y != x)).ToList();
+            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes);
             if (notFoundLanguageCodes.Any())
             {
                 throw new ControllerArgumentException(

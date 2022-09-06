@@ -11,7 +11,7 @@ public class Agreement
         Consents = new HashSet<Consent>();
         AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
         AgreementAssignedDocumentTemplates = new HashSet<AgreementAssignedDocumentTemplate>();
-        AgreementAssignedApps = new HashSet<AgreementAssignedApp>();
+        AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
     }
 
     public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated) : this()
@@ -47,5 +47,5 @@ public class Agreement
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
     public virtual ICollection<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; private set; }
-    public virtual ICollection<AgreementAssignedApp> AgreementAssignedApps { get; private set; }
+    public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
 }

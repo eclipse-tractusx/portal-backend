@@ -87,8 +87,9 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
         public async Task AddServiceSubscription_ReturnsExpectedId()
         {
             //Arrange
+            var offerSubscriptionId = Guid.NewGuid();
             A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, IamUserId))
-                .Returns(Task.CompletedTask);
+                .Returns(offerSubscriptionId);
 
             //Act
             var serviceId = Guid.NewGuid();
@@ -96,7 +97,7 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId)).MustHaveHappenedOnceExactly();
-            Assert.IsType<NoContentResult>(result);
+            Assert.IsType<ActionResult<Guid>>(result);
         }
         
         [Fact]

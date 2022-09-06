@@ -27,8 +27,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-/// Implementation of <see cref="IAppRepository"/> accessing database with EF Core.
-public class AppRepository : IAppRepository
+/// Implementation of <see cref="IOfferRepository"/> accessing database with EF Core.
+public class OfferRepository : IOfferRepository
 {
     private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext _context;
@@ -37,18 +37,18 @@ public class AppRepository : IAppRepository
     /// Constructor.
     /// </summary>
     /// <param name="portalDbContext">PortalDb context.</param>
-    public AppRepository(PortalDbContext portalDbContext)
+    public OfferRepository(PortalDbContext portalDbContext)
     {
         this._context = portalDbContext;
     }
 
     /// <inheritdoc />
     public Task<bool> CheckAppExistsById(Guid appId) => 
-        _context.Apps.AnyAsync(x => x.Id == appId);
+        _context.Offers.AnyAsync(x => x.Id == appId && x.OfferTypeId == OfferTypeId.APP);
 
     ///<inheritdoc/>
     public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId) =>
-        _context.Apps.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
+        _context.Offers.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
             c.Name,
             c.Provider,
             c.ContactEmail,
@@ -57,23 +57,23 @@ public class AppRepository : IAppRepository
 
     /// <inheritdoc/>
     public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
-        _context.CompanyAssignedApps.AsNoTracking()
+        _context.OfferSubscriptions.AsNoTracking()
             .Where(appClient => appClient.Id == appId && appClient.CompanyId == companyId)
-            .Select(x => x.AppInstance!.IamClient!.ClientClientId)
+            .Select(x => x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public App CreateApp(string provider, AppTypeId appType, Action<App>? setOptionalParameters = null)
+    public Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null)
     {
-        var app = _context.Apps.Add(new App(Guid.NewGuid(), provider, DateTimeOffset.UtcNow, appType)).Entity;
+        var app = _context.Offers.Add(new Offer(Guid.NewGuid(), provider, DateTimeOffset.UtcNow, offerType)).Entity;
         setOptionalParameters?.Invoke(app);
         return app;
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
-        _context.Apps.AsNoTracking()
-            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.AppTypeId == AppTypeId.APP)
+        _context.Offers.AsNoTracking()
+            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.OfferTypeId == OfferTypeId.APP)
             .Select(a => new {
                 a.Id,
                 a.Name,
@@ -81,11 +81,11 @@ public class AppRepository : IAppRepository
                 UseCaseNames = a.UseCases.Select(uc => uc.Name),
                 a.ThumbnailUrl,
                 ShortDescription =
-                    _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null 
-                        ? null 
-                        : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
-                          ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort,
-                LicenseText = a.AppLicenses
+                    _context.Languages.Any(l => l.ShortName == languageShortName)
+                        ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
+                            ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
+                        : null,
+                LicenseText = a.OfferLicenses
                     .Select(license => license.Licensetext)
                     .FirstOrDefault()
             }).AsAsyncEnumerable().Select(app => new AppData(
@@ -103,31 +103,31 @@ public class AppRepository : IAppRepository
     /// <inheritdoc />
     public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName)
     {
-       var app = await _context.Apps.AsNoTracking()
+       var app = await _context.Offers.AsNoTracking()
             .Where(a => a.Id == appId)
             .Select(a => new
             {
                 a.Id,
                 Title = a.Name,
                 LeadPictureUri = a.ThumbnailUrl,
-                DetailPictureUris = a.AppDetailImages.Select(adi => adi.ImageUrl),
+                DetailPictureUris = a.OfferDetailImages.Select(adi => adi.ImageUrl),
                 ProviderUri = a.MarketingUrl,
                 a.Provider,
                 a.ContactEmail,
                 a.ContactNumber,
                 UseCases = a.UseCases.Select(u => u.Name),
                 LongDescription =
-                    _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
-                    ? null
-                    : a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
-                      ?? a.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionLong,
-                Price = a.AppLicenses
+                    _context.Languages.Any(l => l.ShortName == languageShortName)
+                    ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
+                        ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionLong
+                    : null,
+                Price = a.OfferLicenses
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
                 Tags = a.Tags.Select(t => t.Name),
                 IsPurchased = a.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-                    .SelectMany(company => company.CompanyAssignedApps.Where(x => x.AppId == appId))
-                    .Select(x => x.AppSubscriptionStatusId)
+                    .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == appId))
+                    .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
                 Languages = a.SupportedLanguages.Select(l => l.ShortName)
             })
@@ -154,12 +154,12 @@ public class AppRepository : IAppRepository
     }
 
     /// <inheritdoc />
-    public AppLicense CreateAppLicenses(string licenseText) =>
-        _context.AppLicenses.Add(new AppLicense(Guid.NewGuid(), licenseText)).Entity;
+    public OfferLicense CreateOfferLicenses(string licenseText) =>
+        _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
-    public AppAssignedLicense CreateAppAssignedLicense(Guid appId, Guid appLicenseId) =>
-        _context.AppAssignedLicenses.Add(new AppAssignedLicense(appId, appLicenseId)).Entity;
+    public OfferAssignedLicense CreateOfferAssignedLicense(Guid appId, Guid appLicenseId) =>
+        _context.OfferAssignedLicenses.Add(new OfferAssignedLicense(appId, appLicenseId)).Entity;
 
     /// <inheritdoc />
     public CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId) =>
@@ -170,8 +170,8 @@ public class AppRepository : IAppRepository
         _context.AppAssignedUseCases.AddRange(appUseCases.Select(s => new AppAssignedUseCase(s.appId, s.useCaseId)));
 
     /// <inheritdoc />
-    public void AddAppDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
-        _context.AppDescriptions.AddRange(appDescriptions.Select(s => new AppDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
+    public void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
+        _context.OfferDescriptions.AddRange(appDescriptions.Select(s => new OfferDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
 
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
@@ -179,7 +179,7 @@ public class AppRepository : IAppRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId) =>
-        _context.Apps
+        _context.Offers
             .AsNoTracking()
             .Where(app=>app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
             .Select(app => new AllAppData(
@@ -187,64 +187,70 @@ public class AppRepository : IAppRepository
                 app.Name,
                 app.ThumbnailUrl,
                 app.Provider,
-                app.AppStatusId.ToString(),
+                app.OfferStatusId.ToString(),
                 app.DateLastChanged
             ))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
-        _context.Apps
+        _context.Offers
             .Where(app => app.Id == appId)
             .SelectMany(app => app.UserRoles)
             .Select(roles => new ClientRoles(
                 roles.Id,
                 roles.UserRoleText,
-                languageShortName == null ?
-                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description :
-                    roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+                languageShortName == null
+                    ? roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description
+                    : roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
             )).AsAsyncEnumerable();
     
      /// <inheritdoc />
-    public  Task<(IEnumerable<AppDescription> descriptions, IEnumerable<AppDetailImage> images)> GetAppByIdAsync(Guid appId, string userId)
-    =>
-        _context.Apps
-             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED
-             && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-             .Select(a => new ValueTuple<IEnumerable<AppDescription>, IEnumerable<AppDetailImage>>(
-                a.AppDescriptions.Select(d => new AppDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
-                       a.AppDetailImages.Select(adi => new AppDetailImage(appId,adi.ImageUrl))
-                       ))
-             .SingleOrDefaultAsync();
+    public  Task<(IEnumerable<OfferDescription> descriptions, IEnumerable<OfferDetailImage> images)> GetAppByIdAsync(Guid appId, string userId) =>
+        _context.Offers
+            .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED
+                && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+            .Select(a => new ValueTuple<IEnumerable<OfferDescription>, IEnumerable<OfferDetailImage>>(
+                a.OfferDescriptions.Select(d => new OfferDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
+                a.OfferDetailImages.Select(adi => new OfferDetailImage(adi.Id, appId,adi.ImageUrl))
+            ))
+            .SingleOrDefaultAsync();
 
      /// <inheritdoc />
-     public IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices() =>
-         _context.Apps
-             .Where(x => x.AppTypeId == AppTypeId.SERVICE && x.AppStatusId == AppStatusId.ACTIVE)
-             .Select(app => new ValueTuple<Guid, string?, string, string?, string?, string?>(app.Id,
-                 app.Name,
-                 app.Provider,
-                 app.ThumbnailUrl,
-                 app.ContactEmail,
-                 app.AppLicenses
-                     .Select(l => l.Licensetext)
-                     .FirstOrDefault()));
+     public Task<bool> CheckServiceExistsById(Guid serviceId) => 
+         _context.Offers.AnyAsync(x => x.Id == serviceId && x.OfferTypeId == OfferTypeId.SERVICE);
 
      /// <inheritdoc />
-     public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
-         _context.Apps
-             .Where(x => x.Id == serviceId)
-             .Select(app => new ServiceDetailData(
-                 app.Id,
-                 app.Name ?? Constants.ErrorString,
-                 app.Provider,
-                 app.ThumbnailUrl ?? Constants.ErrorString,
-                 app.ContactEmail,
-                 _context.Languages.SingleOrDefault(l => l.ShortName == languageShortName) == null
-                         ? Constants.ErrorString
-                         : app.AppDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
-                 app.AppLicenses
-                     .Select(license => license.Licensetext)
-                     .FirstOrDefault() ?? Constants.ErrorString
-             ))
-             .SingleOrDefaultAsync();
+    public IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices() =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(x => x.OfferTypeId == OfferTypeId.SERVICE && x.OfferStatusId == OfferStatusId.ACTIVE)
+            .Select(app => new ValueTuple<Guid, string?, string, string?, string?, string?>(
+                app.Id,
+                app.Name,
+                app.Provider,
+                app.ThumbnailUrl,
+                app.ContactEmail,
+                app.OfferLicenses
+                    .Select(l => l.Licensetext)
+                    .FirstOrDefault()));
+
+     /// <inheritdoc />
+    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
+        _context.Offers
+            .AsNoTracking()
+            .Where(x => x.Id == serviceId)
+            .Select(app => new ServiceDetailData(
+                app.Id,
+                app.Name ?? Constants.ErrorString,
+                app.Provider,
+                app.ThumbnailUrl ?? Constants.ErrorString,
+                app.ContactEmail,
+                _context.Languages.Any(l => l.ShortName == languageShortName)
+                    ? app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
+                    : Constants.ErrorString,
+                app.OfferLicenses
+                    .Select(license => license.Licensetext)
+                    .FirstOrDefault() ?? Constants.ErrorString
+            ))
+            .SingleOrDefaultAsync();
 }

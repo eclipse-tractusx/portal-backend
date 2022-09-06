@@ -14,6 +14,6 @@ public class AppAssignedUseCase
     public Guid UseCaseId { get; private set; }
 
     // Navigation properties
-    public virtual App? App { get; private set; }
+    public virtual Offer? App { get; private set; }
     public virtual UseCase? UseCase { get; private set; }
 }
