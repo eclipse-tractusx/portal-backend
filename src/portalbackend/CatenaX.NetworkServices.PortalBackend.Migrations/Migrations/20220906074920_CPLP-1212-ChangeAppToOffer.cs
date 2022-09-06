@@ -910,7 +910,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "is_core_component",
                 table: "apps",
                 schema: "portal",
-                type: "integer",
+                type: "boolean",
                 nullable: false,
                 defaultValue: false
             );
