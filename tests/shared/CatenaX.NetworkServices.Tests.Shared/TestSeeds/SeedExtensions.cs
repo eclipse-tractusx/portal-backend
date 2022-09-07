@@ -1,5 +1,7 @@
 ﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
 namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 
 /********************************************************************************
@@ -29,6 +31,18 @@ public static class SeedExtensions
             dbContext.Addresses.AddRange(additionalAddresses);
         };
     
+    public static Action<PortalDbContext> SeedOffers(params Offer[] additionalOffers) => dbContext =>
+    {
+        dbContext.Offers.AddRange(OfferData.Offers);
+        dbContext.Offers.AddRange(additionalOffers);
+    };
+
+    public static Action<PortalDbContext> SeedAppInstances(params AppInstance[] additionalAppInstances) => dbContext =>
+    {
+        dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
+        dbContext.AppInstances.AddRange(additionalAppInstances);
+    };
+
     public static Action<PortalDbContext> SeedCompany(params Company[] additionalCompanies) => dbContext =>
         {
             dbContext.Companies.AddRange(additionalCompanies);

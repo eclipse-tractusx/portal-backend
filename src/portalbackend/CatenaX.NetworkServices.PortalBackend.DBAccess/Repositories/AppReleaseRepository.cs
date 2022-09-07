@@ -45,18 +45,18 @@ public class AppReleaseRepository : IAppReleaseRepository
     ///<inheritdoc/>
     public  Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId)
     =>
-        _context.Apps
-            .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED)
+        _context.Offers
+            .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED)
             .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
-    public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
-        _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
+    public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
+        _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
     
     ///<inheritdoc/>
     public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>
-        _context.Apps
+        _context.Offers
             .AnyAsync(a => a.Id == appId
                 && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
 
