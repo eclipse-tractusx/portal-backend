@@ -22,20 +22,21 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Tests.Shared.DatabaseRelatedTests;
 using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 using FluentAssertions;
 using Xunit;
+using Xunit.Extensions.AssemblyFixture;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="NotificationRepository"/>
 /// </summary>
-public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
+/// [Collection("Database collection")]
+public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly IFixture _fixture;
@@ -67,13 +68,6 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
 
         _notifications = _readNotifications.Concat(_unreadNotifications).ToList();
         _dbTestDbFixture = testDbFixture;
-        
-        _dbTestDbFixture.Seed(dbContext =>
-            {
-                dbContext.Notifications.RemoveRange(dbContext.Notifications.ToList());
-            },
-            SeedExtensions.SeedNotification(_notifications.ToArray())
-        );
     }
 
     #region GetAllAsDetailsByUserIdUntracked
@@ -82,7 +76,7 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithUnreadStatus_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null).ToListAsync();
@@ -99,7 +93,7 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatus_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null).ToListAsync();
@@ -116,7 +110,7 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndInfoType_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO).ToListAsync();
@@ -136,7 +130,7 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndActionType_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION).ToListAsync();
@@ -159,7 +153,7 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetNotificationCountAsync_WithReadStatus_ReturnsExpectedCount()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetNotificationCountForIamUserAsync(IamUserId, true);
@@ -172,7 +166,7 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
     public async Task GetNotificationCountAsync_WithoutStatus_ReturnsExpectedCount()
     {
         // Arrange
-        var sut = CreateSut();
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetNotificationCountForIamUserAsync(IamUserId, null);
@@ -181,9 +175,14 @@ public class NotificationRepositoryTests : IClassFixture<TestDbFixture>
         results.Count.Should().Be(_notifications.Count);
     }
 
-    private NotificationRepository CreateSut()
+    private async Task<NotificationRepository> CreateSut()
     {
-        var context = _dbTestDbFixture.GetPortalDbContext();
+        var context = await _dbTestDbFixture.GetPortalDbContext(dbContext =>
+            {
+                dbContext.Notifications.RemoveRange(dbContext.Notifications.ToList());
+            },
+            SeedExtensions.SeedNotification(_notifications.ToArray())
+        ).ConfigureAwait(false);
         _fixture.Inject(context);
         var sut = _fixture.Create<NotificationRepository>();
         return sut;

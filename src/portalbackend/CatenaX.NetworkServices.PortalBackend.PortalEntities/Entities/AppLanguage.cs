@@ -21,6 +21,6 @@ public class AppLanguage
     public string LanguageShortName { get; private set; }
 
     // Navigation properties
-    public virtual App? App { get; private set; }
+    public virtual Offer? App { get; private set; }
     public virtual Language? Language { get; private set; }
 }
