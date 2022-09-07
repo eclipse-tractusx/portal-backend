@@ -368,30 +368,30 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/services/CatenaX.NetworkServices.Service.Service
+        run: dotnet restore src/services/CatenaX.NetworkServices.Services.Service
 
       - name: Build and publish
         run: |
-          cd src/services/CatenaX.NetworkServices.Service.Service
+          cd src/services/CatenaX.NetworkServices.Services.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-services.zip
-          src/services/CatenaX.NetworkServices.Service.Service/.publish
+          src/services/CatenaX.NetworkServices.Services.Service/.publish
           -x
-          src/services/CatenaX.NetworkServices.Service.Service/.publish/CatenaX.NetworkServices.Service.Service
+          src/services/CatenaX.NetworkServices.Services.Service/.publish/CatenaX.NetworkServices.Services.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
         with:
           # Specify Veracode application name
-          appname: "Portal-Backend_Service-Service"
+          appname: "Portal-Backend_Services-Service"
           createprofile: true
           teams: 'portal'
           # Specify path to upload
           filepath: "portal-backend-services.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Service.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
+          include: 'CatenaX.NetworkServices.Services.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'

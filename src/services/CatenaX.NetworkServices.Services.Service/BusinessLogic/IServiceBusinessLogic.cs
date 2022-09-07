@@ -21,7 +21,7 @@
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.Service.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling service-related operations. Includes persistence layer access.
