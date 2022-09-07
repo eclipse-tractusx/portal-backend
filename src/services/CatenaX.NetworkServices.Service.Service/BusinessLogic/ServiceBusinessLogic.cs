@@ -23,6 +23,7 @@ using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -171,14 +172,14 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public async Task<Guid> CreateServiceAgreementConsent(Guid serviceId,
         ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyIdWithAssignedAppForCompanyUserAsync(serviceId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyIdWithAssignedOfferForCompanyUserAsync(serviceId, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (result == default)
         {
             throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
         }
 
-        var (companyId, companyAssignedApp, _, companyUserId) = result;
-        if (companyAssignedApp is null)
+        var (companyId, offerSubscription, _, companyUserId) = result;
+        if (offerSubscription is null)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
@@ -196,8 +197,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
-        _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataWithAppIdSet(iamUserId);
+    public IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement(string iamUserId) => 
+        _portalRepositories.GetInstance<IAgreementRepository>().GetServiceAgreementDataForIamUser(iamUserId);
 
     private async Task CheckLanguageCodesExist(ICollection<string> languageCodes)
     {

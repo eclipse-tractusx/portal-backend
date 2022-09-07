@@ -5,6 +5,6 @@ namespace CatenaX.NetworkServices.Registration.Service.Model
 {
     public record CompanyRoleAgreementData(
         [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> companyRoleData,
-        [property: JsonPropertyName("agreements")] IEnumerable<AgreementData> agreementData);
+        [property: JsonPropertyName("agreements")] IEnumerable<ServiceAgreementData> agreementData);
 
 }

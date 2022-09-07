@@ -27,7 +27,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
     /// </summary>
     /// <param name="AgreementId">Id of the agreement</param>
     /// <param name="AgreementName">Name of the agreement</param>
-    public record AgreementData(
+    public record ServiceAgreementData(
         [property: JsonPropertyName("agreementId")] Guid AgreementId,
         [property: JsonPropertyName("name")] string AgreementName);
 }
