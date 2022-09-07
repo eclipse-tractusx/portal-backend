@@ -88,7 +88,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Fra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Framework.Web", "framework\CatenaX.NetworkServices.Framework.Web\CatenaX.NetworkServices.Framework.Web.csproj", "{749BC05D-F441-4DEC-9345-3D4A6A2CF08D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{2BA733DC-AF0D-43DB-821C-A091E353CA04}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{2BA733DC-AF0D-43DB-821C-A091E353CA04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Service.Service", "services\CatenaX.NetworkServices.Service.Service\CatenaX.NetworkServices.Service.Service.csproj", "{E15973C8-8239-4C8C-8578-D517DA6A9B7C}"
 EndProject
