@@ -34,15 +34,13 @@ public class CompanyUser : IAuditable
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();
         Invitations = new HashSet<Invitation>();
-        Apps = new HashSet<App>();
-        SalesManagerOfApps = new HashSet<App>();
+        Offers = new HashSet<Offer>();
+        SalesManagerOfOffers = new HashSet<Offer>();
         UserRoles = new HashSet<UserRole>();
         CompanyUserAssignedRoles = new HashSet<CompanyUserAssignedRole>();
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
         CreatedNotifications = new HashSet<Notification>();
-        SalesManagerOfServices = new HashSet<Service>();
-        RequesterOfCompanyAssignedServices = new HashSet<CompanyAssignedService>();
     }
     
     public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId) 
@@ -86,21 +84,11 @@ public class CompanyUser : IAuditable
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
-    public virtual ICollection<App> Apps { get; private set; }
-    public virtual ICollection<App> SalesManagerOfApps { get; private set; }
+    public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<Offer> SalesManagerOfOffers { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; private set; }
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
-
-    /// <summary>
-    /// Services the user is the sales manager of
-    /// </summary>
-    public virtual ICollection<Service> SalesManagerOfServices { get; private set; }
-
-    /// <summary>
-    /// Mapping between <see cref="CompanyUser"/> and <see cref="CompanyAssignedService"/>
-    /// </summary>
-    public virtual ICollection<CompanyAssignedService> RequesterOfCompanyAssignedServices { get; private set; }
 }
