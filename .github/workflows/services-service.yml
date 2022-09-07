@@ -1,10 +1,10 @@
-name: Service-Service
+name: Services-Service
 
 on: 
   push:
     paths:
       # service path
-      - 'src/services/CatenaX.NetworkServices.Service.Service/**'
+      - 'src/services/CatenaX.NetworkServices.Services.Service/**'
       # workflow file
       - '.github/workflows/services-service.yml'
       # dockerfile
