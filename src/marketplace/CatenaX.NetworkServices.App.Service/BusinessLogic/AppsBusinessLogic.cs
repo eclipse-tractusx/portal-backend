@@ -364,7 +364,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.name is null || appDetails.provider is null || appDetails.thumbnailUrl is null 
-            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null || !appDetails.description.Any() )
+            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null || !appDetails.descriptionLong.Any() || !appDetails.descriptionShort.Any())
         {
             var nullProperties = new List<string>();
             if (appDetails.name is null)
@@ -387,9 +387,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
             }
-            if(!appDetails.description.Any())
+            if(!appDetails.descriptionLong.Any())
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.description)}");
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLong)}");
+            }
+            if(!appDetails.descriptionShort.Any())
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShort)}");
             }
             throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }
@@ -404,12 +408,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             appId,
             RequestorCompanyName = companyName
         };
-        var content = new List<(string?, NotificationTypeId)>();
-        foreach(var typeId in _settings.NotificationTypeIds)
-        {
-            content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), typeId));
-        }
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content.AsEnumerable()).ConfigureAwait(false);
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
 
     }
 }
