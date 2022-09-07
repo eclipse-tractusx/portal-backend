@@ -351,7 +351,7 @@ jobs:
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'CatenaX.NetworkServices.Notification.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
 
-  analyze-service-service:
+  analyze-services-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -378,7 +378,7 @@ jobs:
 
       - name: "Bundle files to scan"
         run: >
-          zip -r portal-backend-service.zip
+          zip -r portal-backend-services.zip
           src/services/CatenaX.NetworkServices.Service.Service/.publish
           -x
           src/services/CatenaX.NetworkServices.Service.Service/.publish/CatenaX.NetworkServices.Service.Service
@@ -391,7 +391,7 @@ jobs:
           createprofile: true
           teams: 'portal'
           # Specify path to upload
-          filepath: "portal-backend-service.zip"
+          filepath: "portal-backend-services.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'CatenaX.NetworkServices.Service.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'

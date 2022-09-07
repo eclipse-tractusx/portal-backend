@@ -6,9 +6,9 @@ on:
       # service path
       - 'src/services/CatenaX.NetworkServices.Service.Service/**'
       # workflow file
-      - '.github/workflows/service-service.yml'
+      - '.github/workflows/services-service.yml'
       # dockerfile
-      - 'docker/Dockerfile-service-service'
+      - 'docker/Dockerfile-services-service'
 
     branches:
       - 'main'
@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}_service-service
+  IMAGE_NAME: ${{ github.repository }}_services-service
   COMMIT_SHA: ${{ github.sha }}
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker/Dockerfile-service-service
+          file: docker/Dockerfile-services-service
           pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -72,8 +72,9 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/service-service-image-update.yml/dispatches \
+            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/services-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"main", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
             --fail
+
