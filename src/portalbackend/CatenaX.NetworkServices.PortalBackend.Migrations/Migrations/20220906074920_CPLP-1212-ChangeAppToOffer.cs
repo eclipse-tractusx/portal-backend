@@ -169,12 +169,18 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "offer_subscriptions",
                 newName: "offer_subscription_status_id");
-
+            
             migrationBuilder.AddPrimaryKey(
                 name: "pk_offer_subscriptions",
                 table: "offer_subscriptions",
                 column: "id",
                 schema: "portal"); 
+            migrationBuilder.AlterColumn<Guid>(
+                name: "id",
+                table: "offer_subscriptions",
+                schema: "portal",
+                defaultValueSql: null,
+                oldDefaultValue: "gen_random_uuid()"); 
 
             migrationBuilder.RenameTable(
                 name: "app_licenses",
