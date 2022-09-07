@@ -15,5 +15,5 @@ public class CompanyUserAssignedAppFavourite
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual App? App { get; private set; }
+    public virtual Offer? App { get; private set; }
 }
