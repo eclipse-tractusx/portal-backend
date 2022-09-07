@@ -210,8 +210,8 @@ public class OfferRepository : IOfferRepository
             .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED
                 && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
             .Select(a => new ValueTuple<IEnumerable<OfferDescription>, IEnumerable<OfferDetailImage>>(
-                a.OfferDescriptions.Select(d => new OfferDescription(appId,d.LanguageShortName,d.DescriptionLong,d.DescriptionShort)),
-                a.OfferDetailImages.Select(adi => new OfferDetailImage(adi.Id, appId,adi.ImageUrl))
+                a.OfferDescriptions.Select(d => new OfferDescription(appId, d.LanguageShortName, d.DescriptionLong, d.DescriptionShort)),
+                a.OfferDetailImages.Select(odi => new OfferDetailImage(odi.Id, appId, odi.ImageUrl))
             ))
             .SingleOrDefaultAsync();
 
@@ -230,27 +230,22 @@ public class OfferRepository : IOfferRepository
                 app.Provider,
                 app.ThumbnailUrl,
                 app.ContactEmail,
-                app.OfferLicenses
-                    .Select(l => l.Licensetext)
-                    .FirstOrDefault()));
+                app.OfferLicenses.FirstOrDefault()!.Licensetext
+            ));
 
      /// <inheritdoc />
-    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
+    public Task<(Guid Id, string? Title, string Provider, string? LeadPictureUri, string? ContactEmail, string? Description, string? Price)> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
         _context.Offers
             .AsNoTracking()
             .Where(x => x.Id == serviceId)
-            .Select(app => new ServiceDetailData(
+            .Select(app => new ValueTuple<Guid,string?,string,string?,string?,string?,string?>(
                 app.Id,
-                app.Name ?? Constants.ErrorString,
+                app.Name,
                 app.Provider,
-                app.ThumbnailUrl ?? Constants.ErrorString,
+                app.ThumbnailUrl,
                 app.ContactEmail,
-                _context.Languages.Any(l => l.ShortName == languageShortName)
-                    ? app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
-                    : Constants.ErrorString,
-                app.OfferLicenses
-                    .Select(license => license.Licensetext)
-                    .FirstOrDefault() ?? Constants.ErrorString
+                app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
+                app.OfferLicenses.FirstOrDefault()!.Licensetext
             ))
             .SingleOrDefaultAsync();
 }
