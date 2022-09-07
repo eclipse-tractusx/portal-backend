@@ -68,34 +68,37 @@ public class ServiceController : ControllerBase
     /// </summary>
     /// <param name="data">The data for the new service offering.</param>
     /// <remarks>Example: POST: /api/services/addservice</remarks>
-    /// <response code="200">Returns the newly created service id.</response>
+    /// <response code="201">Returns the newly created service id.</response>
     /// <response code="400">The given service offering data were invalid.</response>
     [HttpPost]
     [Route("addservice")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Guid> CreateServiceOffering([FromBody] ServiceOfferingData data) =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOffering(data, iamUserId));
+    public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
+    {
+        var id = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOffering(data, iamUserId)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetServiceDetails), new { serviceId = id }, id);
+    }
     
     /// <summary>
     /// Adds a new service subscription.
     /// </summary>
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
     /// <remarks>Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
-    /// <response code="204">Returns success</response>
+    /// <response code="201">Returns success</response>
     /// <response code="400">Company or company user wasn't assigned to the user.</response>
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/subscribe")]
     [Authorize(Roles = "subscribe_service")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Guid>> AddServiceSubscription([FromRoute] Guid serviceId)
+    public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId)
     {
         var serviceSubscriptionId = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AddServiceSubscription(serviceId, iamUserId)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetSubscriptionDetail), new { notificationId = serviceSubscriptionId }, serviceSubscriptionId);
+        return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 
     /// <summary>
@@ -122,7 +125,7 @@ public class ServiceController : ControllerBase
     /// <response code="200">Returns the service details.</response>
     /// <response code="404">Service was not found.</response>
     [HttpGet]
-    [Route("{serviceId}")]
+    [Route("{serviceId}", Name = nameof(GetServiceDetails))]
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
