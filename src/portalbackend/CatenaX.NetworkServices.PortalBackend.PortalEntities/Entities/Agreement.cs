@@ -35,7 +35,7 @@ public class Agreement
     [MaxLength(255)]
     public string Name { get; set; }
 
-    public Guid? AppId { get; set; }
+    public Guid? OfferId { get; set; }
 
     public Guid IssuerCompanyId { get; set; }
 
@@ -43,7 +43,7 @@ public class Agreement
 
     // Navigation properties
     public virtual AgreementCategory? AgreementCategory { get; set; }
-    public virtual App? App { get; set; }
+    public virtual Offer? Offer { get; set; }
     public virtual Company? IssuerCompany { get; set; }
     public virtual UseCase? UseCase { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }

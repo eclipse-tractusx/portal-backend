@@ -173,7 +173,7 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("subscribed/subscription-status")]
     [Authorize(Roles = "view_subscription")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));

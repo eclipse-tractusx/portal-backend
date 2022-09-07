@@ -56,7 +56,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var appRepository = _portalRepositories.GetInstance<IAppRepository>();
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appResult = await appRepository.GetAppDetailsForUpdateAsync(appId, userId).ConfigureAwait(false);
         if (appResult == default)
         {
@@ -70,7 +70,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ConflictException($"app {appId} is not in status CREATED");
         }
-        _portalRepositories.Attach(new App(appId), app =>
+        _portalRepositories.Attach(new Offer(appId), app =>
         {
             app.ContactEmail = updateModel.ContactEmail;
             app.ContactNumber = updateModel.ContactNumber;
@@ -83,7 +83,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private void UpsertRemoveAppDescription(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appResult, IAppRepository appRepository)
+    private void UpsertRemoveAppDescription(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appResult, IOfferRepository appRepository)
     {
         var lstToAdd = new List<Localization>();
         int index = 0;
@@ -91,7 +91,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             if (string.IsNullOrWhiteSpace(item.LanguageCode) && appResult.Any())
             {
-                _portalRepositories.Remove(new AppDescription(appId, appResult.ElementAt(index)));
+                _portalRepositories.Remove(new OfferDescription(appId, appResult.ElementAt(index)));
                 index++;
             }
             else
@@ -102,7 +102,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 }
                 else
                 {
-                    _portalRepositories.Attach(new AppDescription(appId, item.LanguageCode!), appdesc =>
+                    _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
                     {
                         appdesc.DescriptionLong = item.LongDescription!;
                     });
@@ -112,13 +112,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (lstToAdd.Count > 0)
         {
-            appRepository.AddAppDescriptions(lstToAdd.AsEnumerable().Select(d =>
+            appRepository.AddOfferDescriptions(lstToAdd.AsEnumerable().Select(d =>
                (appId, d.LanguageCode!, d.LongDescription!, string.Empty)));
         }
 
     }
 
-    private void UpsertRemoveAppDetailImage(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appImgUrl,IEnumerable<Guid> appImgId, IAppRepository appRepository)
+    private void UpsertRemoveAppDetailImage(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appImgUrl,IEnumerable<Guid> appImgId, IOfferRepository appRepository)
     {
         var lstToAddImage = new List<AppEditableImage>();
         int currentIndex = 0;
@@ -127,7 +127,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             
             if (!Guid.TryParse(record.AppImageId, out _) && string.IsNullOrWhiteSpace(record.ImageUrl) && appImgId.Any())
             {
-                _portalRepositories.Remove(new AppDetailImage(appImgId.ElementAt(currentIndex)));
+                _portalRepositories.Remove(new OfferDetailImage(appImgId.ElementAt(currentIndex)));
                 
             }
             else
@@ -140,7 +140,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 {
                     if (Guid.TryParse(record.AppImageId, out _))
                     {
-                        _portalRepositories.Attach(new AppDetailImage(appImgId.ElementAt(currentIndex)), appimg =>
+                        _portalRepositories.Attach(new OfferDetailImage(appImgId.ElementAt(currentIndex)), appimg =>
                         { 
                             appimg.ImageUrl = record.ImageUrl!;
                         });
@@ -200,7 +200,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                     throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
                 }
                 var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateAppAssignedDocument(appId, doc.Id);
+                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
                 return await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
         }
@@ -213,7 +213,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException($"AppId must not be empty");
         }
-        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !String.IsNullOrWhiteSpace(item.languageCode)).Distinct();
+        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !string.IsNullOrWhiteSpace(item.languageCode)).Distinct();
         if (!descriptions.Any())
         {
             throw new ControllerArgumentException($"Language Code must not be empty");
