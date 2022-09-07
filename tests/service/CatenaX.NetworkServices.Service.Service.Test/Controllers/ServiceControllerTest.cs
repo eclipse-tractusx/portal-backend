@@ -24,7 +24,6 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Service.Service.BusinessLogic;
 using CatenaX.NetworkServices.Service.Service.Controllers;
-using CatenaX.NetworkServices.Tests.Shared;
 using CatenaX.NetworkServices.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
@@ -62,8 +61,8 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.CreateServiceOffering(serviceOfferingData, IamUserId)).MustHaveHappenedOnceExactly();
-            Assert.IsType<Guid>(result);
-            result.Should().Be(id);
+            Assert.IsType<CreatedAtRouteResult>(result);
+            result.Value.Should().Be(id);
         }
 
         [Fact]
@@ -97,7 +96,8 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId)).MustHaveHappenedOnceExactly();
-            Assert.IsType<ActionResult<Guid>>(result);
+            Assert.IsType<CreatedAtRouteResult>(result);
+            result.Value.Should().Be(offerSubscriptionId);
         }
         
         [Fact]

@@ -139,12 +139,19 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang)
     {        
         var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang).ConfigureAwait(false);
-        if (serviceDetailData is null)
+        if (serviceDetailData == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        return serviceDetailData;
+        return new ServiceDetailData(
+            serviceDetailData.Id,
+            serviceDetailData.Title ?? Constants.ErrorString,
+            serviceDetailData.Provider,
+            serviceDetailData.LeadPictureUri ?? Constants.ErrorString,
+            serviceDetailData.ContactEmail,
+            serviceDetailData.Description ?? Constants.ErrorString,
+            serviceDetailData.Price ?? Constants.ErrorString);
     }
 
     /// <inheritdoc />
