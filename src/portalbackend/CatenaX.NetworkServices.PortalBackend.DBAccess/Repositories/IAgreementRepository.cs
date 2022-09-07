@@ -39,5 +39,5 @@ public interface IAgreementRepository
     /// </summary>
     /// <param name="iamUserId">Id of the user</param>
     /// <returns>Returns an async enumerable from agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetAgreementDataWithAppIdSet(string iamUserId);
+    IAsyncEnumerable<ServiceAgreementData> GetServiceAgreementDataForIamUser(string iamUserId);
 }

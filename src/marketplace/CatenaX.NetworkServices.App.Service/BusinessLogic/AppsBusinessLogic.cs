@@ -316,7 +316,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {
         var companyAssignedAppRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var companyAppSubscriptionData = await companyAssignedAppRepository
-            .GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
+            .GetCompanyIdWithAssignedOfferForCompanyUserAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
         if (companyAppSubscriptionData == default)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not assigned with a company");

@@ -80,5 +80,5 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="iamUserId">id of the iam user</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId);
+    IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement(string iamUserId);
 }

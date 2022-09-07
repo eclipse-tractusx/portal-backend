@@ -111,7 +111,7 @@ namespace CatenaX.NetworkServices.App.Service.Tests
             var providerContactEmail = "email@provider.com";
             var (companyUser, iamUser) = CreateTestUserPair();
 
-            A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedAppForCompanyUserAsync(appId, iamUser.UserEntityId))
+            A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAsync(appId, iamUser.UserEntityId, OfferTypeId.APP))
                 .Returns(new ValueTuple<Guid, OfferSubscription?, string, Guid>(companyUser.CompanyId, null, "umbrella corporation", companyUser.Id));
             A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
                 .Returns(new OfferSubscription(Guid.NewGuid(), appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id));

@@ -421,11 +421,11 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.CheckServiceExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .Returns(false);
         
-        var agreementData = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => _agreementRepository.GetAgreementDataWithAppIdSet(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+        var agreementData = _fixture.CreateMany<ServiceAgreementData>(1);
+        A.CallTo(() => _agreementRepository.GetServiceAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
             .Returns(agreementData.ToAsyncEnumerable());
-        A.CallTo(() => _agreementRepository.GetAgreementDataWithAppIdSet(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
-            .Returns(new List<AgreementData>().ToAsyncEnumerable());
+        A.CallTo(() => _agreementRepository.GetServiceAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
+            .Returns(new List<ServiceAgreementData>().ToAsyncEnumerable());
 
         A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);

@@ -50,10 +50,4 @@
     </None>
     <None Remove="efbundle.exe" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Migrations\20220901070722_CPLP-1212-CombineServiceAndApps.cs" />
-    <Compile Remove="Migrations\20220901070722_CPLP-1212-CombineServiceAndApps.Designer.cs" />
-  </ItemGroup>
-
 </Project>

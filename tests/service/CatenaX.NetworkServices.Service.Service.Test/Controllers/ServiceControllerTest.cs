@@ -141,7 +141,7 @@ namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
         public async Task GetServiceAgreement_ReturnsExpected()
         {
             //Arrange
-            var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+            var agreementData = _fixture.CreateMany<ServiceAgreementData>(5).ToAsyncEnumerable();
             A.CallTo(() => _logic.GetServiceAgreement(A<string>._))
                 .Returns(agreementData);
 

@@ -159,6 +159,6 @@ public class ServiceController : ControllerBase
     [Route("serviceAgreementData")]
     [Authorize(Roles = "subscribe_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AgreementData> GetServiceAgreement() =>
+    public IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement() =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceAgreement(iamUserId));
 }

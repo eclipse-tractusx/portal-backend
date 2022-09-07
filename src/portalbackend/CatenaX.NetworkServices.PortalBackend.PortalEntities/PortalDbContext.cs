@@ -644,7 +644,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<ConsentStatus>()
             .HasData(
                 Enum.GetValues(typeof(ConsentStatusId))
