@@ -33,5 +33,5 @@ namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 /// <param name="Price">Price</param>
 /// <returns></returns>
 
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid? ProviderCompanyId, ICollection<string> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, IEnumerable<string> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
 

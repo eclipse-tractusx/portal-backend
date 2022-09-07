@@ -4,13 +4,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class OfferDescription
 {
-    private OfferDescription()
-    {
-        LanguageShortName = null!;
-        DescriptionLong = null!;
-        DescriptionShort = null!;
-    }
-
     public OfferDescription(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)
     {
         OfferId = offerId;
@@ -32,19 +25,6 @@ public class OfferDescription
         DescriptionShort = null!;
     }
     
-    /// <summary>
-    /// construtor used for the Remove case
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="languageShortName"></param>
-    /// <param name="descriptionLong"></param>
-    public OfferDescription(Guid appId, string languageShortName, string descriptionLong)
-    {
-        OfferId = appId;
-        LanguageShortName = languageShortName;
-        DescriptionLong = descriptionLong;
-        DescriptionShort = null!;
-    }
     [MaxLength(4096)]
     public string DescriptionLong { get; set; }
 
