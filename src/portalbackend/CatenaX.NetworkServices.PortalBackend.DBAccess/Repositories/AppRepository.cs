@@ -216,7 +216,7 @@ public class AppRepository : IAppRepository
                        ))
              .SingleOrDefaultAsync();
 
-    public Task<AppReleaseData> GetAppReleaseDataByIdAsync(Guid appId)
+    public Task<AppReleaseData?> GetAppReleaseDataByIdAsync(Guid appId)
     =>
         _context.Apps
             .AsNoTracking()
@@ -229,7 +229,8 @@ public class AppRepository : IAppRepository
                 c.ProviderCompanyId,
                 c.AppStatusId,
                 c.DateLastChanged,
-                c.AppDescriptions.Select(d => new AppDescription(appId, d.LanguageShortName, d.DescriptionLong, d.DescriptionShort))
+                c.AppDescriptions.Select(description => description.DescriptionLong),
+                c.AppDescriptions.Select(description => description.DescriptionShort)
             ))
             .SingleOrDefaultAsync();
     

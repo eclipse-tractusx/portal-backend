@@ -140,5 +140,5 @@ public interface IAppRepository
     /// </summary>
     /// <param name="appId"></param>
     /// <returns></returns>
-    Task<AppReleaseData> GetAppReleaseDataByIdAsync(Guid appId);
+    Task<AppReleaseData?> GetAppReleaseDataByIdAsync(Guid appId);
 }

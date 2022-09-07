@@ -35,4 +35,4 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="lastChanged"></param>
 /// <param name="description"></param>
 /// <returns></returns>
-public record AppReleaseData(string name, string? thumbnailUrl, string provider, Guid? salesManagerId, Guid? providerCompanyId, AppStatusId appStatusId, DateTimeOffset? lastChanged, IEnumerable<AppDescription> description);
+public record AppReleaseData(string? name, string? thumbnailUrl, string provider, Guid? salesManagerId, Guid? providerCompanyId, AppStatusId appStatusId, DateTimeOffset? lastChanged, IEnumerable<string> descriptionLong, IEnumerable<string> descriptionShort);
