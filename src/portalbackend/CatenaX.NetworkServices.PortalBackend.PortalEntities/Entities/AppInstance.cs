@@ -4,7 +4,7 @@ public class AppInstance
 {
     private AppInstance()
     {
-        CompanyAssignedApps = new HashSet<CompanyAssignedApp>();
+        AppSubscriptionDetails = new HashSet<AppSubscriptionDetail>();
     }
 
     public AppInstance(Guid id, Guid appId, Guid iamClientId) : this()
@@ -19,8 +19,7 @@ public class AppInstance
     public Guid IamClientId { get; private set; }
 
     // Navigation properties
-    public virtual App? App { get; private set; }
+    public virtual Offer? App { get; private set; }
     public virtual IamClient? IamClient { get; private set; }
-    
-    public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
+    public virtual ICollection<AppSubscriptionDetail> AppSubscriptionDetails { get; private set; }
 }
