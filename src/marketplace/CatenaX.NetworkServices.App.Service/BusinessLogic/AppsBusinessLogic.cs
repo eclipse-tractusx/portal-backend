@@ -364,7 +364,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.name is null || appDetails.thumbnailUrl is null 
-            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null || !appDetails.descriptionLong.Any() || !appDetails.descriptionShort.Any())
+            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
+            || !appDetails.descriptionLong || !appDetails.descriptionShort)
         {
             var nullProperties = new List<string>();
             if (appDetails.name is null)
@@ -382,6 +383,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             if(appDetails.providerCompanyId is null)
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
+            }
+            if(!appDetails.descriptionLong)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLong)}");
+            }
+            if(!appDetails.descriptionShort)
+            {
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShort)}");
             }
             throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }

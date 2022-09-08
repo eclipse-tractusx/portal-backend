@@ -257,13 +257,10 @@ public class OfferRepository : IOfferRepository
             .Select(c => new AppReleaseData(
                 c.Name,
                 c.ThumbnailUrl,
-                c.Provider,
                 c.SalesManagerId,
                 c.ProviderCompanyId,
-                c.OfferStatusId,
-                c.DateLastChanged,
-                c.OfferDescriptions.Select(description => description.DescriptionLong),
-                c.OfferDescriptions.Select(description => description.DescriptionShort)
+                c.OfferDescriptions.Any(description => !string.IsNullOrWhiteSpace(description.DescriptionLong)),
+                c.OfferDescriptions.Any(description => !string.IsNullOrWhiteSpace(description.DescriptionShort))
             ))
             .SingleOrDefaultAsync();
 }
