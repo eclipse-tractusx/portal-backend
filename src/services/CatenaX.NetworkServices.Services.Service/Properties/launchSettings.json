@@ -18,7 +18,7 @@
     "CatenaX.NetworkServices.Services.Service": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/service/swagger",
+      "launchUrl": "api/services/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
