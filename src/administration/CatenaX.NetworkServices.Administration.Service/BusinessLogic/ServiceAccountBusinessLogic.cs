@@ -28,7 +28,6 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Provisioning.Library.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -38,17 +37,20 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 {
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly ServiceAccountSettings _Settings;
+    private readonly IServiceAccountCreation _serviceAccountCreation;
+    private readonly ServiceAccountSettings _settings;
     
 
     public ServiceAccountBusinessLogic(
         IProvisioningManager provisioningManager,
         IPortalRepositories portalRepositories,
-        IOptions<ServiceAccountSettings> options)
+        IOptions<ServiceAccountSettings> options,
+        IServiceAccountCreation serviceAccountCreation)
     {
         _provisioningManager = provisioningManager;
         _portalRepositories = portalRepositories;
-        _Settings = options.Value;
+        _serviceAccountCreation = serviceAccountCreation;
+        _settings = options.Value;
     }
 
     public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, string iamAdminId)
@@ -68,56 +70,12 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
-        var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-
-        var userRoleData = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleDataUntrackedAsync(serviceAccountCreationInfos.UserRoleIds).ToListAsync().ConfigureAwait(false);
-        if (userRoleData.Count != serviceAccountCreationInfos.UserRoleIds.Count())
-        {
-            var missingRoleIds = serviceAccountCreationInfos.UserRoleIds
-                .Where(userRoleId => userRoleData.All(userRole => userRole.UserRoleId != userRoleId))
-                .ToList();
-            
-            if (missingRoleIds.Any())
-            {
-                throw new NotFoundException($"{missingRoleIds.First()} is not a valid UserRoleId");
-            }
-        }
-
-        var clientId = await _provisioningManager.GetNextServiceAccountClientIdAsync().ConfigureAwait(false);
-
-        var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
-            clientId,
-            new ClientConfigRolesData(
-                serviceAccountCreationInfos.Name,
-                serviceAccountCreationInfos.Description,
-                serviceAccountCreationInfos.IamClientAuthMethod,
-                userRoleData
-                    .GroupBy(userRole =>
-                        userRole.ClientClientId)
-                    .ToDictionary(group =>
-                        group.Key,
-                        group => group.Select(userRole => userRole.UserRoleText)))).ConfigureAwait(false);
-
-        var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
-            companyId,
-            CompanyServiceAccountStatusId.ACTIVE,
-            serviceAccountCreationInfos.Name,
-            serviceAccountCreationInfos.Description);
-
-        serviceAccountsRepository.CreateIamServiceAccount(
-            serviceAccountData.InternalClientId,
-            clientId,
-            serviceAccountData.UserEntityId,
-            serviceAccount.Id);
-
-        foreach(var userRole in userRoleData)
-        {
-            serviceAccountsRepository.CreateCompanyServiceAccountAssignedRole(serviceAccount.Id, userRole.UserRoleId);
-        }
+        var (name, description, iamClientAuthMethod, userRoleIds) = serviceAccountCreationInfos;
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, companyId);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
-            serviceAccount.Id,
+            serviceAccountId,
             clientId,
             serviceAccountCreationInfos.Name,
             serviceAccountCreationInfos.Description,
@@ -259,5 +217,5 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     }
 
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_Settings.ClientId,languageShortName);
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_settings.ClientId,languageShortName);
 }

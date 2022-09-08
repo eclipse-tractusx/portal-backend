@@ -161,4 +161,16 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement() =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceAgreement(iamUserId));
+
+    /// <summary>
+    /// Auto setup the service
+    /// </summary>
+    /// <remarks>Example: POST: /api/services/autoSetup</remarks>
+    /// <response code="200">Returns the service agreement data.</response>
+    [HttpPost]
+    [Route("autoSetup")]
+    [Authorize(Roles = "activate_subscription")]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    public async Task<ServiceAutoSetupResponseData> AutoSetupService([FromBody] ServiceAutoSetupData data)
+        => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupService(data, iamUserId));
 }

@@ -67,4 +67,7 @@ public partial class ProvisioningManager
             }
         )).ConfigureAwait(false))
         .ToDictionary(clientRole => clientRole.client, clientRole => clientRole.rolesList);
+    
+    // TODO (PS): Check how to assigne client roles to client
+    public Task AssignClientRolesToClient(string clientId, List<string> clientRoleNames) => Task.CompletedTask;
 }

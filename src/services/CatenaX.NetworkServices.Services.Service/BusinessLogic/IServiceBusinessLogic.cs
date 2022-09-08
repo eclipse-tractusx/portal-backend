@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 
@@ -81,4 +82,12 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">id of the iam user</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
     IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement(string iamUserId);
+
+    /// <summary>
+    /// Auto setup the service.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task<ServiceAutoSetupResponseData> AutoSetupService(ServiceAutoSetupData data, string iamUserId);
 }

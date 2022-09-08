@@ -25,6 +25,8 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -36,6 +38,8 @@ namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IProvisioningManager _provisioningManager;
+    private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -43,9 +47,17 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="settings">Access to the settings</param>
-    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOptions<ServiceSettings> settings)
+    /// <param name="provisioningManager">Access to the provisioning manager</param>
+    /// <param name="serviceAccountCreation">Access to the service account creation</param>
+    public ServiceBusinessLogic(
+        IPortalRepositories portalRepositories, 
+        IOptions<ServiceSettings> settings, 
+        IProvisioningManager provisioningManager,
+        IServiceAccountCreation serviceAccountCreation)
     {
         _portalRepositories = portalRepositories;
+        _provisioningManager = provisioningManager;
+        _serviceAccountCreation = serviceAccountCreation;
         _settings = settings.Value;
     }
 
@@ -200,6 +212,67 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement(string iamUserId) => 
         _portalRepositories.GetInstance<IAgreementRepository>().GetServiceAgreementDataForIamUser(iamUserId);
 
+    /// <inheritdoc />
+    public async Task<ServiceAutoSetupResponseData> AutoSetupService(ServiceAutoSetupData data, string iamUserId)
+    {
+        var offerDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetOfferDetailsAndCheckUser(data.RequestId, iamUserId).ConfigureAwait(false);
+        if (offerDetails == null)
+        {
+            throw new NotFoundException($"OfferSubscription {data.RequestId} does not exist");
+        }
+
+        if (offerDetails.Status is not OfferSubscriptionStatusId.PENDING)
+        {
+            throw new ControllerArgumentException("Status of the offer subscription must be pending");
+        }
+
+        if (offerDetails.CompanyUserId == Guid.Empty)
+        {
+            throw new ControllerArgumentException("Only the providing company can setup the service");
+        }
+        
+        var clientId = await _provisioningManager.SetupClientAsync("test").ConfigureAwait(false);
+        var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
+        var userRoles = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRolesForOfferIdAsync(offerDetails.OfferId).ConfigureAwait(false);
+        await _provisioningManager.AssignClientRolesToClient(clientId, userRoles).ConfigureAwait(false);
+        
+        var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
+        _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
+            .CreateAppSubscriptionDetail(data.RequestId, (appSubscriptionDetail) =>
+            {
+                appSubscriptionDetail.AppInstanceId = appInstance.Id;
+                appSubscriptionDetail.AppSubscriptionUrl = data.OfferUrl;
+            });
+        
+        var serviceAccountUserRoles = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleDataUntrackedAsync(_settings.ServiceAccountRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        await _serviceAccountCreation.CreateServiceAccountAsync(clientId, $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}", IamClientAuthMethod.SECRET, serviceAccountUserRoles.Select(x => x.UserRoleId), offerDetails.CompanyId, Enumerable.Repeat(offerDetails.Bpn, 1));
+
+        var offerSubscription = new OfferSubscription(data.RequestId);
+        _portalRepositories.Attach(offerSubscription, (subscription =>
+        {
+            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        }));
+        
+        // await _notificationService.CreateNotifications(
+        //     _settings.CompanyAdminRoles,
+        //     offerDetails.CompanyUserId,
+        //     new (string?, NotificationTypeId)[]
+        //     {
+        //         (null, NotificationTypeId.TECHNICAL_USER_CREATION),
+        //         (null, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION)
+        //     }).ConfigureAwait(false);
+        //
+        _portalRepositories.GetInstance<INotificationRepository>().Create(offerDetails.RequesterId,
+            NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        
+        return new ServiceAutoSetupResponseData(Guid.NewGuid(), "Tony Stark");
+    }
+
     private async Task CheckLanguageCodesExist(ICollection<string> languageCodes)
     {
         if (languageCodes.Any())
@@ -208,7 +281,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 .GetLanguageCodesUntrackedAsync(languageCodes)
                 .ToListAsync()
                 .ConfigureAwait(false);
-            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes);
+            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes).ToList();
             if (notFoundLanguageCodes.Any())
             {
                 throw new ControllerArgumentException(
