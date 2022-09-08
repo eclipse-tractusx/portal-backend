@@ -51,6 +51,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"AppId must not be empty");
         }
+        var descriptions = updateModel.Descriptions.Where(item => !String.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
+        if (!descriptions.Any())
+        {
+            throw new ArgumentException($"Language Code must not be empty");
+        }
         return EditAppAsync(appId, updateModel, userId);
     }
 
@@ -77,37 +82,29 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.MarketingUrl = updateModel.ProviderUri;
         });
 
-        UpsertRemoveAppDescription(appId, updateModel, appResult.LanguageShortNames, appRepository);
-        UpsertRemoveAppDetailImage(appId, updateModel, appResult.ImageUrls, appResult.appImageId, appRepository);
+        UpsertRemoveAppDescription(appId, updateModel.Descriptions, appResult.LanguageShortNames, appRepository);
+        UpsertRemoveAppDetailImage(appId, updateModel.Images, appResult.ImageUrls, appRepository);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private void UpsertRemoveAppDescription(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appResult, IOfferRepository appRepository)
+    private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<string> appResult, IOfferRepository appRepository)
     {
         var lstToAdd = new List<Localization>();
-        int index = 0;
-        foreach (var item in updateModel.Descriptions)
+        foreach (var item in Descriptions)
         {
-            if (string.IsNullOrWhiteSpace(item.LanguageCode) && appResult.Any())
+            if (!appResult.Contains(item.LanguageCode))
             {
-                _portalRepositories.Remove(new OfferDescription(appId, appResult.ElementAt(index)));
-                index++;
+                lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
             }
             else
             {
-                if (!appResult.Contains(item.LanguageCode))
+                _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
                 {
-                    lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
-                }
-                else
-                {
-                    _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
-                    {
-                        appdesc.DescriptionLong = item.LongDescription!;
-                    });
-                }
+                    appdesc.DescriptionLong = item.LongDescription!;
+                });
             }
+
         }
 
         if (lstToAdd.Count > 0)
@@ -115,32 +112,31 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             appRepository.AddOfferDescriptions(lstToAdd.AsEnumerable().Select(d =>
                (appId, d.LanguageCode!, d.LongDescription!, string.Empty)));
         }
-
     }
 
-    private void UpsertRemoveAppDetailImage(Guid appId, AppEditableDetail updateModel, IEnumerable<string> appImgUrl,IEnumerable<Guid> appImgId, IOfferRepository appRepository)
+    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<AppEditableImage> Images, IEnumerable<(Guid Id, string Url)> ImageUrls, IOfferRepository appRepository)
     {
         var lstToAddImage = new List<AppEditableImage>();
         int currentIndex = 0;
-        foreach (var record in updateModel.Images)
+        foreach (var record in Images)
         {
             
-            if (!Guid.TryParse(record.AppImageId, out _) && string.IsNullOrWhiteSpace(record.ImageUrl) && appImgId.Any())
+            if (!Guid.TryParse(record.AppImageId, out _) && string.IsNullOrWhiteSpace(record.ImageUrl) && ImageUrls.Any())
             {
-                _portalRepositories.Remove(new OfferDetailImage(appImgId.ElementAt(currentIndex)));
+                _portalRepositories.Remove(new OfferDetailImage(ImageUrls.Select(s => s.Id).ElementAt(currentIndex)));
                 
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !appImgUrl.Contains(record.ImageUrl) && !Guid.TryParse(record.AppImageId, out _))
+                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !ImageUrls.Select(s => s.Url).Contains(record.ImageUrl) && !Guid.TryParse(record.AppImageId, out _))
                 {
-                    lstToAddImage.Add(new AppEditableImage(null, record.ImageUrl));
+                    lstToAddImage.Add(new AppEditableImage(record.ImageUrl));
                 }
                 else
                 {
                     if (Guid.TryParse(record.AppImageId, out _))
                     {
-                        _portalRepositories.Attach(new OfferDetailImage(appImgId.ElementAt(currentIndex)), appimg =>
+                        _portalRepositories.Attach(new OfferDetailImage(ImageUrls.Select(s => s.Id).ElementAt(currentIndex)), appimg =>
                         { 
                             appimg.ImageUrl = record.ImageUrl!;
                         });

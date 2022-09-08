@@ -37,15 +37,52 @@ public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumera
 /// <param name="LanguageCode"></param>
 /// <param name="LongDescription"></param>
 /// <returns></returns>
-public record Localization(string? LanguageCode, string? LongDescription);
+public record Localization(string LanguageCode, string? LongDescription);
 
 /// <summary>
-/// 
+/// Model for Detail Image
 /// </summary>
-/// <param name="AppImageId"></param>
-/// <param name="ImageUrl"></param>
-/// <returns></returns>
-public record AppEditableImage(string? AppImageId, string? ImageUrl);
+/// <value></value>
+public record AppEditableImage
+{
+    /// <summary>
+    /// Image Id
+    /// </summary>
+    /// <value></value>
+    public string? AppImageId { get; init; }
+
+    /// <summary>
+    /// Image Url
+    /// </summary>
+    /// <value></value>
+    public string? ImageUrl { get; init; }
+    
+    /// <summary>
+    /// Default Constructor
+    /// </summary>
+    public AppEditableImage()
+    {
+       
+    }
+    /// <summary>
+    /// Parameterized Constructor
+    /// </summary>
+    /// <param name="imageUrl"></param>
+    public AppEditableImage(string? imageUrl)
+    {
+        ImageUrl = imageUrl;
+    }
+    /// <summary>
+    /// Overloaded Constructor
+    /// </summary>
+    /// <param name="appImageId"></param>
+    /// <param name="imageUrl"></param>
+    public AppEditableImage(string? appImageId, string? imageUrl)
+    {
+        AppImageId = appImageId;
+        ImageUrl = imageUrl;
+    }
+}
 
 
 
