@@ -80,5 +80,8 @@ public class PortalRepositories : IPortalRepositories
         where TEntity : class
         => _dbContext.Remove(entity).Entity;
 
+    public void RemoveRange<TEntity>(IEnumerable<TEntity> entities)
+        => _dbContext.RemoveRange(entities);
+
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
 }
