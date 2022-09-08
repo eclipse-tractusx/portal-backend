@@ -93,4 +93,12 @@ public interface IUserRepository
     /// <param name="userId">id of the iamUser</param>
     /// <returns>Returns the userId and email</returns>
     Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId);
+
+    /// <summary>
+    /// Gets the company user ids and checks if its the given iamUser
+    /// </summary>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="salesManagerId">The id of the company user to check in the persistence layer.</param>
+    /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId);
 }
