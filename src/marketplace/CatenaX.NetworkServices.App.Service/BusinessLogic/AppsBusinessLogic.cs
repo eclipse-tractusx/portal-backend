@@ -40,6 +40,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
     private readonly AppsSettings _settings;
+
     /// <summary>
     /// Constructor.
     /// </summary>
