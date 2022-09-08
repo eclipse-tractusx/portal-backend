@@ -9,10 +9,10 @@ public class Language
         ShortName = null!;
         LongNameDe = null!;
         LongNameEn = null!;
-        AppDescriptions = new HashSet<AppDescription>();
+        AppDescriptions = new HashSet<OfferDescription>();
         CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
         UserRoleDescriptions = new HashSet<UserRoleDescription>();
-        SupportingApps = new HashSet<App>();
+        SupportingApps = new HashSet<Offer>();
     }
 
     public Language(string languageShortName, string longNameDe, string longNameEn) : this()
@@ -33,8 +33,8 @@ public class Language
     public string LongNameEn { get; set; }
 
     // Navigation properties
-    public virtual ICollection<AppDescription> AppDescriptions { get; private set; }
+    public virtual ICollection<OfferDescription> AppDescriptions { get; private set; }
     public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
     public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
-    public virtual ICollection<App> SupportingApps { get; private set; }
+    public virtual ICollection<Offer> SupportingApps { get; private set; }
 }

@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using Keycloak.Net;
 using Keycloak.Net.Models.Clients;
 using Keycloak.Net.Models.ProtocolMappers;
 using System.Text.Json;
@@ -59,7 +61,7 @@ public partial class ProvisioningManager
     {
         if (! await _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false))
         {
-            throw new Exception($"failed to delete client {internalClientId} in keycloak {_Settings.CentralRealm}");
+            throw new KeycloakNoSuccessException($"failed to delete client {internalClientId} in central keycloak {_Settings.CentralRealm}");
         }
     }
 
@@ -90,14 +92,14 @@ public partial class ProvisioningManager
         return client;
     }
 
-    private async Task CreateSharedRealmIdentityProviderClientAsync(string realm, IdentityProviderClientConfig config)
+    private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
     {
         var newClient = CloneClient(_Settings.SharedRealmClient);
         newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
         newClient.Attributes["jwks.url"] = config.JwksUrl;
-        if (! await _SharedIdp.CreateClientAsync(realm,newClient))
+        if (! await keycloak.CreateClientAsync(realm,newClient))
         {
-            throw new Exception($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
+            throw new KeycloakNoSuccessException($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
         }
     }
 
@@ -109,7 +111,7 @@ public partial class ProvisioningManager
         var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
         if (newClientId == null)
         {
-            throw new Exception($"failed to create new client {clientId} in central realm");
+            throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
         }
         return newClientId;
     }
@@ -128,7 +130,7 @@ public partial class ProvisioningManager
             }
         }).ConfigureAwait(false))
         {
-            throw new Exception($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
+            throw new KeycloakNoSuccessException($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
         }
     }
 
@@ -137,26 +139,20 @@ public partial class ProvisioningManager
 
     private IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
     {
-        try
+        if (!CredentialTypesIamClientAuthMethodDictionary.TryGetValue(clientAuthMethod, out var iamClientAuthMethod))
         {
-            return CredentialTypesIamClientAuthMethodDictionary[clientAuthMethod];
+            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}", nameof(clientAuthMethod));
         }
-        catch (KeyNotFoundException)
-        {
-            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}","clientAuthMethod");
-        }
+        return iamClientAuthMethod;
     }
 
     private string IamClientAuthMethodToInternal(IamClientAuthMethod iamClientAuthMethod)
     {
-        try
+        if (!IamClientAuthMethodsInternalDictionary.TryGetValue(iamClientAuthMethod, out var clientAuthMethod))
         {
-            return IamClientAuthMethodsInternalDictionary[iamClientAuthMethod];
+            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}", nameof(iamClientAuthMethod));
         }
-        catch (KeyNotFoundException)
-        {
-            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}","authMethod");
-        }
+        return clientAuthMethod;
     }
 
     private async Task<string> GetNextClientIdAsync() =>
