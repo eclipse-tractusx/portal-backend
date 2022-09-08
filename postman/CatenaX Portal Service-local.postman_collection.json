@@ -91,9 +91,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}service/active?page=0&size=4",
+					"raw": "{{apiUrl}}services/active?page=0&size=4",
 					"host": [
-						"{{apiUrl}}service"
+						"{{apiUrl}}services"
 					],
 					"path": [
 						"active"
@@ -128,9 +128,9 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}service/{{serviceId}}/subscribe",
+					"raw": "{{apiUrl}}services/{{serviceId}}/subscribe",
 					"host": [
-						"{{apiUrl}}service"
+						"{{apiUrl}}services"
 					],
 					"path": [
 						"{{serviceId}}",
@@ -165,9 +165,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{apiUrl}}service/{{serviceId}}/serviceAgreementConsent",
+					"raw": "{{apiUrl}}services/{{serviceId}}/serviceAgreementConsent",
 					"host": [
-						"{{apiUrl}}service"
+						"{{apiUrl}}services"
 					],
 					"path": [
 						"{{serviceId}}",
@@ -207,9 +207,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}service/serviceAgreementData",
+					"raw": "{{apiUrl}}services/serviceAgreementData",
 					"host": [
-						"{{apiUrl}}service"
+						"{{apiUrl}}services"
 					],
 					"path": [
 						"serviceAgreementData"
@@ -256,9 +256,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{apiUrl}}service/addservice",
+					"raw": "{{apiUrl}}services/addservice",
 					"host": [
-						"{{apiUrl}}service"
+						"{{apiUrl}}services"
 					],
 					"path": [
 						"addservice"
