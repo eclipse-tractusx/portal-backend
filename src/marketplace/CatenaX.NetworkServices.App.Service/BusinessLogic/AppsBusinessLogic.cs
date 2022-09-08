@@ -367,6 +367,4 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     .AsAsyncEnumerable()));
 
     }
-
-    
 }
