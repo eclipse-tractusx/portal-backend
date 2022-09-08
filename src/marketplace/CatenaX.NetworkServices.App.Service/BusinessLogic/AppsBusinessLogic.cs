@@ -19,12 +19,13 @@
  ********************************************************************************/
 
 using System.Text.Json;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -338,12 +339,35 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             if (companyAssignedApp.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
                 or OfferSubscriptionStatusId.PENDING)
             {
-                throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
+                throw new ConflictException($"company {companyId} is already subscribed to {appId}");
             }
 
             companyAssignedApp.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         }
 
         return companyName;
+    }
+
+     /// <inheritdoc/>
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
+    {
+        var apps = _portalRepositories.GetInstance<IOfferRepository>().GetAllInReviewStatusAppsAsync();
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            15,
+            (int skip, int take) => new Pagination.AsyncSource<InReviewAppData>(
+                apps.CountAsync(),
+                apps.OrderBy(app => app.Id)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(app => new InReviewAppData(
+                        app.Id,
+                        app.Name,
+                        app.ProviderCompany!.Name,
+                        app.ThumbnailUrl))
+                    .AsAsyncEnumerable()));
+
     }
 }
