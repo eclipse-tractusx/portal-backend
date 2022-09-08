@@ -49,12 +49,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if (appId == Guid.Empty)
         {
-            throw new ArgumentException($"AppId must not be empty");
+            throw new ControllerArgumentException($"AppId must not be empty");
         }
-        var descriptions = updateModel.Descriptions.Where(item => !String.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
-        if (!descriptions.Any())
+        if (updateModel.Descriptions.Any(item => string.IsNullOrWhiteSpace(item.LanguageCode)))
         {
-            throw new ArgumentException($"Language Code must not be empty");
+            throw new ControllerArgumentException("Language Code must not be empty");
+        }
+        if (udateModel.Images.Any(image => string.IsNullOrWhiteSpace(image)))
+        {
+            throw new ControllerArgumentException("ImageUrl must not be empty");
         }
         return EditAppAsync(appId, updateModel, userId);
     }
