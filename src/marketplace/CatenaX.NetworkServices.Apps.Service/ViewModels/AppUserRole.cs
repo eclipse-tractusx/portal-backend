@@ -18,29 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Web;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.Service.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
-var VERSION = "v2";
+/// <summary>
+/// Model for Role
+/// </summary>
+/// <param name="role"></param>
+/// <param name="descriptions"></param>
+/// <returns></returns>
+public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
 
-var builder = WebApplication.CreateBuilder(args);
+/// <summary>
+/// Model for Role Description
+/// </summary>
+/// <param name="languageCode"></param>
+/// <param name="description"></param>
+/// <returns></returns>
+public record AppUserRoleDescription(string languageCode, string description);
 
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
-{
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
-}
-
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddPortalRepositories(builder.Configuration);
-
-builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
-    .ConfigureServiceSettings(builder.Configuration.GetSection("Service"));
-
-builder.Build()
-    .CreateApp<Program>("service", VERSION)
-    .Run();

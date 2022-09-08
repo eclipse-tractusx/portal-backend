@@ -90,9 +90,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Fra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{2BA733DC-AF0D-43DB-821C-A091E353CA04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Service.Service", "services\CatenaX.NetworkServices.Service.Service\CatenaX.NetworkServices.Service.Service.csproj", "{E15973C8-8239-4C8C-8578-D517DA6A9B7C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Services.Service", "services\CatenaX.NetworkServices.Services.Service\CatenaX.NetworkServices.Services.Service.csproj", "{E15973C8-8239-4C8C-8578-D517DA6A9B7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Service.Service.Test", "..\tests\service\CatenaX.NetworkServices.Service.Service.Test\CatenaX.NetworkServices.Service.Service.Test.csproj", "{68A10745-A904-4B14-BAC1-A3D0EF2271D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Services.Service.Test", "..\tests\services\CatenaX.NetworkServices.Services.Service.Test\CatenaX.NetworkServices.Services.Service.Test.csproj", "{68A10745-A904-4B14-BAC1-A3D0EF2271D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

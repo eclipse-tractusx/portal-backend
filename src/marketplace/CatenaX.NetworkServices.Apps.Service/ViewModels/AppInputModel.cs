@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Apps.Service.InputModels;
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
 /// Model for requesting creation of an application.
