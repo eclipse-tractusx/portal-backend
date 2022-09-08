@@ -36,7 +36,7 @@ env:
   IMAGE_NAME_PORTAL_MIGRATIONS: ${{ github.repository }}_portal-migrations
   IMAGE_NAME_MAINTENANCE: ${{ github.repository }}_maintenance-service
   IMAGE_NAME_NOTIFICATION: ${{ github.repository }}_notification-service
-  IMAGE_NAME_SERVICE: ${{ github.repository }}_service-service
+  IMAGE_NAME_SERVICES: ${{ github.repository }}_services-service
 
 jobs:
   administration-service-release:
@@ -298,7 +298,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ steps.git-tag.outputs.git-version }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  service-service-release:
+  services-service-release:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -323,20 +323,20 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICE }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker/Dockerfile-service-service
+          file: docker/Dockerfile-services-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICE }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:${{ steps.git-tag.outputs.git-version }}
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release ]
+    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release ]
     runs-on: ubuntu-latest
 
     steps:

@@ -249,6 +249,9 @@ public class OfferRepository : IOfferRepository
             ))
             .SingleOrDefaultAsync();
 
+    public IQueryable<Offer> GetAllInReviewStatusAppsAsync() =>
+        _context.Offers.Where(offer => offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.IN_REVIEW);
+
     public Task<AppReleaseData?> GetAppReleaseDataByIdAsync(Guid appId)
     =>
         _context.Offers

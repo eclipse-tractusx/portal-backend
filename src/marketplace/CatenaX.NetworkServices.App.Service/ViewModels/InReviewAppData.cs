@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,21 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.App.Service.InputModels;
+namespace CatenaX.NetworkServices.App.Service.ViewModels;
 
 /// <summary>
-/// Model for Role
+///  View model of an application's base data.
 /// </summary>
-/// <param name="role"></param>
-/// <param name="descriptions"></param>
-/// <returns></returns>
-public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
+public record InReviewAppData(Guid AppId, string? Title, string Provider, string? LeadPictureUri)
+{
 
-/// <summary>
-/// Model for Role Description
-/// </summary>
-/// <param name="languageCode"></param>
-/// <param name="description"></param>
-/// <returns></returns>
-public record AppUserRoleDescription(string languageCode, string description);
+    /// <summary>
+    /// ID of the app.
+    /// </summary>
+    public Guid AppId { get; set; } = AppId;
 
+    /// <summary>
+    /// Title or name of the app.
+    /// </summary>
+    public string? Title { get; set; } = Title;
+    /// <summary>
+    /// Provider of the app.
+    /// </summary>
+    public string Provider { get; set; } = Provider;
+
+    /// <summary>
+    /// Uri to app's lead picture.
+    /// </summary>
+    public string? LeadPictureUri { get; set; } = LeadPictureUri;
+}
