@@ -34,7 +34,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using Xunit;
 
-namespace CatenaX.NetworkServices.App.Service.Tests
+namespace CatenaX.NetworkServices.Apps.Service.Tests
 {
     public class AppBusinessLogicTests
     {
