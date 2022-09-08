@@ -55,7 +55,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException("Language Code must not be empty");
         }
-        if (udateModel.Images.Any(image => string.IsNullOrWhiteSpace(image)))
+        if (updateModel.Images.Any(image => string.IsNullOrWhiteSpace(image)))
         {
             throw new ControllerArgumentException("ImageUrl must not be empty");
         }
