@@ -51,6 +51,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"AppId must not be empty");
         }
+        var descriptions = updateModel.Descriptions.Where(item => !String.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
+        if (!descriptions.Any())
+        {
+            throw new ArgumentException($"Language Code must not be empty");
+        }
         return EditAppAsync(appId, updateModel, userId);
     }
 
@@ -86,29 +91,20 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<string> appResult, IOfferRepository appRepository)
     {
         var lstToAdd = new List<Localization>();
-        int index = 0;
         foreach (var item in Descriptions)
         {
-            if (string.IsNullOrWhiteSpace(item.LanguageCode) && appResult.Any())
+            if (!appResult.Contains(item.LanguageCode))
             {
-                _portalRepositories.Remove(new OfferDescription(appId, appResult.ElementAt(index)));
-                
+                lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
             }
             else
             {
-                if (!appResult.Contains(item.LanguageCode))
+                _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
                 {
-                    lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
-                }
-                else
-                {
-                    _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
-                    {
-                        appdesc.DescriptionLong = item.LongDescription!;
-                    });
-                }
+                    appdesc.DescriptionLong = item.LongDescription!;
+                });
             }
-            index++;
+
         }
 
         if (lstToAdd.Count > 0)
@@ -116,7 +112,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             appRepository.AddOfferDescriptions(lstToAdd.AsEnumerable().Select(d =>
                (appId, d.LanguageCode!, d.LongDescription!, string.Empty)));
         }
-
     }
 
     private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<AppEditableImage> Images, IEnumerable<(Guid Id, string Url)> ImageUrls, IOfferRepository appRepository)
@@ -135,7 +130,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             {
                 if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !ImageUrls.Select(s => s.Url).Contains(record.ImageUrl) && !Guid.TryParse(record.AppImageId, out _))
                 {
-                    lstToAddImage.Add(new AppEditableImage(null, record.ImageUrl));
+                    lstToAddImage.Add(new AppEditableImage(record.ImageUrl));
                 }
                 else
                 {
