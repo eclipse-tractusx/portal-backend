@@ -90,7 +90,7 @@ public record AppDetailsData(string Title, string LeadPictureUri, string Provide
     /// <summary>
     /// Whether app has been purchased by the user's company.
     /// </summary>
-    public AppSubscriptionStatusId? IsSubscribed { get; set; }
+    public OfferSubscriptionStatusId? IsSubscribed { get; set; }
 
     /// <summary>
     /// Languages that the app is available in.

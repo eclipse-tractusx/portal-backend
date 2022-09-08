@@ -174,7 +174,7 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("subscribed/subscription-status")]
     [Authorize(Roles = "view_subscription")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, AppSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));
@@ -301,7 +301,7 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("inReview")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
-    [ProducesResponseType(typeof(Pagination.Response<AppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<AppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
+    [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
         _appsBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
 }
