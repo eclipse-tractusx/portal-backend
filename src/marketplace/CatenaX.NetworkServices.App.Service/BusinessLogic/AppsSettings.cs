@@ -17,7 +17,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using System.ComponentModel.DataAnnotations;
+
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
 /// <summary>
@@ -29,17 +32,8 @@ public class AppsSettings
     /// <summary>
     /// BasePortalAddress url required for subscription email 
     /// </summary>
+    [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
-
-    /// <summary>
-    /// check null reference validation 
-    /// </summary>
-
-    public void Validate()
-    {
-        new ConfigurationValidation<AppsSettings>()
-        .NotNullOrWhiteSpace(BasePortalAddress, () => nameof(BasePortalAddress));
-    }
 }
 
 /// <summary>
@@ -55,10 +49,12 @@ public static class AppsSettingsExtension
 
     public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
-        IConfigurationSection section) =>
-        services.Configure<AppsSettings>(x =>
-            {
-                section.Bind(x);
-                x.Validate();
-            });
+        IConfigurationSection section)
+    {
+        services.AddOptions<AppsSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
 }
