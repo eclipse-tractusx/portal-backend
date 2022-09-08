@@ -29,60 +29,17 @@ namespace CatenaX.NetworkServices.Apps.Service.InputModels;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<AppEditableImage> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
 /// <summary>
 /// Model for LanguageCode and Description
 /// </summary>
 /// <param name="LanguageCode"></param>
 /// <param name="LongDescription"></param>
+/// <param name="ShortDescription"></param>
 /// <returns></returns>
-public record Localization(string LanguageCode, string? LongDescription);
+public record Localization(string LanguageCode, string? LongDescription, string? ShortDescription);
 
-/// <summary>
-/// Model for Detail Image
-/// </summary>
-/// <value></value>
-public record AppEditableImage
-{
-    /// <summary>
-    /// Image Id
-    /// </summary>
-    /// <value></value>
-    public string? AppImageId { get; init; }
-
-    /// <summary>
-    /// Image Url
-    /// </summary>
-    /// <value></value>
-    public string? ImageUrl { get; init; }
-    
-    /// <summary>
-    /// Default Constructor
-    /// </summary>
-    public AppEditableImage()
-    {
-       
-    }
-    /// <summary>
-    /// Parameterized Constructor
-    /// </summary>
-    /// <param name="imageUrl"></param>
-    public AppEditableImage(string? imageUrl)
-    {
-        ImageUrl = imageUrl;
-    }
-    /// <summary>
-    /// Overloaded Constructor
-    /// </summary>
-    /// <param name="appImageId"></param>
-    /// <param name="imageUrl"></param>
-    public AppEditableImage(string? appImageId, string? imageUrl)
-    {
-        AppImageId = appImageId;
-        ImageUrl = imageUrl;
-    }
-}
 
 
 
