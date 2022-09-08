@@ -19,8 +19,9 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
-using CatenaX.NetworkServices.Apps.Service.InputModels;
+using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -288,4 +289,19 @@ public class AppsController : ControllerBase
         var appId = await _appsBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
     }
+
+    /// <summary>
+    /// Retrieves all in review status apps in the marketplace .
+    /// </summary>
+    /// <param name="page">page index start from 0</param>
+    /// <param name="size">size to get number of records</param>
+    /// <returns>Collection of all in review status marketplace apps.</returns>
+    /// <remarks>Example: GET: /api/apps/inReview</remarks>
+    /// <response code="200">Returns the list of all in review status marketplace apps.</response>
+    [HttpGet]
+    [Route("inReview")]
+    [Authorize(Roles = "approve_app_release,decline_app_release")]
+    [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
+        _appsBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
 }

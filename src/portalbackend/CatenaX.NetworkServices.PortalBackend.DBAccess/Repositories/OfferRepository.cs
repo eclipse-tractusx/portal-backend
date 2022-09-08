@@ -258,4 +258,7 @@ public class OfferRepository : IOfferRepository
                 app.OfferLicenses.FirstOrDefault()!.Licensetext
             ))
             .SingleOrDefaultAsync();
+
+    public IQueryable<Offer> GetAllInReviewStatusAppsAsync() =>
+        _context.Offers.Where(offer => offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.IN_REVIEW);
 }

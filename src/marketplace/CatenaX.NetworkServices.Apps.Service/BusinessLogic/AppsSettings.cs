@@ -18,20 +18,43 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Apps.Service.InputModels;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using System.ComponentModel.DataAnnotations;
+
+namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
 /// <summary>
-/// Request Model for App Creation.
+/// settings used in business logic concerning apps.
 /// </summary>
-/// <param name="Title">Title</param>
-/// <param name="Provider">Provider</param>
-/// <param name="LeadPictureUri">LeadPictureUri</param>
-/// <param name="ProviderCompanyId">ProviderCompanyId</param>
-/// <param name="UseCaseIds">UseCaseIds</param>
-/// <param name="Descriptions">Descriptions</param>
-/// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
-/// <param name="Price">Price</param>
-/// <returns></returns>
+public class AppsSettings
+{
 
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, IEnumerable<string> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
+    /// <summary>
+    /// BasePortalAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
+}
 
+/// <summary>
+/// app settings extension method.
+/// </summary>
+
+public static class AppsSettingsExtension
+{
+
+    /// <summary>
+    /// configure apps settings using service collection interface
+    /// </summary>
+
+    public static IServiceCollection ConfigureAppsSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<AppsSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
+}

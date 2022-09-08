@@ -17,22 +17,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-
-namespace CatenaX.NetworkServices.Apps.Service.InputModels;
-
-/// <summary>
-/// Model for Role
-/// </summary>
-/// <param name="role"></param>
-/// <param name="descriptions"></param>
-/// <returns></returns>
-public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
-/// Model for Role Description
+/// Request Model for App Creation.
 /// </summary>
-/// <param name="languageCode"></param>
-/// <param name="description"></param>
+/// <param name="Title">Title</param>
+/// <param name="Provider">Provider</param>
+/// <param name="LeadPictureUri">LeadPictureUri</param>
+/// <param name="ProviderCompanyId">ProviderCompanyId</param>
+/// <param name="UseCaseIds">UseCaseIds</param>
+/// <param name="Descriptions">Descriptions</param>
+/// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
+/// <param name="Price">Price</param>
 /// <returns></returns>
-public record AppUserRoleDescription(string languageCode, string description);
 
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid? ProviderCompanyId, ICollection<string> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);

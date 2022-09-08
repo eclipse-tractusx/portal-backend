@@ -40,7 +40,9 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddMailingAndTemplateManager(builder.Configuration)
                 .AddPortalRepositories(builder.Configuration);
 
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>();
+builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
+
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Build()
