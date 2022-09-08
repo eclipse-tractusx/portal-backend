@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,43 +18,42 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using System.ComponentModel.DataAnnotations;
+
+namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// settings used in business logic concerning apps.
 /// </summary>
-public class ConnectorsSettings
+public class AppsSettings
 {
-    public ConnectorsSettings() 
-    {
-        SdFactoryUrl = string.Empty;
-    }
-
-    public ConnectorsSettings(string sdFactoryUrl)
-    {
-        SdFactoryUrl = sdFactoryUrl;
-    }
 
     /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
+    /// BasePortalAddress url required for subscription email 
     /// </summary>
-    public int MaxPageSize { get; set; }
-
-    /// <summary>
-    /// SD Factory endpoint for registering connectors.
-    /// </summary>
-    public string SdFactoryUrl { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
 }
 
-public static class ConnectorsSettingsExtensions
+/// <summary>
+/// app settings extension method.
+/// </summary>
+
+public static class AppsSettingsExtension
 {
-    public static IServiceCollection ConfigureConnectorsSettings(
+
+    /// <summary>
+    /// configure apps settings using service collection interface
+    /// </summary>
+
+    public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
-        IConfigurationSection section
-        )
+        IConfigurationSection section)
     {
-        services.AddOptions<ConnectorsSettings>()
+        services.AddOptions<AppsSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
         return services;
     }
