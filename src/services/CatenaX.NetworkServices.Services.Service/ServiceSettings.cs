@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -20,15 +20,27 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Services.Service;
 
 /// <summary>
 /// Settings for the service service
 /// </summary>
 public class ServiceSettings
 {
+    public ServiceSettings()
+    {
+        this.CompanyAdminRoles = null!;
+        this.ServiceAccountRoles = null!;
+    }
+    
     [Required]
     public int ApplicationsMaxPageSize { get; set; }
+
+    [Required]
+    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
+    
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; }
 }
 
 public static class ServiceSettingsExtension

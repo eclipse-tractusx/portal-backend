@@ -1,27 +1,17 @@
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
 
-namespace CatenaX.NetworkServices.Provisioning.Library.ViewModels;
+namespace CatenaX.NetworkServices.Administration.Service.Models;
 
-public class ServiceAccountCreationInfo
-{
-    public ServiceAccountCreationInfo(string name, string description, IamClientAuthMethod iamClientAuthMethod, IEnumerable<Guid> userRoleIds)
-    {
-        Name = name;
-        Description = description;
-        IamClientAuthMethod = iamClientAuthMethod;
-        UserRoleIds = userRoleIds;
-    }
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [JsonPropertyName("description")]
-    public string Description { get; set; }
-
-    [JsonPropertyName("authenticationType")]
-    public IamClientAuthMethod IamClientAuthMethod { get; set; }
-
-    [JsonPropertyName("roleIds")]
-    public IEnumerable<Guid> UserRoleIds { get; set; }
-}
+/// <summary>
+/// Creation Information for the service account
+/// </summary>
+/// <param name="Name">Name of the service account</param>
+/// <param name="Description">Description for the service account table</param>
+/// <param name="IamClientAuthMethod">Method of the authentication</param>
+/// <param name="UserRoleIds">ids for the user roles</param>
+public record ServiceAccountCreationInfo(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
+    [property: JsonPropertyName("roleIds")] IEnumerable<Guid> UserRoleIds);

@@ -73,5 +73,10 @@ public enum NotificationTypeId : int
     /// <summary>
     /// Connector was registered
     /// </summary>
-    CONNECTOR_REGISTERED = 10
+    CONNECTOR_REGISTERED = 10,
+    
+    /// <summary>
+    /// Technical user was created
+    /// </summary>
+    TECHNICAL_USER_CREATION = 11,
 }

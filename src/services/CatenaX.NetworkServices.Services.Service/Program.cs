@@ -20,6 +20,8 @@
 
 using CatenaX.NetworkServices.Framework.Web;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Services.Service;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using Microsoft.Extensions.FileProviders;
 
@@ -36,7 +38,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 }
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddPortalRepositories(builder.Configuration);
+    .AddPortalRepositories(builder.Configuration)
+    .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));

@@ -1,0 +1,139 @@
+{
+	"info": {
+		"_postman_id": "af8980af-bd2c-4fe9-b70a-bae2d644d1c7",
+		"name": "CatenaX Portal Marketplace local",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"var bodyToken = responseJson.access_token;",
+							"pm.collectionVariables.set(\"keycloakToken\", bodyToken)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "Cl2-CX-Portal",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "Idp3.c27cf876-915e-4c41-9e51-e7be702f443f",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://devhost:8443/iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+					"protocol": "https",
+					"host": [
+						"devhost"
+					],
+					"port": "8443",
+					"path": [
+						"iamcentral",
+						"auth",
+						"realms",
+						"CX-Central",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get App Subscription States",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7202/api/Apps/subscribed/subscription-status",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7202",
+					"path": [
+						"api",
+						"Apps",
+						"subscribed",
+						"subscription-status"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "keycloakToken",
+			"value": ""
+		}
+	]
+}

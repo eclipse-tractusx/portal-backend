@@ -30,7 +30,10 @@ public class PortalRepositories : IPortalRepositories
     private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
         { typeof(IAgreementRepository), context => new AgreementRepository(context) },
         { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
+        { typeof(IAppInstanceRepository), context => new AppInstanceRepository(context) },
+        { typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
         { typeof(IAppReleaseRepository), context => new AppReleaseRepository(context) },
+        { typeof(IClientRepository), context => new ClientRepository(context) },
         { typeof(ICompanyRepository), context => new CompanyRepository(context) },
         { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
         { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },

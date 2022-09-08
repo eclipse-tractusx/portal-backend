@@ -123,4 +123,20 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Where(os => os.Id == subscriptionId && os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
             .Select(os => new SubscriptionDetailData(os.OfferId, os.Offer!.Name!, os.OfferSubscriptionStatusId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferSubscriptionDetailData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new OfferSubscriptionDetailData(
+                    x.OfferSubscriptionStatusId, 
+                    x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
+                    x.Company!.Name,
+                    x.CompanyId,
+                    x.RequesterId,
+                    x.OfferId,
+                    x.Offer!.Name!,
+                    x.Company.BusinessPartnerNumber!
+            ))
+            .SingleOrDefaultAsync();
 }
