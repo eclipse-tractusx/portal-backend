@@ -56,9 +56,16 @@ public record AppEditableImage
     /// </summary>
     /// <value></value>
     public string? ImageUrl { get; init; }
-
+    
     /// <summary>
-    /// Constructor
+    /// Default Constructor
+    /// </summary>
+    public AppEditableImage()
+    {
+       
+    }
+    /// <summary>
+    /// Parameterized Constructor
     /// </summary>
     /// <param name="imageUrl"></param>
     public AppEditableImage(string? imageUrl)
