@@ -133,5 +133,5 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    Task<Pagination.Response<AppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
 }

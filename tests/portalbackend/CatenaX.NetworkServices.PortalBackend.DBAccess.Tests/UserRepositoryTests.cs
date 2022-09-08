@@ -53,11 +53,11 @@ public class UserRepositoryTests
     public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
     {
         // Arrange
-        var favouriteApps = _fixture.CreateMany<App>(10).ToList();
+        var favouriteApps = _fixture.CreateMany<Offer>(10).ToList();
         var (companyUser, iamUser) = CreateTestUserPair();
         foreach (var app in favouriteApps)
         {
-            companyUser.Apps.Add(app);
+            companyUser.Offers.Add(app);
         }
         var iamUsersFakeDbSet = new List<IamUser>{ iamUser }.AsFakeDbSet();
 
@@ -80,12 +80,12 @@ public class UserRepositoryTests
     public async Task GetBusinessApps_ReturnsAppListSuccessfully()
     {
         // Arrange
-        var expectedApp = _fixture.Create<App>();
+        var expectedApp = _fixture.Create<Offer>();
         var (companyUser, iamUser) = CreateTestUserPair();
-        companyUser.Company!.BoughtApps.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<App>())
+        companyUser.Company!.BoughtOffers.Add(expectedApp);
+        foreach (var app in _fixture.CreateMany<Offer>())
         {
-            companyUser.Company.BoughtApps.Add(app);
+            companyUser.Company.BoughtOffers.Add(app);
         }
 
         var iamClient = _fixture.Create<IamClient>();
@@ -96,7 +96,7 @@ public class UserRepositoryTests
             iamClient.AppInstances.Add(appInstance);
         }
 
-        foreach (var role in _fixture.Build<UserRole>().With(r => r.App, expectedApp).With(x => x.AppId, expectedApp.Id).CreateMany())
+        foreach (var role in _fixture.Build<UserRole>().With(r => r.Offer, expectedApp).With(x => x.OfferId, expectedApp.Id).CreateMany())
         {
             companyUser.UserRoles.Add(role);
         }

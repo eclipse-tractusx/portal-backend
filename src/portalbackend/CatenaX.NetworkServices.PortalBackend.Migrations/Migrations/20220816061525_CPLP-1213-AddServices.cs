@@ -278,13 +278,15 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "services",
                 column: "service_status_id");
-
-            migrationBuilder.AddAuditTrigger<AuditService>("audit_services_cplp_1213_add_services");
+            
+            // The audit trigger creation need to be reworked for classes that are not existing anymore
+            // needs to be done for migration CPLP-1254-db-audit as well
+            // migrationBuilder.AddAuditTrigger<AuditService>("audit_services_cplp_1213_add_services");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropAuditTrigger<AuditService>();
+            // migrationBuilder.DropAuditTrigger<AuditService>();
 
             migrationBuilder.DropTable(
                 name: "audit_services_cplp_1213_add_services",
