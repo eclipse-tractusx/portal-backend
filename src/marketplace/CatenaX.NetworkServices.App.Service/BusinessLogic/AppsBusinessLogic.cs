@@ -19,13 +19,13 @@
  ********************************************************************************/
 
 using System.Text.Json;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -334,7 +334,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             if (companyAssignedApp.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
                 or OfferSubscriptionStatusId.PENDING)
             {
-                throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
+                throw new ConflictException($"company {companyId} is already subscribed to {appId}");
             }
 
             companyAssignedApp.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
@@ -358,12 +358,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     .Skip(skip)
                     .Take(take)
                     .Select(app => new InReviewAppData(
-                        app.Name!,
+                        app.Id,
+                        app.Name,
                         app.ProviderCompany!.Name,
-                        app.ThumbnailUrl!)
-                    {
-                        Id = app.Id
-                    })
+                        app.ThumbnailUrl))
                     .AsAsyncEnumerable()));
 
     }

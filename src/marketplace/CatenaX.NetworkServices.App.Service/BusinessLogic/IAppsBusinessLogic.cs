@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.InputModels;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
