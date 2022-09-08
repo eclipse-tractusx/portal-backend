@@ -14,7 +14,6 @@
     <ItemGroup>
       <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj" />
       <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Web\CatenaX.NetworkServices.Framework.Web.csproj" />
-<!--      <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />-->
       <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
     </ItemGroup>
 

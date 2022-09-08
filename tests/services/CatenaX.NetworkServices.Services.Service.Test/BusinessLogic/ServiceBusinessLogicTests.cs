@@ -26,13 +26,13 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Service.Service.BusinessLogic;
+using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Service.Service.Test.BusinessLogic;
+namespace CatenaX.NetworkServices.Services.Service.Test.BusinessLogic;
 
 public class ServiceBusinessLogicTests
 {
