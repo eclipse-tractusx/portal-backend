@@ -88,69 +88,50 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<string> appResult, IOfferRepository appRepository)
+   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<string> LanguageShortNames, IOfferRepository appRepository)
     {
         var lstToAdd = new List<Localization>();
         foreach (var item in Descriptions)
         {
-            if (!appResult.Contains(item.LanguageCode))
+            foreach (var languageShortName in LanguageShortNames)
             {
-                lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription));
-            }
-            else
-            {
-                _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
+                if (item.LanguageCode == languageShortName)
                 {
-                    appdesc.DescriptionLong = item.LongDescription!;
-                });
-            }
+                    if (string.IsNullOrWhiteSpace(item.LongDescription) && string.IsNullOrWhiteSpace(item.ShortDescription) && LanguageShortNames.Any())
+                    {
+                        _portalRepositories.Remove(new OfferDescription(appId, languageShortName));
+                    }
 
+                    else
+                        _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
+                        {
+                            appdesc.DescriptionLong = item.LongDescription!;
+                            appdesc.DescriptionShort = item.ShortDescription!;
+                        });
+                }
+                
+            }
+            if (!LanguageShortNames.Contains(item.LanguageCode) && (!string.IsNullOrWhiteSpace(item.LongDescription) || !string.IsNullOrWhiteSpace(item.ShortDescription)))
+            {
+                lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription, item.ShortDescription));
+            }
         }
 
         if (lstToAdd.Count > 0)
         {
             appRepository.AddOfferDescriptions(lstToAdd.AsEnumerable().Select(d =>
-               (appId, d.LanguageCode!, d.LongDescription!, string.Empty)));
+               (appId, d.LanguageCode!, d.LongDescription!, d.ShortDescription!)));
         }
     }
 
-    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<AppEditableImage> Images, IEnumerable<(Guid Id, string Url)> ImageUrls, IOfferRepository appRepository)
+    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> Images, IEnumerable<(Guid Id, string Url)> ImageUrls, IOfferRepository appRepository)
     {
-        var lstToAddImage = new List<AppEditableImage>();
-        int currentIndex = 0;
-        foreach (var record in Images)
+        appRepository.AddAppDetailImages(Images.Except(ImageUrls.Select(iu => iu.Url)).Select(image => new ValueTuple<Guid,string>(appId,image)));
+        foreach (var (imageId, imageUrl) in ImageUrls.ExceptBy(Images,iu => iu.Url).Select(iu => (iu.Id, iu.Url)))
         {
-            
-            if (!Guid.TryParse(record.AppImageId, out _) && string.IsNullOrWhiteSpace(record.ImageUrl) && ImageUrls.Any())
-            {
-                _portalRepositories.Remove(new OfferDetailImage(ImageUrls.Select(s => s.Id).ElementAt(currentIndex)));
-                
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(record.ImageUrl) && !ImageUrls.Select(s => s.Url).Contains(record.ImageUrl) && !Guid.TryParse(record.AppImageId, out _))
-                {
-                    lstToAddImage.Add(new AppEditableImage(record.ImageUrl));
-                }
-                else
-                {
-                    if (Guid.TryParse(record.AppImageId, out _))
-                    {
-                        _portalRepositories.Attach(new OfferDetailImage(ImageUrls.Select(s => s.Id).ElementAt(currentIndex)), appimg =>
-                        { 
-                            appimg.ImageUrl = record.ImageUrl!;
-                        });
-                    }
-                }
-                    
-            }
-            currentIndex++;
+            _portalRepositories.Remove<OfferDetailImage>(new OfferDetailImage(imageId));
         }
-        if (lstToAddImage.Count > 0)
-        {
-            appRepository.AddAppDetailImages(lstToAddImage.AsEnumerable().Select(d =>
-            (appId, d.ImageUrl!)));
-        }
+        
     }
 
     /// <inheritdoc/>
