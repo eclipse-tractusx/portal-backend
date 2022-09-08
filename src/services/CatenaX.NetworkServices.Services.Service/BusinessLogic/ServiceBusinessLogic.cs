@@ -28,7 +28,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace CatenaX.NetworkServices.Service.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IServiceBusinessLogic"/>.
