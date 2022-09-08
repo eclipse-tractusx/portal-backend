@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -40,12 +41,14 @@ public class AppsSettings
     /// Company Admin Roles
     /// </summary>
     /// <value></value>
+    [Required]
     public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
 
     /// <summary>
     /// Notification Type Id
     /// </summary>
     /// <value></value>
+    [Required]
     public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; }
 }
 
@@ -65,6 +68,7 @@ public static class AppsSettingsExtension
         IConfigurationSection section) {
             services.AddOptions<AppsSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
         return services;
         }
