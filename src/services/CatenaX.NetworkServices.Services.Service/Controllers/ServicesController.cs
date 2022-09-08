@@ -22,11 +22,11 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Service.Service.BusinessLogic;
+using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Service.Service.Controllers;
+namespace CatenaX.NetworkServices.Services.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating services.
@@ -35,7 +35,7 @@ namespace CatenaX.NetworkServices.Service.Service.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Consumes("application/json")]
-public class ServiceController : ControllerBase
+public class ServicesController : ControllerBase
 {
     private readonly IServiceBusinessLogic _serviceBusinessLogic;
 
@@ -43,7 +43,7 @@ public class ServiceController : ControllerBase
     /// Constructor.
     /// </summary>
     /// <param name="serviceBusinessLogic">Logic dependency.</param>
-    public ServiceController(IServiceBusinessLogic serviceBusinessLogic)
+    public ServicesController(IServiceBusinessLogic serviceBusinessLogic)
     {
         _serviceBusinessLogic = serviceBusinessLogic;
     }

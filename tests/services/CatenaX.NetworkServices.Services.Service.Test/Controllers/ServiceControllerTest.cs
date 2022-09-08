@@ -22,28 +22,28 @@ using AutoFixture;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Service.Service.BusinessLogic;
-using CatenaX.NetworkServices.Service.Service.Controllers;
+using CatenaX.NetworkServices.Services.Service.BusinessLogic;
+using CatenaX.NetworkServices.Services.Service.Controllers;
 using CatenaX.NetworkServices.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Service.Service.Test.Controllers
+namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
 {
     public class ServiceControllerTest
     {
         private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
         private readonly IFixture _fixture;
         private readonly IServiceBusinessLogic _logic;
-        private readonly ServiceController _controller;
+        private readonly ServicesController _controller;
 
         public ServiceControllerTest()
         {
             _fixture = new Fixture();
             _logic = A.Fake<IServiceBusinessLogic>();
-            this._controller = new ServiceController(_logic);
+            this._controller = new ServicesController(_logic);
             _controller.AddControllerContextWithClaim(IamUserId);
         }
 
