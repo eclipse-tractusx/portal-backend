@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
@@ -30,47 +29,42 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 public class AppsSettings
 {
     /// <summary>
-    /// Constructor for AppsSettings
-    /// </summary>
-    public AppsSettings()
-    {
-        CompanyAdminRoles = null!;
-        NotificationTypeIds = null!;
-    }
-    /// <summary>
     /// Company Admin Roles
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
+    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Notification Type Id
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; }
+    public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// BasePortalAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
 }
 
 /// <summary>
-/// App Setting Extension class
+/// App Settings extension class.
 /// </summary>
 public static class AppsSettingsExtension
 {
     /// <summary>
-    /// Method to Configure Apps Settings
+    /// configure apps settings using service collection interface
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="section"></param>
-    /// <returns></returns>
     public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
-        IConfigurationSection section) {
-            services.AddOptions<AppsSettings>()
+        IConfigurationSection section)
+    {
+        services.AddOptions<AppsSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
             .ValidateOnStart();
         return services;
-        }
-       
+    }
 }

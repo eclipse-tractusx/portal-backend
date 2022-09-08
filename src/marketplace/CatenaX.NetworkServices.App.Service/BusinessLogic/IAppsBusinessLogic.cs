@@ -18,7 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
@@ -128,6 +129,11 @@ public interface IAppsBusinessLogic
     /// <param name="appRequestModel"></param>
     /// <returns>Guid of the created app.</returns>
     Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
+
+    /// <summary>
+    /// Retrieves all in review status apps in the marketplace.
+    /// </summary>
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
     
     /// <summary>
     /// Update app status and create notification

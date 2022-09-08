@@ -42,7 +42,7 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddPortalRepositories(builder.Configuration);
 
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
-                .ConfigureAppsSettings(builder.Configuration.GetSection("Apps"));
+                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 

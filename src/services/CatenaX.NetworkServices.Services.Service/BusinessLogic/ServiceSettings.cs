@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,43 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using System.ComponentModel.DataAnnotations;
+
+namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Settings for the service service
 /// </summary>
-public class ConnectorsSettings
+public class ServiceSettings
 {
-    public ConnectorsSettings() 
-    {
-        SdFactoryUrl = string.Empty;
-    }
-
-    public ConnectorsSettings(string sdFactoryUrl)
-    {
-        SdFactoryUrl = sdFactoryUrl;
-    }
-
-    /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
-    /// </summary>
-    public int MaxPageSize { get; set; }
-
-    /// <summary>
-    /// SD Factory endpoint for registering connectors.
-    /// </summary>
-    public string SdFactoryUrl { get; set; }
+    [Required]
+    public int ApplicationsMaxPageSize { get; set; }
 }
 
-public static class ConnectorsSettingsExtensions
+public static class ServiceSettingsExtension
 {
-    public static IServiceCollection ConfigureConnectorsSettings(
+    public static IServiceCollection ConfigureServiceSettings(
         this IServiceCollection services,
-        IConfigurationSection section
-        )
+        IConfigurationSection section)
     {
-        services.AddOptions<ConnectorsSettings>()
+        services.AddOptions<ServiceSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
         return services;
     }
