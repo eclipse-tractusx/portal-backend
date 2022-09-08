@@ -192,20 +192,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/marketplace/CatenaX.NetworkServices.App.Service
+        run: dotnet restore src/marketplace/CatenaX.NetworkServices.Apps.Service
 
       - name: Build and publish
         run: |
-          cd src/marketplace/CatenaX.NetworkServices.App.Service
+          cd src/marketplace/CatenaX.NetworkServices.Apps.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-marketplace-app.zip
-          src/marketplace/CatenaX.NetworkServices.App.Service/.publish
+          src/marketplace/CatenaX.NetworkServices.Apps.Service/.publish
           -x
-          src/marketplace/CatenaX.NetworkServices.App.Service/.publish/CatenaX.NetworkServices.App.Service
+          src/marketplace/CatenaX.NetworkServices.Apps.Service/.publish/CatenaX.NetworkServices.Apps.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -218,7 +218,7 @@ jobs:
           filepath: "portal-backend-marketplace-app.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.App.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
+          include: 'CatenaX.NetworkServices.Apps.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
 
   analyze-portal-migrations:
     runs-on: ubuntu-latest
