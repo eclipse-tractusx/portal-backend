@@ -25,7 +25,16 @@ namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 /// </summary>
 public class AppsSettings
 {
+
+    /// <summary>
+    /// BasePortalAddress url required for subscription email 
+    /// </summary>
     public string BasePortalAddress { get; init; } = null!;
+
+    /// <summary>
+    /// check null reference validation 
+    /// </summary>
+
     public void Validate()
     {
         new ConfigurationValidation<AppsSettings>()
@@ -33,9 +42,17 @@ public class AppsSettings
     }
 }
 
+/// <summary>
+/// app settings extension method.
+/// </summary>
 
 public static class AppsSettingsExtension
 {
+
+    /// <summary>
+    /// configure apps settings using service collection interface
+    /// </summary>
+
     public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
         IConfigurationSection section) =>
