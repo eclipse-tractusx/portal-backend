@@ -40,6 +40,8 @@ public interface IPortalRepositories
     TEntity Remove<TEntity>(TEntity entity)
         where TEntity : class;
 
+    void RemoveRange<TEntity>(IEnumerable<TEntity> entities);
+
     public T GetInstance<T>();
 
     public Task<int> SaveAsync();
