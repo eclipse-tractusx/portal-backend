@@ -363,17 +363,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
-        if(appDetails.name is null || appDetails.provider is null || appDetails.thumbnailUrl is null 
+        if(appDetails.name is null || appDetails.thumbnailUrl is null 
             || appDetails.salesManagerId is null || appDetails.providerCompanyId is null || !appDetails.descriptionLong.Any() || !appDetails.descriptionShort.Any())
         {
             var nullProperties = new List<string>();
             if (appDetails.name is null)
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.name)}");
-            }
-            if(appDetails.provider is null)
-            {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.provider)}");
             }
             if(appDetails.thumbnailUrl is null)
             {
@@ -387,15 +383,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
             }
-            if(!appDetails.descriptionLong.Any())
-            {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLong)}");
-            }
-            if(!appDetails.descriptionShort.Any())
-            {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShort)}");
-            }
-            throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+            throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }
         _portalRepositories.Attach(new Offer(appId), app =>
         {
