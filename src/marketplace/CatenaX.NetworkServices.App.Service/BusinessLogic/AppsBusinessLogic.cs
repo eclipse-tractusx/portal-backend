@@ -358,9 +358,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     .Skip(skip)
                     .Take(take)
                     .Select(app => new InReviewAppData(
-                        app.Name,
+                        app.Name!,
                         app.ProviderCompany!.Name,
-                        app.ThumbnailUrl)
+                        app.ThumbnailUrl!)
                     {
                         Id = app.Id
                     })
