@@ -252,12 +252,11 @@ public class OfferRepository : IOfferRepository
     public IQueryable<Offer> GetAllInReviewStatusAppsAsync() =>
         _context.Offers.Where(offer => offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.IN_REVIEW);
 
-    public Task<AppReleaseData?> GetAppReleaseDataByIdAsync(Guid appId)
-    =>
+    public Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId) =>
         _context.Offers
             .AsNoTracking()
-            .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED)
-            .Select(c => new AppReleaseData(
+            .Where(a => a.Id == offerId && a.OfferStatusId == OfferStatusId.CREATED)
+            .Select(c => new OfferReleaseData(
                 c.Name,
                 c.ThumbnailUrl,
                 c.SalesManagerId,
