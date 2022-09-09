@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,26 +18,43 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Framework.ErrorHandling;
+using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
 /// <summary>
-/// Repository for accessing agreements on the persistence layer.
+/// settings used in business logic concerning apps.
 /// </summary>
-public interface IAgreementRepository
+public class AppsSettings
 {
+
     /// <summary>
-    /// Checks whether the agreement with the given id exists. 
+    /// BasePortalAddress url required for subscription email 
     /// </summary>
-    /// <param name="agreementId">Id of the agreement</param>
-    /// <returns>Returns <c></c></returns>
-    Task<bool> CheckAgreementExistsAsync(Guid agreementId);
-    
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
+}
+
+/// <summary>
+/// app settings extension method.
+/// </summary>
+
+public static class AppsSettingsExtension
+{
+
     /// <summary>
-    /// Gets the agreement data that have an app id set
+    /// configure apps settings using service collection interface
     /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
-    /// <returns>Returns an async enumerable from agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetServiceAgreementDataForIamUser(string iamUserId);
+
+    public static IServiceCollection ConfigureAppsSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<AppsSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
 }

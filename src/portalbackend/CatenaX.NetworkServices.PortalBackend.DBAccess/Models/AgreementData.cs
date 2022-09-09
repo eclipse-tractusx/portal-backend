@@ -18,11 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Registration.Service.Model;
-
-public record CompanyRoleAgreementData(
-    [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> CompanyRoleData,
-    [property: JsonPropertyName("agreements")] IEnumerable<AgreementData> AgreementData);
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+{
+    /// <summary>
+    /// Agreement Data
+    /// </summary>
+    /// <param name="AgreementId">Id of the agreement</param>
+    /// <param name="AgreementName">Name of the agreement</param>
+    public record AgreementData(
+        [property: JsonPropertyName("agreementId")] Guid AgreementId,
+        [property: JsonPropertyName("name")] string AgreementName);
+}

@@ -114,7 +114,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) => 
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetail(subscriptionId, iamUserId));
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, iamUserId));
 
     /// <summary>
     /// Adds a new service subscription.
@@ -138,18 +138,38 @@ public class ServicesController : ControllerBase
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the wants to retrieve.</param>
     /// <param name="serviceAgreementConsentData">the service agreement consent.</param>
     /// <remarks>Example: Post: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/serviceAgreementConsent</remarks>
-    /// <response code="200">Returns the id of the created consent.</response>
+    /// <response code="201">Returns the id of the created consent.</response>
     /// <response code="400">Company or company user wasn't assigned to the user.</response>
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/serviceAgreementConsent")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Guid> CreateServiceAgreementConsent([FromRoute] Guid serviceId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData) =>
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData, iamUserId).ConfigureAwait(false));
-    
+    public async Task<CreatedAtRouteResult> CreateServiceAgreementConsent([FromRoute] Guid serviceId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData)
+    {
+        var consentId = await this.WithIamUserId(iamUserId =>
+            _serviceBusinessLogic.CreateServiceAgreementConsentAsync(serviceId, serviceAgreementConsentData, iamUserId)
+                .ConfigureAwait(false));
+        return CreatedAtRoute(nameof(GetServiceAgreementConsentDetail), new { serviceConsentId = consentId }, consentId);
+    }
+
+    /// <summary>
+    /// Gets the service agreement consent details.
+    /// </summary>
+    /// <param name="serviceConsentId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service consent to retrieve.</param>
+    /// <remarks>Example: Get: /api/services/serviceConsent/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <response code="200">Returns the service consent details.</response>
+    /// <response code="404">Consent was not found.</response>
+    [HttpGet]
+    [Route("/serviceConsent/{serviceConsentId}", Name = nameof(GetServiceAgreementConsentDetail))]
+    [Authorize(Roles = "view_service_offering")]
+    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ConsentDetailData> GetServiceAgreementConsentDetail([FromRoute] Guid serviceConsentId) => 
+        _serviceBusinessLogic.GetServiceConsentDetailData(serviceConsentId);
+
     /// <summary>
     /// Gets all agreements 
     /// </summary>
@@ -159,7 +179,7 @@ public class ServicesController : ControllerBase
     [Route("serviceAgreementData")]
     [Authorize(Roles = "subscribe_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement() =>
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement() =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceAgreement(iamUserId));
 
     /// <summary>

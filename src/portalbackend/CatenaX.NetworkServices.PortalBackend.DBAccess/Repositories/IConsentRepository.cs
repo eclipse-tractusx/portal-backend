@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
@@ -50,4 +51,11 @@ public interface IConsentRepository
     /// </summary>
     /// <param name="consents">The consents that should be removed.</param>
     void RemoveConsents(IEnumerable<Consent> consents);
+
+    /// <summary>
+    /// Gets the details of the consent
+    /// </summary>
+    /// <param name="consentId">Id of the Consent</param>
+    /// <returns>Returns the detail data of the consent</returns>
+    Task<ConsentDetailData?> GetConsentDetailData(Guid consentId);
 }

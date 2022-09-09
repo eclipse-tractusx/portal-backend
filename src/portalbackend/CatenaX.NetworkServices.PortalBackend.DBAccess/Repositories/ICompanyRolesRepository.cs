@@ -13,6 +13,6 @@ public interface ICompanyRolesRepository
     IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
     Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
     IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
-    IAsyncEnumerable<ServiceAgreementData> GetAgreementsUntrackedAsync();
+    IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
     IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null);
 }

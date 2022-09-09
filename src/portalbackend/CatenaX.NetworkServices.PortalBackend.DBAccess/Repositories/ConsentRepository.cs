@@ -1,6 +1,8 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+﻿using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -33,4 +35,17 @@ public class ConsentRepository : IConsentRepository
     /// <inheritdoc />
     public void RemoveConsents(IEnumerable<Consent> consents) => 
         _portalDbContext.RemoveRange(consents);
+
+    /// <inheritdoc />
+    public Task<ConsentDetailData?> GetConsentDetailData(Guid consentId) =>
+        _portalDbContext.Consents
+            .Where(x => x.Id == consentId)
+            .Select(x => new ConsentDetailData(
+                x.Id,
+                x.Company!.Name,
+                x.CompanyUserId,
+                x.ConsentStatusId,
+                x.Agreement!.Name
+            ))
+            .SingleOrDefaultAsync();
 }

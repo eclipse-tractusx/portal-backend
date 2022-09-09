@@ -105,10 +105,10 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                     desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description
             )).AsAsyncEnumerable();
 
-    public IAsyncEnumerable<ServiceAgreementData> GetAgreementsUntrackedAsync() =>
+    public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
         _dbContext.Agreements
             .AsNoTracking()
-            .Select(agreement => new ServiceAgreementData(
+            .Select(agreement => new AgreementData(
                 agreement.Id,
                 agreement.Name))
             .AsAsyncEnumerable();
