@@ -23,11 +23,11 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <summary>
 /// View model of an application's detailed data specific for service.
 /// </summary>
-/// <param name="Id">ID of the app.</param>
-/// <param name="Title">Title or name of the app.</param>
-/// <param name="Provider">Provider of the app.</param>
-/// <param name="LeadPictureUri">Uri to app's lead picture.</param>
+/// <param name="Id">ID of the service.</param>
+/// <param name="Title">Title or name of the service.</param>
+/// <param name="Provider">Provider of the service.</param>
+/// <param name="LeadPictureUri">Uri to service's lead picture.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
-/// <param name="Price">Pricing information of the app.</param>
+/// <param name="Price">Pricing information of the service.</param>
 public record ServiceDetailData(Guid Id, string Title, string Provider, string LeadPictureUri, string? ContactEmail, string? Description, string Price);

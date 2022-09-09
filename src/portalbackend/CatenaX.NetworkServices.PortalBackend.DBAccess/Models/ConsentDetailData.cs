@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
-{
-    /// <summary>
-    /// Agreement Data
-    /// </summary>
-    /// <param name="AgreementId">Id of the agreement</param>
-    /// <param name="AgreementName">Name of the agreement</param>
-    public record ServiceAgreementData(
-        [property: JsonPropertyName("agreementId")] Guid AgreementId,
-        [property: JsonPropertyName("name")] string AgreementName);
-}
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+
+/// <summary>
+/// View model of an application's detailed data specific for service consents
+/// </summary>
+/// <param name="Id">ID of the service</param>
+/// <param name="CompanyName">Name of the company that gave the consent</param>
+/// <param name="CompanyUserId">ID of the company that gave the consent</param>
+/// <param name="ConsentStatus">Consent Status</param>
+/// <param name="AgreementName">The agreement name</param>
+public record ConsentDetailData(Guid Id, string CompanyName, Guid CompanyUserId, ConsentStatusId ConsentStatus, string AgreementName);

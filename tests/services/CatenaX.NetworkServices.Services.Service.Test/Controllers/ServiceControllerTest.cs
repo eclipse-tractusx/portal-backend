@@ -125,23 +125,24 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             var serviceId = Guid.NewGuid();
             var consentId = Guid.NewGuid();
             var serviceAgreementConsentData = new ServiceAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-            A.CallTo(() => _logic.CreateServiceAgreementConsent(serviceId, A<ServiceAgreementConsentData>._, A<string>._))
+            A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<ServiceAgreementConsentData>._, A<string>._))
                 .ReturnsLazily(() => consentId);
 
             //Act
             var result = await this._controller.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
-            Assert.IsType<Guid>(result);
-            result.Should().Be(consentId);
+            A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, serviceAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+            Assert.IsType<CreatedAtRouteResult>(result);
+            Assert.IsType<Guid>(result.Value);
+            result.Value.Should().Be(consentId);
         }
 
         [Fact]
         public async Task GetServiceAgreement_ReturnsExpected()
         {
             //Arrange
-            var agreementData = _fixture.CreateMany<ServiceAgreementData>(5).ToAsyncEnumerable();
+            var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
             A.CallTo(() => _logic.GetServiceAgreement(A<string>._))
                 .Returns(agreementData);
 
