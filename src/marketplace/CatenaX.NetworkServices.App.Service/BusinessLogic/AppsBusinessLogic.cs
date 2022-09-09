@@ -367,7 +367,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if(appDetails.name is null || appDetails.thumbnailUrl is null 
             || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
-            || !appDetails.descriptionLong || !appDetails.descriptionShort)
+            || appDetails.descriptionLong || appDetails.descriptionShort)
         {
             var nullProperties = new List<string>();
             if (appDetails.name is null)
@@ -386,11 +386,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
             }
-            if(!appDetails.descriptionLong)
+            if(appDetails.descriptionLong)
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLong)}");
             }
-            if(!appDetails.descriptionShort)
+            if(appDetails.descriptionShort)
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShort)}");
             }
