@@ -66,13 +66,29 @@ public class PortalRepositories : IPortalRepositories
     }
 
     /// <inheritdoc />
-    public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null)
-        where TEntity : class
+    public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null) where TEntity : class
     {
         var attachedEntity = _dbContext.Attach(entity).Entity;
         setOptionalParameters?.Invoke(attachedEntity);
 
         return attachedEntity;
+    }
+
+    public void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class
+    {
+        foreach (var entity in entities)
+        {
+            var attachedEntity = _dbContext.Attach(entity).Entity;
+            setOptionalParameters.Invoke(attachedEntity);
+        }
+    }
+
+    public IEnumerable<TEntity> AttachRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
+    {
+        foreach (var entity in entities)
+        {
+            yield return _dbContext.Attach(entity).Entity;
+        }
     }
 
     /// <inheritdoc />
