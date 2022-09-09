@@ -32,4 +32,4 @@ public record ServiceAutoSetupData(Guid RequestId, string OfferUrl);
 /// </summary>
 /// <param name="TechnicalUserId">Id of the created technical user</param>
 /// <param name="TechnicalUserSecret">User secret for the created user</param>
-public record ServiceAutoSetupResponseData(Guid TechnicalUserId, string TechnicalUserSecret);
+public record ServiceAutoSetupResponseData(Guid TechnicalUserId, string? TechnicalUserSecret);

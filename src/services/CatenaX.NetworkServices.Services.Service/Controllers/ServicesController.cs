@@ -187,10 +187,14 @@ public class ServicesController : ControllerBase
     /// </summary>
     /// <remarks>Example: POST: /api/services/autoSetup</remarks>
     /// <response code="200">Returns the service agreement data.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
     [HttpPost]
     [Route("autoSetup")]
     [Authorize(Roles = "activate_subscription")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ServiceAutoSetupResponseData> AutoSetupService([FromBody] ServiceAutoSetupData data)
         => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupService(data, iamUserId));
 }

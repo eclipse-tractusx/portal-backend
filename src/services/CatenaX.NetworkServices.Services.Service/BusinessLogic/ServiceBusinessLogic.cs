@@ -239,12 +239,12 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
         if (offerDetails.Status is not OfferSubscriptionStatusId.PENDING)
         {
-            throw new ControllerArgumentException("Status of the offer subscription must be pending");
-        }
+            throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
+        } 
 
         if (offerDetails.CompanyUserId == Guid.Empty)
         {
-            throw new ControllerArgumentException("Only the providing company can setup the service");
+            throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
         
         var clientId = await _provisioningManager.SetupClientAsync("test").ConfigureAwait(false);
@@ -264,7 +264,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             .GetUserRoleDataUntrackedAsync(_settings.ServiceAccountRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        await _serviceAccountCreation.CreateServiceAccountAsync(clientId, $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}", IamClientAuthMethod.SECRET, serviceAccountUserRoles.Select(x => x.UserRoleId), offerDetails.CompanyId, Enumerable.Repeat(offerDetails.Bpn, 1));
+        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation.CreateServiceAccountAsync(clientId, $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}", IamClientAuthMethod.SECRET, serviceAccountUserRoles.Select(x => x.UserRoleId), offerDetails.CompanyId, Enumerable.Repeat(offerDetails.Bpn, 1));
 
         var offerSubscription = new OfferSubscription(data.RequestId);
         _portalRepositories.Attach(offerSubscription, (subscription =>
@@ -285,7 +285,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
-        return new ServiceAutoSetupResponseData(Guid.NewGuid(), "Tony Stark");
+        return new ServiceAutoSetupResponseData(serviceAccountId, serviceAccountData.AuthData.Secret);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

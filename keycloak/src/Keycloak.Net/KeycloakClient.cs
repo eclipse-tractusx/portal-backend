@@ -72,7 +72,7 @@ namespace Keycloak.Net
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         }
 
-        private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm) => new Url(_url)
+        private Task<IFlurlRequest>  GetBaseUrlAsync(string targetRealm) => new Url(_url)
             .AppendPathSegment("/auth")
             .ConfigureRequest(settings => settings.JsonSerializer = _serializer)
             .WithAuthenticationAsync(_getTokenAsync, _url, _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId);
