@@ -18,35 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+namespace CatenaX.NetworkServices.App.Service.ViewModels;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+/// <summary>
+/// Model for Role
+/// </summary>
+/// <param name="role"></param>
+/// <param name="descriptions"></param>
+/// <returns></returns>
+public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
 
-public class InvitationSettings
-{
-    public InvitationSettings()
-    {
-        RegistrationAppAddress = null!;
-        InvitedUserInitialRoles = null!;
-    }
-    
-    [Required(AllowEmptyStrings = false)]
-    public string RegistrationAppAddress { get; set; }
-    
-    [Required]
-    public IDictionary<string,IEnumerable<string>> InvitedUserInitialRoles { get; set; }
-}
+/// <summary>
+/// Model for Role Description
+/// </summary>
+/// <param name="languageCode"></param>
+/// <param name="description"></param>
+/// <returns></returns>
+public record AppUserRoleDescription(string languageCode, string description);
 
-public static class InvitationSettingsExtension
-{
-    public static IServiceCollection ConfigureInvitationSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<InvitationSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
-}

@@ -18,35 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+namespace CatenaX.NetworkServices.App.Service.ViewModels;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+/// <summary>
+/// Model for updating an app.
+/// </summary>
+/// <param name="Descriptions"></param>
+/// <param name="Images"></param>
+/// <param name="ProviderUri"></param>
+/// <param name="ContactEmail"></param>
+/// <param name="ContactNumber"></param>
+/// <returns></returns>
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
-public class InvitationSettings
-{
-    public InvitationSettings()
-    {
-        RegistrationAppAddress = null!;
-        InvitedUserInitialRoles = null!;
-    }
-    
-    [Required(AllowEmptyStrings = false)]
-    public string RegistrationAppAddress { get; set; }
-    
-    [Required]
-    public IDictionary<string,IEnumerable<string>> InvitedUserInitialRoles { get; set; }
-}
-
-public static class InvitationSettingsExtension
-{
-    public static IServiceCollection ConfigureInvitationSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<InvitationSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
-}
+/// <summary>
+/// Model for LanguageCode and Description
+/// </summary>
+/// <param name="LanguageCode"></param>
+/// <param name="LongDescription"></param>
+/// <returns></returns>
+public record Localization(string LanguageCode, string LongDescription);
