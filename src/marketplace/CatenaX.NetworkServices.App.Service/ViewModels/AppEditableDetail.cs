@@ -18,11 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using System.Text.Json.Serialization;
+namespace CatenaX.NetworkServices.App.Service.ViewModels;
 
-namespace CatenaX.NetworkServices.Registration.Service.Model;
+/// <summary>
+/// Model for updating an app.
+/// </summary>
+/// <param name="Descriptions"></param>
+/// <param name="Images"></param>
+/// <param name="ProviderUri"></param>
+/// <param name="ContactEmail"></param>
+/// <param name="ContactNumber"></param>
+/// <returns></returns>
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
-public record CompanyRoleAgreementData(
-    [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> CompanyRoleData,
-    [property: JsonPropertyName("agreements")] IEnumerable<AgreementData> AgreementData);
+/// <summary>
+/// Model for LanguageCode and Description
+/// </summary>
+/// <param name="LanguageCode"></param>
+/// <param name="LongDescription"></param>
+/// <returns></returns>
+public record Localization(string LanguageCode, string LongDescription);

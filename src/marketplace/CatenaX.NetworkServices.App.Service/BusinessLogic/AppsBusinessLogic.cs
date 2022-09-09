@@ -19,15 +19,17 @@
  ********************************************************************************/
 
 using System.Text.Json;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -38,16 +40,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
+    private readonly AppsSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService)
+    /// <param name="settings">Settings</param>
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
+        _settings = settings.Value;
     }
 
     /// <inheritdoc/>
@@ -157,7 +162,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var mailParams = new Dictionary<string, string>
             {
                 { "appProviderName", appDetails.ProviderName},
-                { "appName", appDetails.AppName }
+                { "appName", appDetails.AppName },
+                { "url", _settings.BasePortalAddress },
             };
         await _mailingService.SendMails(appDetails.ProviderContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
     }
@@ -333,12 +339,35 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             if (companyAssignedApp.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
                 or OfferSubscriptionStatusId.PENDING)
             {
-                throw new ArgumentException($"company {companyId} is already subscribed to {appId}");
+                throw new ConflictException($"company {companyId} is already subscribed to {appId}");
             }
 
             companyAssignedApp.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         }
 
         return companyName;
+    }
+
+     /// <inheritdoc/>
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
+    {
+        var apps = _portalRepositories.GetInstance<IOfferRepository>().GetAllInReviewStatusAppsAsync();
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            15,
+            (int skip, int take) => new Pagination.AsyncSource<InReviewAppData>(
+                apps.CountAsync(),
+                apps.OrderBy(app => app.Id)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(app => new InReviewAppData(
+                        app.Id,
+                        app.Name,
+                        app.ProviderCompany!.Name,
+                        app.ThumbnailUrl))
+                    .AsAsyncEnumerable()));
+
     }
 }
