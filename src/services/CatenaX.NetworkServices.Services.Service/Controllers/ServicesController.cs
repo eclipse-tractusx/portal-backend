@@ -109,7 +109,7 @@ public class ServicesController : ControllerBase
     /// <response code="200">Returns the subscription details.</response>
     /// <response code="404">Service was not found.</response>
     [HttpGet]
-    [Route("/subscription/{subscriptionId}", Name = nameof(GetSubscriptionDetail))]
+    [Route("subscription/{subscriptionId}", Name = nameof(GetSubscriptionDetail))]
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
