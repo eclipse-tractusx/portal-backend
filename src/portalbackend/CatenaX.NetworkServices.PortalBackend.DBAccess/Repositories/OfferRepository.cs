@@ -198,16 +198,16 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<string> LanguageShortNames, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> LanguageShortNames, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
             .Where(a => a.Id == appId)
             .Select(a =>
-                new ValueTuple<bool, bool, IEnumerable<string>, IEnumerable<(Guid,string)>>(
+                new ValueTuple<bool, bool, IEnumerable<(string,string,string)>, IEnumerable<(Guid,string)>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
                     a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
-                    a.OfferDescriptions.Select(description => description.LanguageShortName),
+                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                     a.OfferDetailImages.Select(image => new ValueTuple<Guid,string>(image.Id, image.ImageUrl))
                 ))
             .SingleOrDefaultAsync();
