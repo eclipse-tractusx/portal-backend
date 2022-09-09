@@ -146,6 +146,13 @@ public interface IOfferRepository
     void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
 
     /// <summary>
+    /// Get App Release data by App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <returns></returns>
+    Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId);
+
+    /// <summary>
     /// Checks if an service with the given id exists in the persistence layer. 
     /// </summary>
     /// <param name="serviceId">Id of the service.</param>

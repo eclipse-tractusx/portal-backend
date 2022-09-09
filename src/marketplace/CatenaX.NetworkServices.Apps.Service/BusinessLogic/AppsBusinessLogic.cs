@@ -23,6 +23,7 @@ using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -40,6 +41,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
+    private readonly INotificationService _notificationService;
     private readonly AppsSettings _settings;
 
     /// <summary>
@@ -47,11 +49,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
+    /// <param name="notificationService">Notification service.</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, IOptions<AppsSettings> settings)
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
+        _notificationService = notificationService;
         _settings = settings.Value;
     }
 
@@ -149,7 +153,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 RequestorCompanyName = companyName,
                 UserEmail = requesterEmail,
             };
-            _portalRepositories.GetInstance<INotificationRepository>().Create(appDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(appDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
                 notification =>
                 {
                     notification.CreatorUserId = requesterId;
@@ -189,7 +193,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
         subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
 
-        _portalRepositories.GetInstance<INotificationRepository>().Create(subscription.RequesterId,
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(subscription.RequesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
             {
@@ -347,6 +351,67 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         return companyName;
     }
+    
+    /// <inheritdoc/>
+    public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
+    {
+        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
+        if (appDetails == null)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+        
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
+
+        if(appDetails.name is null || appDetails.thumbnailUrl is null 
+            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
+            || appDetails.descriptionLongIsNullOrEmpty || appDetails.descriptionShortIsNullOrEmpty)
+        {
+            var nullProperties = new List<string>();
+            if (appDetails.name is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.name)}");
+            }
+            if(appDetails.thumbnailUrl is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.thumbnailUrl)}");
+            }
+            if(appDetails.salesManagerId is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.salesManagerId)}");
+            }
+            if(appDetails.providerCompanyId is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.providerCompanyId)}");
+            }
+            if(appDetails.descriptionLongIsNullOrEmpty)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
+            }
+            if(appDetails.descriptionShortIsNullOrEmpty)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
+            }
+            throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+        }
+        _portalRepositories.Attach(new Offer(appId), app =>
+        {
+            app.OfferStatusId = OfferStatusId.IN_REVIEW;
+            app.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+
+        var notificationContent = new
+        {
+            appId,
+            RequestorCompanyName = companyName
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
+    }
 
      /// <inheritdoc/>
     public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
@@ -368,6 +433,5 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                         app.ProviderCompany!.Name,
                         app.ThumbnailUrl))
                     .AsAsyncEnumerable()));
-
     }
 }
