@@ -64,7 +64,7 @@ public interface IServiceBusinessLogic
     /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="iamUserId">Id of the user</param>
     /// <returns>Returns the details for the subscription</returns>
-    Task<SubscriptionDetailData> GetSubscriptionDetail(Guid subscriptionId, string iamUserId);
+    Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId);
 
     /// <summary>
     /// Creates new service agreement consents with the given data for the given service
@@ -72,7 +72,7 @@ public interface IServiceBusinessLogic
     /// <param name="serviceId">Id of the service to create the consents for.</param>
     /// <param name="serviceAgreementConsentData">service agreement consents</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceAgreementConsent(Guid serviceId, ServiceAgreementConsentData serviceAgreementConsentData,
+    Task<Guid> CreateServiceAgreementConsentAsync(Guid serviceId, ServiceAgreementConsentData serviceAgreementConsentData,
         string iamUserId);
 
     /// <summary>
@@ -80,5 +80,12 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="iamUserId">id of the iam user</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement(string iamUserId);
+    IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId);
+
+    /// <summary>
+    /// Gets the service consent detail data
+    /// </summary>
+    /// <param name="serviceConsentId">Id of the service consent</param>
+    /// <returns>Returns the details</returns>
+    Task<ConsentDetailData> GetServiceConsentDetailData(Guid serviceConsentId);
 }

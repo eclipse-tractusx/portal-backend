@@ -117,6 +117,18 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
+    public Task<(Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser.CompanyUser!.Company)
+            .Select(company => new ValueTuple<Guid, OfferSubscription?, Guid>(
+                company!.Id,
+                company.OfferSubscriptions.SingleOrDefault(os => os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId),
+                company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
+            ))
+            .SingleOrDefaultAsync();
+
     /// <inheritdoc />
     public Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId) =>
         _context.OfferSubscriptions

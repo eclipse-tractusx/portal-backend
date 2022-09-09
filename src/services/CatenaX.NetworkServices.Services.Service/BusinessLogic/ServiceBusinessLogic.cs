@@ -90,7 +90,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         if (results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
-        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode).ToList()).ConfigureAwait(false);
+        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var service = offerRepository.CreateOffer(string.Empty, OfferTypeId.SERVICE, service =>
@@ -156,7 +156,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<SubscriptionDetailData> GetSubscriptionDetail(Guid subscriptionId, string iamUserId)
+    public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId)
     {
         var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId).ConfigureAwait(false);
@@ -169,38 +169,53 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateServiceAgreementConsent(Guid serviceId,
+    public async Task<Guid> CreateServiceAgreementConsentAsync(Guid serviceId,
         ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyIdWithAssignedOfferForCompanyUserAsync(serviceId, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
-        }
-
-        var (companyId, offerSubscription, _, companyUserId) = result;
-        if (offerSubscription is null)
-        {
-            throw new NotFoundException($"Service {serviceId} does not exist");
-        }
-
         if (!await _portalRepositories.GetInstance<IAgreementRepository>()
                 .CheckAgreementExistsAsync(serviceAgreementConsentData.AgreementId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException("Agreement not existing", nameof(serviceAgreementConsentData.AgreementId));
         }
-
         var (agreementId, consentStatusId) = serviceAgreementConsentData;
+
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(serviceId, iamUserId, OfferTypeId.SERVICE)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
+        }
+
+        var (companyId, offerSubscription, companyUserId) = result;
+        if (offerSubscription is null)
+        {
+            throw new NotFoundException($"Service {serviceId} does not exist");
+        }
+
         var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
         await _portalRepositories.SaveAsync();
         return consent.Id;
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ServiceAgreementData> GetServiceAgreement(string iamUserId) => 
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
         _portalRepositories.GetInstance<IAgreementRepository>().GetServiceAgreementDataForIamUser(iamUserId);
 
-    private async Task CheckLanguageCodesExist(ICollection<string> languageCodes)
+    /// <inheritdoc />
+    public async Task<ConsentDetailData> GetServiceConsentDetailData(Guid serviceConsentId)
+    {
+        var consentDetails = await _portalRepositories.GetInstance<IConsentRepository>()
+            .GetConsentDetailData(serviceConsentId).ConfigureAwait(false);
+        if (consentDetails is null)
+        {
+            throw new NotFoundException($"Consent {serviceConsentId} does not exist");
+        }
+
+        return consentDetails;
+    }
+
+    private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {
         if (languageCodes.Any())
         {
