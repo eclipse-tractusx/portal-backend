@@ -41,12 +41,12 @@ public class NotificationRepository : INotificationRepository
     }
 
     /// <inheritdoc />
-    public Notification Create(Guid receiverUserId, NotificationTypeId notificationTypeId,
-        bool isRead, Action<Notification>? setOptionalParameters = null)
+    public Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
+        bool isRead, Action<Notification>? setOptionalParameter = null)
     {
         var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,
             notificationTypeId, isRead);
-        setOptionalParameters?.Invoke(notification);
+        setOptionalParameter?.Invoke(notification);
 
         return _dbContext.Add(notification).Entity;
     }
