@@ -38,4 +38,4 @@ public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumera
 /// <param name="LongDescription"></param>
 /// <param name="ShortDescription"></param>
 /// <returns></returns>
-public record Localization(string LanguageCode, string? LongDescription, string? ShortDescription);
+public record Localization(string LanguageCode, string LongDescription, string ShortDescription);

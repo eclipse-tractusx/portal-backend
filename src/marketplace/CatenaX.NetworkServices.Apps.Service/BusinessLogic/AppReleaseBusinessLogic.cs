@@ -91,39 +91,20 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<string> LanguageShortNames, IOfferRepository appRepository)
+   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> LanguageShortNames, IOfferRepository appRepository)
     {
-        var lstToAdd = new List<Localization>();
-        foreach (var item in Descriptions)
+        appRepository.AddOfferDescriptions(Descriptions.ExceptBy(LanguageShortNames.Select(d => d.LanguageShortName), lsn => lsn.LanguageCode).Select(lsn => new ValueTuple<Guid, string, string, string>(appId, lsn.LanguageCode, lsn.LongDescription, lsn.ShortDescription)));
+        foreach (var languageshortCode in LanguageShortNames.ExceptBy(Descriptions.Select(d => d.LanguageCode), lsn => lsn.LanguageShortName).Select(lsn => lsn.LanguageShortName))
         {
-            foreach (var languageShortName in LanguageShortNames)
-            {
-                if (item.LanguageCode == languageShortName)
-                {
-                    if (string.IsNullOrWhiteSpace(item.LongDescription) && string.IsNullOrWhiteSpace(item.ShortDescription) && LanguageShortNames.Any())
-                    {
-                        _portalRepositories.Remove(new OfferDescription(appId, languageShortName));
-                    }
-
-                    else
-                        _portalRepositories.Attach(new OfferDescription(appId, item.LanguageCode!), appdesc =>
-                        {
-                            appdesc.DescriptionLong = item.LongDescription!;
-                            appdesc.DescriptionShort = item.ShortDescription!;
-                        });
-                }
-                
-            }
-            if (!LanguageShortNames.Contains(item.LanguageCode) && (!string.IsNullOrWhiteSpace(item.LongDescription) || !string.IsNullOrWhiteSpace(item.ShortDescription)))
-            {
-                lstToAdd.Add(new Localization(item.LanguageCode, item.LongDescription, item.ShortDescription));
-            }
+            _portalRepositories.Remove<OfferDescription>(new OfferDescription(appId,languageshortCode));
         }
-
-        if (lstToAdd.Count > 0)
+        foreach (var (languageCode, longDescription, shortDescription) in Descriptions.IntersectBy(LanguageShortNames.Select(d => d.LanguageShortName), lsn => lsn.LanguageCode).Select(lsn => (lsn.LanguageCode, lsn.LongDescription, lsn.ShortDescription)))
         {
-            appRepository.AddOfferDescriptions(lstToAdd.AsEnumerable().Select(d =>
-               (appId, d.LanguageCode!, d.LongDescription!, d.ShortDescription!)));
+            _portalRepositories.Attach(new OfferDescription(appId, languageCode!), appdesc =>
+            {
+                appdesc.DescriptionLong = longDescription!;
+                appdesc.DescriptionShort = shortDescription!;
+            });
         }
     }
 
