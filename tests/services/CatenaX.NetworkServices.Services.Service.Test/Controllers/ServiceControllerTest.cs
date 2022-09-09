@@ -117,6 +117,24 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             Assert.IsType<ServiceDetailData>(result);
             result.Should().Be(serviceDetailData);
         }
+        
+        [Fact]
+        public async Task GetSubscriptionDetail_ReturnsExpectedId()
+        {
+            //Arrange
+            var subscriptionId = Guid.NewGuid();
+            var detailData = new SubscriptionDetailData(subscriptionId, "Service", OfferSubscriptionStatusId.ACTIVE);
+            A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId, IamUserId))
+                .ReturnsLazily(() => detailData);
+
+            //Act
+            var result = await this._controller.GetSubscriptionDetail(subscriptionId).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.GetSubscriptionDetailAsync(subscriptionId, IamUserId)).MustHaveHappenedOnceExactly();
+            Assert.IsType<SubscriptionDetailData>(result);
+            result.Should().Be(detailData);
+        }
 
         [Fact]
         public async Task CreateServiceAgreementConsent_ReturnsExpectedId()
@@ -152,6 +170,23 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             //Assert
             A.CallTo(() => _logic.GetServiceAgreement(IamUserId)).MustHaveHappenedOnceExactly();
             result.Should().HaveCount(5);
+        }
+        
+        [Fact]
+        public async Task GetServiceAgreementConsentDetail_ReturnsExpected()
+        {
+            //Arrange
+            var consentId = Guid.NewGuid();
+            var consentDetailData = new ConsentDetailData(consentId, "Test Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Aggred");
+            A.CallTo(() => _logic.GetServiceConsentDetailData(A<Guid>._))
+                .Returns(consentDetailData);
+
+            //Act
+            var result = await this._controller.GetServiceAgreementConsentDetail(consentId).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.GetServiceConsentDetailData(consentId)).MustHaveHappenedOnceExactly();
+            result.CompanyName.Should().Be("Test Company");
         }
     }
 }
