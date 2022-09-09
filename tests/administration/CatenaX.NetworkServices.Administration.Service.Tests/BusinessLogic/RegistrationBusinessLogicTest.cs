@@ -278,11 +278,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName))
                 .Returns(Task.CompletedTask);
             
-            A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<(string? content, NotificationTypeId notificationTypeId)[]>._))
+            A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._))
                 .Invokes(x =>
                 {
                     var creatorId = x.Arguments.Get<Guid?>("creatorId");
-                    var notifications = x.Arguments.Get<(string? content, NotificationTypeId notificationTypeId)[]>("notifications");
+                    var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
                     if(notifications is not null)
                     {
                         foreach (var notificationData in notifications)
