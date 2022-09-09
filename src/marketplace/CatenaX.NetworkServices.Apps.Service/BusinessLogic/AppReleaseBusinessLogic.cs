@@ -80,42 +80,69 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         _portalRepositories.Attach(new Offer(appId), app =>
         {
-            app.ContactEmail = updateModel.ContactEmail;
-            app.ContactNumber = updateModel.ContactNumber;
-            app.MarketingUrl = updateModel.ProviderUri;
+            if (appResult.ContactEmail != updateModel.ContactEmail)
+            {
+                app.ContactEmail = updateModel.ContactEmail;
+            }
+            if (appResult.ContactNumber != updateModel.ContactNumber)
+            {
+                app.ContactNumber = updateModel.ContactNumber;
+            }
+            if (appResult.MarketingUrl != updateModel.ProviderUri)
+            {
+                app.MarketingUrl = updateModel.ProviderUri;
+            }
         });
 
-        UpsertRemoveAppDescription(appId, updateModel.Descriptions, appResult.LanguageShortNames, appRepository);
+        UpsertRemoveAppDescription(appId, updateModel.Descriptions, appResult.Descriptions, appRepository);
         UpsertRemoveAppDetailImage(appId, updateModel.Images, appResult.ImageUrls, appRepository);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> Descriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> LanguageShortNames, IOfferRepository appRepository)
+   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
     {
-        appRepository.AddOfferDescriptions(Descriptions.ExceptBy(LanguageShortNames.Select(d => d.LanguageShortName), lsn => lsn.LanguageCode).Select(lsn => new ValueTuple<Guid, string, string, string>(appId, lsn.LanguageCode, lsn.LongDescription, lsn.ShortDescription)));
-        foreach (var languageshortCode in LanguageShortNames.ExceptBy(Descriptions.Select(d => d.LanguageCode), lsn => lsn.LanguageShortName).Select(lsn => lsn.LanguageShortName))
+        appRepository.AddOfferDescriptions(
+            UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
+                .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
+        );
+
+        _portalRepositories.RemoveRange<OfferDescription>(
+            ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
+                .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
+        );
+
+        foreach (var (languageCode, longDescription, shortDescription)
+            in UpdateDescriptions.IntersectBy(
+                ExistingDescriptions.Select(d => d.LanguageShortName), updateDscr => updateDscr.LanguageCode)
+                    .Select(updateDscr => (updateDscr.LanguageCode, updateDscr.LongDescription, updateDscr.ShortDescription)))
         {
-            _portalRepositories.Remove<OfferDescription>(new OfferDescription(appId,languageshortCode));
-        }
-        foreach (var (languageCode, longDescription, shortDescription) in Descriptions.IntersectBy(LanguageShortNames.Select(d => d.LanguageShortName), lsn => lsn.LanguageCode).Select(lsn => (lsn.LanguageCode, lsn.LongDescription, lsn.ShortDescription)))
-        {
-            _portalRepositories.Attach(new OfferDescription(appId, languageCode!), appdesc =>
+            var existing = ExistingDescriptions.First(d => d.LanguageShortName == languageCode);
+            _portalRepositories.Attach(new OfferDescription(appId, languageCode), appdesc =>
             {
-                appdesc.DescriptionLong = longDescription!;
-                appdesc.DescriptionShort = shortDescription!;
+                if (longDescription != existing.DescriptionLong)
+                {
+                    appdesc.DescriptionLong = longDescription;
+                }
+                if (shortDescription != existing.DescriptionShort)
+                {
+                    appdesc.DescriptionShort = shortDescription;
+                }
             });
         }
     }
 
-    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> Images, IEnumerable<(Guid Id, string Url)> ImageUrls, IOfferRepository appRepository)
+    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
     {
-        appRepository.AddAppDetailImages(Images.Except(ImageUrls.Select(iu => iu.Url)).Select(image => new ValueTuple<Guid,string>(appId,image)));
-        foreach (var (imageId, imageUrl) in ImageUrls.ExceptBy(Images,iu => iu.Url).Select(iu => (iu.Id, iu.Url)))
-        {
-            _portalRepositories.Remove<OfferDetailImage>(new OfferDetailImage(imageId));
-        }
-        
+        appRepository.AddAppDetailImages(
+            UpdateUrls.Except(ExistingImages.Select(image => image.Url))
+                .Select(url => new ValueTuple<Guid,string>(appId, url))
+        );
+
+        _portalRepositories.RemoveRange(
+            ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
+                .Select(image => new OfferDetailImage(image.Id))
+        );
     }
 
     /// <inheritdoc/>
