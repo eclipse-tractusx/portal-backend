@@ -48,6 +48,7 @@
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
+    <ProjectReference Include="..\..\notification\CatenaX.NetworkServices.Notification.Library\CatenaX.NetworkServices.Notification.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
