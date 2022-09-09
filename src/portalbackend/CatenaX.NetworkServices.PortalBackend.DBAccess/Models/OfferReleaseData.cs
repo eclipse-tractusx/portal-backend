@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
@@ -35,4 +32,4 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="lastChanged"></param>
 /// <param name="description"></param>
 /// <returns></returns>
-public record AppReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, bool descriptionLong, bool descriptionShort);
+public record OfferReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, bool descriptionLongIsNullOrEmpty, bool descriptionShortIsNullOrEmpty);

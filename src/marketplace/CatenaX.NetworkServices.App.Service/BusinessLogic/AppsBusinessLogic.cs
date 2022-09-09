@@ -355,7 +355,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
     {
-        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetAppReleaseDataByIdAsync(appId).ConfigureAwait(false);
+        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
         if (appDetails == null)
         {
             throw new NotFoundException($"App {appId} does not exist");
@@ -367,7 +367,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if(appDetails.name is null || appDetails.thumbnailUrl is null 
             || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
-            || appDetails.descriptionLong || appDetails.descriptionShort)
+            || appDetails.descriptionLongIsNullOrEmpty || appDetails.descriptionShortIsNullOrEmpty)
         {
             var nullProperties = new List<string>();
             if (appDetails.name is null)
@@ -386,13 +386,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
             }
-            if(appDetails.descriptionLong)
+            if(appDetails.descriptionLongIsNullOrEmpty)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLong)}");
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
             }
-            if(appDetails.descriptionShort)
+            if(appDetails.descriptionShortIsNullOrEmpty)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShort)}");
+                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
             }
             throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }

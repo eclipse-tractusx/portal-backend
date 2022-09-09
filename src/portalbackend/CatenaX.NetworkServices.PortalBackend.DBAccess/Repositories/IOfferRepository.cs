@@ -142,7 +142,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="appId"></param>
     /// <returns></returns>
-    Task<AppReleaseData?> GetAppReleaseDataByIdAsync(Guid appId);
+    Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid appId);
 
     /// <summary>
     /// Checks if an service with the given id exists in the persistence layer. 
