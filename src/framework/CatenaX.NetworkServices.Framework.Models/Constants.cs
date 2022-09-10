@@ -38,5 +38,5 @@ public static class Constants
     /// <summary>
     /// Default value for Language Code Error String
     /// </summary>
-    public const string LanguageCodeErrorString = "InvalidLanguage";
+    public const string InvalidLanguageError = "InvalidLanguage";
 }
