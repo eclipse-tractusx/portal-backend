@@ -7,7 +7,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
 COPY keycloak/ keycloak/
-WORKDIR "/src/registration/CatenaX.NetworkServices.Registration.Service"
+WORKDIR /src/registration/CatenaX.NetworkServices.Registration.Service
 RUN dotnet build "CatenaX.NetworkServices.Registration.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
