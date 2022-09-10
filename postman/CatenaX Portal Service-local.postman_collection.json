@@ -1,0 +1,305 @@
+{
+	"info": {
+		"_postman_id": "a3a57829-0e58-44f0-9414-57d34842f5df",
+		"name": "CatenaX Portal Service-local",
+		"description": "# Setup Service Collection\n\n1. Create a environment\n2. Add the following variables to the newly created environment\n\n- apiUrl: https://localhost:5001/api/\n- keyCloakUrl: https://devhost:8443/",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"var bodyToken = responseJson.access_token;",
+							"pm.collectionVariables.set(\"keycloakToken\", bodyToken)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "Cl2-CX-Portal",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{keyCloakUrl}}iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+					"host": [
+						"{{keyCloakUrl}}iamcentral"
+					],
+					"path": [
+						"auth",
+						"realms",
+						"CX-Central",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Services",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/active?page=0&size=4",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"active"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Subscribe to App",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/{{serviceId}}/subscribe",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"{{serviceId}}",
+						"subscribe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Service Agreement Consent",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"agreementId\": \"{{agreementId}}\",\r\n    \"consentStatusId\": \"ACTIVE\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}services/{{serviceId}}/serviceAgreementConsent",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"{{serviceId}}",
+						"serviceAgreementConsent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Services Agreement",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"var agreementId = responseJson[0].agreementId;\r",
+							"pm.collectionVariables.set(\"agreementId\", agreementId)\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/serviceAgreementData",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"serviceAgreementData"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"var serviceId = responseJson;\r",
+							"pm.collectionVariables.set(\"serviceId\", serviceId)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Phils Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": \"ac1cf001-7fbc-1f2f-817f-bce058020001\",\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"description\" : \"Das ist ein neuer service\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"description\" : \"Thats a new service\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}services/addservice",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"addservice"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "keycloakToken",
+			"value": ""
+		},
+		{
+			"key": "serviceId",
+			"value": ""
+		},
+		{
+			"key": "agreementId",
+			"value": ""
+		}
+	]
+}

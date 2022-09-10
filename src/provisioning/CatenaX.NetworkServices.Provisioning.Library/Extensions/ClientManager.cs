@@ -1,5 +1,27 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using Keycloak.Net;
 using Keycloak.Net.Models.Clients;
 using Keycloak.Net.Models.ProtocolMappers;
 using System.Text.Json;
@@ -39,7 +61,7 @@ public partial class ProvisioningManager
     {
         if (! await _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false))
         {
-            throw new Exception($"failed to delete client {internalClientId} in keycloak {_Settings.CentralRealm}");
+            throw new KeycloakNoSuccessException($"failed to delete client {internalClientId} in central keycloak {_Settings.CentralRealm}");
         }
     }
 
@@ -63,21 +85,21 @@ public partial class ProvisioningManager
             };
     }
 
-    private async Task<Client> GetCentralClientViewableAsync(string clientId)
+    private async Task<Client?> GetCentralClientViewableAsync(string clientId)
     {
         var client = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
             .SingleOrDefault();
         return client;
     }
 
-    private async Task CreateSharedRealmIdentityProviderClientAsync(string realm, IdentityProviderClientConfig config)
+    private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
     {
         var newClient = CloneClient(_Settings.SharedRealmClient);
         newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
         newClient.Attributes["jwks.url"] = config.JwksUrl;
-        if (! await _SharedIdp.CreateClientAsync(realm,newClient))
+        if (! await keycloak.CreateClientAsync(realm,newClient))
         {
-            throw new Exception($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
+            throw new KeycloakNoSuccessException($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
         }
     }
 
@@ -89,7 +111,7 @@ public partial class ProvisioningManager
         var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
         if (newClientId == null)
         {
-            throw new Exception($"failed to create new client {clientId} in central realm");
+            throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
         }
         return newClientId;
     }
@@ -108,36 +130,29 @@ public partial class ProvisioningManager
             }
         }).ConfigureAwait(false))
         {
-            throw new Exception($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
+            throw new KeycloakNoSuccessException($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
         }
     }
 
-    private async Task<string> GetCentralInternalClientIdFromClientIDAsync(string clientId) =>
-        (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))
-            .Id;
+    private async Task<string?> GetCentralInternalClientIdFromClientIDAsync(string clientId) =>
+        (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))?.Id;
 
     private IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
     {
-        try
+        if (!CredentialTypesIamClientAuthMethodDictionary.TryGetValue(clientAuthMethod, out var iamClientAuthMethod))
         {
-            return CredentialTypesIamClientAuthMethodDictionary[clientAuthMethod];
+            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}", nameof(clientAuthMethod));
         }
-        catch (KeyNotFoundException)
-        {
-            throw new ArgumentException($"unexpected value of clientAuthMethod: {clientAuthMethod}","clientAuthMethod");
-        }
+        return iamClientAuthMethod;
     }
 
     private string IamClientAuthMethodToInternal(IamClientAuthMethod iamClientAuthMethod)
     {
-        try
+        if (!IamClientAuthMethodsInternalDictionary.TryGetValue(iamClientAuthMethod, out var clientAuthMethod))
         {
-            return IamClientAuthMethodsInternalDictionary[iamClientAuthMethod];
+            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}", nameof(iamClientAuthMethod));
         }
-        catch (KeyNotFoundException)
-        {
-            throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}","authMethod");
-        }
+        return clientAuthMethod;
     }
 
     private async Task<string> GetNextClientIdAsync() =>

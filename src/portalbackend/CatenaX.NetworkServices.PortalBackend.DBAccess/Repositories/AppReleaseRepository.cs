@@ -45,13 +45,38 @@ public class AppReleaseRepository : IAppReleaseRepository
     ///<inheritdoc/>
     public  Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId)
     =>
-        _context.Apps
-             .Where(a => a.Id == appId && a.AppStatusId == AppStatusId.CREATED)
-             .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
-             .SingleOrDefaultAsync();
+        _context.Offers
+            .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED)
+            .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
+            .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
-    public AppAssignedDocument CreateAppAssignedDocument(Guid appId, Guid documentId) =>
-        _context.AppAssignedDocuments.Add(new AppAssignedDocument(appId, documentId)).Entity;
+    public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
+        _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
+    
+    ///<inheritdoc/>
+    public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>
+        _context.Offers
+            .AnyAsync(a => a.Id == appId
+                && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
 
+    ///<inheritdoc/>
+    public UserRole CreateAppUserRole(Guid appId, string role) =>
+        _context.UserRoles.Add(
+            new UserRole(
+                Guid.NewGuid(),
+                role,
+                appId
+            ))
+            .Entity;
+
+    ///<inheritdoc/>
+    public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>
+        _context.UserRoleDescriptions.Add(
+            new UserRoleDescription(
+                roleId,
+                languageCode,
+                description
+            ))
+            .Entity;
 }

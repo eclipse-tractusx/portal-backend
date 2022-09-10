@@ -19,9 +19,8 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -69,15 +68,16 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
         return NoContent();
     }
-    
+
     /// <summary>
     /// Upload document for active apps in the marketplace for given appId for same company as user
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
     /// <remarks>Example: PUT: /api/apps/appreleaseprocess/apprelease/{appId}/documentType/{documentTypeId}/documents</remarks>
-    /// <response code="204">Successfully uploaded the document</response>
+    /// <response code="200">Successfully uploaded the document</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
     /// <response code="403">The user is not assigned with the app.</response>
@@ -87,15 +87,34 @@ public class AppReleaseProcessController : ControllerBase
     [Authorize(Roles = "app_management")]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<IActionResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document)
+    public Task<int> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+         this.WithIamUserId(userId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, userId, cancellationToken));
+       
+    
+    
+    /// <summary>
+    /// Add role and role description for App 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appAssignedDesc"></param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/addappuserrole/{appId}</remarks>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPost]
+    [Route("addappuserrole/{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)
     {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppDocumentAsync(appId,  documentTypeId,  document, userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
         return NoContent();
     }
-
+    
 }

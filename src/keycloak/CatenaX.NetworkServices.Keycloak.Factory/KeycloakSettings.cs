@@ -1,5 +1,26 @@
-using Microsoft.Extensions.DependencyInjection;
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CatenaX.NetworkServices.Keycloak.Factory;
 
@@ -16,45 +37,53 @@ public class KeycloakSettings
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
     public string? AuthRealm { get; set; }
+
+    public void Validate(string key)
+    {
+        if (ConnectionString == null)
+        {
+            throw new ConfigurationException($"{nameof(KeycloakSettings)}: {nameof(ConnectionString)} must not be null");
+        }
+
+        if ((User != null && Password != null) ||
+            (ClientId != null && ClientSecret != null)) return;
+
+        new ConfigurationValidation<KeycloakSettings>()
+            .NotNullOrWhiteSpace(User, () => nameof(User))
+            .NotNullOrWhiteSpace(Password, () => nameof(Password))
+            .NotNullOrWhiteSpace(ClientId, () => nameof(ClientId))
+            .NotNullOrWhiteSpace(ClientSecret, () => nameof(ClientSecret));
+    }
 }
 
-public class KeycloakSettingsMap : Dictionary<string,KeycloakSettings>
+public class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
 {
+    public bool Validate()
+    {
+        if (!Values.Any())
+        {
+            throw new ConfigurationException();
+        }
+
+        foreach (var (key, settings) in this)
+        {
+            settings.Validate(key);
+        }
+
+        return true;
+    }
 }
 
 public static class KeycloakSettingsExtention
 {
     public static IServiceCollection ConfigureKeycloakSettingsMap(
         this IServiceCollection services,
-        IConfigurationSection section) =>
-        services.Configure<KeycloakSettingsMap>(settingsMap =>
-            {
-                section.Bind(settingsMap);
-                foreach (var (key, settings) in settingsMap)
-                {
-                    if (settings.ConnectionString == null)
-                    {
-                        throw new Exception($"{nameof(KeycloakSettings)}: {nameof(settings.ConnectionString)} must not be null");
-                    }
-                    if ((settings.User == null || settings.Password == null) && (settings.ClientId == null || settings.ClientSecret == null))
-                    {
-                        if (settings.User != null)
-                        {
-                            throw new Exception($"{nameof(KeycloakSettings)}, Key {key}: {nameof(settings.Password)} must not be null if {nameof(settings.User)} has a non-null value");
-                        }
-                        if (settings.Password != null)
-                        {
-                            throw new Exception($"{nameof(KeycloakSettings)}, Key {key}: {nameof(settings.User)} must not be null if {nameof(settings.Password)} has a non-null value");
-                        }
-                        if (settings.ClientId != null)
-                        {
-                            throw new Exception($"{nameof(KeycloakSettings)}, Key {key}: {nameof(settings.ClientSecret)} must not be null if {nameof(settings.ClientId)} has a non-null value");
-                        }
-                        if (settings.ClientSecret != null)
-                        {
-                            throw new Exception($"{nameof(KeycloakSettings)}, Key {key}1: {nameof(settings.ClientId)} must not be null if {nameof(settings.ClientSecret)} has a non-null value");
-                        }
-                    }
-                }
-            });
+        IConfigurationSection section)
+    {
+        services.AddOptions<KeycloakSettingsMap>()
+            .Bind(section)
+            .Validate(x => x.Validate())
+            .ValidateOnStart();
+        return services;
+    }
 }

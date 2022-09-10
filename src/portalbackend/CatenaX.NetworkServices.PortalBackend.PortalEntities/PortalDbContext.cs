@@ -41,21 +41,13 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
     public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
-    public virtual DbSet<App> Apps { get; set; } = default!;
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
-    public virtual DbSet<AppAssignedLicense> AppAssignedLicenses { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
-    public virtual DbSet<AppDescription> AppDescriptions { get; set; } = default!;
-    public virtual DbSet<AppDetailImage> AppDetailImages { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
-    public virtual DbSet<AppLicense> AppLicenses { get; set; } = default!;
-    public virtual DbSet<AppStatus> AppStatuses { get; set; } = default!;
-    public virtual DbSet<AppTag> AppTags { get; set; } = default!;
+    public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
-    public virtual DbSet<CompanyAssignedApp> CompanyAssignedApps { get; set; } = default!;
-    public virtual DbSet<AppSubscriptionStatus> AppSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
@@ -93,19 +85,22 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Language> Languages { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
-    public virtual DbSet<Service> Services { get; set; } = default!;
-    public virtual DbSet<ServiceStatus> ServiceStatuses { get; set; } = default!;
-    public virtual DbSet<ServiceLicense> ServiceLicenses { get; set; } = default!;
-    public virtual DbSet<ServiceDescription> ServiceDescriptions { get; set; } = default!;
-    public virtual DbSet<ServiceSubscriptionStatus> ServiceSubscriptionStatuses { get; set; } = default!;
-    public virtual DbSet<CompanyAssignedService> CompanyAssignedServices { get; set; } = default!;
-    public virtual DbSet<ServiceAssignedLicense> ServiceAssignedLicenses { get; set; } = default!;
+    public virtual DbSet<Offer> Offers { get; set; } = default!;
+    public virtual DbSet<OfferAssignedDocument> OfferAssignedDocuments { get; set; } = default!;
+    public virtual DbSet<OfferAssignedLicense> OfferAssignedLicenses { get; set; } = default!;
+    public virtual DbSet<OfferDescription> OfferDescriptions { get; set; } = default!;
+    public virtual DbSet<OfferDetailImage> OfferDetailImages { get; set; } = default!;
+    public virtual DbSet<OfferLicense> OfferLicenses { get; set; } = default!;
+    public virtual DbSet<OfferStatus> OfferStatuses { get; set; } = default!;
+    public virtual DbSet<OfferTag> OfferTags { get; set; } = default!;
+    public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
+    public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
+    public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
+    
     public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
-    public virtual DbSet<AuditCompanyAssignedApp> AuditCompanyAssignedApps { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
-    public virtual DbSet<AuditService> AuditServices { get; set; } = default!;
-    public virtual DbSet<AppAssignedDocument> AppAssignedDocuments { get; set; } = default!;
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -166,41 +161,41 @@ public class PortalDbContext : DbContext
                     .Select(e => new AgreementCategory(e))
             );
 
-        modelBuilder.Entity<App>(entity =>
+        modelBuilder.Entity<Offer>(entity =>
         {
             entity.HasOne(d => d.ProviderCompany)
-                .WithMany(p => p!.ProvidedApps);
+                .WithMany(p => p!.ProvidedOffers);
 
             entity.HasOne(x => x.SalesManager)
-                .WithMany(x => x!.SalesManagerOfApps)
+                .WithMany(x => x!.SalesManagerOfOffers)
                 .HasForeignKey(x => x.SalesManagerId);
 
+            entity.HasOne(x => x.OfferType)
+                .WithMany(x => x!.Offers)
+                .HasForeignKey(x => x.OfferTypeId);
+
             entity.HasMany(p => p.Companies)
-                .WithMany(p => p.BoughtApps)
-                .UsingEntity<CompanyAssignedApp>(
+                .WithMany(p => p.BoughtOffers)
+                .UsingEntity<OfferSubscription>(
                     j => j
                         .HasOne(d => d.Company!)
                         .WithMany()
                         .HasForeignKey(d => d.CompanyId)
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j => j
-                        .HasOne(d => d.App!)
+                        .HasOne(d => d.Offer!)
                         .WithMany()
-                        .HasForeignKey(d => d.AppId)
+                        .HasForeignKey(d => d.OfferId)
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j =>
                     {
-                        j.HasKey(e => new { e.CompanyId, e.AppId });
-                        j.HasOne(e => e.AppSubscriptionStatus)
-                            .WithMany(e => e.AppSubscriptions)
-                            .HasForeignKey(e => e.AppSubscriptionStatusId)
+                        j.HasKey(e => e.Id);
+                        j.HasOne(e => e.OfferSubscriptionStatus)
+                            .WithMany(e => e.OfferSubscriptions)
+                            .HasForeignKey(e => e.OfferSubscriptionStatusId)
                             .OnDelete(DeleteBehavior.ClientSetNull);
-                        j.HasOne(e => e.AppInstance)
-                            .WithMany(e => e.CompanyAssignedApps)
-                            .HasForeignKey(e => e.AppInstanceId)
-                            .OnDelete(DeleteBehavior.ClientSetNull);
-                        j.Property(e => e.AppSubscriptionStatusId)
-                            .HasDefaultValue(AppSubscriptionStatusId.PENDING);
+                        j.Property(e => e.OfferSubscriptionStatusId)
+                            .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
                     }
                 );
 
@@ -223,22 +218,22 @@ public class PortalDbContext : DbContext
                     }
                 );
             
-            entity.HasMany(p => p.AppLicenses)
+            entity.HasMany(p => p.OfferLicenses)
                 .WithMany(p => p.Apps)
-                .UsingEntity<AppAssignedLicense>(
+                .UsingEntity<OfferAssignedLicense>(
                     j => j
-                        .HasOne(d => d.AppLicense!)
+                        .HasOne(d => d.OfferLicense!)
                         .WithMany()
-                        .HasForeignKey(d => d.AppLicenseId)
+                        .HasForeignKey(d => d.OfferLicenseId)
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j => j
-                        .HasOne(d => d.App!)
+                        .HasOne(d => d.Offer!)
                         .WithMany()
-                        .HasForeignKey(d => d.AppId)
+                        .HasForeignKey(d => d.OfferId)
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j =>
                     {
-                        j.HasKey(e => new { e.AppId, e.AppLicenseId });
+                        j.HasKey(e => new {AppId = e.OfferId, AppLicenseId = e.OfferLicenseId });
                     });
             
             entity.HasMany(p => p.UseCases)
@@ -260,28 +255,45 @@ public class PortalDbContext : DbContext
                     });
             
             entity.HasMany(p => p.Documents)
-                .WithMany(p => p.Apps)
-                .UsingEntity<AppAssignedDocument>(
+                .WithMany(p => p.Offers)
+                .UsingEntity<OfferAssignedDocument>(
                     j => j
                         .HasOne(d => d.Document!)
                         .WithMany()
                         .HasForeignKey(d => d.DocumentId)
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j => j
-                        .HasOne(d => d.App!)
+                        .HasOne(d => d.Offer!)
                         .WithMany()
-                        .HasForeignKey(d => d.AppId)
+                        .HasForeignKey(d => d.OfferId)
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j =>
                     {
-                        j.HasKey(e => new { e.AppId, e.DocumentId });
+                        j.HasKey(e => new { e.OfferId, e.DocumentId });
                     });
 
-            entity.HasMany(p => p.CompanyAssignedApps)
-                .WithOne(d => d.App)
-                .HasForeignKey(d => d.AppId)
+            entity.HasMany(p => p.OfferSubscriptions)
+                .WithOne(d => d.Offer)
+                .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+        modelBuilder.Entity<AppSubscriptionDetail>(entity =>
+        {
+            entity.HasOne(e => e.AppInstance)
+                .WithMany(e => e.AppSubscriptionDetails)
+                .HasForeignKey(e => e.AppInstanceId);
+            entity.HasOne(e => e.OfferSubscription)
+                .WithOne(e => e.AppSubscriptionDetail)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+        
+        modelBuilder.Entity<OfferType>()
+            .HasData(
+                Enum.GetValues(typeof(OfferTypeId))
+                    .Cast<OfferTypeId>()
+                    .Select(e => new OfferType(e))
+            );
 
         modelBuilder.Entity<AppInstance>(entity =>
         {
@@ -296,13 +308,13 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull);
         });
         
-        modelBuilder.Entity<AppDescription>(entity =>
+        modelBuilder.Entity<OfferDescription>(entity =>
         {
-            entity.HasKey(e => new { e.AppId, e.LanguageShortName });
+            entity.HasKey(e => new {AppId = e.OfferId, e.LanguageShortName });
 
-            entity.HasOne(d => d.App)
-                .WithMany(p => p!.AppDescriptions)
-                .HasForeignKey(d => d.AppId)
+            entity.HasOne(d => d.Offer)
+                .WithMany(p => p!.OfferDescriptions)
+                .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Language)
@@ -311,26 +323,26 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<AppDetailImage>()
-            .HasOne(d => d.App)
-                .WithMany(p => p!.AppDetailImages)
-                .HasForeignKey(d => d.AppId)
+        modelBuilder.Entity<OfferDetailImage>()
+            .HasOne(d => d.Offer)
+                .WithMany(p => p!.OfferDetailImages)
+                .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-        modelBuilder.Entity<AppStatus>()
+        modelBuilder.Entity<OfferStatus>()
             .HasData(
-                Enum.GetValues(typeof(AppStatusId))
-                    .Cast<AppStatusId>()
-                    .Select(e => new AppStatus(e))
+                Enum.GetValues(typeof(OfferStatusId))
+                    .Cast<OfferStatusId>()
+                    .Select(e => new OfferStatus(e))
             );
 
-        modelBuilder.Entity<AppTag>(entity =>
+        modelBuilder.Entity<OfferTag>(entity =>
         {
-            entity.HasKey(e => new { e.AppId, e.Name });
+            entity.HasKey(e => new {AppId = e.OfferId, e.Name });
 
-            entity.HasOne(d => d.App)
+            entity.HasOne(d => d.Offer)
                 .WithMany(p => p!.Tags)
-                .HasForeignKey(d => d.AppId)
+                .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
@@ -367,7 +379,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasMany(p => p.CompanyAssignedApps)
+            entity.HasMany(p => p.OfferSubscriptions)
                 .WithOne(d => d.Company)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
@@ -439,18 +451,6 @@ public class PortalDbContext : DbContext
             .WithMany(p => p.CompanyIdentityProviders)
             .HasForeignKey(d => d.IdentityProviderId);
 
-        modelBuilder.Entity<AuditCompanyAssignedApp>(x =>
-        {
-            x.HasBaseType((Type?)null);
-
-            x.Ignore(x => x.App);
-            x.Ignore(x => x.Company);
-            x.Ignore(x => x.AppSubscriptionStatus);
-            x.Ignore(x => x.AppInstance);
-
-            x.ToTable("audit_company_assigned_apps_cplp_1254_db_audit");
-        });
-
         modelBuilder.Entity<CompanyRole>()
             .HasData(
                 Enum.GetValues(typeof(CompanyRoleId))
@@ -519,7 +519,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
                 
-            entity.HasMany(p => p.Apps)
+            entity.HasMany(p => p.Offers)
                 .WithMany(p => p.CompanyUsers)
                 .UsingEntity<CompanyUserAssignedAppFavourite>(
                     j => j
@@ -573,15 +573,13 @@ public class PortalDbContext : DbContext
             entity.Ignore(x => x.Consents);
             entity.Ignore(x => x.Documents);
             entity.Ignore(x => x.Invitations);
-            entity.Ignore(x => x.Apps);
-            entity.Ignore(x => x.SalesManagerOfApps);
+            entity.Ignore(x => x.Offers);
+            entity.Ignore(x => x.SalesManagerOfOffers);
             entity.Ignore(x => x.UserRoles);
             entity.Ignore(x => x.CompanyUserAssignedRoles);
             entity.Ignore(x => x.CompanyUserAssignedBusinessPartners);
             entity.Ignore(x => x.Notifications);
             entity.Ignore(x => x.CreatedNotifications);
-            entity.Ignore(x => x.SalesManagerOfServices);
-            entity.Ignore(x => x.RequesterOfCompanyAssignedServices);
 
             entity.ToTable("audit_company_users_cplp_1254_db_audit");
         });
@@ -793,113 +791,13 @@ public class PortalDbContext : DbContext
                     .Select(e => new NotificationType(e))
             );
 
-        modelBuilder.Entity<Service>(entity =>
-        {
-            entity.HasOne(e => e.ProviderCompany)
-                .WithMany(e => e.ProvidedServices)
-                .HasForeignKey(e => e.ProviderCompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(x => x.SalesManager)
-                .WithMany(x => x.SalesManagerOfServices)
-                .HasForeignKey(x => x.SalesManagerId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(e => e.ServiceStatus)
-                .WithMany(e => e.Services)
-                .HasForeignKey(e => e.ServiceStatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            
-            entity.HasMany(p => p.Companies)
-                .WithMany(p => p.CompanyAssignedServices)
-                .UsingEntity<CompanyAssignedService>(
-                    j => j
-                        .HasOne(d => d.Company!)
-                        .WithMany()
-                        .HasForeignKey(d => d.CompanyId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Service!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.ServiceId, e.CompanyId });
-                        j.HasOne(e => e.ServiceSubscriptionStatus)
-                            .WithMany(e => e.CompanyAssignedServices)
-                            .HasForeignKey(e => e.ServiceSubscriptionStatusId)
-                            .OnDelete(DeleteBehavior.ClientSetNull);
-                        j.HasOne(e => e.Requester)
-                            .WithMany(e => e.RequesterOfCompanyAssignedServices)
-                            .HasForeignKey(e => e.RequesterId)
-                            .OnDelete(DeleteBehavior.ClientSetNull);
-                        j.Property(e => e.ServiceSubscriptionStatusId)
-                            .HasDefaultValue(ServiceSubscriptionStatusId.PENDING);
-                    }
-                );
-
-            entity.HasMany(x => x.ServiceDescriptions)
-                .WithOne(x => x.Service)
-                .HasForeignKey(x => x.ServiceId);
-
-            entity.HasMany(p => p.ServiceLicenses)
-                .WithMany(p => p.Services)
-                .UsingEntity<ServiceAssignedLicense>(
-                    j => j
-                        .HasOne(d => d.ServiceLicense!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceLicenseId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Service!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.ServiceId, e.ServiceLicenseId });
-                    }
-                );
-
-            entity.ToTable("services");
-        });
-
-        modelBuilder.Entity<AuditService>(x =>
-        {
-            x.HasBaseType((Type?)null);
-
-            x.Ignore(x => x.ProviderCompany);
-            x.Ignore(x => x.SalesManager);
-            x.Ignore(x => x.ServiceStatus);
-            x.Ignore(x => x.Companies);
-            x.Ignore(x => x.ServiceDescriptions);
-            x.Ignore(x => x.ServiceLicenses);
-
-            x.ToTable("audit_services_cplp_1213_add_services");
-        });
-
-        modelBuilder.Entity<ServiceStatus>()
-            .HasData(
-                Enum.GetValues(typeof(ServiceStatusId))
-                    .Cast<ServiceStatusId>()
-                    .Select(e => new ServiceStatus(e))
-            );
-        
-        modelBuilder.Entity<ServiceSubscriptionStatus>()
-            .HasData(
-                Enum.GetValues(typeof(ServiceSubscriptionStatusId))
-                    .Cast<ServiceSubscriptionStatusId>()
-                    .Select(e => new ServiceSubscriptionStatus(e))
-            );
-        
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
 
-        modelBuilder.Entity<AppSubscriptionStatus>()
+        modelBuilder.Entity<OfferSubscriptionStatus>()
             .HasData(
-                Enum.GetValues(typeof(AppSubscriptionStatusId))
-                    .Cast<AppSubscriptionStatusId>()
-                    .Select(e => new AppSubscriptionStatus(e))
+                Enum.GetValues(typeof(OfferSubscriptionStatusId))
+                    .Cast<OfferSubscriptionStatusId>()
+                    .Select(e => new OfferSubscriptionStatus(e))
             );
     }
 }

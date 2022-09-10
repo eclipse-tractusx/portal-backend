@@ -29,12 +29,12 @@ public class Company
     {
         Name = null!;
         Agreements = new HashSet<Agreement>();
-        BoughtApps = new HashSet<App>();
-        ProvidedApps = new HashSet<App>();
+        BoughtOffers = new HashSet<Offer>();
+        ProvidedOffers = new HashSet<Offer>();
         CompanyApplications = new HashSet<CompanyApplication>();
         CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
         IdentityProviders = new HashSet<IdentityProvider>();
-        CompanyAssignedApps = new HashSet<CompanyAssignedApp>();
+        OfferSubscriptions = new HashSet<OfferSubscription>();
         CompanyUsers = new HashSet<CompanyUser>();
         CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
         Consents = new HashSet<Consent>();
@@ -42,8 +42,6 @@ public class Company
         UseCases = new HashSet<UseCase>();
         ProvidedConnectors = new HashSet<Connector>();
         HostedConnectors = new HashSet<Connector>();
-        ProvidedServices = new HashSet<Service>();
-        CompanyAssignedServices = new HashSet<Service>();
     }
     
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
@@ -77,9 +75,9 @@ public class Company
     // Navigation properties
     public virtual Address? Address { get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<App> BoughtApps { get; private set; }
+    public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
-    public virtual ICollection<CompanyAssignedApp> CompanyAssignedApps { get; private set; }
+    public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
@@ -88,9 +86,7 @@ public class Company
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Connector> HostedConnectors { get; private set; }
     public virtual ICollection<IdentityProvider> IdentityProviders { get; private set; }
-    public virtual ICollection<App> ProvidedApps { get; private set; }
+    public virtual ICollection<Offer> ProvidedOffers { get; private set; }
     public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
-    public virtual ICollection<Service> ProvidedServices { get; private set; }
     public virtual ICollection<UseCase> UseCases { get; private set; }
-    public virtual ICollection<Service> CompanyAssignedServices { get; private set; }
 }
