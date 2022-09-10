@@ -28,6 +28,7 @@ using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -66,8 +67,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         private readonly IFixture _fixture;
         private readonly IRegistrationBusinessLogic _logic;
         private readonly RegistrationSettings _settings;
-        private readonly INotificationRepository _notificationRepository;
-        private readonly List<Notification> _notifications = new();
+        private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
+        private readonly INotificationService _notificationService;
 
         public RegistrationBusinessLogicTest()
         {
@@ -83,11 +84,11 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             _rolesRepository = A.Fake<IUserRolesRepository>();
             _custodianService = A.Fake<ICustodianService>();
             _settings = A.Fake<RegistrationSettings>();
-            _notificationRepository = A.Fake<INotificationRepository>();
             
             var userRepository = A.Fake<IUserRepository>();
             var mailingService = A.Fake<IMailingService>();
             var options = A.Fake<IOptions<RegistrationSettings>>();
+            _notificationService = A.Fake<INotificationService>();
 
             _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
             {
@@ -101,49 +102,13 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
-            A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(userRepository);
             A.CallTo(() => options.Value).Returns(_settings);
 
             A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
                 .ReturnsLazily(Guid.NewGuid);
 
-            _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService);
-        }
-
-        [Fact]
-        public async Task ApprovePartnerRequest_WithoutCompanyAdmin_ApprovesRequestDoesntCreateNotifications()
-        {
-            //Arrange
-            var roles = new List<string> { "IT Admin" };
-            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                        {
-                            { ClientId, roles.AsEnumerable() }
-                        };
-            var userRoleData = new List<UserRoleData>() { new(UserRoleId, ClientId, "IT Admin") };
-
-            var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
-            var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-
-            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, false);
-
-            //Act
-            var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
-
-            //Assert
-            A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-            A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-            A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
-            A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-            A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName)).MustHaveHappened(1, Times.OrMore);
-            Assert.IsType<bool>(result);
-            Assert.True(result);
-            _notifications.Should().BeEmpty();
+            _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService);
         }
 
         [Fact]
@@ -160,7 +125,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
             var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
 
-            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner, true);
+            SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
 
             //Act
             var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
@@ -233,8 +198,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             IDictionary<string, IEnumerable<string>> clientRoleNames,
             IEnumerable<UserRoleData> userRoleData,
             CompanyUserAssignedRole companyUserAssignedRole,
-            CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner,
-            bool withCompanyAdmin)
+            CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner)
         {
             var company = _fixture.Build<Company>()
                 .With(u => u.BusinessPartnerNumber, BusinessPartnerNumber)
@@ -264,9 +228,9 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var welcomeEmailData = new List<WelcomeEmailData>();
             welcomeEmailData.AddRange(new WelcomeEmailData[]
             {
-                new (CompanyUserId1, "Stan", "Lee", "stan@lee.com", company.Name, withCompanyAdmin),
-                new (CompanyUserId2, "Tony", "Stark", "tony@stark.com", company.Name, false),
-                new (CompanyUserId3, "Peter", "Parker", "peter@parker.com", company.Name, false)
+                new (CompanyUserId1, "Stan", "Lee", "stan@lee.com", company.Name),
+                new (CompanyUserId2, "Tony", "Stark", "tony@stark.com", company.Name),
+                new (CompanyUserId3, "Peter", "Parker", "peter@parker.com", company.Name)
             });
             A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(Id, A<IEnumerable<Guid>>._))
                 .Returns(welcomeEmailData.ToAsyncEnumerable());
@@ -314,18 +278,25 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName))
                 .Returns(Task.CompletedTask);
             
-            A.CallTo(() => _notificationRepository.Create(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
+            A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._))
                 .Invokes(x =>
                 {
-                    var receiverId = x.Arguments.Get<Guid>("receiverUserId");
-                    var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
-                    var isRead = x.Arguments.Get<bool>("isRead");
-                    var action = x.Arguments.Get<Action<Notification?>>("setOptionalParameter");
-
-                    var notification = new Notification(Guid.NewGuid(), receiverId,
-                        DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                    action?.Invoke(notification);
-                    _notifications.Add(notification);
+                    var creatorId = x.Arguments.Get<Guid?>("creatorId");
+                    var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
+                    if(notifications is not null)
+                    {
+                        foreach (var notificationData in notifications)
+                        {
+                            var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
+                                DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
+                            {
+                                CreatorUserId = creatorId,
+                                Content = notificationData.content
+                            };
+                            _notifications.Add(notification);
+                        }
+                    }
+                    
                 });
         }
 

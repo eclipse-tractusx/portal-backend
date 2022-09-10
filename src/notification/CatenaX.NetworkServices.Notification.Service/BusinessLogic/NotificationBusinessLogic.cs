@@ -52,7 +52,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         var (content, notificationTypeId, notificationStatusId, dueDate) =
             creationData;
 
-        var notification = _portalRepositories.GetInstance<INotificationRepository>().Create(
+        var notification = _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(
             receiverId,
             notificationTypeId,
             notificationStatusId,

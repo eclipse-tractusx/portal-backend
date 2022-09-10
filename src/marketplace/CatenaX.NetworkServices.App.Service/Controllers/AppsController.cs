@@ -304,4 +304,24 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
         _appsBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
+
+    /// <summary>
+    /// Submit an app for release
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app.</param>
+    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit</remarks>
+    /// <response code="204">The app was successfully submitted for release.</response>
+    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPut]
+    [Route("{appId}/submit")]
+    [Authorize(Roles = "add_app")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _appsBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }
