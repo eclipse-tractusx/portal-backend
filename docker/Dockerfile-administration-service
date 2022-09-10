@@ -16,4 +16,5 @@ RUN dotnet publish "CatenaX.NetworkServices.Administration.Service.csproj" -c Re
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER 1000
 ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Administration.Service.dll"]
