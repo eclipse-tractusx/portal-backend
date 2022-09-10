@@ -233,19 +233,19 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     .Select(companyUser => new CompanyUserData(
                     companyUser.IamUser!.UserEntityId,
                     companyUser.Id,
-                    companyUser.CompanyUserStatusId)
+                    companyUser.CompanyUserStatusId,
+                    companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
                 {
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
-                    Email = companyUser.Email,
-                    Roles = companyUser.UserRoles.Select(userRole => userRole.UserRoleText)
+                    Email = companyUser.Email
                 })
                 .AsAsyncEnumerable()));
         }
 
         public async IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null)
         {
-            var appRepository = _portalRepositories.GetInstance<IAppRepository>();
+            var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
             if (!await appRepository.CheckAppExistsById(appId).ConfigureAwait(false))
             {
                 throw new NotFoundException($"app {appId} does not found");
@@ -494,7 +494,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             string? email = null,
             string? roleName = null)
         {
-            var appUsers = _portalRepositories.GetInstance<ICompanyAssignedAppsRepository>().GetOwnCompanyAppUsersUntrackedAsync(
+            var appUsers = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyAppUsersUntrackedAsync(
                 appId, 
                 iamUserId,
                 firstName,
@@ -514,7 +514,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                         .Select(companyUser => new CompanyAppUserDetails(
                             companyUser.Id,
                             companyUser.CompanyUserStatusId,
-                            companyUser.UserRoles!.Where(userRole => userRole.App!.Id == appId).Select(userRole => userRole.UserRoleText))
+                            companyUser.UserRoles!.Where(userRole => userRole.Offer!.Id == appId).Select(userRole => userRole.UserRoleText))
                         {
                             FirstName = companyUser.Firstname,
                             LastName = companyUser.Lastname,
@@ -537,7 +537,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 throw new NotFoundException($"User not found");
             }
             
-            var iamClientId = await _portalRepositories.GetInstance<IAppRepository>().GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
+            var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>().GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(iamClientId))
             {
                 throw new ArgumentException($"invalid appId {appId}", nameof(appId));

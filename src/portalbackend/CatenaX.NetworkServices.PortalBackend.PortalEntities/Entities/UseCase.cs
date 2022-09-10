@@ -10,7 +10,7 @@ public class UseCase
         Shortname = null!;
         Agreements = new HashSet<Agreement>();
         Companies = new HashSet<Company>();
-        Apps = new HashSet<App>();
+        Apps = new HashSet<Offer>();
     }
     
     public UseCase(Guid id, string name, string shortname) : this()
@@ -31,5 +31,5 @@ public class UseCase
     // Navigation properties
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<App> Apps { get; private set; }
+    public virtual ICollection<Offer> Apps { get; private set; }
 }

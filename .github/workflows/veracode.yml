@@ -350,3 +350,48 @@ jobs:
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'CatenaX.NetworkServices.Notification.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
+
+  analyze-services-service:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore src/services/CatenaX.NetworkServices.Services.Service
+
+      - name: Build and publish
+        run: |
+          cd src/services/CatenaX.NetworkServices.Services.Service
+          dotnet build --no-restore
+          dotnet publish -c Debug  -p:PublishDir=.\publish
+
+      - name: "Bundle files to scan"
+        run: >
+          zip -r portal-backend-services.zip
+          src/services/CatenaX.NetworkServices.Services.Service/.publish
+          -x
+          src/services/CatenaX.NetworkServices.Services.Service/.publish/CatenaX.NetworkServices.Services.Service
+
+      - name: Run Veracode Upload And Scan
+        uses: veracode/veracode-uploadandscan-action@0.2.1
+        with:
+          # Specify Veracode application name
+          appname: "Portal-Backend_Services-Service"
+          createprofile: true
+          teams: 'portal'
+          # Specify path to upload
+          filepath: "portal-backend-services.zip"
+          vid: "${{ secrets.ORG_VERACODE_API_ID }}"
+          vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
+          include: 'CatenaX.NetworkServices.Services.Service.dll'

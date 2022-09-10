@@ -18,8 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.App.Service.InputModels;
+using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
@@ -45,6 +44,16 @@ public interface IAppReleaseBusinessLogic
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
     /// <param name="userId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task UpdateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId);
+    Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Add User Role for App
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appAssignedDesc"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
 }
