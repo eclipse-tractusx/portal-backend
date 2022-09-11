@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -61,6 +62,7 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
 
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()

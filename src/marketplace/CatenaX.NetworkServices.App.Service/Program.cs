@@ -19,10 +19,11 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.App.Service.BusinessLogic;
+using CatenaX.NetworkServices.Framework.Web;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
-using CatenaX.NetworkServices.Framework.Web;
 
 var VERSION = "v2";
 
@@ -44,6 +45,9 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
+
+builder.Services.AddTransient<INotificationService, NotificationService>();
+
 
 builder.Build()
     .CreateApp<Program>("apps", VERSION)
