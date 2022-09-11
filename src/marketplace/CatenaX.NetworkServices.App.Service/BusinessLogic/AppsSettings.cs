@@ -18,16 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
 /// <summary>
-/// settings used in business logic concerning apps.
+/// Config Settings for Apps
 /// </summary>
 public class AppsSettings
 {
+    /// <summary>
+    /// Company Admin Roles
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 
@@ -37,16 +50,13 @@ public class AppsSettings
 }
 
 /// <summary>
-/// app settings extension method.
+/// App Settings extension class.
 /// </summary>
-
 public static class AppsSettingsExtension
 {
-
     /// <summary>
     /// configure apps settings using service collection interface
     /// </summary>
-
     public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
         IConfigurationSection section)

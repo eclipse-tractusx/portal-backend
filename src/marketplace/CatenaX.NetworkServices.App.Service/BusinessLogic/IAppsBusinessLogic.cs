@@ -134,4 +134,12 @@ public interface IAppsBusinessLogic
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
     Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
+    
+    /// <summary>
+    /// Update app status and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
 }
