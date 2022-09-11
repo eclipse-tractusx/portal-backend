@@ -87,5 +87,5 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="serviceConsentId">Id of the service consent</param>
     /// <returns>Returns the details</returns>
-    Task<ConsentDetailData> GetServiceConsentDetailData(Guid serviceConsentId);
+    Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId);
 }

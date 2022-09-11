@@ -38,7 +38,7 @@ namespace CatenaX.NetworkServices.Services.Service.Controllers;
 public class ServicesController : ControllerBase
 {
     private readonly IServiceBusinessLogic _serviceBusinessLogic;
-
+    
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -168,7 +168,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ConsentDetailData> GetServiceAgreementConsentDetail([FromRoute] Guid serviceConsentId) => 
-        _serviceBusinessLogic.GetServiceConsentDetailData(serviceConsentId);
+        _serviceBusinessLogic.GetServiceConsentDetailDataAsync(serviceConsentId);
 
     /// <summary>
     /// Gets all agreements 

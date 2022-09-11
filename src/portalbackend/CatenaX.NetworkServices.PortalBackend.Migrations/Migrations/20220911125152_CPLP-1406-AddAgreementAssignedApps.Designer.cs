@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220906145503_CPLP-1406-AddAgreementAssignedApps")]
+    [Migration("20220911125152_CPLP-1406-AddAgreementAssignedApps")]
     partial class CPLP1406AddAgreementAssignedApps
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3637,6 +3637,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 10,
                             Label = "CONNECTOR_REGISTERED"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Label = "APP_RELEASE_REQUEST"
                         });
                 });
 

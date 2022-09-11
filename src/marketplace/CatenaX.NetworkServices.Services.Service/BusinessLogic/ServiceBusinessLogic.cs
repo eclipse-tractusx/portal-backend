@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -36,6 +37,7 @@ namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IOfferService _offerService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -43,9 +45,11 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="settings">Access to the settings</param>
-    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOptions<ServiceSettings> settings)
+    /// <param name="offerService">Access to the offer service</param>
+    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOptions<ServiceSettings> settings, IOfferService offerService)
     {
         _portalRepositories = portalRepositories;
+        _offerService = offerService;
         _settings = settings.Value;
     }
 
@@ -169,51 +173,18 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateServiceAgreementConsentAsync(Guid serviceId,
-        ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId)
-    {
-        if (!await _portalRepositories.GetInstance<IAgreementRepository>()
-                .CheckAgreementExistsAsync(serviceAgreementConsentData.AgreementId).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException("Agreement not existing", nameof(serviceAgreementConsentData.AgreementId));
-        }
-        var (agreementId, consentStatusId) = serviceAgreementConsentData;
-
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(serviceId, iamUserId, OfferTypeId.SERVICE)
-            .ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
-        }
-
-        var (companyId, offerSubscription, companyUserId) = result;
-        if (offerSubscription is null)
-        {
-            throw new NotFoundException($"Service {serviceId} does not exist");
-        }
-
-        var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
-        await _portalRepositories.SaveAsync();
-        return consent.Id;
-    }
+    public Task<Guid> CreateServiceAgreementConsentAsync(Guid serviceId,
+        ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId) =>
+        _offerService.CreateOfferAgreementConsentAsync(serviceId, serviceAgreementConsentData.AgreementId,
+            serviceAgreementConsentData.ConsentStatusId, iamUserId);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
-        _portalRepositories.GetInstance<IAgreementRepository>().GetServiceAgreementDataForIamUser(iamUserId);
+        _offerService.GetOfferAgreement(iamUserId);
 
     /// <inheritdoc />
-    public async Task<ConsentDetailData> GetServiceConsentDetailData(Guid serviceConsentId)
-    {
-        var consentDetails = await _portalRepositories.GetInstance<IConsentRepository>()
-            .GetConsentDetailData(serviceConsentId).ConfigureAwait(false);
-        if (consentDetails is null)
-        {
-            throw new NotFoundException($"Consent {serviceConsentId} does not exist");
-        }
-
-        return consentDetails;
-    }
+    public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>
+        _offerService.GetConsentDetailDataAsync(serviceConsentId);
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {

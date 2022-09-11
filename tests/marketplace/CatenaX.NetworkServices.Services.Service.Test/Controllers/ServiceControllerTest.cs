@@ -178,14 +178,14 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             //Arrange
             var consentId = Guid.NewGuid();
             var consentDetailData = new ConsentDetailData(consentId, "Test Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Aggred");
-            A.CallTo(() => _logic.GetServiceConsentDetailData(A<Guid>._))
+            A.CallTo(() => _logic.GetServiceConsentDetailDataAsync(A<Guid>._))
                 .Returns(consentDetailData);
 
             //Act
             var result = await this._controller.GetServiceAgreementConsentDetail(consentId).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.GetServiceConsentDetailData(consentId)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.GetServiceConsentDetailDataAsync(consentId)).MustHaveHappenedOnceExactly();
             result.CompanyName.Should().Be("Test Company");
         }
     }

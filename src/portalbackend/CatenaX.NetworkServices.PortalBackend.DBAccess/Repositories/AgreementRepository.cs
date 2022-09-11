@@ -44,7 +44,7 @@ public class AgreementRepository : IAgreementRepository
         _context.Agreements.AnyAsync(x => x.Id == agreementId);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetServiceAgreementDataForIamUser(string iamUserId) =>
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId) =>
         _context.Agreements
             .Where(x => x.AgreementAssignedOffers
                 .Any(app => 
@@ -53,5 +53,13 @@ public class AgreementRepository : IAgreementRepository
                     app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
                 ))
             .Select(x => new AgreementData(x.Id, x.Name))
+            .AsAsyncEnumerable();
+    
+    public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
+        _context.Agreements
+            .AsNoTracking()
+            .Select(agreement => new AgreementData(
+                agreement.Id,
+                agreement.Name))
             .AsAsyncEnumerable();
 }
