@@ -21,6 +21,7 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -30,6 +31,7 @@ using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace CatenaX.NetworkServices.Services.Service.Test.BusinessLogic;
@@ -351,28 +353,17 @@ public class ServiceBusinessLogicTests
     public async Task GetServiceAgreement_WithUserId_ReturnsServiceDetailData()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
+        var offerService = A.Fake<IOfferService>();
+        var data = _fixture.CreateMany<AgreementData>(1);
+        A.CallTo(() => offerService.GetOfferAgreement(A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
+            .Returns(data.ToAsyncEnumerable());
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 
         // Act
         var result = await sut.GetServiceAgreement(_iamUser.UserEntityId).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().ContainSingle();
-    }
-
-    [Fact]
-    public async Task GetServiceAgreement_WithoutExistingService_ThrowsException()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var agreementData = await sut.GetServiceAgreement(Guid.NewGuid().ToString()).ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        agreementData.Should().BeEmpty();
     }
 
     #endregion
@@ -414,90 +405,21 @@ public class ServiceBusinessLogicTests
     #region Create Service Agreement Consent
 
     [Fact]
-    public async Task CreateServiceAgreementConsent_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
+    public async Task CreateServiceAgreementConsent_ReturnsCorrectId()
     {
         // Arrange
         var consentId = Guid.NewGuid();
-        var statusId = ConsentStatusId.ACTIVE;
-
-        var consents = new List<Consent>();
-        A.CallTo(() => _consentRepository.CreateConsent(A<Guid>._, A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<Action<Consent>?>._))
-            .Invokes(x =>
-            {
-                var agreementId = x.Arguments.Get<Guid>("agreementId");
-                var companyId = x.Arguments.Get<Guid>("companyId");
-                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
-                var consentStatusId = x.Arguments.Get<ConsentStatusId>("consentStatusId");
-                var action = x.Arguments.Get<Action<Consent>?>("setupOptionalFields");
-
-                var consent = new Consent(consentId, agreementId, companyId, companyUserId, consentStatusId, DateTimeOffset.UtcNow);
-                action?.Invoke(consent);
-                consents.Add(consent);
-            })
-            .Returns(new Consent(consentId)
-            {
-                ConsentStatusId = statusId
-            });
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.CreateOfferAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._))
+            .ReturnsLazily(() => consentId);
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 
         // Act
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, statusId);
+        var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
         var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, serviceAgreementConsentData, _iamUser.UserEntityId);
 
         // Assert
         result.Should().Be(consentId);
-        consents.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task CreateServiceAgreementConsentAsync_WithNotExistingAgreement_ThrowsException()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        async Task Action() => await sut.CreateServiceAgreementConsentAsync(_existingServiceId, serviceAgreementConsentData, _iamUser.UserEntityId);
-        
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Message.Should().Be("Agreement not existing (Parameter 'AgreementId')");
-    }
-
-    [Fact]
-    public async Task CreateServiceAgreementConsentAsync_WithWrongUser_ThrowsException()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
-        async Task Action() => await sut.CreateServiceAgreementConsentAsync(_existingServiceId, serviceAgreementConsentData, Guid.NewGuid().ToString());
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
-    }
-
-    [Fact]
-    public async Task CreateServiceAgreementConsentAsync_WithNotExistingService_ThrowsException()
-    {
-        // Arrange
-            var notExistingServiceId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
-        async Task Action() =>  await sut.CreateServiceAgreementConsentAsync(notExistingServiceId, serviceAgreementConsentData,
-                _iamUser.UserEntityId);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Service {notExistingServiceId} does not exist");
     }
 
     #endregion
@@ -508,31 +430,18 @@ public class ServiceBusinessLogicTests
     public async Task GetServiceConsentDetailData_WithValidId_ReturnsServiceConsentDetailData()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
+        var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId)))
+            .ReturnsLazily(() => data);
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 
         // Act
-        var result = await sut.GetServiceConsentDetailData(_validConsentId).ConfigureAwait(false);
+        var result = await sut.GetServiceConsentDetailDataAsync(_validConsentId).ConfigureAwait(false);
 
         // Assert
         result.Id.Should().Be(_validConsentId);
         result.CompanyName.Should().Be("The Company");
-    }
-
-    [Fact]
-    public async Task GetServiceConsentDetailData_WithInvalidId_ThrowsException()
-    {
-        // Arrange
-        var notExistingId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.GetServiceConsentDetailData(notExistingId).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Consent {notExistingId} does not exist");
     }
 
     #endregion
@@ -588,9 +497,9 @@ public class ServiceBusinessLogicTests
             .Returns(false);
         
         var agreementData = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => _agreementRepository.GetServiceAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
             .Returns(agreementData.ToAsyncEnumerable());
-        A.CallTo(() => _agreementRepository.GetServiceAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
             .Returns(new List<AgreementData>().ToAsyncEnumerable());
         A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Matches(x => x == _existingAgreementId)))
             .ReturnsLazily(() => true);
