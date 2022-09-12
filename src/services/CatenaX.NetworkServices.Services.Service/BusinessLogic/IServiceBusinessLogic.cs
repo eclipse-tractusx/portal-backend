@@ -32,7 +32,7 @@ public interface IServiceBusinessLogic
     /// Gets all active services from the database
     /// </summary>
     /// <returns>All services with pagination</returns>
-    Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size);
+    Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync(int page, int size);
 
     /// <summary>
     /// Creates a new service offering

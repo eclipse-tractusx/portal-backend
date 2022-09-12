@@ -247,18 +247,19 @@ public class OfferRepository : IOfferRepository
             ));
 
      /// <inheritdoc />
-    public Task<(Guid Id, string? Title, string Provider, string? LeadPictureUri, string? ContactEmail, string? Description, string? Price)> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
+    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
         _context.Offers
             .AsNoTracking()
             .Where(x => x.Id == serviceId)
-            .Select(app => new ValueTuple<Guid,string?,string,string?,string?,string?,string?>(
+            .Select(app => new ServiceDetailData(
                 app.Id,
-                app.Name,
+                app.Name?? Constants.ErrorString,
                 app.Provider,
-                app.ThumbnailUrl,
+                app.ThumbnailUrl?? Constants.ErrorString,
                 app.ContactEmail,
                 app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
-                app.OfferLicenses.FirstOrDefault()!.Licensetext
+                app.OfferLicenses.FirstOrDefault()!.Licensetext,
+                app.OfferSubscriptions.Select(x => new OfferSubscriptionDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
 

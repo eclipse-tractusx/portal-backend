@@ -171,7 +171,7 @@ public interface IOfferRepository
     /// <param name="serviceId">the service to get from the persistence storage</param>
     /// <param name="languageShortName">the language short code for the descriptions</param>
     /// <returns>Returns the ServiceDetailData or null</returns>
-    Task<(Guid Id, string? Title, string Provider, string? LeadPictureUri, string? ContactEmail, string? Description, string? Price)> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName);
+    Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.

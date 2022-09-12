@@ -365,16 +365,12 @@ public class ServiceBusinessLogicTests
             .Returns(serviceDetailData.AsQueryable());
         
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en")))
-            .ReturnsLazily(() => new ValueTuple<Guid,string?,string,string?,string?,string?,string?>(
-                serviceDetail.Id,
-                serviceDetail.Title,
-                serviceDetail.Provider,
-                serviceDetail.LeadPictureUri,
-                serviceDetail.ContactEmail,
-                serviceDetail.Description,
-                serviceDetail.Price));
+            .ReturnsLazily(() => serviceDetail with {OfferSubscriptionDetailData = new []
+            {
+                new OfferSubscriptionDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE)
+            }});
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._))
-            .ReturnsLazily(() => default(ValueTuple<Guid,string?,string,string?,string?,string?,string?>));
+            .ReturnsLazily(() => (ServiceDetailData?)null);
         
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
             .Returns(new List<string> { "en" }.ToAsyncEnumerable());
