@@ -17,24 +17,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-
-namespace CatenaX.NetworkServices.App.Service.ViewModels;
-
-/// <summary>
-/// Model for updating an app.
-/// </summary>
-/// <param name="Descriptions"></param>
-/// <param name="Images"></param>
-/// <param name="ProviderUri"></param>
-/// <param name="ContactEmail"></param>
-/// <param name="ContactNumber"></param>
-/// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
-/// Model for LanguageCode and Description
+/// Request Model for App Creation.
 /// </summary>
-/// <param name="LanguageCode"></param>
-/// <param name="LongDescription"></param>
+/// <param name="Title">Title</param>
+/// <param name="Provider">Provider</param>
+/// <param name="LeadPictureUri">LeadPictureUri</param>
+/// <param name="ProviderCompanyId">ProviderCompanyId</param>
+/// <param name="UseCaseIds">UseCaseIds</param>
+/// <param name="Descriptions">Descriptions</param>
+/// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
+/// <param name="Price">Price</param>
 /// <returns></returns>
-public record Localization(string LanguageCode, string LongDescription);
+
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, ICollection<string> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);

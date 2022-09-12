@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -26,7 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 
-namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IAppReleaseBusinessLogic"/>.
@@ -49,52 +49,100 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if (appId == Guid.Empty)
         {
-            throw new ArgumentException($"AppId must not be empty");
+            throw new ControllerArgumentException($"AppId must not be empty");
         }
-        var descriptions = updateModel.Descriptions.Where(item => !string.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
-        if (!descriptions.Any())
+        if (updateModel.Descriptions.Any(item => string.IsNullOrWhiteSpace(item.LanguageCode)))
         {
-            throw new ArgumentException($"Language Code must not be empty");
+            throw new ControllerArgumentException("Language Code must not be empty");
         }
-
+        if (updateModel.Images.Any(image => string.IsNullOrWhiteSpace(image)))
+        {
+            throw new ControllerArgumentException("ImageUrl must not be empty");
+        }
         return EditAppAsync(appId, updateModel, userId);
     }
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
-        var (description, images) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppByIdAsync(appId, userId).ConfigureAwait(false);
-        if (!description.Any() && !images.Any())
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appResult = await appRepository.GetAppDetailsForUpdateAsync(appId, userId).ConfigureAwait(false);
+        if (appResult == default)
         {
-            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId:app status incorrect");
+            throw new NotFoundException($"app {appId} does not exist");
         }
-        
-        var newApp = _portalRepositories.Attach(new CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer(appId), app =>
+        if (!appResult.IsProviderUser)
         {
-            app.ContactEmail = updateModel.ContactEmail;
-            app.ContactNumber = updateModel.ContactNumber;
-            app.MarketingUrl = updateModel.ProviderUri;
+            throw new ForbiddenException($"user {userId} is not eligible to edit app {appId}");
+        }
+        if (!appResult.IsAppCreated)
+        {
+            throw new ConflictException($"app {appId} is not in status CREATED");
+        }
+        _portalRepositories.Attach(new Offer(appId), app =>
+        {
+            if (appResult.ContactEmail != updateModel.ContactEmail)
+            {
+                app.ContactEmail = updateModel.ContactEmail;
+            }
+            if (appResult.ContactNumber != updateModel.ContactNumber)
+            {
+                app.ContactNumber = updateModel.ContactNumber;
+            }
+            if (appResult.MarketingUrl != updateModel.ProviderUri)
+            {
+                app.MarketingUrl = updateModel.ProviderUri;
+            }
         });
 
-        var currentIndex = 0;
-        foreach (var item in updateModel.Descriptions)
-        {
-            newApp.OfferDescriptions.Add(new OfferDescription(appId, item.LanguageCode, item.LongDescription, description.Where(x => x.OfferId == appId).Select(x => x.DescriptionShort).ElementAt(currentIndex)));
-            currentIndex++;
-        }
+        UpsertRemoveAppDescription(appId, updateModel.Descriptions, appResult.Descriptions, appRepository);
+        UpsertRemoveAppDetailImage(appId, updateModel.Images, appResult.ImageUrls, appRepository);
         
-        foreach (var record in updateModel.Images)
-        {
-            newApp.OfferDetailImages.Add(new OfferDetailImage(Guid.NewGuid(), appId, record));
-        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 
-        try
+   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
+    {
+        appRepository.AddOfferDescriptions(
+            UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
+                .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
+        );
+
+        _portalRepositories.RemoveRange<OfferDescription>(
+            ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
+                .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
+        );
+
+        foreach (var (languageCode, longDescription, shortDescription)
+            in UpdateDescriptions.IntersectBy(
+                ExistingDescriptions.Select(d => d.LanguageShortName), updateDscr => updateDscr.LanguageCode)
+                    .Select(updateDscr => (updateDscr.LanguageCode, updateDscr.LongDescription, updateDscr.ShortDescription)))
         {
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            var existing = ExistingDescriptions.First(d => d.LanguageShortName == languageCode);
+            _portalRepositories.Attach(new OfferDescription(appId, languageCode), appdesc =>
+            {
+                if (longDescription != existing.DescriptionLong)
+                {
+                    appdesc.DescriptionLong = longDescription;
+                }
+                if (shortDescription != existing.DescriptionShort)
+                {
+                    appdesc.DescriptionShort = shortDescription;
+                }
+            });
         }
-        catch (Exception exception) when (exception?.InnerException?.Message.Contains("violates unique constraint") ?? false)
-        {
-            throw new ArgumentException($"language code does exist");
-        }
+    }
+
+    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
+    {
+        appRepository.AddAppDetailImages(
+            UpdateUrls.Except(ExistingImages.Select(image => image.Url))
+                .Select(url => new ValueTuple<Guid,string>(appId, url))
+        );
+
+        _portalRepositories.RemoveRange(
+            ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
+                .Select(image => new OfferDetailImage(image.Id))
+        );
     }
 
     /// <inheritdoc/>
