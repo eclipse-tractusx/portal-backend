@@ -98,6 +98,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Services.Service.Test", "..\tests\services\CatenaX.NetworkServices.Services.Service.Test\CatenaX.NetworkServices.Services.Service.Test.csproj", "{68A10745-A904-4B14-BAC1-A3D0EF2271D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Keycloak.Library", "keycloak\CatenaX.NetworkServices.Keycloak.Library\CatenaX.NetworkServices.Keycloak.Library.csproj", "{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -540,6 +542,18 @@ Global
 		{68A10745-A904-4B14-BAC1-A3D0EF2271D2}.Release|x64.Build.0 = Release|Any CPU
 		{68A10745-A904-4B14-BAC1-A3D0EF2271D2}.Release|x86.ActiveCfg = Release|Any CPU
 		{68A10745-A904-4B14-BAC1-A3D0EF2271D2}.Release|x86.Build.0 = Release|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Debug|x86.Build.0 = Debug|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Release|x64.Build.0 = Release|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Release|x86.ActiveCfg = Release|Any CPU
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -580,6 +594,7 @@ Global
 		{6CAF1C9C-23D0-4A6B-A8FC-D3DC69A9225A} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 		{E15973C8-8239-4C8C-8578-D517DA6A9B7C} = {2BA733DC-AF0D-43DB-821C-A091E353CA04}
 		{68A10745-A904-4B14-BAC1-A3D0EF2271D2} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
+		{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD} = {FE223F28-C597-489B-9E19-53A8E5E7400A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2EB6265F-323A-4BF3-969E-003D64A14B64}

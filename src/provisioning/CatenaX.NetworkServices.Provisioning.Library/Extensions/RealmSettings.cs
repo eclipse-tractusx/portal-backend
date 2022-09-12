@@ -1,4 +1,4 @@
-using Keycloak.Net.Models.RealmsAdmin;
+using CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
 {
