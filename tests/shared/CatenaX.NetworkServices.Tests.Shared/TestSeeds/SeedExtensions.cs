@@ -27,10 +27,10 @@ namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 public static class SeedExtensions
 {
     public static Action<PortalDbContext> SeedAddress(params Address[] additionalAddresses) => dbContext =>
-        {
-            dbContext.Addresses.AddRange(additionalAddresses);
-        };
-    
+    {
+        dbContext.Addresses.AddRange(additionalAddresses);
+    };
+
     public static Action<PortalDbContext> SeedOffers(params Offer[] additionalOffers) => dbContext =>
     {
         dbContext.Offers.AddRange(OfferData.Offers);
@@ -44,19 +44,19 @@ public static class SeedExtensions
     };
 
     public static Action<PortalDbContext> SeedCompany(params Company[] additionalCompanies) => dbContext =>
-        {
-            dbContext.Companies.AddRange(additionalCompanies);
-        };
-    
+    {
+        dbContext.Companies.AddRange(additionalCompanies);
+    };
+
     public static Action<PortalDbContext> SeedCompanyUser(params CompanyUser[] additionalUsers) => dbContext =>
-        {
-            dbContext.CompanyUsers.AddRange(additionalUsers);
-        };
-        
+    {
+        dbContext.CompanyUsers.AddRange(additionalUsers);
+    };
+
     public static Action<PortalDbContext> SeedIamUsers(params IamUser[] additionalUsers) => dbContext =>
-        {
-            dbContext.IamUsers.AddRange(additionalUsers);
-        };
+    {
+        dbContext.IamUsers.AddRange(additionalUsers);
+    };
 
     public static Action<PortalDbContext> SeedIamClients(params IamClient[] additionalIamClients) =>
         dbContext =>
@@ -70,7 +70,7 @@ public static class SeedExtensions
         {
             dbContext.UserRoles.AddRange(additionalCompanyUserRoles);
         };
-    
+
     public static Action<PortalDbContext> SeedCompanyUserAssignedRoles(
         params CompanyUserAssignedRole[] additionalCompanyUserRoles) =>
         dbContext =>
@@ -81,5 +81,15 @@ public static class SeedExtensions
     public static Action<PortalDbContext> SeedNotification(params Notification[] notifications) => dbContext =>
     {
         dbContext.Notifications.AddRange(notifications);
+    };
+
+    public static Action<PortalDbContext> SeedAgreementAssignedOffers(params AgreementAssignedOffer[] agreementAssignedOffers) => dbContext =>
+    {
+        dbContext.AgreementAssignedOffers.AddRange(agreementAssignedOffers);
+    };
+    
+    public static Action<PortalDbContext> SeedOfferSubscriptions(params OfferSubscription[] offerSubscriptions) => dbContext =>
+    {
+        dbContext.OfferSubscriptions.AddRange(offerSubscriptions);
     };
 }
