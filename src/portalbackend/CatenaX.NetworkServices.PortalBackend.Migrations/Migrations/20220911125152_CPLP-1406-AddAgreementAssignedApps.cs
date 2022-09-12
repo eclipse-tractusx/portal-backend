@@ -43,7 +43,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_agreement_assigned_offers_offers_offer_id",
-                        column: x => x.agreement_id,
+                        column: x => x.offer_id,
                         principalSchema: "portal",
                         principalTable: "offers",
                         principalColumn: "id");

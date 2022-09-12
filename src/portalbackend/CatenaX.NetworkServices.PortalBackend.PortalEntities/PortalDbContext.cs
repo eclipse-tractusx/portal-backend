@@ -166,7 +166,7 @@ public class PortalDbContext : DbContext
 
             entity.HasOne(d => d.Offer)
                 .WithMany(p => p!.AgreementAssignedOffers!)
-                .HasForeignKey(d => d.AgreementId)
+                .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 

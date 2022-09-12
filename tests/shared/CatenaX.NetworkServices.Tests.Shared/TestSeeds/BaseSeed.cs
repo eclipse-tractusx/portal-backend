@@ -160,5 +160,6 @@ public static class BaseSeed
                 Comment = "Just a test"
             }
         });
+        dbContext.AgreementAssignedOffers.AddRange(new AgreementAssignedOffer(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5")));
     };
 }
