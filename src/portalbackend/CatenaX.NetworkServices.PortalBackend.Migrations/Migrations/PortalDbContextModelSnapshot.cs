@@ -4260,7 +4260,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
                         .WithMany("AgreementAssignedOffers")
-                        .HasForeignKey("AgreementId")
+                        .HasForeignKey("OfferId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_offers_offers_offer_id");
 
