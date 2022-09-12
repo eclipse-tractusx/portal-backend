@@ -36,12 +36,12 @@ public partial class KeycloakClient
     });
 
     private readonly Url _url;
-    private readonly string _userName;
-    private readonly string _password;
-    private readonly string _clientSecret;
-    private readonly Func<Task<string>> _getTokenAsync;
-    private readonly string _authRealm;
-    private readonly string _clientId;
+    private readonly string? _userName;
+    private readonly string? _password;
+    private readonly string? _clientSecret;
+    private readonly Func<Task<string>>? _getTokenAsync;
+    private readonly string? _authRealm;
+    private readonly string? _clientId;
 
     private KeycloakClient(string url)
     {
@@ -56,7 +56,7 @@ public partial class KeycloakClient
         _authRealm = authRealm;
     }
 
-    private KeycloakClient(string url, string userName, string password, string authRealm, string clientId, string clientSecret)
+    private KeycloakClient(string url, string? userName, string? password, string? authRealm, string? clientId, string? clientSecret)
         : this(url)
     {
         _userName = userName;
@@ -66,21 +66,21 @@ public partial class KeycloakClient
         _authRealm = authRealm;
     }
 
-    public KeycloakClient(string url, Func<string> getToken, string authRealm = null)
+    public KeycloakClient(string url, Func<string> getToken, string? authRealm = null)
         : this(url)
     {
         _getTokenAsync = () => Task.FromResult(getToken());
         _authRealm = authRealm;
     }
 
-    public KeycloakClient(string url, Func<Task<string>> getTokenAsync, string authRealm = null)
+    public KeycloakClient(string url, Func<Task<string>> getTokenAsync, string? authRealm = null)
         : this(url)
     {
         _getTokenAsync = getTokenAsync;
         _authRealm = authRealm;
     }
 
-    public static KeycloakClient CreateWithClientId(string url, string clientId, string clientSecret, string authRealm = null)
+    public static KeycloakClient CreateWithClientId(string url, string clientId, string clientSecret, string? authRealm = null)
     {
         return new KeycloakClient(url, userName: null, password: null, authRealm, clientId, clientSecret);
     }

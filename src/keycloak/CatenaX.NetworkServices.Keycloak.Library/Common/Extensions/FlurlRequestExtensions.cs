@@ -45,7 +45,7 @@ public static class FlurlRequestExtensions
         return accessToken;
     }
 
-    private static async Task<string> GetAccessTokenWithClientIdAsync(string url, string realm, string clientSecret, string clientId)
+    private static async Task<string> GetAccessTokenWithClientIdAsync(string url, string realm, string clientSecret, string? clientId)
     {
         var result = await url
             .AppendPathSegment($"/auth/realms/{realm}/protocol/openid-connect/token")
@@ -64,9 +64,9 @@ public static class FlurlRequestExtensions
         return accessToken;
     }
 
-    public static async Task<IFlurlRequest> WithAuthenticationAsync(this IFlurlRequest request, Func<Task<string>> getTokenAsync, string url, string realm, string userName, string password, string clientSecret, string clientId)
+    public static async Task<IFlurlRequest> WithAuthenticationAsync(this IFlurlRequest request, Func<Task<string>>? getTokenAsync, string url, string realm, string? userName, string? password, string? clientSecret, string? clientId)
     {
-        string token = null;
+        string? token = null;
 
         if (getTokenAsync != null)
         {
@@ -76,9 +76,13 @@ public static class FlurlRequestExtensions
         {
             token = await GetAccessTokenWithClientIdAsync(url, realm, clientSecret, clientId).ConfigureAwait(false);
         }
+        else if (userName != null)
+        {
+            token = await GetAccessTokenAsync(url, realm, userName, password ?? "").ConfigureAwait(false);
+        }
         else
         {
-            token = await GetAccessTokenAsync(url, realm, userName, password).ConfigureAwait(false);
+            throw new ArgumentException($"{nameof(getTokenAsync)}, {nameof(userName)} and {nameof(clientSecret)} must not all be null");
         }
 
         return request.WithOAuthBearerToken(token);

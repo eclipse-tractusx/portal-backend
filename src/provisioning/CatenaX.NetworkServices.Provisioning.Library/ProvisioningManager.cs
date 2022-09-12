@@ -174,6 +174,10 @@ public partial class ProvisioningManager : IProvisioningManager
     public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
     {
         var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
+        if (idOfClient == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
+        }
         return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
             .Where(r => r.Composite == true).Select(x => x.Name);
     }
