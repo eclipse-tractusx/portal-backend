@@ -49,4 +49,5 @@ public class Consent
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; set; }
     public virtual Document? Document { get; set; }
+    public virtual ICollection<Offer> Offers { get; private set; }
 }

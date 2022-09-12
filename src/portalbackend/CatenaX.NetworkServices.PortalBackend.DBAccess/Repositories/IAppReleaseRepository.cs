@@ -69,4 +69,8 @@ public interface IAppReleaseRepository
     /// <returns></returns>
     UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
 
+    IAsyncEnumerable<AppConsentData> GetAgreements();
+
+    IAsyncEnumerable<AppConsent> GetAgreementsById(Guid appId);
+
 }

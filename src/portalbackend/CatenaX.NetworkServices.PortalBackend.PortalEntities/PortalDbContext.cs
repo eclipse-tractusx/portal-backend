@@ -96,7 +96,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
-    
+    public virtual DbSet<OfferAssignedConsent> OfferAssignedConsents { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
@@ -270,6 +270,24 @@ public class PortalDbContext : DbContext
                     j =>
                     {
                         j.HasKey(e => new { e.OfferId, e.DocumentId });
+                    });
+
+            entity.HasMany(p => p.Consents)
+                .WithMany(p => p.Offers)
+                .UsingEntity<OfferAssignedConsent>(
+                    j => j
+                        .HasOne(d => d.Consent!)
+                        .WithMany()
+                        .HasForeignKey(d => d.ConsentId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.Offer!)
+                        .WithMany()
+                        .HasForeignKey(d => d.OfferId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.OfferId, e.ConsentId });
                     });
 
             entity.HasMany(p => p.OfferSubscriptions)

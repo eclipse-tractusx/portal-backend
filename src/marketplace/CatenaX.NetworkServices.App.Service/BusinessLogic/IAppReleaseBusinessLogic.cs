@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.App.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
 
@@ -56,4 +57,8 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
+
+
+    IAsyncEnumerable<AppConsentData> GetAppConsentAsync();
+    IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync(Guid appId, string userId);
 }

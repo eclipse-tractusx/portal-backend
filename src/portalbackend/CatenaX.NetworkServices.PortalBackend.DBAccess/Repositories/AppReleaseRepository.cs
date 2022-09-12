@@ -79,4 +79,28 @@ public class AppReleaseRepository : IAppReleaseRepository
                 description
             ))
             .Entity;
+
+    public IAsyncEnumerable<AppConsentData> GetAgreements()
+    =>
+        _context.Agreements
+            .AsNoTracking()
+            .Where(agreement=>agreement.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT)
+            .Select(agreement=> new  AppConsentData(
+                agreement.Id,
+                agreement.Name
+            ))
+            .AsAsyncEnumerable();
+    
+
+    public IAsyncEnumerable<AppConsent> GetAgreementsById(Guid appId)
+    =>
+        _context.OfferAssignedConsents
+            .AsNoTracking()
+            .Where(app=>app.OfferId == appId && app.Consent!.Agreement!.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT)
+            .Select(offer=> new AppConsent(
+                offer.Consent!.Agreement!.Id,
+                offer.Consent!.ConsentStatus!.Label
+            ))
+            .AsAsyncEnumerable();
+    
 }

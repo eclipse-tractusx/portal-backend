@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.App.Service.Controllers;
@@ -116,5 +117,23 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    [HttpGet]
+    [Route("consent")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AppConsentData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<AppConsentData> GetAppConsentAsync() =>
+        _appReleaseBusinessLogic.GetAppConsentAsync();
+
+    
+    [HttpGet]
+    [Route("consent/{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync([FromRoute] Guid appId) =>
+        this.WithIamUserId(userId => _appReleaseBusinessLogic.GetAppConsentByIdAsync(appId,userId));
+
     
 }
