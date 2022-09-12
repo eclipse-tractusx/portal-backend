@@ -116,6 +116,10 @@ public static class BaseSeed
 
         dbContext.Offers.AddRange(OfferData.Offers);
         dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
+        dbContext.OfferSubscriptions.AddRange(new OfferSubscription(Guid.NewGuid(),
+            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"),
+            new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")));
 
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
@@ -134,6 +138,27 @@ public static class BaseSeed
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"), new Guid("7410693c-c893-409e-852f-9ee886ce94a6")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"), new Guid("607818be-4978-41f4-bf63-fa8d2de51154"))
         });
+        
+        dbContext.Agreements.AddRange(new List<Agreement>
+        {
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), AgreementCategoryId.DATA_CONTRACT, "Test Agreement", DateTimeOffset.UtcNow)
+            {
+                IssuerCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            }
+        });
+        dbContext.Agreements.AddRange(new List<Agreement>
+        {
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), AgreementCategoryId.APP_CONTRACT, "App Agreement", DateTimeOffset.UtcNow)
+            {
+                IssuerCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            }
+        });
+        dbContext.Consents.AddRange(new List<Consent>
+        {
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
+            {
+                Comment = "Just a test"
+            }
+        });
     };
-
 }

@@ -15,6 +15,7 @@ public static class OfferData
             Name = "Newest Service",
             ContactEmail = "service-test@mail.com",
             OfferStatusId = OfferStatusId.ACTIVE,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
         }
     };
 }
