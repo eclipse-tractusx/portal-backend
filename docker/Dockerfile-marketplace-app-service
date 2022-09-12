@@ -7,13 +7,13 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
 COPY keycloak/ keycloak/
-WORKDIR "/src/marketplace/CatenaX.NetworkServices.App.Service"
-RUN dotnet build "CatenaX.NetworkServices.App.Service.csproj" -c Release -o /app/build
+WORKDIR /src/marketplace/CatenaX.NetworkServices.Apps.Service
+RUN dotnet build "CatenaX.NetworkServices.Apps.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "CatenaX.NetworkServices.App.Service.csproj" -c Release -o /app/publish
+RUN dotnet publish "CatenaX.NetworkServices.Apps.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.App.Service.dll"]
+ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Apps.Service.dll"]

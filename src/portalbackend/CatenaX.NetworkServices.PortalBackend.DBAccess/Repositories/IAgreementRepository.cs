@@ -38,6 +38,12 @@ public interface IAgreementRepository
     /// Gets the agreement data that have an app id set
     /// </summary>
     /// <param name="iamUserId">Id of the user</param>
-    /// <returns>Returns an async enumerable from agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetServiceAgreementDataForIamUser(string iamUserId);
+    /// <returns>Returns an async enumerable of agreement data</returns>
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId);
+    
+    /// <summary>
+    /// Gets the agreement data untracked from the database
+    /// </summary>
+    /// <returns>Returns an async enumerable of agreement data</returns>
+    IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
 }

@@ -18,16 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Administration.Service.Custodian;
 using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+using CatenaX.NetworkServices.Administration.Service.Custodian;
+using CatenaX.NetworkServices.Framework.Web;
 using CatenaX.NetworkServices.Mailing.SendMail;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using CatenaX.NetworkServices.Framework.Web;
 
 var VERSION = "v2";
 
@@ -61,6 +62,7 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
 
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()

@@ -138,7 +138,7 @@ public class OfferRepository : IOfferRepository
             app.LeadPictureUri ?? Constants.ErrorString,
             app.ProviderUri ?? Constants.ErrorString,
             app.Provider,
-            app.LongDescription ?? Constants.ErrorString,
+            app.LongDescription ?? Constants.InvalidLanguageError,
             app.Price ?? Constants.ErrorString
             )
         {
@@ -176,6 +176,11 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
+    
+    ///<inheritdoc />
+    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages)=>
+        _context.OfferDetailImages.AddRange(appImages.Select(s=> new OfferDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
+    
 
     /// <inheritdoc />
     public IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId) =>
@@ -192,6 +197,25 @@ public class OfferRepository : IOfferRepository
             ))
             .AsAsyncEnumerable();
 
+    /// <inheritdoc />
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
+        _context.Offers
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(a => a.Id == appId)
+            .Select(a =>
+                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>, IEnumerable<(Guid,string)>>(
+                    a.OfferStatusId == OfferStatusId.CREATED,
+                    a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                    a.ContactEmail,
+                    a.ContactNumber,
+                    a.MarketingUrl,
+                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                    a.OfferDetailImages.Select(image => new ValueTuple<Guid,string>(image.Id, image.ImageUrl))
+                ))
+            .SingleOrDefaultAsync();
+       
+    /// <inheritdoc />
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
         _context.Offers
             .Where(app => app.Id == appId)
@@ -204,17 +228,6 @@ public class OfferRepository : IOfferRepository
                     : roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
             )).AsAsyncEnumerable();
     
-     /// <inheritdoc />
-    public  Task<(IEnumerable<OfferDescription> descriptions, IEnumerable<OfferDetailImage> images)> GetAppByIdAsync(Guid appId, string userId) =>
-        _context.Offers
-            .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED
-                && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-            .Select(a => new ValueTuple<IEnumerable<OfferDescription>, IEnumerable<OfferDetailImage>>(
-                a.OfferDescriptions.Select(d => new OfferDescription(appId, d.LanguageShortName, d.DescriptionLong, d.DescriptionShort)),
-                a.OfferDetailImages.Select(odi => new OfferDetailImage(odi.Id, appId, odi.ImageUrl))
-            ))
-            .SingleOrDefaultAsync();
-
      /// <inheritdoc />
      public Task<bool> CheckServiceExistsById(Guid serviceId) => 
          _context.Offers.AnyAsync(x => x.Id == serviceId && x.OfferTypeId == OfferTypeId.SERVICE);
@@ -251,4 +264,18 @@ public class OfferRepository : IOfferRepository
 
     public IQueryable<Offer> GetAllInReviewStatusAppsAsync() =>
         _context.Offers.Where(offer => offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.IN_REVIEW);
+
+    public Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(a => a.Id == offerId && a.OfferStatusId == OfferStatusId.CREATED)
+            .Select(c => new OfferReleaseData(
+                c.Name,
+                c.ThumbnailUrl,
+                c.SalesManagerId,
+                c.ProviderCompanyId,
+                c.OfferDescriptions.Any(description => (description.DescriptionLong == null || description.DescriptionLong == "")),
+                c.OfferDescriptions.Any(description => (description.DescriptionShort == null || description.DescriptionShort == ""))
+            ))
+            .SingleOrDefaultAsync();
 }
