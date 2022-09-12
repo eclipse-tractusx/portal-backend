@@ -16,6 +16,8 @@ RUN dotnet publish "CatenaX.NetworkServices.Administration.Service.csproj" -c Re
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV ASPNETCORE_URLS http://+:8080
+EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
 ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Administration.Service.dll"]
