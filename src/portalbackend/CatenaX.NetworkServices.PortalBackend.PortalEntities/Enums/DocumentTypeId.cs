@@ -8,6 +8,5 @@ public enum DocumentTypeId : int
     DATA_CONTRACT = 4,
     ADDITIONAL_DETAILS = 5,
     APP_LEADIMAGE = 6,
-    APP_IMAGE = 7,
-    
+    APP_IMAGE = 7
 }
