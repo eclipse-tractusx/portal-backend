@@ -24,5 +24,5 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 public record AppConsentData(Guid AgreementId, string Name);
 
-public record AppConsent(Guid AgreementId, string consentStatus);
+public record AppConsent(Guid AgreementId, ConsentStatusId ConsentStatusId);
 

@@ -71,6 +71,6 @@ public interface IAppReleaseRepository
 
     IAsyncEnumerable<AppConsentData> GetAgreements();
 
-    IAsyncEnumerable<AppConsent> GetAgreementsById(Guid appId);
+    Task<OfferAgreementConsent?> GetAgreementsById(Guid appId);
 
 }

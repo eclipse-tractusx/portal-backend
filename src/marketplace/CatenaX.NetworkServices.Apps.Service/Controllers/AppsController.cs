@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
+using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
@@ -28,7 +28,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.App.Service.Controllers;
+namespace CatenaX.NetworkServices.Apps.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating applications and user assigned favourites.

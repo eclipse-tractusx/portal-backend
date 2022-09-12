@@ -92,15 +92,16 @@ public class AppReleaseRepository : IAppReleaseRepository
             .AsAsyncEnumerable();
     
 
-    public IAsyncEnumerable<AppConsent> GetAgreementsById(Guid appId)
+    public Task<OfferAgreementConsent?> GetAgreementsById(Guid appId)
     =>
-        _context.OfferAssignedConsents
+        _context.Offers
             .AsNoTracking()
-            .Where(app=>app.OfferId == appId && app.Consent!.Agreement!.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT)
-            .Select(offer=> new AppConsent(
-                offer.Consent!.Agreement!.Id,
-                offer.Consent!.ConsentStatus!.Label
-            ))
-            .AsAsyncEnumerable();
+            .Where(offer=>offer.Id == appId && offer.OfferAssignedConsents!.Any(offerAssignedConsent=>offerAssignedConsent!.Consent!.Agreement!.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT))
+            .Select(offer=> new OfferAgreementConsent(
+                offer.Consents!.Select(consent=>new AppConsent(
+                consent.AgreementId,
+                consent.ConsentStatusId
+            ))))
+            .SingleOrDefaultAsync();
     
 }
