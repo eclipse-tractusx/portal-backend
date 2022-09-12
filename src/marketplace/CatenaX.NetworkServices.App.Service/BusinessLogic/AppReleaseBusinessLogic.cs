@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using System.Security.Cryptography;
 
 namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
@@ -180,5 +181,26 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             }
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public IAsyncEnumerable<AppConsentData> GetAppConsentAsync()=>
+        _portalRepositories.GetInstance<IAppReleaseRepository>().GetAgreements();
+       
+
+    public async IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync(Guid appId, string userId)
+    {
+        var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
+
+        if (!await appReleaseRepository.IsProviderCompanyUserAsync(appId, userId).ConfigureAwait(false))
+        {
+            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
+        }
+        await foreach(var item in appReleaseRepository.GetAgreementsById(appId).ConfigureAwait(false))
+        {
+            yield return (
+                    item.AgreementId,
+                    item.consentStatus
+                );
+        }
     }
 }
