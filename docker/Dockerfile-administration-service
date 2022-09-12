@@ -16,4 +16,7 @@ RUN dotnet publish "CatenaX.NetworkServices.Administration.Service.csproj" -c Re
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN groupadd -r initdbgroup && useradd --no-log-init -r -g initdbgroup initdbuser
+RUN chown initdbuser:initdbgroup /app
+USER initdbuser
 ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Administration.Service.dll"]
