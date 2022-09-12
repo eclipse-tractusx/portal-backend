@@ -21,9 +21,9 @@
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using Keycloak.Net;
-using Keycloak.Net.Models.Clients;
-using Keycloak.Net.Models.ProtocolMappers;
+using CatenaX.NetworkServices.Keycloak.Library;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
+using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
 using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;

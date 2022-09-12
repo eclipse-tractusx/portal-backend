@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
-using Keycloak.Net;
-using Keycloak.Net.Models.RealmsAdmin;
+using CatenaX.NetworkServices.Keycloak.Library;
+using CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
 using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;

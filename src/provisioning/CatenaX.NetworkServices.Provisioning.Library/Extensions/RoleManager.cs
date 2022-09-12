@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
-using Keycloak.Net.Models.Roles;
-using Keycloak.Net.Models.Clients;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Roles;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 

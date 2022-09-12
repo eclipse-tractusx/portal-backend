@@ -23,7 +23,7 @@ using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using Keycloak.Net;
+using CatenaX.NetworkServices.Keycloak.Library;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;

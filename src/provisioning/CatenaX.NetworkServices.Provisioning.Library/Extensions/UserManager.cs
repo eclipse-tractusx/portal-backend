@@ -20,8 +20,8 @@
 
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using Keycloak.Net;
-using Keycloak.Net.Models.Users;
+using CatenaX.NetworkServices.Keycloak.Library;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Users;
 using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
