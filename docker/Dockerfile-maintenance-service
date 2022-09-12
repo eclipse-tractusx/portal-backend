@@ -6,7 +6,7 @@ WORKDIR /
 COPY src/maintenance/CatenaX.NetworkServices.Maintenance.App/ src/maintenance/CatenaX.NetworkServices.Maintenance.App/
 COPY src/portalbackend/CatenaX.NetworkServices.PortalBackend.PortalEntities/ src/portalbackend/CatenaX.NetworkServices.PortalBackend.PortalEntities/
 RUN dotnet restore "src/maintenance/CatenaX.NetworkServices.Maintenance.App/CatenaX.NetworkServices.Maintenance.App.csproj"
-WORKDIR "src/maintenance/CatenaX.NetworkServices.Maintenance.App"
+WORKDIR src/maintenance/CatenaX.NetworkServices.Maintenance.App
 RUN dotnet build "CatenaX.NetworkServices.Maintenance.App.csproj" -c Release -o /app/build
 
 FROM build AS publish

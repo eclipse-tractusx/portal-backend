@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json;
-using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Mailing.SendMail;
@@ -32,7 +32,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace CatenaX.NetworkServices.App.Service.BusinessLogic;
+namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IAppsBusinessLogic"/>.
@@ -136,11 +136,11 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             var nullProperties = new List<string>();
             if (appDetails.AppName is null)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.AppName)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.AppName)}");
             }
             if(appDetails.ProviderContactEmail is null)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.ProviderContactEmail)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.ProviderContactEmail)}");
             }
             throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }
@@ -372,27 +372,27 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             var nullProperties = new List<string>();
             if (appDetails.name is null)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.name)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.name)}");
             }
             if(appDetails.thumbnailUrl is null)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.thumbnailUrl)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.thumbnailUrl)}");
             }
             if(appDetails.salesManagerId is null)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.salesManagerId)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.salesManagerId)}");
             }
             if(appDetails.providerCompanyId is null)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.providerCompanyId)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.providerCompanyId)}");
             }
             if(appDetails.descriptionLongIsNullOrEmpty)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
             }
             if(appDetails.descriptionShortIsNullOrEmpty)
             {
-                nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
             }
             throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
         }

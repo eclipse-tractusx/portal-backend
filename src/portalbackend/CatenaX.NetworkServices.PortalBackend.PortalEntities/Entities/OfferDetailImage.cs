@@ -4,16 +4,18 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class OfferDetailImage
 {
-    private OfferDetailImage()
-    {
-        ImageUrl = null!;
-    }
-
-    public OfferDetailImage(Guid id, Guid offerId, string imageUrl)
+    public OfferDetailImage(Guid id, Guid appId, string imageUrl)
     {
         Id = id;
-        OfferId = offerId;
+        OfferId = appId;
         ImageUrl = imageUrl;
+    }
+
+    public OfferDetailImage(Guid id)
+    {
+        Id = id;
+        OfferId = Guid.Empty;
+        ImageUrl = null!;
     }
 
     public Guid Id { get; private set; }
