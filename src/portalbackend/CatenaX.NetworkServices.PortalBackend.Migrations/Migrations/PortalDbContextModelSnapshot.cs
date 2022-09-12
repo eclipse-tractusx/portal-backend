@@ -3635,6 +3635,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 10,
                             Label = "CONNECTOR_REGISTERED"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Label = "APP_RELEASE_REQUEST"
                         });
                 });
 
@@ -4255,7 +4260,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
                         .WithMany("AgreementAssignedOffers")
-                        .HasForeignKey("AgreementId")
+                        .HasForeignKey("OfferId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_offers_offers_offer_id");
 
