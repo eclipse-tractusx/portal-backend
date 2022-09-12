@@ -30,13 +30,6 @@ public interface IProvisioningManager
     Task SetupSharedIdpAsync(string idpName, string organisationName);
     Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile);
     Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
-    
-    /// <summary>
-    /// Assigns the given roles to the client in keycloak 
-    /// </summary>
-    /// <param name="clientId">Id of the client</param>
-    /// <param name="clientRoleNames">Roles that should be assigned to the client</param>
-    Task AssignClientRolesToClient(string clientId, List<string> clientRoleNames);
     Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId);
@@ -46,7 +39,7 @@ public interface IProvisioningManager
     Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
     Task<bool> DeleteSharedRealmUserAsync(string realm, string userId);
     Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
-    Task<string> SetupClientAsync(string redirectUrl);
+    Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames);
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
     Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
     Task DeleteCentralClientAsync(string internalClientId);

@@ -224,10 +224,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
         
-        var clientId = await _provisioningManager.SetupClientAsync("test").ConfigureAwait(false);
-        var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
         var userRoles = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRolesForOfferIdAsync(offerDetails.OfferId).ConfigureAwait(false);
-        await _provisioningManager.AssignClientRolesToClient(clientId, userRoles).ConfigureAwait(false);
+        var clientId = await _provisioningManager.SetupClientAsync("test", userRoles).ConfigureAwait(false);
+        var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
         
         var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
         _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()

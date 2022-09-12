@@ -188,5 +188,24 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             A.CallTo(() => _logic.GetServiceConsentDetailDataAsync(consentId)).MustHaveHappenedOnceExactly();
             result.CompanyName.Should().Be("Test Company");
         }
+        
+        [Fact]
+        public async Task AutoSetupService_ReturnsExpected()
+        {
+            //Arrange
+            var offerSubscriptionId = Guid.NewGuid();
+            var data = new ServiceAutoSetupData(offerSubscriptionId, "https://test.de");
+            var responseData = new ServiceAutoSetupResponseData(Guid.NewGuid(), "abcPW");
+            A.CallTo(() => _logic.AutoSetupService(A<ServiceAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+                .Returns(responseData);
+
+            //Act
+            var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.AutoSetupService(data, IamUserId)).MustHaveHappenedOnceExactly();
+            Assert.IsType<ServiceAutoSetupResponseData>(result);
+            result.Should().Be(responseData);
+        }
     }
 }

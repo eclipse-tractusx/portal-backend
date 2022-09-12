@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.Web;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
@@ -42,6 +43,7 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddPortalRepositories(builder.Configuration)
     .AddProvisioningManager(builder.Configuration);
 
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .AddTransient<IOfferService, OfferService>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
