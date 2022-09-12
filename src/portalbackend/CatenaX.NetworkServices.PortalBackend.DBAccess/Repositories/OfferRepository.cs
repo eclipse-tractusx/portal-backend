@@ -138,7 +138,7 @@ public class OfferRepository : IOfferRepository
             app.LeadPictureUri ?? Constants.ErrorString,
             app.ProviderUri ?? Constants.ErrorString,
             app.Provider,
-            app.LongDescription ?? Constants.ErrorString,
+            app.LongDescription ?? Constants.InvalidLanguageError,
             app.Price ?? Constants.ErrorString
             )
         {
