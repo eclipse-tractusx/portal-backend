@@ -15,7 +15,8 @@ namespace CatenaX.NetworkServices.Provisioning.Service.BusinessLogic
         public async Task<string> CreateClient(ClientSetupData clientData)
         {
             return await _provisioningManager.SetupClientAsync(
-                clientData.redirectUrl
+                clientData.redirectUrl, 
+                null
             ).ConfigureAwait(false);
         }
     }

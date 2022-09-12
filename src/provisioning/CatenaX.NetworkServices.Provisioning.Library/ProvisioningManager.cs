@@ -121,11 +121,16 @@ public partial class ProvisioningManager : IProvisioningManager
         return userIdCentral;
     }
 
-    public async Task<string> SetupClientAsync(string redirectUrl)
+    public async Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames)
     {
         var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
         var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
         await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
+        if (optionalRoleNames != null && optionalRoleNames.Any())
+        {
+            await this.AssignClientRolesToClient(internalId, optionalRoleNames).ConfigureAwait(false);
+        }
+
         return clientId;
     }
 
