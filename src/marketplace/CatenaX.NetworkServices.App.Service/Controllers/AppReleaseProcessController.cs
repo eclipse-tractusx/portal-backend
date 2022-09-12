@@ -86,7 +86,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("updateappdoc/{appId}/documentType/{documentTypeId}/documents")]
     [Authorize(Roles = "app_management")]
     [Consumes("multipart/form-data")]
-    //[RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -94,8 +94,6 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public Task<int> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
          this.WithIamUserId(userId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, userId, cancellationToken));
-       
-    
     
     /// <summary>
     /// Add role and role description for App 
