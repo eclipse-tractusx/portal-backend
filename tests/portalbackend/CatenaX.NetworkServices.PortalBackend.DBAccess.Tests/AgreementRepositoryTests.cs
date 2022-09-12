@@ -98,6 +98,20 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region Get OfferAgreementData for IamUser
     
     [Fact]
+    public async Task GetOfferAgreementDataForIamUser_WithExistingUser_ReturnsExpectedCount()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var results = await sut.GetOfferAgreementDataForIamUser("3d8142f1-860b-48aa-8c2b-1ccb18699f65").ToListAsync().ConfigureAwait(false);
+    
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+        results.Should().HaveCount(1);
+    }
+
+    [Fact]
     public async Task GetOfferAgreementDataForIamUser_WithNotExistingUser_ReturnsEmptyList()
     {
         // Arrange
