@@ -68,7 +68,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
         public async Task GetAllActiveServicesAsync_ReturnsExpectedId()
         {
             //Arrange
-            var paginationResponse = new Pagination.Response<ServiceDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ServiceDetailData>(5));
+            var paginationResponse = new Pagination.Response<ServiceOverviewData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ServiceOverviewData>(5));
             A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15))
                 .Returns(paginationResponse);
 
@@ -77,7 +77,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15)).MustHaveHappenedOnceExactly();
-            Assert.IsType<Pagination.Response<ServiceDetailData>>(result);
+            Assert.IsType<Pagination.Response<ServiceOverviewData>>(result);
             result.Content.Should().HaveCount(5);
         }
         

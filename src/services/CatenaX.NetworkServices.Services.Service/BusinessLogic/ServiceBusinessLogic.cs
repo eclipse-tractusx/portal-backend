@@ -49,20 +49,20 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size)
+    public Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync(int page, int size)
     {
         var services = _portalRepositories.GetInstance<IOfferRepository>().GetActiveServices();
         return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
-            (skip, take) => new Pagination.AsyncSource<ServiceDetailData>(
+            (skip, take) => new Pagination.AsyncSource<ServiceOverviewData>(
                 services.CountAsync(),
                 services
                     .Skip(skip)
                     .Take(take)
                     .Select(s =>
-                        new ServiceDetailData(
+                        new ServiceOverviewData(
                             s.id,
                             s.name ?? Constants.ErrorString,
                             s.provider,
@@ -144,14 +144,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        return new ServiceDetailData(
-            serviceDetailData.Id,
-            serviceDetailData.Title ?? Constants.ErrorString,
-            serviceDetailData.Provider,
-            serviceDetailData.LeadPictureUri ?? Constants.ErrorString,
-            serviceDetailData.ContactEmail,
-            serviceDetailData.Description ?? Constants.ErrorString,
-            serviceDetailData.Price ?? Constants.ErrorString);
+        return serviceDetailData;
     }
 
     /// <inheritdoc />
