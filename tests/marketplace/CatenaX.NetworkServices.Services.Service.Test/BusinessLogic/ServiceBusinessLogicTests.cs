@@ -44,8 +44,10 @@ public class ServiceBusinessLogicTests
     private readonly string _notAssignedCompanyIdUser = "395f955b-f11b-4a74-ab51-92a526c1973c";
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
-    private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
-    private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
+    private readonly Guid _pendingSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+    private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
+    private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
+    private readonly string _bpn = "CAXSDUMMYCATENAZZ";
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
@@ -447,7 +449,75 @@ public class ServiceBusinessLogicTests
     }
 
     #endregion
+    
+    #region Auto Setup
 
+    [Fact(Skip = "Will be implemented")]
+    public async Task AutoSetup_WithValidData_ReturnsExpectedNotificationAndSecret()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var data = new ServiceAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var result = await sut.AutoSetupService(data,_iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        true.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AutoSetup_WithNotExistingOfferSubscriptionId_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var data = new ServiceAutoSetupData(Guid.NewGuid(), "https://new-url.com/");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupService(data, _iamUser.UserEntityId);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        ex.Message.Should().Be($"OfferSubscription {data.RequestId} does not exist");
+    }
+
+    [Fact]
+    public async Task AutoSetup_WithActiveSubscription_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var data = new ServiceAutoSetupData(_validSubscriptionId, "https://new-url.com/");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupService(data, _iamUser.UserEntityId);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("Status");
+    }
+
+    [Fact]
+    public async Task AutoSetup_WithUserNotFromProvidingCompany_ThrowsException()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var data = new ServiceAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupService(data, Guid.NewGuid().ToString());
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("CompanyUserId");
+    }
+
+    #endregion
+
+    
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
@@ -536,6 +606,30 @@ public class ServiceBusinessLogicTests
                     "Agreed"));
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId)))
             .ReturnsLazily(() => (ConsentDetailData?)null);
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
+                A<Guid>.That.Matches(x => x == _validSubscriptionId),
+                A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
+            .ReturnsLazily(() => new OfferSubscriptionDetailData(OfferSubscriptionStatusId.ACTIVE, companyUser.Id,
+                companyUser.Company.Name, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
+                _bpn));
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
+                A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
+                A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
+            .ReturnsLazily(() => new OfferSubscriptionDetailData(OfferSubscriptionStatusId.PENDING, companyUser.Id,
+                string.Empty, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
+                _bpn));
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
+                A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId),
+                A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
+            .ReturnsLazily(() => (OfferSubscriptionDetailData?)null);
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
+                A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
+                A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId)))
+            .ReturnsLazily(() =>new OfferSubscriptionDetailData(OfferSubscriptionStatusId.PENDING, Guid.Empty,
+                string.Empty, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
+                _bpn));
         
         A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);

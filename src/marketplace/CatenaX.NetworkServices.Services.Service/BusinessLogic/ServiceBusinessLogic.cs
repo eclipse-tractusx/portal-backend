@@ -217,15 +217,17 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         if (offerDetails.Status is not OfferSubscriptionStatusId.PENDING)
         {
             throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
-        } 
+        }
 
         if (offerDetails.CompanyUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
-        
-        var userRoles = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRolesForOfferIdAsync(offerDetails.OfferId).ConfigureAwait(false);
-        var clientId = await _provisioningManager.SetupClientAsync("test", userRoles).ConfigureAwait(false);
+
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerDetails.OfferId).ConfigureAwait(false);
+        var redirectUrl = data.OfferUrl.EndsWith("/") ? $"{data.OfferUrl}*" : $"{data.OfferUrl}/*";
+        var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, userRoles).ConfigureAwait(false);
         var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
         
         var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
@@ -236,7 +238,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 appSubscriptionDetail.AppSubscriptionUrl = data.OfferUrl;
             });
         
-        var serviceAccountUserRoles = await _portalRepositories.GetInstance<IUserRolesRepository>()
+        var serviceAccountUserRoles = await userRolesRepository
             .GetUserRoleDataUntrackedAsync(_settings.ServiceAccountRoles)
             .ToListAsync()
             .ConfigureAwait(false);

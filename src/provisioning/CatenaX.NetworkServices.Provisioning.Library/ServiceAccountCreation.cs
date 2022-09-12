@@ -81,7 +81,6 @@ public class ServiceAccountCreation : IServiceAccountCreation
         }
 
         var clientId = await _provisioningManager.GetNextServiceAccountClientIdAsync().ConfigureAwait(false);
-
         var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
             clientId,
             new ClientConfigRolesData(
@@ -94,6 +93,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
                     .ToDictionary(group =>
                             group.Key,
                         group => group.Select(userRole => userRole.UserRoleText)))).ConfigureAwait(false);
+        
         if (bpns.Any())
         {
             await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.UserEntityId, bpns).ConfigureAwait(false);
