@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.App.Service.BusinessLogic;
-using CatenaX.NetworkServices.App.Service.ViewModels;
+using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
+using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Keycloak.Authentication;
@@ -27,7 +27,7 @@ using Microsoft.AspNetCore.Authorization;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.App.Service.Controllers;
+namespace CatenaX.NetworkServices.Apps.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for updating applications.
@@ -95,8 +95,6 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public Task<int> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
          this.WithIamUserId(userId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, userId, cancellationToken));
-       
-    
     
     /// <summary>
     /// Add role and role description for App 
@@ -125,7 +123,6 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<AppConsentData> GetAppConsentAsync() =>
         _appReleaseBusinessLogic.GetAppConsentAsync();
-
     
     [HttpGet]
     [Route("consent/{appId}")]
@@ -135,5 +132,4 @@ public class AppReleaseProcessController : ControllerBase
     public IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(userId => _appReleaseBusinessLogic.GetAppConsentByIdAsync(appId,userId));
 
-    
 }

@@ -18,25 +18,43 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
-/// Provides constant values
+/// Simple model to specify descriptions for a language.
 /// </summary>
-public static class Constants
+public class LocalizedDescription
 {
     /// <summary>
-    /// Default value for an Error String
+    /// Constructor.
     /// </summary>
-    public const string ErrorString = "ERROR";
-    
-    /// <summary>
-    /// The default language
-    /// </summary>
-    public const string DefaultLanguage = "en";
+    /// <param name="languageCode">Two character language code.</param>
+    /// <param name="longDescription">Long description in specified language.</param>
+    /// <param name="shortDescription">Short description in specified language.</param>
+    public LocalizedDescription(string languageCode, string longDescription, string shortDescription)
+    {
+        LanguageCode = languageCode;
+        LongDescription = longDescription;
+        ShortDescription = shortDescription;
+    }
 
     /// <summary>
-    /// Default value for Language Code Error String
+    /// Two character language code.
     /// </summary>
-    public const string InvalidLanguageError = "InvalidLanguage";
+    [StringLength(2, MinimumLength = 2)]
+    public string LanguageCode { get; set; }
+
+    /// <summary>
+    /// Long description in specified language.
+    /// </summary>
+    [MaxLength(4096)]
+    public string LongDescription { get; set; }
+
+    /// <summary>
+    /// Short description in specified language.
+    /// </summary>
+    [MaxLength(255)]
+    public string ShortDescription { get; set; }
 }
