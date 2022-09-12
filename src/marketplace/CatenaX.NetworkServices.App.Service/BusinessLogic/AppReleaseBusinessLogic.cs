@@ -36,6 +36,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -107,9 +108,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"AppId must not be empty");
         }
-        if (!(_settings.DocumentTypeIds.Contains(documentTypeId)))
+        if (!_settings.DocumentTypeIds.Contains(documentTypeId))
         {
-            throw new ArgumentException($"documentType must  be either :{string.Join(",", _settings.DocumentTypeIds)}");
+            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
         }
         if (string.IsNullOrEmpty(document.FileName))
         {
