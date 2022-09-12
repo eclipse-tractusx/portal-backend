@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1406AddAgreementAssignedApps : Migration
+    public partial class CPLP1406AddAgreementAssignedOffers : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

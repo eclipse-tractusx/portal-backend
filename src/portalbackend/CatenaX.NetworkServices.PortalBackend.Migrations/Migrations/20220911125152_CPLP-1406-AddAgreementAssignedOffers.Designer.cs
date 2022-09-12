@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220911125152_CPLP-1406-AddAgreementAssignedApps")]
-    partial class CPLP1406AddAgreementAssignedApps
+    [Migration("20220911125152_CPLP-1406-AddAgreementAssignedOffers")]
+    partial class CPLP1406AddAgreementAssignedOffers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
