@@ -4,7 +4,7 @@ on:
   push:
     paths:
       # service path
-      - 'src/marketplace/CatenaX.NetworkServices.App.Service/**'
+      - 'src/marketplace/CatenaX.NetworkServices.Apps.Service/**'
       # workflow file
       - '.github/workflows/marketplace-app-service.yml'
       # dockerfile
