@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.App.Service.ViewModels;
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
 /// Model for Role

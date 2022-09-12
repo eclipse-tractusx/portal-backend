@@ -18,30 +18,43 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.App.Service.ViewModels;
+using System.ComponentModel.DataAnnotations;
+
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
-///  View model of an application's base data.
+/// Simple model to specify descriptions for a language.
 /// </summary>
-public record InReviewAppData(Guid AppId, string? Title, string Provider, string? LeadPictureUri)
+public class LocalizedDescription
 {
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="languageCode">Two character language code.</param>
+    /// <param name="longDescription">Long description in specified language.</param>
+    /// <param name="shortDescription">Short description in specified language.</param>
+    public LocalizedDescription(string languageCode, string longDescription, string shortDescription)
+    {
+        LanguageCode = languageCode;
+        LongDescription = longDescription;
+        ShortDescription = shortDescription;
+    }
 
     /// <summary>
-    /// ID of the app.
+    /// Two character language code.
     /// </summary>
-    public Guid AppId { get; set; } = AppId;
+    [StringLength(2, MinimumLength = 2)]
+    public string LanguageCode { get; set; }
 
     /// <summary>
-    /// Title or name of the app.
+    /// Long description in specified language.
     /// </summary>
-    public string? Title { get; set; } = Title;
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    public string Provider { get; set; } = Provider;
+    [MaxLength(4096)]
+    public string LongDescription { get; set; }
 
     /// <summary>
-    /// Uri to app's lead picture.
+    /// Short description in specified language.
     /// </summary>
-    public string? LeadPictureUri { get; set; } = LeadPictureUri;
+    [MaxLength(255)]
+    public string ShortDescription { get; set; }
 }
