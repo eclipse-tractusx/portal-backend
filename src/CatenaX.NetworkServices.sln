@@ -10,8 +10,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Key
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Keycloak.Factory", "keycloak\CatenaX.NetworkServices.Keycloak.Factory\CatenaX.NetworkServices.Keycloak.Factory.csproj", "{1CE4DCFD-8C3F-4960-AC94-05D4CDE38D39}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Keycloak.Net", "..\keycloak\src\Keycloak.Net\Keycloak.Net.csproj", "{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mailing", "mailing", "{B2DDDD9E-D899-47A1-B68A-1FB751E7D9A8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatenaX.NetworkServices.Mailing.SendMail", "mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj", "{3176F1CC-2C58-49B4-AD02-8C5450C60E0F}"
@@ -134,18 +132,6 @@ Global
 		{1CE4DCFD-8C3F-4960-AC94-05D4CDE38D39}.Release|x64.Build.0 = Release|Any CPU
 		{1CE4DCFD-8C3F-4960-AC94-05D4CDE38D39}.Release|x86.ActiveCfg = Release|Any CPU
 		{1CE4DCFD-8C3F-4960-AC94-05D4CDE38D39}.Release|x86.Build.0 = Release|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Debug|x64.Build.0 = Debug|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Debug|x86.Build.0 = Debug|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Release|x64.ActiveCfg = Release|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Release|x64.Build.0 = Release|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Release|x86.ActiveCfg = Release|Any CPU
-		{5C26B17D-170B-4CD1-9D73-11B0BC4EAA43}.Release|x86.Build.0 = Release|Any CPU
 		{3176F1CC-2C58-49B4-AD02-8C5450C60E0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3176F1CC-2C58-49B4-AD02-8C5450C60E0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3176F1CC-2C58-49B4-AD02-8C5450C60E0F}.Debug|x64.ActiveCfg = Debug|Any CPU
