@@ -275,8 +275,8 @@ public class OfferRepository : IOfferRepository
                 c.ThumbnailUrl,
                 c.SalesManagerId,
                 c.ProviderCompanyId,
-                c.OfferDescriptions.Any(description => (description.DescriptionLong == null || description.DescriptionLong == "")),
-                c.OfferDescriptions.Any(description => (description.DescriptionShort == null || description.DescriptionShort == ""))
+                c.OfferDescriptions.Any(description => (description.DescriptionLong == "")),
+                c.OfferDescriptions.Any(description => (description.DescriptionShort == ""))
             ))
             .SingleOrDefaultAsync();
 }
