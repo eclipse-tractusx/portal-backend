@@ -253,9 +253,9 @@ public class OfferRepository : IOfferRepository
             .Where(x => x.Id == serviceId)
             .Select(app => new ServiceDetailData(
                 app.Id,
-                app.Name?? Constants.ErrorString,
+                app.Name,
                 app.Provider,
-                app.ThumbnailUrl?? Constants.ErrorString,
+                app.ThumbnailUrl,
                 app.ContactEmail,
                 app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 app.OfferLicenses.FirstOrDefault()!.Licensetext,

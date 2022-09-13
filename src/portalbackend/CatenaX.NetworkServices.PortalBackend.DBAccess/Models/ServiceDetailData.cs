@@ -47,9 +47,9 @@ public record ServiceOverviewData(Guid Id, string Title, string Provider, string
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 public record ServiceDetailData(
     Guid Id, 
-    string Title, 
+    string? Title, 
     string Provider, 
-    string LeadPictureUri, 
+    string? LeadPictureUri, 
     string? ContactEmail,
     string? Description, 
     string Price, 
