@@ -242,7 +242,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             .GetUserRoleDataUntrackedAsync(_settings.ServiceAccountRoles)
             .ToListAsync()
             .ConfigureAwait(false);
-        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation.CreateServiceAccountAsync(clientId, $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}", IamClientAuthMethod.SECRET, serviceAccountUserRoles.Select(x => x.UserRoleId), offerDetails.CompanyId, Enumerable.Repeat(offerDetails.Bpn, 1));
+        var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
+        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation.CreateServiceAccountAsync(clientId, description, IamClientAuthMethod.SECRET, serviceAccountUserRoles.Select(x => x.UserRoleId), offerDetails.CompanyId, Enumerable.Repeat(offerDetails.Bpn, 1));
 
         var offerSubscription = new OfferSubscription(data.RequestId);
         _portalRepositories.Attach(offerSubscription, (subscription =>

@@ -87,7 +87,7 @@ public partial class ProvisioningManager
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod)
     {
-        var newClient = CloneClient(_Settings.ServiceAccountClient);
+        var newClient = Clone(_Settings.ServiceAccountClient);
         newClient.ClientId = clientId;
         newClient.Name = name;
         newClient.ClientAuthenticatorType = IamClientAuthMethodToInternal(iamClientAuthMethod);

@@ -519,7 +519,6 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
-    
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
@@ -613,7 +612,7 @@ public class ServiceBusinessLogicTests
                 A<Guid>.That.Matches(x => x == _validSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
             .ReturnsLazily(() => new OfferSubscriptionDetailData(OfferSubscriptionStatusId.ACTIVE, companyUser.Id,
-                companyUser.Company.Name, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
+                companyUser.Company!.Name, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
                 _bpn));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
@@ -651,6 +650,7 @@ public class ServiceBusinessLogicTests
             .With(u => u.CompanyUser, companyUser)
             .Create();
         companyUser.IamUser = iamUser;
+        companyUser.Company = new Company(Guid.NewGuid(), "The Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow);
         return (companyUser, iamUser);
     }
 

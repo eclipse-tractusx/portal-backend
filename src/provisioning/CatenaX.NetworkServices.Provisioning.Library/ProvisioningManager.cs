@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Keycloak.Net;
+using Keycloak.Net.Models.ProtocolMappers;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
@@ -147,6 +148,12 @@ public partial class ProvisioningManager : IProvisioningManager
         }
     }
 
+    public Task AddProtocolMapperAsync(string clientScope)
+    {
+        var mapper = Clone(_Settings.ClientProtocolMapper);
+        return _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, clientScope, mapper);
+    }
+
     public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
     {
         var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
@@ -162,7 +169,6 @@ public partial class ProvisioningManager : IProvisioningManager
         {
             throw new KeycloakNoSuccessException($"failed to delete bpn for central user {userId}");
         }
-
     }
 
     public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)

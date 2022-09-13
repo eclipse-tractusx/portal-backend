@@ -191,7 +191,7 @@ public class ServicesController : ControllerBase
     /// <response code="404">Offer Subscription not found.</response>
     [HttpPost]
     [Route("autoSetup")]
-    [Authorize(Roles = "activate_subscription")]
+    // [Authorize(Roles = "activate_subscription")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
