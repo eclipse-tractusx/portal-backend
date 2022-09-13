@@ -176,11 +176,11 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public Task<Guid> CreateServiceAgreementConsentAsync(Guid serviceId,
         ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId) =>
         _offerService.CreateOfferAgreementConsentAsync(serviceId, serviceAgreementConsentData.AgreementId,
-            serviceAgreementConsentData.ConsentStatusId, iamUserId);
+            serviceAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
-        _offerService.GetOfferAgreement(iamUserId);
+        _offerService.GetOfferAgreement(iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>

@@ -76,7 +76,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var result = await sut.GetOfferAgreement(_iamUser.UserEntityId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOfferAgreement(_iamUser.UserEntityId, OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().ContainSingle();
@@ -90,7 +90,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var agreementData = await sut.GetOfferAgreement(Guid.NewGuid().ToString()).ToListAsync().ConfigureAwait(false);
+        var agreementData = await sut.GetOfferAgreement(Guid.NewGuid().ToString(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         agreementData.Should().BeEmpty();
@@ -129,7 +129,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var result = await sut.CreateOfferAgreementConsentAsync(_existingServiceId, _existingAgreementId, statusId, _iamUser.UserEntityId);
+        var result = await sut.CreateOfferAgreementConsentAsync(_existingServiceId, _existingAgreementId, statusId, _iamUser.UserEntityId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(consentId);
@@ -144,7 +144,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        async Task Action() => await sut.CreateOfferAgreementConsentAsync(_existingServiceId, Guid.NewGuid(), ConsentStatusId.ACTIVE, _iamUser.UserEntityId);
+        async Task Action() => await sut.CreateOfferAgreementConsentAsync(_existingServiceId, Guid.NewGuid(), ConsentStatusId.ACTIVE, _iamUser.UserEntityId, OfferTypeId.SERVICE);
         
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -159,7 +159,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        async Task Action() => await sut.CreateOfferAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, Guid.NewGuid().ToString());
+        async Task Action() => await sut.CreateOfferAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, Guid.NewGuid().ToString(), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -176,7 +176,7 @@ public class OfferServiceTests
 
         // Act
         async Task Action() => await sut.CreateOfferAgreementConsentAsync(notExistingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE,
-                _iamUser.UserEntityId);
+                _iamUser.UserEntityId, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -242,9 +242,9 @@ public class OfferServiceTests
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
 
         var agreementData = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
             .Returns(agreementData.ToAsyncEnumerable());
-        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
             .Returns(new List<AgreementData>().ToAsyncEnumerable());
 
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId)))

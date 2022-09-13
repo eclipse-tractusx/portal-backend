@@ -44,11 +44,11 @@ public class AgreementRepository : IAgreementRepository
         _context.Agreements.AnyAsync(x => x.Id == agreementId);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId) =>
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId) =>
         _context.Agreements
             .Where(x => x.AgreementAssignedOffers
                 .Any(app => 
-                    app.Offer!.OfferTypeId == OfferTypeId.SERVICE &&
+                    app.Offer!.OfferTypeId == offerTypeId &&
                     (app.Offer!.OfferSubscriptions.Any(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)) ||
                     app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
                 ))

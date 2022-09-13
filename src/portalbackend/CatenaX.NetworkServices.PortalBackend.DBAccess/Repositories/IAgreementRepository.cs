@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -33,13 +34,14 @@ public interface IAgreementRepository
     /// <param name="agreementId">Id of the agreement</param>
     /// <returns>Returns <c></c></returns>
     Task<bool> CheckAgreementExistsAsync(Guid agreementId);
-    
+
     /// <summary>
     /// Gets the agreement data that have an app id set
     /// </summary>
     /// <param name="iamUserId">Id of the user</param>
+    /// <param name="offerTypeId">Specific offer type</param>
     /// <returns>Returns an async enumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// Gets the agreement data untracked from the database

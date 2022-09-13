@@ -135,32 +135,6 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region Remove Consents
-
-    [Fact]
-    public async Task AttachToDatabase_WithExistingConsent_AttachesTheEntity()
-    {
-        // Arrange
-        var (sut, dbContext) = await CreateSut().ConfigureAwait(false);
-        var consent = new Consent(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"));
-
-        // Act
-        sut.AttachToDatabase(new []{consent});
-        consent.Comment = "Changed comment";
-        
-        // Assert
-        var changeTracker = dbContext.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var changedEntity = changedEntries.Single();
-        changedEntity.State.Should().Be(EntityState.Modified);
-        changedEntity.Entity.Should().BeOfType<Consent>().Which.Comment.Should().Be("Changed comment");
-    }
-
-    #endregion
-
     private async Task<(ConsentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

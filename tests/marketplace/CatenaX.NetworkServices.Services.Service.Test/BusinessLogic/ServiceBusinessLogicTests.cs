@@ -355,7 +355,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerService = A.Fake<IOfferService>();
         var data = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => offerService.GetOfferAgreement(A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
+        A.CallTo(() => offerService.GetOfferAgreement(A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 
@@ -410,7 +410,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var consentId = Guid.NewGuid();
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOfferAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._))
+        A.CallTo(() => offerService.CreateOfferAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => consentId);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 
@@ -497,9 +497,9 @@ public class ServiceBusinessLogicTests
             .Returns(false);
         
         var agreementData = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
             .Returns(agreementData.ToAsyncEnumerable());
-        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId)))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
             .Returns(new List<AgreementData>().ToAsyncEnumerable());
         A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Matches(x => x == _existingAgreementId)))
             .ReturnsLazily(() => true);

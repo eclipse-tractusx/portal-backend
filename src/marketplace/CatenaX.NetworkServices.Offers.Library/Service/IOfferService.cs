@@ -35,15 +35,18 @@ public interface IOfferService
     /// <param name="agreementId">id of the agreement the consent is created for</param>
     /// <param name="consentStatusId">consent status</param>
     /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <returns>Returns the id of the created consent</returns>
     Task<Guid> CreateOfferAgreementConsentAsync(Guid offerId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId);
+        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer agreement data
     /// </summary>
     /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer consent detail data
