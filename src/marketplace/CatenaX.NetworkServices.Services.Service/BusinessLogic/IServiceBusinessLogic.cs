@@ -70,10 +70,10 @@ public interface IServiceBusinessLogic
     /// <summary>
     /// Creates new service agreement consents with the given data for the given service
     /// </summary>
-    /// <param name="serviceId">Id of the service to create the consents for.</param>
+    /// <param name="subscriptionId">Id of the service subscription to create the consents for.</param>
     /// <param name="serviceAgreementConsentData">service agreement consents</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceAgreementConsentAsync(Guid serviceId, ServiceAgreementConsentData serviceAgreementConsentData,
+    Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId, ServiceAgreementConsentData serviceAgreementConsentData,
         string iamUserId);
 
     /// <summary>

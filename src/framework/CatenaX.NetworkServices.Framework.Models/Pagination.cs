@@ -107,7 +107,7 @@ public class Pagination
         }
         if (size <= 0 || size > maxSize)
         {
-            throw new ArgumentException($"Parameter size muse be between 1 and {maxSize}", nameof(size));
+            throw new ArgumentException($"Parameter size must be between 1 and {maxSize}", nameof(size));
         }
     }
 }
