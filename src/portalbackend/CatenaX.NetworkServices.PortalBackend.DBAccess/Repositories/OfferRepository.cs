@@ -247,19 +247,19 @@ public class OfferRepository : IOfferRepository
             ));
 
      /// <inheritdoc />
-    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
+    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId) => 
         _context.Offers
             .AsNoTracking()
             .Where(x => x.Id == serviceId)
-            .Select(app => new ServiceDetailData(
-                app.Id,
-                app.Name,
-                app.Provider,
-                app.ThumbnailUrl,
-                app.ContactEmail,
-                app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
-                app.OfferLicenses.FirstOrDefault()!.Licensetext,
-                app.OfferSubscriptions.Select(x => new OfferSubscriptionDetailData(x.Id, x.OfferSubscriptionStatusId))
+            .Select(offer => new ServiceDetailData(
+                offer.Id,
+                offer.Name,
+                offer.Provider,
+                offer.ThumbnailUrl,
+                offer.ContactEmail,
+                offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
+                offer.OfferLicenses.FirstOrDefault()!.Licensetext,
+                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
 
