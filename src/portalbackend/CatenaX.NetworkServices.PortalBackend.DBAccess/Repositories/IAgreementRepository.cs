@@ -32,8 +32,9 @@ public interface IAgreementRepository
     /// Checks whether the agreement with the given id exists. 
     /// </summary>
     /// <param name="agreementId">Id of the agreement</param>
-    /// <returns>Returns <c></c></returns>
-    Task<bool> CheckAgreementExistsAsync(Guid agreementId);
+    /// <param name="agreementCategoryIds">Valid agreement categories</param>
+    /// <returns>Returns <c>true</c> if an agreement was found, otherwise <c>false</c>.</returns>
+    Task<bool> CheckAgreementExistsAsync(Guid agreementId, IEnumerable<AgreementCategoryId> agreementCategoryIds);
 
     /// <summary>
     /// Gets the agreement data that have an app id set

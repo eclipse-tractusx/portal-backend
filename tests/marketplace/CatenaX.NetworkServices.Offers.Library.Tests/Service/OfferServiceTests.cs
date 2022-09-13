@@ -129,7 +129,10 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var result = await sut.CreateOfferAgreementConsentAsync(_existingServiceId, _existingAgreementId, statusId, _iamUser.UserEntityId, OfferTypeId.SERVICE);
+        var result = await sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, statusId, _iamUser.UserEntityId, OfferTypeId.SERVICE, new []
+            {
+                AgreementCategoryId.SERVICE_CONTRACT
+            });
 
         // Assert
         result.Should().Be(consentId);
@@ -144,7 +147,10 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        async Task Action() => await sut.CreateOfferAgreementConsentAsync(_existingServiceId, Guid.NewGuid(), ConsentStatusId.ACTIVE, _iamUser.UserEntityId, OfferTypeId.SERVICE);
+        async Task Action() => await sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, Guid.NewGuid(), ConsentStatusId.ACTIVE, _iamUser.UserEntityId, OfferTypeId.SERVICE, new []
+        {
+            AgreementCategoryId.SERVICE_CONTRACT
+        });
         
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -159,7 +165,10 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        async Task Action() => await sut.CreateOfferAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, Guid.NewGuid().ToString(), OfferTypeId.SERVICE);
+        async Task Action() => await sut.CreateOfferSubscriptionAgreementConsentAsync(_existingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE, Guid.NewGuid().ToString(), OfferTypeId.SERVICE, new []
+        {
+            AgreementCategoryId.SERVICE_CONTRACT
+        });
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -175,8 +184,11 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        async Task Action() => await sut.CreateOfferAgreementConsentAsync(notExistingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE,
-                _iamUser.UserEntityId, OfferTypeId.SERVICE);
+        async Task Action() => await sut.CreateOfferSubscriptionAgreementConsentAsync(notExistingServiceId, _existingAgreementId, ConsentStatusId.ACTIVE,
+                _iamUser.UserEntityId, OfferTypeId.SERVICE, new []
+                {
+                    AgreementCategoryId.SERVICE_CONTRACT
+                });
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -224,19 +236,19 @@ public class OfferServiceTests
 
     private void SetupRepositories(IamUser iamUser)
     {
-        A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Matches(x => x == _existingAgreementId)))
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Matches(x => x == _existingAgreementId), A<IEnumerable<AgreementCategoryId>>._))
             .ReturnsLazily(() => true);
-        A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Not.Matches(x => x == _existingAgreementId)))
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Not.Matches(x => x == _existingAgreementId), A<IEnumerable<AgreementCategoryId>>._))
             .ReturnsLazily(() => false);
         var offerSubscription = _fixture.Create<OfferSubscription>();
-        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
             .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscription?, Guid>(_companyUser.CompanyId, offerSubscription, _companyUser.Id));
-        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscription?, Guid>(_companyUser.CompanyId, null, _companyUser.Id));
-        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Not.Matches(x => x == iamUser.UserEntityId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);

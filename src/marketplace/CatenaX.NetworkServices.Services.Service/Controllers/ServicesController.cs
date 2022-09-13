@@ -135,22 +135,22 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// Creates new service agreement consents 
     /// </summary>
-    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the wants to retrieve.</param>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service subscription the consent should get set for.</param>
     /// <param name="serviceAgreementConsentData">the service agreement consent.</param>
     /// <remarks>Example: Post: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/serviceAgreementConsent</remarks>
     /// <response code="201">Returns the id of the created consent.</response>
     /// <response code="400">Company or company user wasn't assigned to the user.</response>
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
-    [Route("{serviceId}/serviceAgreementConsent")]
+    [Route("{subscriptionId}/serviceAgreementConsent")]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> CreateServiceAgreementConsent([FromRoute] Guid serviceId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData)
+    public async Task<CreatedAtRouteResult> CreateServiceAgreementConsent([FromRoute] Guid subscriptionId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData)
     {
         var consentId = await this.WithIamUserId(iamUserId =>
-            _serviceBusinessLogic.CreateServiceAgreementConsentAsync(serviceId, serviceAgreementConsentData, iamUserId)
+            _serviceBusinessLogic.CreateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentData, iamUserId)
                 .ConfigureAwait(false));
         return CreatedAtRoute(nameof(GetServiceAgreementConsentDetail), new { serviceConsentId = consentId }, consentId);
     }
