@@ -35,10 +35,10 @@ public interface IProvisioningManager
     IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId);
     Task AddProviderUserLinkToCentralUserAsync(string userId, IdentityProviderLink identityProviderLink);
     Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias);
-    Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
-    Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
-    Task<bool> DeleteSharedRealmUserAsync(string realm, string userId);
-    Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
+    Task UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email);
+    Task UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
+    Task DeleteSharedRealmUserAsync(string realm, string userId);
+    Task DeleteCentralRealmUserAsync(string userIdCentral);
     Task<string> SetupClientAsync(string redirectUrl);
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
     Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
@@ -47,7 +47,7 @@ public interface IProvisioningManager
     Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
-    Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
+    Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
     ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
@@ -57,7 +57,7 @@ public interface IProvisioningManager
     ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc);
     ValueTask<IdentityProviderConfigSaml> GetCentralIdentityProviderDataSAMLAsync(string alias);
     ValueTask UpdateCentralIdentityProviderDataSAMLAsync(IdentityProviderEditableConfigSaml identityProviderEditableConfigSaml);
-    ValueTask DeleteCentralIdentityProviderAsync(string alias);
+    Task DeleteCentralIdentityProviderAsync(string alias);
     IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
     ValueTask DeleteSharedIdpRealmAsync(string alias);
 }

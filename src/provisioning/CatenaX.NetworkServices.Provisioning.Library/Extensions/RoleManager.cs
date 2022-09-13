@@ -58,10 +58,16 @@ public partial class ProvisioningManager
             {
                 var (client, roleNames) = x;
                 var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
-                if (clientId != null && roles.Any() &&
-                    await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false))
+                if (clientId != null && roles.Any())
                 {
-                    return (client: client, rolesList: roles.Select(role => role.Name));
+                    try
+                    {
+                        await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
+                        return (client: client, rolesList: roles.Select(role => role.Name));
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
                 return (client: client, rolesList: Enumerable.Empty<string>());
             }

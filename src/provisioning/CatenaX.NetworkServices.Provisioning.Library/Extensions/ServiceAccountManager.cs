@@ -58,10 +58,9 @@ public partial class ProvisioningManager
         var internalClientId = await CreateServiceAccountClient(sharedIdp, "master", clientId, clientId, IamClientAuthMethod.SECRET);
         var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync("master", internalClientId).ConfigureAwait(false);
         var roleCreateRealm = await sharedIdp.GetRoleByNameAsync("master", "create-realm").ConfigureAwait(false);
-        if (!await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to assign role 'create-realm' to shared idp admin service account {clientId}");
-        }
+
+        await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
+
         var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
         return new ValueTuple<string,string>(clientId, credentials.Value);
     }
@@ -79,10 +78,7 @@ public partial class ProvisioningManager
     {
         var clientId = GetServiceAccountClientId(realm);
         var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(keycloak, clientId).ConfigureAwait(false);
-        if (! await keycloak.DeleteClientAsync("master", internalClientId).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to delete client {clientId} in shared idp realm master");
-        }
+        await keycloak.DeleteClientAsync("master", internalClientId).ConfigureAwait(false);
     }
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod)

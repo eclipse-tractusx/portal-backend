@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Library;
 using CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
 using System.Text.Json;
@@ -27,36 +26,27 @@ namespace CatenaX.NetworkServices.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private async ValueTask CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string name)
+    private Task CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string name)
     {
         var newRealm = CloneRealm(_Settings.SharedRealm);
         newRealm.Id = realm;
         newRealm._Realm = realm;
         newRealm.DisplayName = name;
-        if (!await keycloak.ImportRealmAsync(realm, newRealm).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to create shared realm {realm} for {name}");
-        }
+        return keycloak.ImportRealmAsync(realm, newRealm);
     }
 
     private static async ValueTask UpdateSharedRealmAsync(KeycloakClient keycloak, string alias, string displayName)
     {
         var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
         realm.DisplayName = displayName;
-        if (!await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to update shared realm {alias}");
-        }
+        await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
     }
 
     private static async ValueTask SetSharedRealmStatusAsync(KeycloakClient keycloak, string alias, bool enabled)
     {
         var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
         realm.Enabled = enabled;
-        if (!await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to update shared realm {alias}");
-        }
+        await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
     }
 
     private static Realm CloneRealm(Realm realm) =>

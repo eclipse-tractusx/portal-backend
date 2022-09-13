@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 
@@ -36,6 +37,17 @@ public static class FlurlUntrustedCertExceptionHandler
 
 public class UntrustedCertHttpClientFactory : DefaultHttpClientFactory
 {
-    public override HttpMessageHandler CreateMessageHandler() =>
-        new HttpClientHandler { ServerCertificateCustomValidationCallback = (_,_,_,_) => true };
+    public override HttpMessageHandler CreateMessageHandler()
+    {
+        var handler = base.CreateMessageHandler();
+        if (handler is HttpClientHandler)
+        {
+            ((HttpClientHandler)handler).ServerCertificateCustomValidationCallback = (_,_,_,_) => true;
+        }
+        else
+        {
+            throw new ConfigurationException($"flurl HttpMessageHandler's type is not HttpClientHandler but {handler.GetType()}");
+        }
+        return handler;
+    }
 }

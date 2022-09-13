@@ -56,64 +56,53 @@ public partial class KeycloakClient
         .GetJsonAsync<AuthenticatorConfig>()
         .ConfigureAwait(false);
 
-    public async Task<bool> UpdateAuthenticatorConfigurationAsync(string realm, string configurationId, AuthenticatorConfig authenticatorConfig)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateAuthenticatorConfigurationAsync(string realm, string configurationId, AuthenticatorConfig authenticatorConfig) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/config/")
             .AppendPathSegment(configurationId, true)
             .PutJsonAsync(authenticatorConfig)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> DeleteAuthenticatorConfigurationAsync(string realm, string configurationId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+
+    public async Task DeleteAuthenticatorConfigurationAsync(string realm, string configurationId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/config/")
             .AppendPathSegment(configurationId, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> AddAuthenticationExecutionAsync(string realm, AuthenticationExecution authenticationExecution)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task AddAuthenticationExecutionAsync(string realm, AuthenticationExecution authenticationExecution) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions")
             .PostJsonAsync(authenticationExecution)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<AuthenticationExecutionById> GetAuthenticationExecutionAsync(string realm, string executionId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/executions/")
-        .AppendPathSegment(executionId, true)
-        .GetJsonAsync<AuthenticationExecutionById>()
-        .ConfigureAwait(false);
+    public async Task<AuthenticationExecutionById> GetAuthenticationExecutionAsync(string realm, string executionId) =>
+         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/executions/")
+            .AppendPathSegment(executionId, true)
+            .GetJsonAsync<AuthenticationExecutionById>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> DeleteAuthenticationExecutionAsync(string realm, string executionId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteAuthenticationExecutionAsync(string realm, string executionId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
             .AppendPathSegment(executionId, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> UpdateAuthenticationExecutionConfigurationAsync(string realm, string executionId, AuthenticatorConfig authenticatorConfig)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateAuthenticationExecutionConfigurationAsync(string realm, string executionId, AuthenticatorConfig authenticatorConfig) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
@@ -121,12 +110,9 @@ public partial class KeycloakClient
             .AppendPathSegment("/config")
             .PostJsonAsync(authenticatorConfig)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> LowerAuthenticationExecutionPriorityAsync(string realm, string executionId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task LowerAuthenticationExecutionPriorityAsync(string realm, string executionId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
@@ -134,12 +120,9 @@ public partial class KeycloakClient
             .AppendPathSegment("/lower-priority")
             .PostAsync(new StringContent(""))
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> RaiseAuthenticationExecutionPriorityAsync(string realm, string executionId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task RaiseAuthenticationExecutionPriorityAsync(string realm, string executionId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
@@ -147,30 +130,25 @@ public partial class KeycloakClient
             .AppendPathSegment("/raise-priority")
             .PostAsync(new StringContent(""))
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> CreateAuthenticationFlowAsync(string realm, AuthenticationFlow authenticationFlow)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task CreateAuthenticationFlowAsync(string realm, AuthenticationFlow authenticationFlow) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows")
             .PostJsonAsync(authenticationFlow)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<AuthenticationFlow>> GetAuthenticationFlowsAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/flows")
-        .GetJsonAsync<IEnumerable<AuthenticationFlow>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<AuthenticationFlow>> GetAuthenticationFlowsAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/flows")
+            .GetJsonAsync<IEnumerable<AuthenticationFlow>>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> DuplicateAuthenticationFlowAsync(string realm, string flowAlias, string newName)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DuplicateAuthenticationFlowAsync(string realm, string flowAlias, string newName) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
@@ -178,21 +156,19 @@ public partial class KeycloakClient
             .AppendPathSegment("/copy")
             .PostJsonAsync(new Dictionary<string, object> { [nameof(newName)] = newName })
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<AuthenticationFlowExecution>> GetAuthenticationFlowExecutionsAsync(string realm, string flowAlias) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/flows/")
-        .AppendPathSegment(flowAlias, true)
-        .AppendPathSegment("/executions")
-        .GetJsonAsync<IEnumerable<AuthenticationFlowExecution>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<AuthenticationFlowExecution>> GetAuthenticationFlowExecutionsAsync(string realm, string flowAlias) =>
+         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/flows/")
+            .AppendPathSegment(flowAlias, true)
+            .AppendPathSegment("/executions")
+            .GetJsonAsync<IEnumerable<AuthenticationFlowExecution>>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> UpdateAuthenticationFlowExecutionsAsync(string realm, string flowAlias, AuthenticationExecutionInfo authenticationExecutionInfo)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateAuthenticationFlowExecutionsAsync(string realm, string flowAlias, AuthenticationExecutionInfo authenticationExecutionInfo) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
@@ -200,12 +176,9 @@ public partial class KeycloakClient
             .AppendPathSegment("/executions")
             .PutJsonAsync(authenticationExecutionInfo)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> AddAuthenticationFlowExecutionAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task AddAuthenticationFlowExecutionAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
@@ -213,12 +186,9 @@ public partial class KeycloakClient
             .AppendPathSegment("/executions/execution")
             .PostJsonAsync(dataWithProvider)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
@@ -226,115 +196,103 @@ public partial class KeycloakClient
             .AppendPathSegment("/executions/flow")
             .PostJsonAsync(dataWithAliasTypeProviderDescription)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<AuthenticationFlow> GetAuthenticationFlowByIdAsync(string realm, string flowId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/flows/")
-        .AppendPathSegment(flowId, true)
-        .GetJsonAsync<AuthenticationFlow>()
-        .ConfigureAwait(false);
+    public async Task<AuthenticationFlow> GetAuthenticationFlowByIdAsync(string realm, string flowId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/flows/")
+            .AppendPathSegment(flowId, true)
+            .GetJsonAsync<AuthenticationFlow>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> UpdateAuthenticationFlowAsync(string realm, string flowId, AuthenticationFlow authenticationFlow)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateAuthenticationFlowAsync(string realm, string flowId, AuthenticationFlow authenticationFlow) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowId, true)
             .PutJsonAsync(authenticationFlow)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> DeleteAuthenticationFlowAsync(string realm, string flowId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteAuthenticationFlowAsync(string realm, string flowId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowId, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<IDictionary<string, object>>> GetFormActionProvidersAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/form-action-providers")
-        .GetJsonAsync<IEnumerable<IDictionary<string, object>>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<IDictionary<string, object>>> GetFormActionProvidersAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/form-action-providers")
+            .GetJsonAsync<IEnumerable<IDictionary<string, object>>>()
+            .ConfigureAwait(false);
 
-    public async Task<IEnumerable<IDictionary<string, object>>> GetFormProvidersAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/form-providers")
-        .GetJsonAsync<IEnumerable<IDictionary<string, object>>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<IDictionary<string, object>>> GetFormProvidersAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/form-providers")
+            .GetJsonAsync<IEnumerable<IDictionary<string, object>>>()
+            .ConfigureAwait(false);
 
-    public async Task<IDictionary<string, object>> GetConfigurationDescriptionsForAllClientsAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/per-client-config-description")
-        .GetJsonAsync<IDictionary<string, object>>()
-        .ConfigureAwait(false);
+    public async Task<IDictionary<string, object>> GetConfigurationDescriptionsForAllClientsAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/per-client-config-description")
+            .GetJsonAsync<IDictionary<string, object>>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> RegisterRequiredActionAsync(string realm, IDictionary<string, object> dataWithProviderIdName)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task RegisterRequiredActionAsync(string realm, IDictionary<string, object> dataWithProviderIdName) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/register-required-action")
             .PostJsonAsync(dataWithProviderIdName)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<RequiredActionProvider>> GetRequiredActionsAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/required-actions")
-        .GetJsonAsync<IEnumerable<RequiredActionProvider>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<RequiredActionProvider>> GetRequiredActionsAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/required-actions")
+            .GetJsonAsync<IEnumerable<RequiredActionProvider>>()
+            .ConfigureAwait(false);
 
-    public async Task<RequiredActionProvider> GetRequiredActionByAliasAsync(string realm, string requiredActionAlias) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/required-actions/")
-        .AppendPathSegment(requiredActionAlias, true)
-        .GetJsonAsync<RequiredActionProvider>()
-        .ConfigureAwait(false);
+    public async Task<RequiredActionProvider> GetRequiredActionByAliasAsync(string realm, string requiredActionAlias) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/required-actions/")
+            .AppendPathSegment(requiredActionAlias, true)
+            .GetJsonAsync<RequiredActionProvider>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> UpdateRequiredActionAsync(string realm, string requiredActionAlias, RequiredActionProvider requiredActionProvider)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateRequiredActionAsync(string realm, string requiredActionAlias, RequiredActionProvider requiredActionProvider) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/required-actions/")
             .AppendPathSegment(requiredActionAlias, true)
             .PutJsonAsync(requiredActionProvider)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> DeleteRequiredActionAsync(string realm, string requiredActionAlias)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteRequiredActionAsync(string realm, string requiredActionAlias) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/required-actions/")
             .AppendPathSegment(requiredActionAlias, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> LowerRequiredActionPriorityAsync(string realm, string requiredActionAlias)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task LowerRequiredActionPriorityAsync(string realm, string requiredActionAlias) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/required-actions/")
@@ -342,12 +300,9 @@ public partial class KeycloakClient
             .AppendPathSegment("/lower-priority")
             .PostAsync(new StringContent(""))
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> RaiseRequiredActionPriorityAsync(string realm, string requiredActionAlias)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task RaiseRequiredActionPriorityAsync(string realm, string requiredActionAlias) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/required-actions/")
@@ -355,13 +310,12 @@ public partial class KeycloakClient
             .AppendPathSegment("/raise-priority")
             .PostAsync(new StringContent(""))
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<IDictionary<string, object>>> GetUnregisteredRequiredActionsAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/authentication/unregistered-required-actions")
-        .GetJsonAsync<IEnumerable<IDictionary<string, object>>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<IDictionary<string, object>>> GetUnregisteredRequiredActionsAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/authentication/unregistered-required-actions")
+            .GetJsonAsync<IEnumerable<IDictionary<string, object>>>()
+            .ConfigureAwait(false);
 }

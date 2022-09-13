@@ -25,20 +25,17 @@ namespace CatenaX.NetworkServices.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task<bool> CreateComponentAsync(string realm, Component componentRepresentation)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task CreateComponentAsync(string realm, Component componentRepresentation) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/components")
             .PostJsonAsync(componentRepresentation)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<Component>> GetComponentsAsync(string realm, string name = null, string parent = null, string type = null)
+    public async Task<IEnumerable<Component>> GetComponentsAsync(string realm, string? name = null, string? parent = null, string? type = null)
     {
-        var queryParams = new Dictionary<string, object>
+        var queryParams = new Dictionary<string, object?>
         {
             [nameof(name)] = name,
             [nameof(parent)] = parent,
@@ -54,44 +51,36 @@ public partial class KeycloakClient
             .ConfigureAwait(false);
     }
 
-    public async Task<Component> GetComponentAsync(string realm, string componentId)
-    {
-        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<Component> GetComponentAsync(string realm, string componentId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/components/")
             .AppendPathSegment(componentId, true)
             .GetJsonAsync<Component>()
             .ConfigureAwait(false);
-    }
 
-    public async Task<bool> UpdateComponentAsync(string realm, string componentId, Component componentRepresentation)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateComponentAsync(string realm, string componentId, Component componentRepresentation) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/components/")
             .AppendPathSegment(componentId, true)
             .PutJsonAsync(componentRepresentation)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> DeleteComponentAsync(string realm, string componentId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteComponentAsync(string realm, string componentId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/components/")
             .AppendPathSegment(componentId, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<ComponentType>> GetSubcomponentTypesAsync(string realm, string componentId, string type = null)
+    public async Task<IEnumerable<ComponentType>> GetSubcomponentTypesAsync(string realm, string componentId, string? type = null)
     {
-        var queryParams = new Dictionary<string, object>
+        var queryParams = new Dictionary<string, object?>
         {
             [nameof(type)] = type
         };
