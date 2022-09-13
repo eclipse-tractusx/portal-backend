@@ -105,14 +105,14 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             //Arrange
             var serviceId = Guid.NewGuid();
             var serviceDetailData = _fixture.Create<ServiceDetailData>();
-            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._))
+            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, IamUserId))
                 .Returns(serviceDetailData);
 
             //Act
             var result = await this._controller.GetServiceDetails(serviceId).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en")).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
             Assert.IsType<ServiceDetailData>(result);
             result.Should().Be(serviceDetailData);
         }
