@@ -350,7 +350,7 @@ public class ServiceBusinessLogicTests
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
-        var result = await sut.GetServiceDetailsAsync(_existingServiceId, "en");
+        var result = await sut.GetServiceDetailsAsync(_existingServiceId, "en", _iamUser.UserEntityId);
 
         // Assert
         result.Id.Should().Be(_existingServiceId);
@@ -365,7 +365,7 @@ public class ServiceBusinessLogicTests
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
-        async Task Action() => await sut.GetServiceDetailsAsync(notExistingServiceId, "en");
+        async Task Action() => await sut.GetServiceDetailsAsync(notExistingServiceId, "en", _iamUser.UserEntityId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -629,18 +629,14 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
         
-        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en")))
-            .ReturnsLazily(() => new ValueTuple<Guid,string?,string,string?,string?,string?,string?>(
-                serviceDetail.Id,
-                serviceDetail.Title,
-                serviceDetail.Provider,
-                serviceDetail.LeadPictureUri,
-                serviceDetail.ContactEmail,
-                serviceDetail.Description,
-                serviceDetail.Price));
-        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._))
-            .ReturnsLazily(() => default(ValueTuple<Guid,string?,string,string?,string?,string?,string?>));
-        
+        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en"), A<string>._))
+            .ReturnsLazily(() => serviceDetail with {OfferSubscriptionDetailData = new []
+            {
+                new OfferSubscriptionStateDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE)
+            }});
+        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._))
+            .ReturnsLazily(() => (ServiceDetailData?)null);
+
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
             .Returns(new List<string> { "en" }.ToAsyncEnumerable());
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "gg"))))

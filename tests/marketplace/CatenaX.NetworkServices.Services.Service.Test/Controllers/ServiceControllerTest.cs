@@ -69,7 +69,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
         public async Task GetAllActiveServicesAsync_ReturnsExpectedId()
         {
             //Arrange
-            var paginationResponse = new Pagination.Response<ServiceDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ServiceDetailData>(5));
+            var paginationResponse = new Pagination.Response<ServiceOverviewData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ServiceOverviewData>(5));
             A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15))
                 .Returns(paginationResponse);
 
@@ -78,7 +78,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15)).MustHaveHappenedOnceExactly();
-            Assert.IsType<Pagination.Response<ServiceDetailData>>(result);
+            Assert.IsType<Pagination.Response<ServiceOverviewData>>(result);
             result.Content.Should().HaveCount(5);
         }
         
@@ -106,14 +106,14 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             //Arrange
             var serviceId = Guid.NewGuid();
             var serviceDetailData = _fixture.Create<ServiceDetailData>();
-            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._))
+            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, IamUserId))
                 .Returns(serviceDetailData);
 
             //Act
             var result = await this._controller.GetServiceDetails(serviceId).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en")).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
             Assert.IsType<ServiceDetailData>(result);
             result.Should().Be(serviceDetailData);
         }
