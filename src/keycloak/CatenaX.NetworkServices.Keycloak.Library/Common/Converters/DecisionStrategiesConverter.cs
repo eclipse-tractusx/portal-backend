@@ -37,7 +37,7 @@ public class DecisionStrategiesConverter : JsonEnumConverter<DecisionStrategy>
 
     protected override DecisionStrategy ConvertFromString(string s)
     {
-        if (SPairs.Values.Contains(s.ToUpper()))
+        if (SPairs.ContainsValue(s.ToUpper()))
         {
             return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
         }
