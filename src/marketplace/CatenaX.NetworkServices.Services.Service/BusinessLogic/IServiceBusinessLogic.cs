@@ -33,7 +33,7 @@ public interface IServiceBusinessLogic
     /// Gets all active services from the database
     /// </summary>
     /// <returns>All services with pagination</returns>
-    Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync(int page, int size);
+    Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync(int page, int size);
 
     /// <summary>
     /// Creates a new service offering
@@ -56,8 +56,9 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service the details should be retrieved for.</param>
     /// <param name="lang">Shortcode of the language for the text translations</param>
+    /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the service detail data</returns>
-    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang);
+    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
 
     /// <summary>
     /// Gets the Subscription Details for the given Id

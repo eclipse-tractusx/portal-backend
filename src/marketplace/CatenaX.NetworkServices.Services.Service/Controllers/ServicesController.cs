@@ -59,8 +59,8 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("active")]
     [Authorize(Roles = "view_service_offering")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<ServiceDetailData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<ServiceDetailData>> GetAllActiveServicesAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+    [ProducesResponseType(typeof(Pagination.Response<ServiceOverviewData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         _serviceBusinessLogic.GetAllActiveServicesAsync(page, size);
 
     /// <summary>
@@ -130,7 +130,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
-        _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!);
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, iamUserId));
     
     /// <summary>
     /// Creates new service agreement consents 
