@@ -36,7 +36,7 @@ public class PolicyDecisionLogicConverter : JsonEnumConverter<PolicyDecisionLogi
 
     protected override PolicyDecisionLogic ConvertFromString(string s)
     {
-        if (SPairs.Values.Contains(s.ToUpper()))
+        if (SPairs.ContainsValue(s.ToUpper()))
         {
             return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
         }

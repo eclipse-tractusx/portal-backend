@@ -63,14 +63,15 @@ public partial class ProvisioningManager
                     try
                     {
                         await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
-                        return (client: client, rolesList: roles.Select(role => role.Name));
+                        return (client: client, rolesList: (IEnumerable<string>?)roles.Select(role => role.Name));
                     }
                     catch (Exception)
                     {
+                        return (client: client, rolesList: null);
                     }
                 }
-                return (client: client, rolesList: Enumerable.Empty<string>());
+                return (client: client, rolesList: null);
             }
         )).ConfigureAwait(false))
-        .ToDictionary(clientRole => clientRole.client, clientRole => clientRole.rolesList);
+        .ToDictionary(clientRole => clientRole.client, clientRole => clientRole.rolesList ?? Enumerable.Empty<string>());
 }

@@ -41,7 +41,7 @@ public class PolicyTypeConverter: JsonEnumConverter<PolicyType>
 
     protected override PolicyType ConvertFromString(string s)
     {
-        if (SPairs.Values.Contains(s.ToLower()))
+        if (SPairs.ContainsValue(s.ToLower()))
         {
             return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
         }

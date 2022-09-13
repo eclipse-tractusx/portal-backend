@@ -40,9 +40,10 @@ public class UntrustedCertHttpClientFactory : DefaultHttpClientFactory
     public override HttpMessageHandler CreateMessageHandler()
     {
         var handler = base.CreateMessageHandler();
-        if (handler is HttpClientHandler)
+        var httpClientHander = handler as HttpClientHandler;
+        if (httpClientHander != null)
         {
-            ((HttpClientHandler)handler).ServerCertificateCustomValidationCallback = (_,_,_,_) => true;
+            httpClientHander.ServerCertificateCustomValidationCallback = (_,_,_,_) => true;
         }
         else
         {

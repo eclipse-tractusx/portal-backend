@@ -404,17 +404,15 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new UnexpectedConditionException($"user {companyUser.IamUser!.UserEntityId} not found in central idp");
             }
-            {
-                await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
-                await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false); //TODO doesn't handle the case where user is both shared and own idp user
+            await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
+            await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false); //TODO doesn't handle the case where user is both shared and own idp user
 
-                foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
-                {
-                    _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
-                }
-                _portalDBAccess.RemoveIamUser(companyUser.IamUser);
-                companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
+            foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
+            {
+                _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
             }
+            _portalDBAccess.RemoveIamUser(companyUser.IamUser);
+            companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
         }
 
         [Obsolete]
