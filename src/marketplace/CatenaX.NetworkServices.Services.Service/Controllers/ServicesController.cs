@@ -129,8 +129,8 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string lang = "en") => 
-        _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang);
+    public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
+        _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!);
     
     /// <summary>
     /// Creates new service agreement consents 
