@@ -43,10 +43,13 @@ public class Consent
     public Guid? DocumentId { get; set; }
     public Guid CompanyUserId { get; private set; }
 
+    public Guid? OfferSubscriptionId { get; private set; }
+
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
     public virtual Company? Company { get; private set; }
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; set; }
     public virtual Document? Document { get; set; }
+    public virtual OfferSubscription OfferSubscription { get; set; }
 }

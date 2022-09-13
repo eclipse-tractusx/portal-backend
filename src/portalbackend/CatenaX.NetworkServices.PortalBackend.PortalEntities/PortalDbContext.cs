@@ -210,6 +210,10 @@ public class PortalDbContext : DbContext
                             .WithMany(e => e.OfferSubscriptions)
                             .HasForeignKey(e => e.OfferSubscriptionStatusId)
                             .OnDelete(DeleteBehavior.ClientSetNull);
+                        j.HasOne(e => e.Consent)
+                            .WithOne(e => e.OfferSubscription)
+                            .HasForeignKey<Consent>(x => x.OfferSubscriptionId)
+                            .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
                     }

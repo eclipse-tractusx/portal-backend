@@ -31,14 +31,15 @@ public interface IOfferService
     /// <summary>
     /// Creates new offer agreement consents with the given data for the given offer
     /// </summary>
-    /// <param name="offerId">Id of the offer to create the consents for.</param>
+    /// <param name="subscriptionId">Id of the offer to create the consents for.</param>
     /// <param name="agreementId">id of the agreement the consent is created for</param>
     /// <param name="consentStatusId">consent status</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
+    /// <param name="agreementCategories">List of possible agreementCategories</param>
     /// <returns>Returns the id of the created consent</returns>
-    Task<Guid> CreateOfferAgreementConsentAsync(Guid offerId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId);
+    Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
+        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<AgreementCategoryId> agreementCategories);
 
     /// <summary>
     /// Gets the offer agreement data

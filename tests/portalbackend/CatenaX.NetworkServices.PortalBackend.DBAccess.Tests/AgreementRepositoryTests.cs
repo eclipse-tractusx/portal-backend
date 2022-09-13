@@ -57,7 +57,9 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.CheckAgreementExistsAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951")).ConfigureAwait(false);
+        var results = await sut
+            .CheckAgreementExistsAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), new[] {AgreementCategoryId.DATA_CONTRACT})
+            .ConfigureAwait(false);
 
         // Assert
         results.Should().BeTrue();
@@ -70,7 +72,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.CheckAgreementExistsAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var results = await sut.CheckAgreementExistsAsync(Guid.NewGuid(), new[] {AgreementCategoryId.APP_CONTRACT}).ConfigureAwait(false);
 
         // Assert
         results.Should().BeFalse();

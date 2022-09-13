@@ -40,8 +40,8 @@ public class AgreementRepository : IAgreementRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> CheckAgreementExistsAsync(Guid agreementId) =>
-        _context.Agreements.AnyAsync(x => x.Id == agreementId);
+    public Task<bool> CheckAgreementExistsAsync(Guid agreementId, IEnumerable<AgreementCategoryId> agreementCategoryIds) =>
+        _context.Agreements.AnyAsync(x => x.Id == agreementId && agreementCategoryIds.Contains(x.AgreementCategoryId));
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId) =>
