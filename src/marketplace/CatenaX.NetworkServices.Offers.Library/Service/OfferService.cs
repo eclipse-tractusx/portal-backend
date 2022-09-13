@@ -41,7 +41,7 @@ public class OfferService : IOfferService
 
     /// <inheritdoc />
     public async Task<Guid> CreateOfferAgreementConsentAsync(Guid offerId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId)
+        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId)
     {
         if (!await _portalRepositories.GetInstance<IAgreementRepository>()
                 .CheckAgreementExistsAsync(agreementId).ConfigureAwait(false))
@@ -50,7 +50,7 @@ public class OfferService : IOfferService
         }
 
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(offerId, iamUserId, OfferTypeId.SERVICE)
+            .GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(offerId, iamUserId, offerTypeId)
             .ConfigureAwait(false);
         if (result == default)
         {
@@ -69,8 +69,8 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId) => 
-        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForIamUser(iamUserId);
+    public IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId, OfferTypeId offerTypeId) => 
+        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForIamUser(iamUserId, offerTypeId);
 
     /// <inheritdoc />
     public async Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId)

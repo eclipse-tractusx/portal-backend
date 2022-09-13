@@ -41,12 +41,6 @@ public interface IConsentRepository
     Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields);
     
     /// <summary>
-    /// Attaches the consents to the database
-    /// </summary>
-    /// <param name="consents">The consents that should be attached to the database.</param>
-    void AttachToDatabase(IEnumerable<Consent> consents);
-
-    /// <summary>
     /// Remove the given consents from the database
     /// </summary>
     /// <param name="consents">The consents that should be removed.</param>
