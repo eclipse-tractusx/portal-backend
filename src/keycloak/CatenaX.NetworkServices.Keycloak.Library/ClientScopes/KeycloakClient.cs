@@ -25,53 +25,46 @@ namespace CatenaX.NetworkServices.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task<bool> CreateClientScopeAsync(string realm, ClientScope clientScope)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task CreateClientScopeAsync(string realm, ClientScope clientScope) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes")
             .PostJsonAsync(clientScope)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<IEnumerable<ClientScope>> GetClientScopesAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/client-scopes")
-        .GetJsonAsync<IEnumerable<ClientScope>>()
-        .ConfigureAwait(false);
+    public async Task<IEnumerable<ClientScope>> GetClientScopesAsync(string realm) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/client-scopes")
+            .GetJsonAsync<IEnumerable<ClientScope>>()
+            .ConfigureAwait(false);
 
-    public async Task<ClientScope> GetClientScopeAsync(string realm, string clientScopeId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/client-scopes/")
-        .AppendPathSegment(clientScopeId, true)
-        .GetJsonAsync<ClientScope>()
-        .ConfigureAwait(false);
+    public async Task<ClientScope> GetClientScopeAsync(string realm, string clientScopeId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/client-scopes/")
+            .AppendPathSegment(clientScopeId, true)
+            .GetJsonAsync<ClientScope>()
+            .ConfigureAwait(false);
 
-    public async Task<bool> UpdateClientScopeAsync(string realm, string clientScopeId, ClientScope clientScope)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UpdateClientScopeAsync(string realm, string clientScopeId, ClientScope clientScope) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes/")
             .AppendPathSegment(clientScopeId, true)
             .PutJsonAsync(clientScope)
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 
-    public async Task<bool> DeleteClientScopeAsync(string realm, string clientScopeId)
-    {
-        var response = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task DeleteClientScopeAsync(string realm, string clientScopeId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes/")
             .AppendPathSegment(clientScopeId, true)
             .DeleteAsync()
             .ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
-    }
 }
