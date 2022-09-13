@@ -40,7 +40,7 @@ public class Config
     public string AccessTokenClaim { get; set; }
     [JsonProperty("claim.name")]
     public string ClaimName { get; set; }
-    [JsonProperty("jsonTypelabel")]
+    [JsonProperty("jsonType.label")]
     public string JsonTypelabel { get; set; }
     [JsonProperty("userattributeformatted")]
     public string UserAttributeFormatted { get; set; }
