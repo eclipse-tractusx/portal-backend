@@ -31,13 +31,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 type: "uuid",
                 nullable: true);
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "offer_subscription_id",
-                schema: "portal",
-                table: "consents",
-                type: "uuid",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "agreement_assigned_offers",
                 schema: "portal",
@@ -70,10 +63,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 values: new object[] { 4, "SERVICE_CONTRACT" });
 
             migrationBuilder.CreateIndex(
-                name: "ix_consents_offer_subscription_id",
+                name: "ix_offer_subscriptions_consent_id",
                 schema: "portal",
-                table: "consents",
-                column: "offer_subscription_id",
+                table: "offer_subscriptions",
+                column: "consent_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -83,30 +76,30 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 column: "offer_id");
 
             migrationBuilder.AddForeignKey(
-                name: "fk_consents_offer_subscriptions_offer_subscription_id1",
+                name: "fk_offer_subscriptions_consents_consent_id",
                 schema: "portal",
-                table: "consents",
-                column: "offer_subscription_id",
+                table: "offer_subscriptions",
+                column: "consent_id",
                 principalSchema: "portal",
-                principalTable: "offer_subscriptions",
+                principalTable: "consents",
                 principalColumn: "id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "fk_consents_offer_subscriptions_offer_subscription_id1",
+                name: "fk_offer_subscriptions_consents_consent_id",
                 schema: "portal",
-                table: "consents");
+                table: "offer_subscriptions");
 
             migrationBuilder.DropTable(
                 name: "agreement_assigned_offers",
                 schema: "portal");
 
             migrationBuilder.DropIndex(
-                name: "ix_consents_offer_subscription_id",
+                name: "ix_offer_subscriptions_consent_id",
                 schema: "portal",
-                table: "consents");
+                table: "offer_subscriptions");
 
             migrationBuilder.DeleteData(
                 schema: "portal",
@@ -118,11 +111,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "consent_id",
                 schema: "portal",
                 table: "offer_subscriptions");
-
-            migrationBuilder.DropColumn(
-                name: "offer_subscription_id",
-                schema: "portal",
-                table: "consents");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "offer_id",
