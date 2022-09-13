@@ -72,7 +72,7 @@ public class ServicesController : ControllerBase
     /// <response code="400">The given service offering data were invalid.</response>
     [HttpPost]
     [Route("addservice")]
-    // [Authorize(Roles = "add_service_offering")]
+    [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
@@ -91,7 +91,7 @@ public class ServicesController : ControllerBase
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/subscribe")]
-    // [Authorize(Roles = "subscribe_service")]
+    [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -126,9 +126,9 @@ public class ServicesController : ControllerBase
     /// <response code="404">Service was not found.</response>
     [HttpGet]
     [Route("{serviceId}", Name = nameof(GetServiceDetails))]
-    // [Authorize(Roles = "view_service_offering")]
+    [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string lang = "en") => 
-        _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang);
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang, iamUserId));
 }
