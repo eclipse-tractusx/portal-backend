@@ -243,7 +243,15 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             .ToListAsync()
             .ConfigureAwait(false);
         var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
-        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation.CreateServiceAccountAsync(clientId, description, IamClientAuthMethod.SECRET, serviceAccountUserRoles.Select(x => x.UserRoleId), offerDetails.CompanyId, Enumerable.Repeat(offerDetails.Bpn, 1));
+        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+            .CreateServiceAccountAsync(
+                clientId, 
+                description, 
+                IamClientAuthMethod.SECRET, 
+                serviceAccountUserRoles.Select(x => x.UserRoleId), 
+                offerDetails.CompanyId, 
+                Enumerable.Repeat(offerDetails.Bpn, 1))
+            .ConfigureAwait(false);
 
         var offerSubscription = new OfferSubscription(data.RequestId);
         _portalRepositories.Attach(offerSubscription, (subscription =>
