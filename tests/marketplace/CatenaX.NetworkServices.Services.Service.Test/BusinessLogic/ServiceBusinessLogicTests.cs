@@ -74,6 +74,8 @@ public class ServiceBusinessLogicTests
         _languageRepository = A.Fake<ILanguageRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
+        _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15 }));
+        
         SetupRepositories(companyUser, iamUser);
     }
 
