@@ -29,10 +29,6 @@ public class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc />
-    public void AttachToDatabase(IEnumerable<Consent> consents) => 
-        _portalDbContext.AttachRange(consents.ToArray());
-
-    /// <inheritdoc />
     public void RemoveConsents(IEnumerable<Consent> consents) => 
         _portalDbContext.RemoveRange(consents);
 

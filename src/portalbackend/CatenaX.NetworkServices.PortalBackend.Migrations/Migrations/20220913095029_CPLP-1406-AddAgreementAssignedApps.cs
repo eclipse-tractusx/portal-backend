@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1406AddAgreementAssignedOffers : Migration
+    public partial class CPLP1406AddAgreementAssignedApps : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -23,6 +23,13 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 name: "offer_id",
                 schema: "portal",
                 table: "agreements");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "consent_id",
+                schema: "portal",
+                table: "offer_subscriptions",
+                type: "uuid",
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "agreement_assigned_offers",
@@ -48,13 +55,62 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         principalTable: "offers",
                         principalColumn: "id");
                 });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "agreement_categories",
+                columns: new[] { "id", "label" },
+                values: new object[] { 4, "SERVICE_CONTRACT" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_offer_subscriptions_consent_id",
+                schema: "portal",
+                table: "offer_subscriptions",
+                column: "consent_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_agreement_assigned_offers_offer_id",
+                schema: "portal",
+                table: "agreement_assigned_offers",
+                column: "offer_id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_offer_subscriptions_consents_consent_id",
+                schema: "portal",
+                table: "offer_subscriptions",
+                column: "consent_id",
+                principalSchema: "portal",
+                principalTable: "consents",
+                principalColumn: "id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "fk_offer_subscriptions_consents_consent_id",
+                schema: "portal",
+                table: "offer_subscriptions");
+
             migrationBuilder.DropTable(
                 name: "agreement_assigned_offers",
                 schema: "portal");
+
+            migrationBuilder.DropIndex(
+                name: "ix_offer_subscriptions_consent_id",
+                schema: "portal",
+                table: "offer_subscriptions");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "agreement_categories",
+                keyColumn: "id",
+                keyValue: 4);
+
+            migrationBuilder.DropColumn(
+                name: "consent_id",
+                schema: "portal",
+                table: "offer_subscriptions");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "offer_id",

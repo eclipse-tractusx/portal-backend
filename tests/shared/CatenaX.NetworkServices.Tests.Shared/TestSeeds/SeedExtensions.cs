@@ -1,10 +1,4 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
-namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
-
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -23,6 +17,12 @@ namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
+namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 
 public static class SeedExtensions
 {

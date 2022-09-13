@@ -40,15 +40,15 @@ public class AgreementRepository : IAgreementRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> CheckAgreementExistsAsync(Guid agreementId) =>
-        _context.Agreements.AnyAsync(x => x.Id == agreementId);
+    public Task<bool> CheckAgreementExistsAsync(Guid agreementId, IEnumerable<AgreementCategoryId> agreementCategoryIds) =>
+        _context.Agreements.AnyAsync(x => x.Id == agreementId && agreementCategoryIds.Contains(x.AgreementCategoryId));
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId) =>
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId) =>
         _context.Agreements
             .Where(x => x.AgreementAssignedOffers
                 .Any(app => 
-                    app.Offer!.OfferTypeId == OfferTypeId.SERVICE &&
+                    app.Offer!.OfferTypeId == offerTypeId &&
                     (app.Offer!.OfferSubscriptions.Any(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)) ||
                     app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
                 ))

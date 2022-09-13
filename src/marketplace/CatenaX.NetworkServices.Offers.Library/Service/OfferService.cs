@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Offers.Library.Service;
@@ -40,17 +41,17 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateOfferAgreementConsentAsync(Guid offerId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId)
+    public async Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
+        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<AgreementCategoryId> agreementCategories)
     {
         if (!await _portalRepositories.GetInstance<IAgreementRepository>()
-                .CheckAgreementExistsAsync(agreementId).ConfigureAwait(false))
+                .CheckAgreementExistsAsync(agreementId, agreementCategories).ConfigureAwait(false))
         {
             throw new ControllerArgumentException("Agreement not existing", nameof(agreementId));
         }
 
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAsUntrackedAsync(offerId, iamUserId, OfferTypeId.SERVICE)
+            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
             .ConfigureAwait(false);
         if (result == default)
         {
@@ -60,17 +61,19 @@ public class OfferService : IOfferService
         var (companyId, offerSubscription, companyUserId) = result;
         if (offerSubscription is null)
         {
-            throw new NotFoundException($"Offer {offerId} does not exist");
+            throw new NotFoundException($"Offer {subscriptionId} does not exist");
         }
 
         var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
+        offerSubscription.ConsentId = consent.Id;
+
         await _portalRepositories.SaveAsync();
         return consent.Id;
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId) => 
-        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForIamUser(iamUserId);
+    public IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId, OfferTypeId offerTypeId) => 
+        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForIamUser(iamUserId, offerTypeId);
 
     /// <inheritdoc />
     public async Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId)
