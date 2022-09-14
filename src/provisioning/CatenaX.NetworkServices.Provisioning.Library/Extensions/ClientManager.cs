@@ -158,7 +158,7 @@ public partial class ProvisioningManager
     private async Task<string> GetNextClientIdAsync() =>
         _Settings.ClientPrefix + (await _ProvisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(false));
 
-    private T Clone<T>(T cloneObject) 
+    private static T Clone<T>(T cloneObject) 
         where T : class =>
         JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
 }

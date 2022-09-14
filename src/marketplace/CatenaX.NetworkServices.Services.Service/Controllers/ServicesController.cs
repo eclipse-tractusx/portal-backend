@@ -38,7 +38,7 @@ namespace CatenaX.NetworkServices.Services.Service.Controllers;
 public class ServicesController : ControllerBase
 {
     private readonly IServiceBusinessLogic _serviceBusinessLogic;
-    
+
     /// <summary>
     /// Constructor.
     /// </summary>
