@@ -247,18 +247,19 @@ public class OfferRepository : IOfferRepository
             ));
 
      /// <inheritdoc />
-    public Task<(Guid Id, string? Title, string Provider, string? LeadPictureUri, string? ContactEmail, string? Description, string? Price)> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName) => 
+    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId) => 
         _context.Offers
             .AsNoTracking()
             .Where(x => x.Id == serviceId)
-            .Select(app => new ValueTuple<Guid,string?,string,string?,string?,string?,string?>(
-                app.Id,
-                app.Name,
-                app.Provider,
-                app.ThumbnailUrl,
-                app.ContactEmail,
-                app.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
-                app.OfferLicenses.FirstOrDefault()!.Licensetext
+            .Select(offer => new ServiceDetailData(
+                offer.Id,
+                offer.Name,
+                offer.Provider,
+                offer.ThumbnailUrl,
+                offer.ContactEmail,
+                offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
+                offer.OfferLicenses.FirstOrDefault()!.Licensetext,
+                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
 
@@ -274,8 +275,8 @@ public class OfferRepository : IOfferRepository
                 c.ThumbnailUrl,
                 c.SalesManagerId,
                 c.ProviderCompanyId,
-                c.OfferDescriptions.Any(description => (description.DescriptionLong == null || description.DescriptionLong == "")),
-                c.OfferDescriptions.Any(description => (description.DescriptionShort == null || description.DescriptionShort == ""))
+                c.OfferDescriptions.Any(description => (description.DescriptionLong == "")),
+                c.OfferDescriptions.Any(description => (description.DescriptionShort == ""))
             ))
             .SingleOrDefaultAsync();
 }
