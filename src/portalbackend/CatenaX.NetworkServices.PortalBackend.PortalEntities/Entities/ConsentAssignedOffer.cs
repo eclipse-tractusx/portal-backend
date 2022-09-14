@@ -18,11 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+public class ConsentAssignedOffer
+{
+    private ConsentAssignedOffer() {}
 
-public record AppConsentData(Guid AgreementId, string Name);
+    public ConsentAssignedOffer(Guid offerId, Guid consentId)
+    {
+        OfferId = offerId;
+        ConsentId = consentId;
+    }
 
-public record AppConsent(Guid AgreementId, ConsentStatusId ConsentStatusId);
+    public Guid OfferId { get; private set; }
+    public Guid ConsentId { get; private set; }
+
+    // Navigation properties
+    public virtual Offer? Offer { get; private set; }
+    public virtual Consent? Consent { get; private set; }
+}
 

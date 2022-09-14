@@ -115,21 +115,41 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
         return NoContent();
     }
-
+    
+    /// <summary>
+    /// Return Agreement Data for App_Contract Category
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent</remarks>
+    /// <response code="200">Returns the Cpllection of agreement data</response>
     [HttpGet]
     [Route("consent")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AppConsentData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public IAsyncEnumerable<AppConsentData> GetAppConsentAsync() =>
-        _appReleaseBusinessLogic.GetAppConsentAsync();
+    [ProducesResponseType(typeof(IAsyncEnumerable<AgreementData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync() =>
+        _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
     
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent/{appId}</remarks>
+    /// <response code="200">Returns the Offer Agreement Consent data</response>
+    /// <response code="404">App does not exist.</response>
     [HttpGet]
     [Route("consent/{appId}")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync([FromRoute] Guid appId) =>
-        this.WithIamUserId(userId => _appReleaseBusinessLogic.GetAppConsentByIdAsync(appId,userId));
+    [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
+        this.WithIamUserId(userId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId,userId));
 
+
+    [HttpPost]
+    [Authorize(Roles = "edit_apps")]
+    [Route("consent/{appId}/OfferAgreementConsents")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<int> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
+        this.WithIamUserId(iamUserId =>
+            _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, iamUserId));
 }

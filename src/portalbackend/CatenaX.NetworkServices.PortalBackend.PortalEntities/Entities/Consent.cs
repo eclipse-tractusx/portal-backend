@@ -5,7 +5,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class Consent
 {
-    private Consent() {}
+    private Consent() 
+    {
+        ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
+    }
 
     /// <summary>
     /// Please only use when attaching the Consent to the database
@@ -49,5 +52,5 @@ public class Consent
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; set; }
     public virtual Document? Document { get; set; }
-    public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
 }
