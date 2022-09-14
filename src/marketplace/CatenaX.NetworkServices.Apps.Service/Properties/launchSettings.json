@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "CatenaX.NetworkServices.App.Service": {
+    "CatenaX.NetworkServices.Apps.Service": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/apps/swagger",
