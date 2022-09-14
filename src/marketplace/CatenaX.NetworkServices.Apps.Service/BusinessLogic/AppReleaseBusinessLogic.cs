@@ -233,12 +233,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     
     /// <inheritdoc/>
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
-        _portalRepositories.GetInstance<IAppReleaseRepository>().GetAgreements();
+        _portalRepositories.GetInstance<IAppReleaseRepository>().GetAgreements(AgreementCategoryId.APP_CONTRACT);
 
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
     {
-        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetOfferAgreementConsentById(appId, userId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetOfferAgreementConsentById(appId, userId, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
         if (result == null)
         {
             throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
@@ -250,7 +250,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
         var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
-        var offerAgreementConsentData = await appReleaseRepository.GetOfferAgreementConsent(appId, userId).ConfigureAwait(false);
+        var offerAgreementConsentData = await appReleaseRepository.GetOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
         if (offerAgreementConsentData == null)
         {
             throw new NotFoundException($"application {appId} does not exist");
