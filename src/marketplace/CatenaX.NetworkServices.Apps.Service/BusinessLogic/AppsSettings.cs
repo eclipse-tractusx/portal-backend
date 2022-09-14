@@ -41,6 +41,13 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; } = null!;
+    
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 

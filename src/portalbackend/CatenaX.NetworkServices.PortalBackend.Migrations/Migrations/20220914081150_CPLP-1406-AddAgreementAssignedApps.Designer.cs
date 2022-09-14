@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220913095029_CPLP-1406-AddAgreementAssignedApps")]
+    [Migration("20220914081150_CPLP-1406-AddAgreementAssignedApps")]
     partial class CPLP1406AddAgreementAssignedApps
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3242,6 +3242,26 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 4,
                             Label = "DATA_CONTRACT"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "ADDITIONAL_DETAILS"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "APP_LEADIMAGE"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "APP_IMAGE"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "SELF_DESCRIPTION_EDC"
                         });
                 });
 
@@ -5102,8 +5122,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
                 {
-                    b.Navigation("OfferSubscription")
-                        .IsRequired();
+                    b.Navigation("OfferSubscription");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
