@@ -39,14 +39,14 @@ public interface IProvisioningManager
     Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
     Task<bool> DeleteSharedRealmUserAsync(string realm, string userId);
     Task<bool> DeleteCentralRealmUserAsync(string userIdCentral);
-    Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames);
+    Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames = null);
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
     Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
     Task DeleteCentralClientAsync(string internalClientId);
     Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId);
     Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
-    Task AddProtocolMapperAsync(string clientScope);
+    Task AddProtocolMapperAsync(string clientId);
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
     Task<bool> ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);

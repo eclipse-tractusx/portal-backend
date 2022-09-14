@@ -12,12 +12,7 @@ namespace CatenaX.NetworkServices.Provisioning.Service.BusinessLogic
             _provisioningManager = provisioningManager;
         }
 
-        public async Task<string> CreateClient(ClientSetupData clientData)
-        {
-            return await _provisioningManager.SetupClientAsync(
-                clientData.redirectUrl, 
-                null
-            ).ConfigureAwait(false);
-        }
+        public Task<string> CreateClient(ClientSetupData clientSetupData) =>
+            _provisioningManager.SetupClientAsync(clientSetupData.redirectUrl);
     }
 }

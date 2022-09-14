@@ -122,7 +122,7 @@ public partial class ProvisioningManager : IProvisioningManager
         return userIdCentral;
     }
 
-    public async Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames)
+    public async Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames = null)
     {
         var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
         var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
@@ -148,11 +148,11 @@ public partial class ProvisioningManager : IProvisioningManager
         }
     }
 
-    public Task AddProtocolMapperAsync(string clientScope)
-    {
-        var mapper = Clone(_Settings.ClientProtocolMapper);
-        return _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, clientScope, mapper);
-    }
+    public Task AddProtocolMapperAsync(string clientId) => 
+        _CentralIdp.CreateClientProtocolMapperAsync(
+            _Settings.CentralRealm, 
+            clientId,
+            Clone(_Settings.ClientProtocolMapper));
 
     public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
     {

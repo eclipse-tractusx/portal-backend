@@ -97,7 +97,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
         if (bpns.Any())
         {
             await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.UserEntityId, bpns).ConfigureAwait(false);
-            await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId);
+            await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(false);
         }
         
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(

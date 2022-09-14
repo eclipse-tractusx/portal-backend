@@ -492,7 +492,7 @@ public class ServiceBusinessLogicTests
             {
                 var clientName = x.Arguments.Get<string>("clientId");
 
-                var client = new IamClient(clientId, clientName);
+                var client = new IamClient(clientId, clientName!);
                 clients.Add(client);
             })
             .Returns(new IamClient(clientId, "cl1"));
@@ -732,7 +732,7 @@ public class ServiceBusinessLogicTests
 
     private void SetupServices()
     {
-        A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<IEnumerable<string>>._))
+        A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<IEnumerable<string>?>._))
             .ReturnsLazily(() => "cl1");
         
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<string>._, A<string>._,
