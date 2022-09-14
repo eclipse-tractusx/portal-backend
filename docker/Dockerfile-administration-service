@@ -1,13 +1,10 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
-WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
 COPY keycloak/ keycloak/
-WORKDIR "/src/administration/CatenaX.NetworkServices.Administration.Service"
+WORKDIR /src/administration/CatenaX.NetworkServices.Administration.Service
 RUN dotnet build "CatenaX.NetworkServices.Administration.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
@@ -16,4 +13,8 @@ RUN dotnet publish "CatenaX.NetworkServices.Administration.Service.csproj" -c Re
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV ASPNETCORE_URLS http://+:8080
+EXPOSE 8080
+RUN chown -R 1000:3000 /app
+USER 1000:3000
 ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Administration.Service.dll"]
