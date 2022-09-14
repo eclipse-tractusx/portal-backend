@@ -20,10 +20,12 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
+[AuditEntityV1(typeof(AuditCompanyUserCplp1254))]
 public class CompanyUser : IAuditable
 {
     /// <summary>
