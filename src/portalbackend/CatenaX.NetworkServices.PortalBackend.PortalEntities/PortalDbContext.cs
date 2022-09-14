@@ -19,8 +19,11 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Laraue.EfCoreTriggers.Common.Extensions;
+using Laraue.EfCoreTriggers.Common.TriggerBuilders;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities;
@@ -98,7 +101,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     
     public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserCplp1254> AuditCompanyUsersCplp1254 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -561,27 +564,15 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
 
-            entity.ToTable("company_users");
-        });
-        
-        modelBuilder.Entity<AuditCompanyUser>(entity =>
-        {
-            entity.HasBaseType((Type?)null);
-
-            entity.Ignore(x => x.Company);
-            entity.Ignore(x => x.IamUser);
-            entity.Ignore(x => x.Consents);
-            entity.Ignore(x => x.Documents);
-            entity.Ignore(x => x.Invitations);
-            entity.Ignore(x => x.Offers);
-            entity.Ignore(x => x.SalesManagerOfOffers);
-            entity.Ignore(x => x.UserRoles);
-            entity.Ignore(x => x.CompanyUserAssignedRoles);
-            entity.Ignore(x => x.CompanyUserAssignedBusinessPartners);
-            entity.Ignore(x => x.Notifications);
-            entity.Ignore(x => x.CreatedNotifications);
-
-            entity.ToTable("audit_company_users_cplp_1254_db_audit");
+            entity.AfterInsert(trigger => trigger
+                .Action(action => action
+                    .ExecuteRawSql(entity.GetSql(trigger.TriggerEvent))));
+            entity.AfterUpdate(trigger => trigger
+                .Action(action => action
+                    .ExecuteRawSql(entity.GetSql(trigger.TriggerEvent))));
+            entity.AfterDelete(trigger => trigger
+                .Action(action => action
+                    .ExecuteRawSql(entity.GetSql(trigger.TriggerEvent))));
         });
 
         modelBuilder.Entity<AuditCompanyUserAssignedRole>(x =>
@@ -593,7 +584,7 @@ public class PortalDbContext : DbContext
 
             x.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications");
         });
-        
+
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
             .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 
