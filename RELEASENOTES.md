@@ -2,6 +2,18 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+### 0.5.4 (2022-09-19) - ongoing
+
+* Feature - App Release Process Controller enhanced with additional endpoints to support the app release feature (Post app roles, Get app roles, submit app for release)
+* Defect Fix - Keycloak shared realm creation - technical user for realm management moved from master to company realm
+
+
+### 0.5.3 (2022-09-05)
+
+* Feature - Service Provider Marketplace v1 microservice released (Get Services, Get Service Details, Post Services, Post Agreement, Get Agreement, etc.)
+* Feature - App Release Process Controller enhanced with additional endpoints to support the app release feature with "Put App Documents"
+* Update - Portal Db Refactoring by merging service and app table and recall them "offers". Additionally al related app tabled have been renamed where suitable to "offer" instead of "app"
+
 
 ### 0.5.2 (2022-08-23)
 
