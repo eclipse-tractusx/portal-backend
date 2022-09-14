@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -69,9 +70,9 @@ public interface IAppReleaseRepository
     /// <returns></returns>
     UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
 
-    IAsyncEnumerable<AgreementData> GetAgreements();
+    IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId);
 
-    Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId);
-    Task<OfferAgreementConsents?> GetOfferAgreementConsent(Guid appId, string userId);
+    Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId);
+    Task<OfferAgreementConsents?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
 
 }
