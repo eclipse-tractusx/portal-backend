@@ -104,13 +104,13 @@ public class AppReleaseRepository : IAppReleaseRepository
             ))))
             .SingleOrDefaultAsync();
     
-    public Task<OfferAgreementConsents?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId)
+    public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId)
     =>
         _context.Offers
             .AsNoTracking()
             .Where(offer=>offer.Id == appId && offer.OfferStatusId == statusId 
             && offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-            .Select(offer=> new OfferAgreementConsents(
+            .Select(offer=> new OfferAgreementConsentUpdate(
                 offer.ProviderCompany!.CompanyUsers.Select(companyUser=>companyUser.Id).SingleOrDefault(),
                 offer.ProviderCompany.Id,
                 offer.ConsentAssignedOffers!.Where(consentAssignedOffer => consentAssignedOffer.Consent!.Agreement!.AgreementCategoryId == categoryId).Select(consentAssignedOffer => new AppAgreementConsentStatus(
