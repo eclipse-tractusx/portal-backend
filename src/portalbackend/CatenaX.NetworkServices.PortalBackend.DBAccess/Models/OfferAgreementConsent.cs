@@ -22,8 +22,8 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public record OfferAgreementConsent(IEnumerable<AgreementConsentStatus> agreementConsentStatuses);
+public record OfferAgreementConsent(IEnumerable<AgreementConsentStatus> Agreements);
 
 public record AppAgreementConsentStatus(Guid AgreementId, Guid ConsentId, ConsentStatusId ConsentStatusId);
 
-public record OfferAgreementConsents(Guid companyUserId, Guid companyId, IEnumerable<AppAgreementConsentStatus> agreementConsentStatuses);
+public record OfferAgreementConsentUpdate(Guid companyUserId, Guid companyId, IEnumerable<AppAgreementConsentStatus> Agreements);

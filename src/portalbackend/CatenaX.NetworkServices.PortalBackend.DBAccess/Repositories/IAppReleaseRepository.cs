@@ -73,6 +73,6 @@ public interface IAppReleaseRepository
     IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId);
 
     Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId);
-    Task<OfferAgreementConsents?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
+    Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
 
 }

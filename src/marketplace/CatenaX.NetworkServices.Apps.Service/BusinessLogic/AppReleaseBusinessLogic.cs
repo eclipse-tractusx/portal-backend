@@ -266,17 +266,17 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var companyId = offerAgreementConsentData.companyId;
         var companyUserId = offerAgreementConsentData.companyUserId;
 
-        foreach (var agreementId in offerAgreementConsentInput.agreementConsentStatuses.ExceptBy(offerAgreementConsentData.agreementConsentStatuses.Select(d=>d.AgreementId),input=>input.AgreementId)
+        foreach (var agreementId in offerAgreementConsentInput.Agreements.ExceptBy(offerAgreementConsentData.Agreements.Select(d=>d.AgreementId),input=>input.AgreementId)
                 .Select(input =>input.AgreementId))
         {
             companyRolesRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
         }
         foreach (var (agreementId,consentStatus)
-            in offerAgreementConsentInput.agreementConsentStatuses.IntersectBy(
-                offerAgreementConsentData.agreementConsentStatuses.Select(d => d.AgreementId), offerConsentInput => offerConsentInput.AgreementId)
+            in offerAgreementConsentInput.Agreements.IntersectBy(
+                offerAgreementConsentData.Agreements.Select(d => d.AgreementId), offerConsentInput => offerConsentInput.AgreementId)
                     .Select(offerConsentInput => (offerConsentInput.AgreementId, offerConsentInput.ConsentStatusId)))
         {
-            var existing = offerAgreementConsentData.agreementConsentStatuses.First(d => d.AgreementId == agreementId);
+            var existing = offerAgreementConsentData.Agreements.First(d => d.AgreementId == agreementId);
             _portalRepositories.Attach(new Consent(existing.ConsentId), consen =>
             {
                 if (consentStatus != existing.ConsentStatusId)
