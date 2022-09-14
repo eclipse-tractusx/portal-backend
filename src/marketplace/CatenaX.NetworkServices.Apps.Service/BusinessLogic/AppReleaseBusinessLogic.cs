@@ -230,25 +230,59 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
-
-    public IAsyncEnumerable<AppConsentData> GetAppConsentAsync()=>
+    
+    /// <inheritdoc/>
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
         _portalRepositories.GetInstance<IAppReleaseRepository>().GetAgreements();
-       
 
-    public async IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync(Guid appId, string userId)
+    /// <inheritdoc/>
+    public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
+    {
+        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetOfferAgreementConsentById(appId, userId).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
+        }
+        return result;
+    }
+
+    public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsentInput, string userId)
     {
         var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
+        var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
+        var offerAgreementConsentData = await appReleaseRepository.GetOfferAgreementConsent(appId, userId).ConfigureAwait(false);
+        if (offerAgreementConsentData == null)
+        {
+            throw new NotFoundException($"application {appId} does not exist");
+        }
+        if (offerAgreementConsentData.companyUserId == Guid.Empty)
+        {
+            throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
+        }
+        var companyId = offerAgreementConsentData.companyId;
+        var companyUserId = offerAgreementConsentData.companyUserId;
 
-        if (!await appReleaseRepository.IsProviderCompanyUserAsync(appId, userId).ConfigureAwait(false))
+        foreach (var agreementId in offerAgreementConsentInput.agreementConsentStatuses.ExceptBy(offerAgreementConsentData.agreementConsentStatuses.Select(d=>d.AgreementId),input=>input.AgreementId)
+                .Select(input =>input.AgreementId))
         {
-            throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
+            companyRolesRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
         }
-        await foreach(var item in appReleaseRepository.GetAgreementsById(appId).ConfigureAwait(false))
+        foreach (var (agreementId,consentStatus)
+            in offerAgreementConsentInput.agreementConsentStatuses.IntersectBy(
+                offerAgreementConsentData.agreementConsentStatuses.Select(d => d.AgreementId), offerConsentInput => offerConsentInput.AgreementId)
+                    .Select(offerConsentInput => (offerConsentInput.AgreementId, offerConsentInput.ConsentStatusId)))
         {
-            yield return (
-                    item.AgreementId,
-                    item.consentStatus
-                );
+            var existing = offerAgreementConsentData.agreementConsentStatuses.First(d => d.AgreementId == agreementId);
+            _portalRepositories.Attach(new Consent(existing.ConsentId), consen =>
+            {
+                if (consentStatus != existing.ConsentStatusId)
+                {
+                    consen.ConsentStatusId = consentStatus;
+                }
+            });
+            
         }
+
+        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -80,28 +80,43 @@ public class AppReleaseRepository : IAppReleaseRepository
             ))
             .Entity;
 
-    public IAsyncEnumerable<AppConsentData> GetAgreements()
+    public IAsyncEnumerable<AgreementData> GetAgreements()
     =>
         _context.Agreements
             .AsNoTracking()
             .Where(agreement=>agreement.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT)
-            .Select(agreement=> new  AppConsentData(
+            .Select(agreement=> new  AgreementData(
                 agreement.Id,
                 agreement.Name
             ))
             .AsAsyncEnumerable();
     
 
-    public Task<OfferAgreementConsent?> GetAgreementsById(Guid appId)
+    public Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId)
     =>
         _context.Offers
             .AsNoTracking()
-            .Where(offer=>offer.Id == appId && offer.OfferAssignedConsents!.Any(offerAssignedConsent=>offerAssignedConsent!.Consent!.Agreement!.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT))
+            .Where(offer=>offer.Id == appId && offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
             .Select(offer=> new OfferAgreementConsent(
-                offer.Consents!.Select(consent=>new AppConsent(
-                consent.AgreementId,
-                consent.ConsentStatusId
+                offer.ConsentAssignedOffers!.Where(consentAssignedOffer => consentAssignedOffer.Consent!.Agreement!.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT).Select(consentAssignedOffer => new AgreementConsentStatus(
+                consentAssignedOffer.Consent!.AgreementId,
+                consentAssignedOffer.Consent!.ConsentStatusId
             ))))
             .SingleOrDefaultAsync();
     
+    public Task<OfferAgreementConsents?> GetOfferAgreementConsent(Guid appId, string userId)
+    =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(offer=>offer.Id == appId && offer.OfferStatusId == OfferStatusId.CREATED 
+            && offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+            .Select(offer=> new OfferAgreementConsents(
+                offer.ProviderCompany!.CompanyUsers.Select(companyUser=>companyUser.Id).SingleOrDefault(),
+                offer.ProviderCompany.Id,
+                offer.ConsentAssignedOffers!.Where(consentAssignedOffer => consentAssignedOffer.Consent!.Agreement!.AgreementCategoryId == AgreementCategoryId.APP_CONTRACT).Select(consentAssignedOffer => new AppAgreementConsentStatus(
+                consentAssignedOffer.Consent!.AgreementId,
+                consentAssignedOffer.Consent!.Id,
+                consentAssignedOffer.Consent!.ConsentStatusId
+            ))))
+            .SingleOrDefaultAsync();
 }

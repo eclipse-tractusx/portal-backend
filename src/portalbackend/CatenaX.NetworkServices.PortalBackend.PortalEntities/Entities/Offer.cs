@@ -42,7 +42,7 @@ public class Offer
         Documents = new HashSet<Document>();
         UserRoles = new HashSet<UserRole>();
         AppInstances = new HashSet<AppInstance>();
-        OfferAssignedConsents = new HashSet<OfferAssignedConsent>();
+        ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
     }
 
     /// <summary>
@@ -117,6 +117,5 @@ public class Offer
     public virtual ICollection<OfferTag> Tags { get; private set; }
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
-    public virtual ICollection<Consent> Consents { get; private set; }
-    public virtual ICollection<OfferAssignedConsent> OfferAssignedConsents { get; private set; }
+    public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
 }

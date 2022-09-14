@@ -57,8 +57,20 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
+    
+    /// <summary>
+    /// Return Agreements for App_Contract Category
+    /// </summary>
+    /// <returns></returns>
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync();
 
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId);
 
-    IAsyncEnumerable<AppConsentData> GetAppConsentAsync();
-    IAsyncEnumerable<(Guid AgreementId, string ConsentStatus)> GetAppConsentByIdAsync(Guid appId, string userId);
+    Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string iamUserId);
 }
