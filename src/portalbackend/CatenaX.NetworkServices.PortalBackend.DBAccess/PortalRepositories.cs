@@ -92,8 +92,7 @@ public class PortalRepositories : IPortalRepositories
     }
 
     /// <inheritdoc />
-    public TEntity Remove<TEntity>(TEntity entity)
-        where TEntity : class
+    public TEntity Remove<TEntity>(TEntity entity) where TEntity : class
         => _dbContext.Remove(entity).Entity;
 
     public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
