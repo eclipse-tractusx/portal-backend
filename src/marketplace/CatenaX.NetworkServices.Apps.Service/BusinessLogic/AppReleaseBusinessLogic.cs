@@ -251,7 +251,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
-    public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsent, string userId)
+    public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
     {
         var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
         var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
