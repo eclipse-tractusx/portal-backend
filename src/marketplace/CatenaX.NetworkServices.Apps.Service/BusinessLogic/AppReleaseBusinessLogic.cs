@@ -249,8 +249,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         return result;
     }
-
-    public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsentInput, string userId)
+    
+    /// <inheritdoc/>
+    public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsent, string userId)
     {
         var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
         var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
@@ -266,13 +267,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var companyId = offerAgreementConsentData.companyId;
         var companyUserId = offerAgreementConsentData.companyUserId;
 
-        foreach (var agreementId in offerAgreementConsentInput.Agreements.ExceptBy(offerAgreementConsentData.Agreements.Select(d=>d.AgreementId),input=>input.AgreementId)
+        foreach (var agreementId in offerAgreementConsents.Agreements.ExceptBy(offerAgreementConsentData.Agreements.Select(d=>d.AgreementId),input=>input.AgreementId)
                 .Select(input =>input.AgreementId))
         {
             companyRolesRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
         }
         foreach (var (agreementId,consentStatus)
-            in offerAgreementConsentInput.Agreements.IntersectBy(
+            in offerAgreementConsents.Agreements.IntersectBy(
                 offerAgreementConsentData.Agreements.Select(d => d.AgreementId), offerConsentInput => offerConsentInput.AgreementId)
                     .Select(offerConsentInput => (offerConsentInput.AgreementId, offerConsentInput.ConsentStatusId)))
         {
