@@ -25,11 +25,11 @@ namespace CatenaX.NetworkServices.Keycloak.Library.Models.Users;
 public class User
 {
     [JsonProperty("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
     [JsonProperty("createdTimestamp")]
-    public long CreatedTimestamp { get; set; }
+    public long? CreatedTimestamp { get; set; }
     [JsonProperty("username")]
-    public string UserName { get; set; }
+    public string UserName { get; set; } = default!;
     [JsonProperty("enabled")]
     public bool? Enabled { get; set; }
     [JsonProperty("totp")]
@@ -37,39 +37,39 @@ public class User
     [JsonProperty("emailVerified")]
     public bool? EmailVerified { get; set; }
     [JsonProperty("firstName")]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
     [JsonProperty("lastName")]
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
     [JsonProperty("email")]
-    public string Email { get; set; }
+    public string? Email { get; set; }
     [JsonProperty("disableableCredentialTypes")]
-    public IEnumerable<string> DisableableCredentialTypes { get; set; }
+    public IEnumerable<string>? DisableableCredentialTypes { get; set; }
     [JsonProperty("requiredActions")]
-    public IEnumerable<string> RequiredActions { get; set; }
+    public IEnumerable<string>? RequiredActions { get; set; }
     [JsonProperty("notBefore")]
     public int? NotBefore { get; set; }
     [JsonProperty("access")]
-    public UserAccess Access { get; set; }
+    public UserAccess? Access { get; set; }
     [JsonProperty("attributes")]
-    public IDictionary<string, IEnumerable<string>> Attributes { get; set; }
+    public IDictionary<string, IEnumerable<string>>? Attributes { get; set; }
     [JsonProperty("clientConsents")]
-    public IEnumerable<UserConsent> ClientConsents { get; set; }
+    public IEnumerable<UserConsent>? ClientConsents { get; set; }
     [JsonProperty("clientRoles")]
-    public IDictionary<string, object> ClientRoles { get; set; }
+    public IDictionary<string, object>? ClientRoles { get; set; }
     [JsonProperty("credentials")]
-    public IEnumerable<Credentials> Credentials { get; set; }
+    public IEnumerable<Credentials>? Credentials { get; set; }
     [JsonProperty("federatedIdentities")]
-    public IEnumerable<FederatedIdentity> FederatedIdentities { get; set; }
+    public IEnumerable<FederatedIdentity>? FederatedIdentities { get; set; }
     [JsonProperty("federationLink")]
-    public string FederationLink { get; set; }
+    public string? FederationLink { get; set; }
     [JsonProperty("groups")]
-    public IEnumerable<string> Groups { get; set; }
+    public IEnumerable<string>? Groups { get; set; }
     [JsonProperty("origin")]
-    public string Origin { get; set; }
+    public string? Origin { get; set; }
     [JsonProperty("realmRoles")]
-    public IEnumerable<string> RealmRoles { get; set; }
+    public IEnumerable<string>? RealmRoles { get; set; }
     [JsonProperty("self")]
-    public string Self { get; set; }
+    public string? Self { get; set; }
     [JsonProperty("serviceAccountClientId")]
-    public string ServiceAccountClientId { get; set; }
+    public string? ServiceAccountClientId { get; set; }
 }

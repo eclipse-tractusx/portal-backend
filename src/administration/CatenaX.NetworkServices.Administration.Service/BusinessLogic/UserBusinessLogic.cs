@@ -132,18 +132,22 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 try
                 {
                     var password = pwd.Next();
-                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpAlias, new UserProfile(
-                        user.userName ?? user.eMail,
-                        user.eMail,
-                        companyName
-                    )
-                    {
-                        FirstName = user.firstName,
-                        LastName = user.lastName,
-                        Password = password,
-                        BusinessPartnerNumber = businessPartnerNumber
-                    }).ConfigureAwait(false);
-                    
+                    var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
+                        idpAlias,
+                        new UserProfile(
+                            user.userName ?? user.eMail,
+                            user.firstName,
+                            user.lastName,
+                            user.eMail,
+                            password
+                        ),
+                        _provisioningManager.GetStandardAttributes(
+                            alias: idpAlias,
+                            organisationName: companyName,
+                            businessPartnerNumber: businessPartnerNumber
+                        )
+                    ).ConfigureAwait(false);
+
                     var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
                     var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));

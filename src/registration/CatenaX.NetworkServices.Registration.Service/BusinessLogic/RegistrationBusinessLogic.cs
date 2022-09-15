@@ -272,14 +272,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 applicationData.IdpAlias,
                 new UserProfile(
                     userCreationInfo.userName ?? userCreationInfo.eMail,
+                    userCreationInfo.firstName,
+                    userCreationInfo.lastName,
                     userCreationInfo.eMail,
-                    applicationData.CompanyName
+                    password
+                ),
+                _provisioningManager.GetStandardAttributes(
+                    alias: applicationData.IdpAlias,
+                    organisationName: applicationData.CompanyName
                 )
-                {
-                    FirstName = userCreationInfo.firstName,
-                    LastName = userCreationInfo.lastName,
-                    Password = password
-                }).ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
             var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
             var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE, companyUserId);
