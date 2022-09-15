@@ -258,7 +258,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var offerAgreementConsentData = await appReleaseRepository.GetOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
         if (offerAgreementConsentData == null)
         {
-            throw new NotFoundException($"application {appId} does not exist");
+            throw new NotFoundException($"offer {appId} does not exist");
         }
         if (offerAgreementConsentData.companyUserId == Guid.Empty)
         {
