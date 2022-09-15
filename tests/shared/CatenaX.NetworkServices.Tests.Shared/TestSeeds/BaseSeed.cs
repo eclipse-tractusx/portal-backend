@@ -116,10 +116,11 @@ public static class BaseSeed
 
         dbContext.Offers.AddRange(OfferData.Offers);
         dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
-        dbContext.OfferSubscriptions.AddRange(new OfferSubscription(Guid.NewGuid(),
-            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"),
-            new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")));
+        dbContext.OfferSubscriptions.AddRange(new List<OfferSubscription>
+        {
+            new (new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")),
+            new (new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"))
+        });
 
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
@@ -141,14 +142,19 @@ public static class BaseSeed
         
         dbContext.Agreements.AddRange(new List<Agreement>
         {
+            new(new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), AgreementCategoryId.CX_FRAME_CONTRACT, "CatenaX Base Frame Agreement", DateTimeOffset.UtcNow)
+            {
+                IssuerCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), AgreementCategoryId.DATA_CONTRACT, "Test Agreement", DateTimeOffset.UtcNow)
             {
                 IssuerCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            }
-        });
-        dbContext.Agreements.AddRange(new List<Agreement>
-        {
+            },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), AgreementCategoryId.APP_CONTRACT, "App Agreement", DateTimeOffset.UtcNow)
+            {
+                IssuerCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            },
+            new(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), AgreementCategoryId.SERVICE_CONTRACT, "Service Agreement", DateTimeOffset.UtcNow)
             {
                 IssuerCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
             }
@@ -160,6 +166,14 @@ public static class BaseSeed
                 Comment = "Just a test"
             }
         });
-        dbContext.AgreementAssignedOffers.AddRange(new AgreementAssignedOffer(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5")));
+        dbContext.AgreementAssignedCompanyRoles.AddRange(new List<AgreementAssignedCompanyRole>
+        {
+            new (new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), CompanyRoleId.ACTIVE_PARTICIPANT)
+        });
+        dbContext.AgreementAssignedOffers.AddRange(new List<AgreementAssignedOffer>
+        {
+            new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
+            new (new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"))
+        });
     };
 }
