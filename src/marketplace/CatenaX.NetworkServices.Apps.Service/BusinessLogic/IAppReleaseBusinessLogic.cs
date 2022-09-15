@@ -71,6 +71,13 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId);
-
-    Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string iamUserId);
+    
+    /// <summary>
+    /// Update Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="offerAgreementConsents"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
 }

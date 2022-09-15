@@ -143,11 +143,20 @@ public class AppReleaseProcessController : ControllerBase
     public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
         this.WithIamUserId(userId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId,userId));
 
-
+    /// <summary>
+    /// Update or Insert Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="offerAgreementConsents"></param>
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/consent/{appId}/OfferAgreementConsents</remarks>
+     /// <response code="200">Successfully submitted consent to agreements</response>
+    /// <response code="403">Either the user was not found or the user is not assignable to the given application.</response>
+    /// <response code="404">App does not exist.</response>
     [HttpPost]
     [Authorize(Roles = "edit_apps")]
     [Route("consent/{appId}/OfferAgreementConsents")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
         this.WithIamUserId(iamUserId =>
