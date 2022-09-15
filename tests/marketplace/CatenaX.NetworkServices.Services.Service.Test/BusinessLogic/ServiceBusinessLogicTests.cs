@@ -738,7 +738,7 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<string>._, A<string>._,
                 A<IamClientAuthMethod>._, A<IEnumerable<Guid>>._, A<Guid>._, A<IEnumerable<string>>._))
             .ReturnsLazily(() => 
-                new (
+                new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>(
                     "sa2", 
                     new ServiceAccountData(Guid.NewGuid().ToString(), "cl1", new ClientAuthData(IamClientAuthMethod.SECRET)
                     {
