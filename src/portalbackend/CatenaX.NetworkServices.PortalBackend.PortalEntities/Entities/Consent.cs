@@ -14,12 +14,12 @@ public class Consent
     /// Please only use when attaching the Consent to the database
     /// </summary>
     /// <param name="id"></param>
-    public Consent(Guid id)
+    public Consent(Guid id): this()
     {
         Id = id;
     }
 
-    public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
+    public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated): this()
     {
         Id = id;
         AgreementId = agreementId;
