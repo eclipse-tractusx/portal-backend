@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220913112533_CPLP-1409-ExpandNotificationTypes")]
+    [Migration("20220915073657_CPLP-1409-ExpandNotificationTypes")]
     partial class CPLP1409ExpandNotificationTypes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3242,6 +3242,26 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 4,
                             Label = "DATA_CONTRACT"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "ADDITIONAL_DETAILS"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "APP_LEADIMAGE"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "APP_IMAGE"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "SELF_DESCRIPTION_EDC"
                         });
                 });
 
