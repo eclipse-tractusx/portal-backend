@@ -40,8 +40,12 @@ public class AgreementRepository : IAgreementRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> CheckAgreementExistsAsync(Guid agreementId, IEnumerable<AgreementCategoryId> agreementCategoryIds) =>
-        _context.Agreements.AnyAsync(x => x.Id == agreementId && agreementCategoryIds.Contains(x.AgreementCategoryId));
+    public Task<bool> CheckAgreementExistsForSubscriptionAsync(Guid agreementId, Guid subscriptionId, OfferTypeId offerTypeId) =>
+        _context.Agreements.AnyAsync(agreement =>
+            agreement.Id == agreementId &&
+            agreement.AgreementAssignedOffers.Any(aao =>
+                aao.Offer!.OfferTypeId == offerTypeId &&
+                aao.Offer.OfferSubscriptions.Any(subscription => subscription.Id == subscriptionId)));
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId) =>
@@ -50,14 +54,15 @@ public class AgreementRepository : IAgreementRepository
                 .Any(app => 
                     app.Offer!.OfferTypeId == offerTypeId &&
                     (app.Offer!.OfferSubscriptions.Any(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)) ||
-                    app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
+                        app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
                 ))
             .Select(x => new AgreementData(x.Id, x.Name))
             .AsAsyncEnumerable();
     
-    public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
+    public IAsyncEnumerable<AgreementData> GetAgreementsForCompanyRolesUntrackedAsync() =>
         _context.Agreements
             .AsNoTracking()
+            .Where(agreement => agreement.AgreementAssignedCompanyRoles.Any())
             .Select(agreement => new AgreementData(
                 agreement.Id,
                 agreement.Name))
