@@ -20,7 +20,9 @@
 
 using CatenaX.NetworkServices.Framework.Web;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";

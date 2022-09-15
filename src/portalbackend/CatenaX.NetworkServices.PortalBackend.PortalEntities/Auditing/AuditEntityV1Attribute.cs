@@ -30,7 +30,10 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 /// Attribute to Provide the needed methods to setup an audit trigger
 /// </summary>
 /// <remarks>
-/// As soon as the </remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Class)]
 public class AuditEntityV1Attribute : Attribute
 {
     private readonly Type _auditEntityType;

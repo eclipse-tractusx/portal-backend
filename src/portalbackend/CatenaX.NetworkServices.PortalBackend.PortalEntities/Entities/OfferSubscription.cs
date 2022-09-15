@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -27,12 +28,13 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
+[AuditEntityV1(typeof(AuditOfferSubscriptionCplp1440DbAuditing))]
 public class OfferSubscription : IAuditable
 {
     /// <summary>
     /// Only used for the audit table
     /// </summary>
-    protected OfferSubscription()
+    private OfferSubscription()
     {
     }
 

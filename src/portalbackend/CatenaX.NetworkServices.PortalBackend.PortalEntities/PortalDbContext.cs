@@ -100,9 +100,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     
-    public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserCplp1254> AuditCompanyUsersCplp1254 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscriptionCplp1440DbAuditing> AuditOfferSubscriptionCplp1440DbAuditing { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplicationCplp1440DbAuditing> AuditCompanyApplicationCplp1440DbAuditing { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserCplp1440DbAuditing> AuditCompanyUserCplp1440DbAuditing { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRoleCplp1440DbAuditing> AuditCompanyUserAssignedRoleCplp1440DbAuditing { get; set; } = default!;
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -199,6 +200,42 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
+                        j.AfterInsert(trigger => trigger
+                            .Action(action => action
+                                .Insert(newValue => new AuditOfferSubscriptionCplp1440DbAuditing
+                                {
+                                    AuditId = newValue.Id,
+                                    AuditOperationId = AuditOperationId.INSERT,
+                                    OfferSubscriptionStatusId = newValue.OfferSubscriptionStatusId,
+                                    DisplayName = newValue.DisplayName,
+                                    Description = newValue.Description,
+                                    RequesterId = newValue.RequesterId,
+                                    LastEditorId = newValue.LastEditorId
+                                })))
+                        .AfterUpdate(trigger => trigger
+                            .Action(action => action
+                                .Insert((oldEntity, newEntity) => new AuditOfferSubscriptionCplp1440DbAuditing
+                                {
+                                    AuditId = oldEntity.Id,
+                                    AuditOperationId = AuditOperationId.UPDATE,
+                                    OfferSubscriptionStatusId = oldEntity.OfferSubscriptionStatusId,
+                                    DisplayName = oldEntity.DisplayName,
+                                    Description = oldEntity.Description,
+                                    RequesterId = oldEntity.RequesterId,
+                                    LastEditorId = oldEntity.LastEditorId
+                                })))
+                        .AfterDelete(trigger => trigger
+                            .Action(action => action
+                                .Insert(deletedEntity => new AuditOfferSubscriptionCplp1440DbAuditing
+                                {
+                                    AuditId = deletedEntity.Id,
+                                    AuditOperationId = AuditOperationId.DELETE,
+                                    OfferSubscriptionStatusId = deletedEntity.OfferSubscriptionStatusId,
+                                    DisplayName = deletedEntity.DisplayName,
+                                    Description = deletedEntity.Description,
+                                    RequesterId = deletedEntity.RequesterId,
+                                    LastEditorId = deletedEntity.LastEditorId
+                                })));
                     }
                 );
 
@@ -426,20 +463,64 @@ public class PortalDbContext : DbContext
                 );
         });
 
-        modelBuilder.Entity<CompanyApplication>()
-            .HasOne(d => d.Company)
+        modelBuilder.Entity<CompanyApplication>(entity =>
+        {
+            entity.HasOne(d => d.Company)
                 .WithMany(p => p!.CompanyApplications)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-        
-        modelBuilder.Entity<AuditCompanyApplication>(x =>
-        {
-            x.HasBaseType((Type?)null);
 
-            x.Ignore(x => x.ApplicationStatus);
-            x.Ignore(x => x.Company);
-            x.Ignore(x => x.Invitations);
-            x.ToTable("audit_company_applications_cplp_1255_audit_company_applications");
+            entity.AfterInsert(trigger => trigger
+                .Action(action => action
+                    .Insert(newValue => new AuditCompanyApplicationCplp1440DbAuditing
+                    {
+                        AuditId = newValue.Id,
+                        AuditOperationId = AuditOperationId.INSERT,
+                        ApplicationStatusId = newValue.ApplicationStatusId,
+                        DateCreated = newValue.DateCreated,
+                        CompanyId = newValue.CompanyId,
+                        LastEditorId = newValue.LastEditorId
+                    })));
+            entity.AfterUpdate(trigger => trigger
+                .Action(action => action
+                    .Insert((oldEntity, newEntity) => new AuditCompanyApplicationCplp1440DbAuditing
+                    {
+                        AuditId = oldEntity.Id,
+                        AuditOperationId = AuditOperationId.UPDATE,
+                        ApplicationStatusId = oldEntity.ApplicationStatusId,
+                        DateCreated = oldEntity.DateCreated,
+                        CompanyId = oldEntity.CompanyId,
+                        LastEditorId = oldEntity.LastEditorId
+                    })));
+            entity.AfterDelete(trigger => trigger
+                .Action(action => action
+                    .Insert(deletedEntity => new AuditCompanyApplicationCplp1440DbAuditing
+                    {
+                        AuditId = deletedEntity.Id,
+                        AuditOperationId = AuditOperationId.DELETE,
+                        ApplicationStatusId = deletedEntity.ApplicationStatusId,
+                        DateCreated = deletedEntity.DateCreated,
+                        CompanyId = deletedEntity.CompanyId,
+                        LastEditorId = deletedEntity.LastEditorId
+                    })));
+        });
+
+        modelBuilder.Entity<AuditCompanyApplicationCplp1440DbAuditing>(entity =>
+        {
+            entity.Property(x => x.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+            
+            entity.Property(x => x.DateLastChanged)
+                .HasDefaultValueSql("CURRENT_DATE");
+        });
+        
+        modelBuilder.Entity<AuditOfferSubscriptionCplp1440DbAuditing>(entity =>
+        {
+            entity.Property(x => x.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+            
+            entity.Property(x => x.DateLastChanged)
+                .HasDefaultValueSql("CURRENT_DATE");
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -514,7 +595,16 @@ public class PortalDbContext : DbContext
                     .Cast<CompanyStatusId>()
                     .Select(e => new CompanyStatus(e))
             );
-
+        
+        modelBuilder.Entity<AuditCompanyUserCplp1440DbAuditing>(entity =>
+        {
+            entity.Property(x => x.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+            
+            entity.Property(x => x.DateLastChanged)
+                .HasDefaultValueSql("CURRENT_DATE");
+        });
+        
         modelBuilder.Entity<CompanyUser>(entity =>
         {
             entity.HasOne(d => d.Company)
@@ -556,6 +646,37 @@ public class PortalDbContext : DbContext
                         j =>
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId });
+                            
+                            j.AfterInsert(trigger => trigger
+                                .Action(action => action
+                                    .Insert(newValue => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
+                                    {
+                                        AuditId = newValue.Id,
+                                        AuditOperationId = AuditOperationId.INSERT,
+                                        UserRoleId = newValue.UserRoleId,
+                                        CompanyUserId = newValue.CompanyUserId,
+                                        LastEditorId = newValue.LastEditorId
+                                    })));
+                            j.AfterUpdate(trigger => trigger
+                                .Action(action => action
+                                    .Insert((oldEntity, newEntity) => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
+                                    {
+                                        AuditId = oldEntity.Id,
+                                        AuditOperationId = AuditOperationId.UPDATE,
+                                        UserRoleId = oldEntity.UserRoleId,
+                                        CompanyUserId = oldEntity.CompanyUserId,
+                                        LastEditorId = oldEntity.LastEditorId
+                                    })));
+                            j.AfterDelete(trigger => trigger
+                                .Action(action => action
+                                    .Insert(deletedEntity => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
+                                    {
+                                        AuditId = deletedEntity.Id,
+                                        AuditOperationId = AuditOperationId.DELETE,
+                                        UserRoleId = deletedEntity.UserRoleId,
+                                        CompanyUserId = deletedEntity.CompanyUserId,
+                                        LastEditorId = deletedEntity.LastEditorId
+                                    })));
                         });
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)
@@ -563,26 +684,58 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
-
+            
             entity.AfterInsert(trigger => trigger
                 .Action(action => action
-                    .ExecuteRawSql(entity.GetSql(trigger.TriggerEvent))));
+                    .Insert(newValue => new AuditCompanyUserCplp1440DbAuditing
+                    {
+                        AuditId = newValue.Id,
+                        AuditOperationId = AuditOperationId.INSERT,
+                        CompanyId = newValue.CompanyId,
+                        CompanyUserStatusId = newValue.CompanyUserStatusId,
+                        Email = newValue.Email,
+                        Firstname = newValue.Firstname,
+                        Lastlogin = newValue.Lastlogin,
+                        Lastname = newValue.Lastname,
+                        LastEditorId = newValue.LastEditorId
+                    })));
             entity.AfterUpdate(trigger => trigger
                 .Action(action => action
-                    .ExecuteRawSql(entity.GetSql(trigger.TriggerEvent))));
+                    .Insert((oldEntity, newEntity) => new AuditCompanyUserCplp1440DbAuditing
+                    {
+                        AuditId = oldEntity.Id,
+                        AuditOperationId = AuditOperationId.UPDATE,
+                        CompanyId = oldEntity.CompanyId,
+                        CompanyUserStatusId = oldEntity.CompanyUserStatusId,
+                        Email = oldEntity.Email,
+                        Firstname = oldEntity.Firstname,
+                        Lastlogin = oldEntity.Lastlogin,
+                        Lastname = oldEntity.Lastname,
+                        LastEditorId = oldEntity.LastEditorId
+                    })));
             entity.AfterDelete(trigger => trigger
                 .Action(action => action
-                    .ExecuteRawSql(entity.GetSql(trigger.TriggerEvent))));
+                    .Insert(deletedEntity => new AuditCompanyUserCplp1440DbAuditing
+                    {
+                        AuditId = deletedEntity.Id,
+                        AuditOperationId = AuditOperationId.DELETE,
+                        CompanyId = deletedEntity.CompanyId,
+                        CompanyUserStatusId = deletedEntity.CompanyUserStatusId,
+                        Email = deletedEntity.Email,
+                        Firstname = deletedEntity.Firstname,
+                        Lastlogin = deletedEntity.Lastlogin,
+                        Lastname = deletedEntity.Lastname,
+                        LastEditorId = deletedEntity.LastEditorId
+                    })));
         });
 
-        modelBuilder.Entity<AuditCompanyUserAssignedRole>(x =>
+        modelBuilder.Entity<AuditCompanyUserAssignedRoleCplp1440DbAuditing>(entity =>
         {
-            x.HasBaseType((Type?)null);
-
-            x.Ignore(x => x.CompanyUser);
-            x.Ignore(x => x.UserRole);
-
-            x.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications");
+            entity.Property(x => x.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+            
+            entity.Property(x => x.DateLastChanged)
+                .HasDefaultValueSql("CURRENT_DATE");
         });
 
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
