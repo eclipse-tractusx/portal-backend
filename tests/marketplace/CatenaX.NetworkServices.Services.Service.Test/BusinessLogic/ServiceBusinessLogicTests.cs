@@ -446,6 +446,24 @@ public class ServiceBusinessLogicTests
         result.CompanyName.Should().Be("The Company");
     }
 
+    [Fact]
+    public async Task GetServiceConsentDetailData_WithInValidId_ReturnsServiceConsentDetailData()
+    {
+        // Arrange
+        var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
+        var offerService = A.Fake<IOfferService>();
+        var invalidConsentId = Guid.NewGuid();
+        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
+            .Throws(() => new NotFoundException("Test"));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
+
+        // Act
+        async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+    }
+
     #endregion
 
     #region Setup
@@ -528,11 +546,13 @@ public class ServiceBusinessLogicTests
                 A<OfferTypeId>._))
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
 
-        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId)))
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
             .ReturnsLazily(() =>
                 new ConsentDetailData(_validConsentId, "The Company", _companyUser.Id, ConsentStatusId.ACTIVE,
                     "Agreed"));
-        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId)))
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
+            .ReturnsLazily(() => (ConsentDetailData?)null);
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .ReturnsLazily(() => (ConsentDetailData?)null);
         
         A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
