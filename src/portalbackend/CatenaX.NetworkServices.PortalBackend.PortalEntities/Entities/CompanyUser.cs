@@ -25,7 +25,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyUserCplp1254))]
+[AuditEntityV1(typeof(AuditCompanyUserCplp1440DbAuditing))]
 public class CompanyUser : IAuditable
 {
     /// <summary>

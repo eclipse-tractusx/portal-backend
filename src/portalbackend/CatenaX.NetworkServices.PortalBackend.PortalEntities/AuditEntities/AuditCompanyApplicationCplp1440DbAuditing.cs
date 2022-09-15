@@ -22,15 +22,27 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+
 /// <summary>
 /// Audit entity for <see cref="CompanyApplication"/> only needed for configuration purposes
 /// </summary>
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
-public class AuditCompanyApplication : CompanyApplication, IAuditEntity
+public class AuditCompanyApplicationCplp1440DbAuditing : CompanyApplication, IAuditEntity
 {
-/// <inheritdoc />
+    /// <inheritdoc />
     public Guid AuditId { get; set; }
 
+    public Guid Id { get; set; }
+
+    public DateTimeOffset DateCreated { get; set; }
+
+    public CompanyApplicationStatusId ApplicationStatusId { get; set; }
+    
+    public Guid CompanyId { get; set; }
+
+    /// <inheritdoc />
+    public Guid? LastEditorId { get; set; }
+    
     /// <inheritdoc />
     public AuditOperationId AuditOperationId { get; set; }
     

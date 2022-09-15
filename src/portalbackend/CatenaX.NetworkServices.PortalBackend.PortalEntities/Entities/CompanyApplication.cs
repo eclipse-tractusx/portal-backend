@@ -18,11 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
+[AuditEntityV1(typeof(AuditCompanyApplicationCplp1440DbAuditing))]
 public class CompanyApplication : IAuditable
 {
     protected CompanyApplication()

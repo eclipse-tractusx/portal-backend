@@ -27,10 +27,53 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 /// <summary>
 /// Audit entity for App subscription relationship between companies and apps.
 /// </summary>
-public class AuditOfferSubscription : OfferSubscription, IAuditEntity
+public class AuditOfferSubscriptionCplp1440DbAuditing : IAuditEntity
 {
+    /// <summary>
+    /// Only used for the audit table
+    /// </summary>
+    public AuditOfferSubscriptionCplp1440DbAuditing()
+    {
+    }
+
     /// <inheritdoc />
     public Guid AuditId { get; set; }
+
+    /// <inheritdoc />
+    public Guid Id { get; set; }
+
+    /// <summary>
+    /// ID of the company subscribing an app.
+    /// </summary>
+    public Guid CompanyId { get; private set; }
+
+    /// <summary>
+    /// ID of the apps subscribed by a company.
+    /// </summary>
+    public Guid OfferId { get; private set; }
+
+    /// <summary>
+    /// ID of the app subscription status.
+    /// </summary>
+    public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
+
+    /// <summary>
+    /// Display Name for the company app combination
+    /// </summary>
+    public string? DisplayName { get; set; }
+    
+    /// <summary>
+    /// Additional description for clarification
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Id of the app requester 
+    /// </summary>
+    public Guid RequesterId { get; set; }
+    
+    /// <inheritdoc />
+    public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />
     public DateTimeOffset DateLastChanged { get; set; }

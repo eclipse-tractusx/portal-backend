@@ -18,10 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
+[AuditEntityV1(typeof(AuditCompanyUserAssignedRoleCplp1440DbAuditing))]
 public class CompanyUserAssignedRole : IAuditable
 {
     protected CompanyUserAssignedRole() {}

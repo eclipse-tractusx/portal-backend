@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,46 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 
-/// <summary>
-/// Audit entity for <see cref="CompanyUser"/> only needed for configuration purposes
-/// </summary>
-public class AuditCompanyUserCplp1254 : IAuditEntity
+ /// <summary>
+ /// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
+ /// </summary>
+public class AuditCompanyUserAssignedRoleCplp1440DbAuditing : IAuditEntity
 {
     /// <inheritdoc />
     public Guid AuditId { get; set; }
 
     public Guid Id { get; set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
-
-    [MaxLength(255)]
-    public string? Email { get; set; }
-
-    [MaxLength(255)]
-    public string? Firstname { get; set; }
-
-    public byte[]? Lastlogin { get; set; }
-
-    [MaxLength(255)]
-    public string? Lastname { get; set; }
-
-    public Guid CompanyId { get; set; }
-
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
-
+    public Guid CompanyUserId { get; set; }
+    public Guid UserRoleId { get; set; }
+    
     /// <inheritdoc />
     public Guid? LastEditorId { get; set; }
-
+    
     /// <inheritdoc />
     public AuditOperationId AuditOperationId { get; set; }
     
     /// <inheritdoc />
-    public new DateTimeOffset DateLastChanged { get; set; }
+    public DateTimeOffset DateLastChanged { get; set; }
 }

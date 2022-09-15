@@ -52,8 +52,4 @@
     <None Remove="efbundle.exe" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions" />
-  </ItemGroup>
-
 </Project>
