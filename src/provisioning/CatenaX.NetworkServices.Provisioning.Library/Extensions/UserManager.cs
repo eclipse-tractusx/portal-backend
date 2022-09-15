@@ -109,27 +109,42 @@ public partial class ProvisioningManager
         return newUserId;
     }
 
-    private async Task<string> CreateCentralUserAsync(string alias, UserProfile profile)
+    private async Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
     {
         var newUser = CloneUser(_Settings.CentralUser);
         newUser.UserName = profile.UserName;
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
-        newUser.Attributes ??= new Dictionary<string,IEnumerable<string>>();
-        newUser.Attributes[_Settings.MappedIdpAttribute] = Enumerable.Repeat<string>(alias,1);
-        newUser.Attributes[_Settings.MappedCompanyAttribute] = Enumerable.Repeat<string>(profile.OrganisationName,1);
-        if (!string.IsNullOrWhiteSpace(profile.BusinessPartnerNumber))
+        if (attributes.Any())
         {
-            newUser.Attributes[_Settings.MappedBpnAttribute] = Enumerable.Repeat<string>(profile.BusinessPartnerNumber,1);
+            newUser.Attributes ??= new Dictionary<string,IEnumerable<string>>();
+            foreach (var attribute in attributes)
+            {
+                newUser.Attributes[attribute.Name] = attribute.Values;
+            }
         }
         var newUserId = await _CentralIdp.CreateAndRetrieveUserIdAsync(_Settings.CentralRealm, newUser).ConfigureAwait(false);
         if (newUserId == null)
         {
-            throw new KeycloakNoSuccessException($"failed to created central user {profile.UserName} for identityprovider {alias}, organisation {profile.OrganisationName}");
+            throw new KeycloakNoSuccessException($"failed to created central user {profile.UserName} for {profile.Email}");
         }
         return newUserId;
     }
+
+    private Task CreateCentralIdentityProviderLinks(string userId, IEnumerable<IdentityProviderLink> identityProviderLinks) =>
+        Task.WhenAll(
+            identityProviderLinks.Select(identityProviderLink =>
+                _CentralIdp.AddUserSocialLoginProviderAsync(
+                    _Settings.CentralRealm,
+                    userId,
+                    identityProviderLink.Alias,
+                    new FederatedIdentity {
+                        IdentityProvider = identityProviderLink.Alias,
+                        UserId = identityProviderLink.UserId,
+                        UserName = identityProviderLink.UserName
+                    }))
+            );
 
     private Task LinkCentralSharedRealmUserAsync(string alias, string centralUserId, string sharedUserId, string sharedUserName) =>
         _CentralIdp.AddUserSocialLoginProviderAsync(_Settings.CentralRealm, centralUserId, alias, new FederatedIdentity {

@@ -28,7 +28,8 @@ public interface IProvisioningManager
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
     Task<string> GetNextServiceAccountClientIdAsync();
     Task SetupSharedIdpAsync(string idpName, string organisationName);
-    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile);
+    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
+    Task<string> CreateCentralUserLinkedToIdp(UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes, IEnumerable<IdentityProviderLink> identityProviderLinks);
     Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
     Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
@@ -60,4 +61,5 @@ public interface IProvisioningManager
     Task DeleteCentralIdentityProviderAsync(string alias);
     IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
     ValueTask DeleteSharedIdpRealmAsync(string alias);
+    IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias = null, string? organisationName = null, string? businessPartnerNumber = null);
 }
