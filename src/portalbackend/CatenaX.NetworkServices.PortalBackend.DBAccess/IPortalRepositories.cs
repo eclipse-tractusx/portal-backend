@@ -44,7 +44,7 @@ public interface IPortalRepositories
     TEntity Remove<TEntity>(TEntity entity)
         where TEntity : class;
 
-    void RemoveRange<TEntity>(IEnumerable<TEntity> entities);
+    void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class;
 
     public T GetInstance<T>();
 

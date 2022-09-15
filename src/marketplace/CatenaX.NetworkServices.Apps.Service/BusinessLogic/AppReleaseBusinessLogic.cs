@@ -106,12 +106,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
                 .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
         );
-
-        foreach (var languageCode in ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
-               .Select(existingDescription => existingDescription.LanguageShortName))
-        {
-            _portalRepositories.Remove(new OfferDescription(appId, languageCode));
-        }
+        
+        _portalRepositories.RemoveRange<OfferDescription>(
+            ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
+                .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
+        );
 
         foreach (var (languageCode, longDescription, shortDescription)
             in UpdateDescriptions.IntersectBy(
@@ -139,11 +138,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             UpdateUrls.Except(ExistingImages.Select(image => image.Url))
                 .Select(url => new ValueTuple<Guid,string>(appId, url))
         );
-        foreach(var imageId in ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
-                .Select(image => image.Id))
-        {
-            _portalRepositories.Remove(new OfferDetailImage(imageId));
-        }
+        
+        _portalRepositories.RemoveRange(
+            ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
+                .Select(image => new OfferDetailImage(image.Id))
+        );
     }
 
     /// <inheritdoc/>
