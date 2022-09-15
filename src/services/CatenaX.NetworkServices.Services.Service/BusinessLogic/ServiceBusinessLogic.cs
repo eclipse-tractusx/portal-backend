@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
@@ -35,16 +36,19 @@ namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
+    /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
     /// <param name="settings">Access to the settings</param>
-    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOptions<ServiceSettings> settings)
+    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOfferSetupService offerSetupService, IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
+        _offerSetupService = offerSetupService;
         _settings = settings.Value;
     }
 
@@ -114,12 +118,13 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId)
     {
-        if (!await _portalRepositories.GetInstance<IOfferRepository>().CheckServiceExistsById(serviceId).ConfigureAwait(false))
+        var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId).ConfigureAwait(false);
+        if (serviceDetails == null)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        var (companyId, companyUserId) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+        var (companyId, companyUserId, companyName, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
@@ -131,6 +136,28 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         }
 
         var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        bool autoSetupResult;
+        if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
+        {
+            autoSetupResult = await _offerSetupService.AutoSetupOffer(serviceId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+        }
+
+        if (serviceDetails.SalesManagerId.HasValue)
+        {
+            var notificationContent = new
+            {
+                serviceDetails.AppName,
+                RequestorCompanyName = companyName,
+                UserEmail = requesterEmail,
+            };
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(serviceDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
+                notification =>
+                {
+                    notification.CreatorUserId = companyUserId;
+                    notification.Content = JsonSerializer.Serialize(notificationContent);
+                });
+        }
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return offerSubscription.Id;
     }

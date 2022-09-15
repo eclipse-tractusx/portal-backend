@@ -18,13 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-/// <summary>
-/// Data Object for the AppProvider Details
-/// </summary>
-/// <param name="AppName">Name of the app</param>
-/// <param name="ProviderName">Name of the provider</param>
-/// <param name="ProviderContactEmail">Contact email of the provider</param>
-/// <param name="SalesManagerId">Id of the sales manager for the app</param>
-public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid? SalesManagerId);
+public class ServiceProviderCompanyDetail
+{
+    private ServiceProviderCompanyDetail()
+    {
+    }
+    
+    public ServiceProviderCompanyDetail(Guid id, DateTimeOffset dateCreated) 
+        : this()
+    {
+        Id = id;
+        DateCreated = dateCreated;
+    }
+
+    public Guid Id { get; private set; }
+
+    public DateTimeOffset DateCreated { get; private set; }
+
+    public string? AutoSetupUrl { get; set; }
+
+    public Guid? CompanyId { get; set; }
+
+    // Navigation properties
+    public virtual Company? Company { get; private set; }
+}

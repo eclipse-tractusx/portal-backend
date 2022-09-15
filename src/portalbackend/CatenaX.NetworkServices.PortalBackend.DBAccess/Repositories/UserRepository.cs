@@ -131,11 +131,11 @@ public class UserRepository : IUserRepository
                 companyUser.Email))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
+    public Task<(Guid companyId, Guid companyUserId, string companyName, string? userEmail)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => new ValueTuple<Guid, Guid>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId))
+            .Select(iamUser => new ValueTuple<Guid, Guid, string, string?>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId, iamUser.CompanyUser!.Company!.Name, iamUser.CompanyUser!.Email))
             .SingleOrDefaultAsync();
     
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>
