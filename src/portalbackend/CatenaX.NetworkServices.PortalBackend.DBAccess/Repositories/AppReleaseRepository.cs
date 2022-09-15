@@ -79,7 +79,8 @@ public class AppReleaseRepository : IAppReleaseRepository
                 description
             ))
             .Entity;
-
+    
+    ///<inheritdoc/>
     public IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId)
     =>
         _context.Agreements
@@ -91,7 +92,7 @@ public class AppReleaseRepository : IAppReleaseRepository
             ))
             .AsAsyncEnumerable();
     
-
+    ///<inheritdoc/>
     public Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId)
     =>
         _context.Offers
@@ -104,6 +105,7 @@ public class AppReleaseRepository : IAppReleaseRepository
             ))))
             .SingleOrDefaultAsync();
     
+    ///<inheritdoc/>
     public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId)
     =>
         _context.Offers
