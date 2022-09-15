@@ -106,7 +106,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
                 .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
         );
-        
+
         _portalRepositories.RemoveRange<OfferDescription>(
             ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
                 .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
@@ -138,7 +138,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             UpdateUrls.Except(ExistingImages.Select(image => image.Url))
                 .Select(url => new ValueTuple<Guid,string>(appId, url))
         );
-        
+
         _portalRepositories.RemoveRange(
             ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
                 .Select(image => new OfferDetailImage(image.Id))
