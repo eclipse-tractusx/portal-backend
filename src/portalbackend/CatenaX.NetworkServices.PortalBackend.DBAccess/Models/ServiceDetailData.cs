@@ -31,7 +31,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="LeadPictureUri">Uri to service's lead picture.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
-/// <param name="Price">Pricing information of the app.</param>
+/// <param name="Price">Pricing information of the service.</param>
 public record ServiceOverviewData(Guid Id, string Title, string Provider, string LeadPictureUri, string? ContactEmail, string? Description, string Price);
 
 /// <summary>
@@ -46,14 +46,14 @@ public record ServiceOverviewData(Guid Id, string Title, string Provider, string
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 public record ServiceDetailData(
-    Guid Id, 
-    string? Title, 
-    string Provider, 
-    string? LeadPictureUri, 
-    string? ContactEmail,
-    string? Description, 
-    string Price, 
-    IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData);
+ Guid Id, 
+ string? Title, 
+ string Provider, 
+ string? LeadPictureUri, 
+ string? ContactEmail,
+ string? Description, 
+ string Price, 
+ IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData);
 
 /// <summary>
 /// View Model of the offer subscription data
