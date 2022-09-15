@@ -506,7 +506,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var (companyId, creatorId) = await userRepository.GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+        var (companyId, creatorId, _, _) = await userRepository.GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with a company");

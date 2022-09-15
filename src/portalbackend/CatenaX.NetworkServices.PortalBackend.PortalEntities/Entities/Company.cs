@@ -74,6 +74,8 @@ public class Company
 
     // Navigation properties
     public virtual Address? Address { get; set; }
+    
+    public virtual ServiceProviderCompanyDetail? ServiceProviderCompanyDetail { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }

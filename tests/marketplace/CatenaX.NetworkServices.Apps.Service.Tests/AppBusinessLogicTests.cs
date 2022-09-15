@@ -115,8 +115,8 @@ namespace CatenaX.NetworkServices.Apps.Service.Tests
                 .Returns(new ValueTuple<Guid, OfferSubscription?, string, Guid>(companyUser.CompanyId, null, "umbrella corporation", companyUser.Id));
             A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
                 .Returns(new OfferSubscription(Guid.NewGuid(), appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id));
-            A.CallTo(() => _offerRepository.GetAppProviderDetailsAsync(appId))
-                .Returns(new AppProviderDetailsData(appName, providerName, providerContactEmail, Guid.NewGuid()));
+            A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(appId))
+                .Returns(new OfferProviderDetailsData(appName, providerName, providerContactEmail, Guid.NewGuid(), null));
             A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
             _fixture.Inject(_portalRepositories);

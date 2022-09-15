@@ -42,7 +42,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="appId">ID of the app.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId);
+    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid appId);
 
     /// <summary>
     /// Get Client Name by App Id

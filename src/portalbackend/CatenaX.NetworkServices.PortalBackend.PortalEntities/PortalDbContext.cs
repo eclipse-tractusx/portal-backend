@@ -96,6 +96,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
+    public virtual DbSet<ServiceProviderCompanyDetail> ServiceProviderCompanyDetails { get; set; } = default!;
     
     public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
@@ -421,6 +422,13 @@ public class PortalDbContext : DbContext
                         j.HasKey(e => new { e.CompanyId, e.IdentityProviderId });
                     }
                 );
+        });
+
+        modelBuilder.Entity<ServiceProviderCompanyDetail>(entity =>
+        {
+            entity.HasOne(e => e.Company)
+                .WithOne(e => e.ServiceProviderCompanyDetail)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<CompanyApplication>()
