@@ -69,4 +69,12 @@ public interface IOfferSubscriptionsRepository
     /// <param name="iamUserId">the iam user id</param>
     /// <returns>returns the subscription detail data if found</returns>
     Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId);
+
+    /// <summary>
+    /// Gets the auto setup data for the given offer subscription id
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the OfferAutoSetupData</returns>
+    Task<OfferAutoSetupData?> GetAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId);
 }

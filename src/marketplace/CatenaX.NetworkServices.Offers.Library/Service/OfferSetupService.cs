@@ -19,27 +19,27 @@
  ********************************************************************************/
 
 using System.Net.Http.Json;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using Microsoft.Extensions.Logging;
+using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 namespace CatenaX.NetworkServices.Offers.Library.Service;
    
 public class OfferSetupService : IOfferSetupService
 {
-    private readonly ILogger _logger;
+    private readonly IPortalRepositories _portalRepositories;
 
-    public OfferSetupService(ILogger logger)
+    public OfferSetupService(IPortalRepositories portalRepositories)
     {
-        _logger = logger;
+        _portalRepositories = portalRepositories;
     }
     
     /// <inheritdoc />
-    public async Task<bool> AutoSetupOffer(Guid serviceId, string serviceDetailsAutoSetupUrl)
+    public async Task<bool> AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
     {
         var httpClient = new HttpClient();
-        
-        var requestModel = new OfferAutoSetupData(new CustomerData("", "", ""), new PropertyData("", new Guid(), new Guid()));
-        var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, requestModel).ConfigureAwait(false);
+
+        var offerAutoSetupData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
+        var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, offerAutoSetupData).ConfigureAwait(false);
 
         return response.IsSuccessStatusCode;
     }

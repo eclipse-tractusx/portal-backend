@@ -134,4 +134,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Where(os => os.Id == subscriptionId && os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
             .Select(os => new SubscriptionDetailData(os.OfferId, os.Offer!.Name!, os.OfferSubscriptionStatusId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferAutoSetupData?> GetAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new OfferAutoSetupData(new CustomerData(x.Company!.Name, "de", x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email), new PropertyData(x.Company!.BusinessPartnerNumber!, offerSubscriptionId, x.OfferId)))
+            .SingleOrDefaultAsync();
 }
