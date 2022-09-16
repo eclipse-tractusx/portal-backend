@@ -50,7 +50,8 @@ public class Consent
     public virtual Agreement? Agreement { get; private set; }
     public virtual Company? Company { get; private set; }
     public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual ConsentStatus? ConsentStatus { get; set; }
-    public virtual Document? Document { get; set; }
+    public virtual ConsentStatus? ConsentStatus { get; private set; }
+    public virtual Document? Document { get; private set; }
+    public virtual OfferSubscription? OfferSubscription { get; private set; }
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
 }
