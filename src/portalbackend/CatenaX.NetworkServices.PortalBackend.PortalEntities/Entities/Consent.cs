@@ -5,13 +5,17 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class Consent
 {
-    private Consent() {}
+    private Consent()
+    {
+        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+    }
 
     /// <summary>
     /// Please only use when attaching the Consent to the database
     /// </summary>
     /// <param name="id"></param>
-    public Consent(Guid id)
+    public Consent(Guid id) 
+        :this()
     {
         Id = id;
         this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
@@ -43,7 +47,6 @@ public class Consent
     public Guid CompanyId { get; private set; }
     public Guid? DocumentId { get; set; }
     public Guid CompanyUserId { get; private set; }
-    public Guid? OfferSubscriptionId { get; private set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
