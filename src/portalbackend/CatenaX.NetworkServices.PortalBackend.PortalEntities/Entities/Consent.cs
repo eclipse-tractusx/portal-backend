@@ -14,6 +14,7 @@ public class Consent
     public Consent(Guid id)
     {
         Id = id;
+        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
 
     public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
@@ -42,6 +43,7 @@ public class Consent
     public Guid CompanyId { get; private set; }
     public Guid? DocumentId { get; set; }
     public Guid CompanyUserId { get; private set; }
+    public Guid? OfferSubscriptionId { get; private set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
@@ -49,5 +51,5 @@ public class Consent
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; private set; }
     public virtual Document? Document { get; private set; }
-    public virtual OfferSubscription? OfferSubscription { get; private set; }
+    public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

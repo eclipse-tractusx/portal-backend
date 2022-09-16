@@ -65,10 +65,50 @@ public class OfferService : IOfferService
         }
 
         var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
-        offerSubscription.ConsentId = consent.Id;
-
+        _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>().CreateConsentAssignedOfferSubscription(consent.Id, offerSubscription.Id);
+        
         await _portalRepositories.SaveAsync();
         return consent.Id;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentData,
+        string iamUserId, OfferTypeId offerTypeId)
+    {
+        
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
+        }
+
+        var (companyId, offerSubscription, companyUserId) = result;
+        if (offerSubscription is null)
+        {
+            throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
+        }
+
+        var consentAssignedOfferSubscriptionRepository = _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>();
+        var offerSubscriptionConsents = await consentAssignedOfferSubscriptionRepository
+            .GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(subscriptionId, serviceAgreementConsentData.Select(x => x.AgreementId))
+            .ToListAsync()
+            .ConfigureAwait(false);
+        foreach (var offerSubscriptionConsent in offerSubscriptionConsents)
+        {
+            var consent = new Consent(offerSubscriptionConsent.ConsentId);
+            var dbConsent = _portalRepositories.Attach(consent);
+            dbConsent.ConsentStatusId = serviceAgreementConsentData.Single(x => x.AgreementId == offerSubscriptionConsent.AgreementId).ConsentStatusId;
+        }
+
+        foreach (var offerSubscriptionConsent in serviceAgreementConsentData
+                     .Where(x => offerSubscriptionConsents.All(y => y.AgreementId != x.AgreementId)))
+        {
+            var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(offerSubscriptionConsent.AgreementId, companyId, companyUserId, offerSubscriptionConsent.ConsentStatusId, null);
+            consentAssignedOfferSubscriptionRepository.CreateConsentAssignedOfferSubscription(consent.Id, offerSubscription.Id);
+        }
+
     }
 
     /// <inheritdoc />
