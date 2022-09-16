@@ -32,9 +32,10 @@ public interface IAgreementRepository
     /// Checks whether the agreement with the given id exists. 
     /// </summary>
     /// <param name="agreementId">Id of the agreement</param>
-    /// <param name="agreementCategoryIds">Valid agreement categories</param>
+    /// <param name="subscriptionId">Id of subscription the agreement must be associated with</param>
+    /// <param name="offerTypeId">The OfferTypeId that the agreement must be associated with</param>
     /// <returns>Returns <c>true</c> if an agreement was found, otherwise <c>false</c>.</returns>
-    Task<bool> CheckAgreementExistsAsync(Guid agreementId, IEnumerable<AgreementCategoryId> agreementCategoryIds);
+    Task<bool> CheckAgreementExistsForSubscriptionAsync(Guid agreementId, Guid subscriptionId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the agreement data that have an app id set
@@ -48,5 +49,5 @@ public interface IAgreementRepository
     /// Gets the agreement data untracked from the database
     /// </summary>
     /// <returns>Returns an async enumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync();
+    IAsyncEnumerable<AgreementData> GetAgreementsForCompanyRolesUntrackedAsync();
 }
