@@ -39,7 +39,7 @@ public interface IOfferService
     /// <param name="agreementCategories">List of possible agreementCategories</param>
     /// <returns>Returns the id of the created consent</returns>
     Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<AgreementCategoryId> agreementCategories);
+        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer agreement data
@@ -54,5 +54,5 @@ public interface IOfferService
     /// </summary>
     /// <param name="consentId">Id of the offer consent</param>
     /// <returns>Returns the details</returns>
-    Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId);
+    Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
 }

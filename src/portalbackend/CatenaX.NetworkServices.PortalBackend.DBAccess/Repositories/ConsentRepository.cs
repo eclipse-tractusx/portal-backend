@@ -33,9 +33,11 @@ public class ConsentRepository : IConsentRepository
         _portalDbContext.RemoveRange(consents);
 
     /// <inheritdoc />
-    public Task<ConsentDetailData?> GetConsentDetailData(Guid consentId) =>
+    public Task<ConsentDetailData?> GetConsentDetailData(Guid consentId, OfferTypeId offerTypeId) =>
         _portalDbContext.Consents
-            .Where(x => x.Id == consentId)
+            .Where(consent =>
+                consent.Id == consentId &&
+                consent.Agreement!.AgreementAssignedOffers.Any(aao => aao.Offer!.OfferTypeId == offerTypeId))
             .Select(x => new ConsentDetailData(
                 x.Id,
                 x.Company!.Name,

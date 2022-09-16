@@ -510,7 +510,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
         public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync() =>
             new CompanyRoleAgreementData(
                 (await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
-                (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
+                (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
             );
 
         public async Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId)

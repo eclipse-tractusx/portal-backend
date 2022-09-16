@@ -437,7 +437,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var consentId = Guid.NewGuid();
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._, A<IEnumerable<AgreementCategoryId>>._))
+        A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => consentId);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService, A.Fake<IProvisioningManager>(), A.Fake<IServiceAccountCreation>(), A.Fake<INotificationService>());
 
@@ -459,7 +459,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId)))
+        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .ReturnsLazily(() => data);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService, A.Fake<IProvisioningManager>(), A.Fake<IServiceAccountCreation>(), A.Fake<INotificationService>());
 
@@ -469,6 +469,24 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Id.Should().Be(_validConsentId);
         result.CompanyName.Should().Be("The Company");
+    }
+
+    [Fact]
+    public async Task GetServiceConsentDetailData_WithInValidId_ReturnsServiceConsentDetailData()
+    {
+        // Arrange
+        var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
+        var offerService = A.Fake<IOfferService>();
+        var invalidConsentId = Guid.NewGuid();
+        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
+            .Throws(() => new NotFoundException("Test"));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
+
+        // Act
+        async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
     }
 
     #endregion
@@ -652,9 +670,11 @@ public class ServiceBusinessLogicTests
             .Returns(agreementData.ToAsyncEnumerable());
         A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
             .Returns(new List<AgreementData>().ToAsyncEnumerable());
-        A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Matches(x => x == _existingAgreementId), A<IEnumerable<AgreementCategoryId>>._))
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>.That.Matches(x => x == _existingAgreementId), A<Guid>._, A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
             .ReturnsLazily(() => true);
-        A.CallTo(() => _agreementRepository.CheckAgreementExistsAsync(A<Guid>.That.Not.Matches(x => x == _existingAgreementId), A<IEnumerable<AgreementCategoryId>>._))
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>.That.Not.Matches(x => x == _existingAgreementId), A<Guid>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => false);
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
             .ReturnsLazily(() => false);
 
         var offerSubscription = _fixture.Create<OfferSubscription>();
@@ -679,11 +699,13 @@ public class ServiceBusinessLogicTests
                 A<OfferTypeId>._))
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
 
-        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId)))
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
             .ReturnsLazily(() =>
                 new ConsentDetailData(_validConsentId, "The Company", _companyUser.Id, ConsentStatusId.ACTIVE,
                     "Agreed"));
-        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId)))
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
+            .ReturnsLazily(() => (ConsentDetailData?)null);
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .ReturnsLazily(() => (ConsentDetailData?)null);
 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(

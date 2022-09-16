@@ -42,14 +42,8 @@ public class OfferService : IOfferService
 
     /// <inheritdoc />
     public async Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<AgreementCategoryId> agreementCategories)
+        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId)
     {
-        if (!await _portalRepositories.GetInstance<IAgreementRepository>()
-                .CheckAgreementExistsAsync(agreementId, agreementCategories).ConfigureAwait(false))
-        {
-            throw new ControllerArgumentException("Agreement not existing", nameof(agreementId));
-        }
-
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
             .ConfigureAwait(false);
@@ -61,7 +55,13 @@ public class OfferService : IOfferService
         var (companyId, offerSubscription, companyUserId) = result;
         if (offerSubscription is null)
         {
-            throw new NotFoundException($"Offer {subscriptionId} does not exist");
+            throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
+        }
+
+        if (!await _portalRepositories.GetInstance<IAgreementRepository>()
+                .CheckAgreementExistsForSubscriptionAsync(agreementId, subscriptionId, offerTypeId).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"Invalid Agreement {agreementId} for subscription {subscriptionId}", nameof(agreementId));
         }
 
         var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
@@ -76,10 +76,10 @@ public class OfferService : IOfferService
         _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForIamUser(iamUserId, offerTypeId);
 
     /// <inheritdoc />
-    public async Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId)
+    public async Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId)
     {
         var consentDetails = await _portalRepositories.GetInstance<IConsentRepository>()
-            .GetConsentDetailData(consentId).ConfigureAwait(false);
+            .GetConsentDetailData(consentId, offerTypeId).ConfigureAwait(false);
         if (consentDetails is null)
         {
             throw new NotFoundException($"Consent {consentId} does not exist");

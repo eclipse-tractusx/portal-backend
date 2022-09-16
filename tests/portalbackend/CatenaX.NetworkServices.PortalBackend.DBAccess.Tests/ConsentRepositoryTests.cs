@@ -89,7 +89,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"));
+        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -103,7 +103,20 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConsentDetailData(Guid.NewGuid());
+        var result = await sut.GetConsentDetailData(Guid.NewGuid(), OfferTypeId.APP);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetConsentDetailData_WithInvalidOfferType_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().BeNull();
