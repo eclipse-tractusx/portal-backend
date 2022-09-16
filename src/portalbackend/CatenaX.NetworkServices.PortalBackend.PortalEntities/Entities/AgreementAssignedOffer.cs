@@ -18,27 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Tests.Shared;
+namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class AsyncEnumeratorStub<T> : IAsyncEnumerator<T>
+public class AgreementAssignedOffer
 {
-    private readonly IEnumerator<T> _inner;
+    private AgreementAssignedOffer() {}
 
-    public AsyncEnumeratorStub(IEnumerator<T> inner)
+    public AgreementAssignedOffer(Guid agreementId, Guid offerId)
     {
-        _inner = inner;
+        AgreementId = agreementId;
+        OfferId = offerId;
     }
 
-    public T Current => _inner.Current;
+    public Guid AgreementId { get; private set; }
+    public Guid OfferId { get; private set; }
 
-    public ValueTask<bool> MoveNextAsync()
-    {
-        return new ValueTask<bool>(_inner.MoveNext());
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _inner.Dispose();
-        return ValueTask.CompletedTask;
-    }
+    // Navigation properties
+    public virtual Agreement? Agreement { get; private set; }
+    public virtual Offer? Offer { get; private set; }
 }

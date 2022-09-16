@@ -3,6 +3,7 @@ using System;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220914081150_CPLP-1406-AddAgreementAssignedApps")]
+    partial class CPLP1406AddAgreementAssignedApps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1286,25 +1288,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_consents_document_id");
 
                     b.ToTable("consents", "portal");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOffer", b =>
-                {
-                    b.Property<Guid>("ConsentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("consent_id");
-
-                    b.Property<Guid>("OfferId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
-                    b.HasKey("ConsentId", "OfferId")
-                        .HasName("pk_consent_assigned_offers");
-
-                    b.HasIndex("OfferId")
-                        .HasDatabaseName("ix_consent_assigned_offers_offer_id");
-
-                    b.ToTable("consent_assigned_offers", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
@@ -4713,25 +4696,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOffer", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", "Consent")
-                        .WithMany("ConsentAssignedOffers")
-                        .HasForeignKey("ConsentId")
-                        .IsRequired()
-                        .HasConstraintName("fk_consent_assigned_offers_consents_consent_id");
-
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
-                        .WithMany("ConsentAssignedOffers")
-                        .HasForeignKey("OfferId")
-                        .IsRequired()
-                        .HasConstraintName("fk_consent_assigned_offers_offers_offer_id");
-
-                    b.Navigation("Consent");
-
-                    b.Navigation("Offer");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
@@ -5158,11 +5122,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
                 {
-                    b.Navigation("ConsentAssignedOffers");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
-                {
                     b.Navigation("OfferSubscription");
                 });
 
@@ -5239,8 +5198,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("AgreementAssignedOffers");
 
                     b.Navigation("AppInstances");
-
-                    b.Navigation("ConsentAssignedOffers");
 
                     b.Navigation("OfferDescriptions");
 
