@@ -47,12 +47,6 @@ public class DocumentRepository : IDocumentRepository
                     document.CompanyUser!.IamUser!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
 
-    /// <inheritdoc />
-    public void AttachToDatabase(Document document)
-    {
-        _dbContext.Documents.Attach(document);
-    }
-
     public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
