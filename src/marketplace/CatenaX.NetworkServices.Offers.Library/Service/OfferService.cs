@@ -90,6 +90,14 @@ public class OfferService : IOfferService
             throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
         }
 
+        if (!await _portalRepositories
+                .GetInstance<IAgreementRepository>()
+                .CheckAgreementsExistsForSubscriptionAsync(serviceAgreementConsentData.Select(x => x.AgreementId), subscriptionId, OfferTypeId.SERVICE)
+                .ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"Invalid Agreements for subscription {subscriptionId}", nameof(serviceAgreementConsentData));
+        }
+
         var consentAssignedOfferSubscriptionRepository = _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>();
         var offerSubscriptionConsents = await consentAssignedOfferSubscriptionRepository
             .GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(subscriptionId, serviceAgreementConsentData.Select(x => x.AgreementId))

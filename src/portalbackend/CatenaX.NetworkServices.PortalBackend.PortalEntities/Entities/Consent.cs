@@ -18,12 +18,11 @@ public class Consent
         :this()
     {
         Id = id;
-        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
 
     public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
+        : this(id)
     {
-        Id = id;
         AgreementId = agreementId;
         CompanyId = companyId;
         CompanyUserId = companyUserId;

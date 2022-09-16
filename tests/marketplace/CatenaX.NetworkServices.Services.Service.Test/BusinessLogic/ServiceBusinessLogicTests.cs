@@ -424,6 +424,25 @@ public class ServiceBusinessLogicTests
         result.Should().Be(consentId);
     }
 
+    [Fact]
+    public async Task CreateOrUpdateServiceAgreementConsentAsync_RunsSuccessfull()
+    {
+        // Arrange
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.CreateOrUpdateServiceAgreementConsentAsync(A<Guid>._, A<IEnumerable<ServiceAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
+
+        // Act
+        await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<ServiceAgreementConsentData>
+        {
+            new(_existingAgreementId, ConsentStatusId.ACTIVE)
+        }, _iamUser.UserEntityId);
+
+        // Assert
+        true.Should().BeTrue();
+    }
+
     #endregion
 
     #region Get Service Consent Detail Data
