@@ -55,4 +55,30 @@ public interface IOfferService
     /// <param name="consentId">Id of the offer consent</param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Return Agreements for App_Contract Category
+    /// </summary>
+    /// <param name="AgreementCategoryId">Category Id of the Agreement</param>
+    /// <returns></returns>
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync(AgreementCategoryId categoryId);
+    
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <param name="AgreementCategoryId">Category Id of the Agreement</param>
+    /// <returns></returns>
+    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <param name="statusId"></param>
+    /// <param name="categoryId"></param>
+    /// <returns></returns>
+    Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
 }

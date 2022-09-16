@@ -79,46 +79,4 @@ public class AppReleaseRepository : IAppReleaseRepository
                 description
             ))
             .Entity;
-    
-    ///<inheritdoc/>
-    public IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId)
-    =>
-        _context.Agreements
-            .AsNoTracking()
-            .Where(agreement=>agreement.AgreementCategoryId == categoryId)
-            .Select(agreement=> new  AgreementData(
-                agreement.Id,
-                agreement.Name
-            ))
-            .AsAsyncEnumerable();
-    
-    ///<inheritdoc/>
-    public Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId)
-    =>
-        _context.Offers
-            .AsNoTracking()
-            .Where(offer=>offer.Id == appId && offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-            .Select(offer=> new OfferAgreementConsent(
-                offer.ConsentAssignedOffers!.Where(consentAssignedOffer => consentAssignedOffer.Consent!.Agreement!.AgreementCategoryId == categoryId).Select(consentAssignedOffer => new AgreementConsentStatus(
-                consentAssignedOffer.Consent!.AgreementId,
-                consentAssignedOffer.Consent!.ConsentStatusId
-            ))))
-            .SingleOrDefaultAsync();
-    
-    ///<inheritdoc/>
-    public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId)
-    =>
-        _context.Offers
-            .AsNoTracking()
-            .Where(offer=>offer.Id == appId && offer.OfferStatusId == statusId 
-            && offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
-            .Select(offer=> new OfferAgreementConsentUpdate(
-                offer.ProviderCompany!.CompanyUsers.Select(companyUser=>companyUser.Id).SingleOrDefault(),
-                offer.ProviderCompany.Id,
-                offer.ConsentAssignedOffers!.Where(consentAssignedOffer => consentAssignedOffer.Consent!.Agreement!.AgreementCategoryId == categoryId).Select(consentAssignedOffer => new AppAgreementConsentStatus(
-                consentAssignedOffer.Consent!.AgreementId,
-                consentAssignedOffer.Consent!.Id,
-                consentAssignedOffer.Consent!.ConsentStatusId
-            ))))
-            .SingleOrDefaultAsync();
 }
