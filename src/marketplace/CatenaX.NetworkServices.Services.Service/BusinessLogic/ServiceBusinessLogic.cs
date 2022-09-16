@@ -20,9 +20,11 @@
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -35,6 +37,7 @@ namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IOfferService _offerService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -42,9 +45,11 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="settings">Access to the settings</param>
-    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOptions<ServiceSettings> settings)
+    /// <param name="offerService">Access to the offer service</param>
+    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOptions<ServiceSettings> settings, IOfferService offerService)
     {
         _portalRepositories = portalRepositories;
+        _offerService = offerService;
         _settings = settings.Value;
     }
 
@@ -148,7 +153,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<SubscriptionDetailData> GetSubscriptionDetail(Guid subscriptionId, string iamUserId)
+    public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId)
     {
         var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId).ConfigureAwait(false);
@@ -159,6 +164,20 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
         return subscriptionDetailData;
     }
+
+    /// <inheritdoc />
+    public Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId,
+        ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId) =>
+        _offerService.CreateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentData.AgreementId,
+            serviceAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
+        _offerService.GetOfferAgreement(iamUserId, OfferTypeId.SERVICE);
+
+    /// <inheritdoc />
+    public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>
+        _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {
