@@ -21,12 +21,6 @@ public interface IDocumentRepository
     Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId);
 
     /// <summary>
-    /// Attaches the document to the database
-    /// </summary>
-    /// <param name="document">the document that should be attached to the database</param>
-    void AttachToDatabase(Document document);
-
-    /// <summary>
     /// Gets the document with the given id from the persistence layer.
     /// </summary>
     /// <param name="documentId">Id of the document</param>

@@ -18,27 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Tests.Shared;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-public class AsyncEnumeratorStub<T> : IAsyncEnumerator<T>
-{
-    private readonly IEnumerator<T> _inner;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-    public AsyncEnumeratorStub(IEnumerator<T> inner)
-    {
-        _inner = inner;
-    }
-
-    public T Current => _inner.Current;
-
-    public ValueTask<bool> MoveNextAsync()
-    {
-        return new ValueTask<bool>(_inner.MoveNext());
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _inner.Dispose();
-        return ValueTask.CompletedTask;
-    }
-}
+/// <summary>
+/// View model of an application's detailed data specific for service consents
+/// </summary>
+/// <param name="Id">ID of the service</param>
+/// <param name="CompanyName">Name of the company that gave the consent</param>
+/// <param name="CompanyUserId">ID of the company that gave the consent</param>
+/// <param name="ConsentStatus">Consent Status</param>
+/// <param name="AgreementName">The agreement name</param>
+public record ConsentDetailData(Guid Id, string CompanyName, Guid CompanyUserId, ConsentStatusId ConsentStatus, string AgreementName);

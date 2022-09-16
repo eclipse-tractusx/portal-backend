@@ -40,6 +40,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Agreement> Agreements { get; set; } = default!;
     public virtual DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
     public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
+    public virtual DbSet<AgreementAssignedOffer> AgreementAssignedOffers { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
@@ -154,6 +155,21 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        modelBuilder.Entity<AgreementAssignedOffer>(entity =>
+        {
+            entity.HasKey(e => new { e.AgreementId, e.OfferId });
+
+            entity.HasOne(d => d.Agreement)
+                .WithMany(p => p!.AgreementAssignedOffers)
+                .HasForeignKey(d => d.AgreementId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Offer)
+                .WithMany(p => p!.AgreementAssignedOffers!)
+                .HasForeignKey(d => d.OfferId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<AgreementCategory>()
             .HasData(
                 Enum.GetValues(typeof(AgreementCategoryId))
@@ -193,6 +209,9 @@ public class PortalDbContext : DbContext
                         j.HasOne(e => e.OfferSubscriptionStatus)
                             .WithMany(e => e.OfferSubscriptions)
                             .HasForeignKey(e => e.OfferSubscriptionStatusId)
+                            .OnDelete(DeleteBehavior.ClientSetNull);
+                        j.HasOne(e => e.Consent)
+                            .WithOne(e => e.OfferSubscription)
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
