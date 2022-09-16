@@ -18,29 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Web;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.Services.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
+using System.Net.Http.Json;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using Microsoft.Extensions.Logging;
 
-var VERSION = "v2";
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+namespace CatenaX.NetworkServices.Offers.Library.Service;
+   
+public class OfferSetupService : IOfferSetupService
 {
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
+    private readonly ILogger _logger;
+
+    public OfferSetupService(ILogger logger)
+    {
+        _logger = logger;
+    }
+    
+    /// <inheritdoc />
+    public async Task<bool> AutoSetupOffer(Guid serviceId, string serviceDetailsAutoSetupUrl)
+    {
+        var httpClient = new HttpClient();
+        
+        var requestModel = new OfferAutoSetupData(new CustomerData("", "", ""), new PropertyData("", new Guid(), new Guid()));
+        var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, requestModel).ConfigureAwait(false);
+
+        return response.IsSuccessStatusCode;
+    }
 }
-
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddPortalRepositories(builder.Configuration);
-
-builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
-    .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
-
-builder.Build()
-    .CreateApp<Program>("services", VERSION)
-    .Run();
