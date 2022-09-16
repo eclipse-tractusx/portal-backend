@@ -29,7 +29,7 @@ public class Offer
     {
         Provider = null!;
         OfferType = null!;
-        Agreements = new HashSet<Agreement>();
+        AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         OfferDescriptions = new HashSet<OfferDescription>();
         OfferDetailImages = new HashSet<OfferDetailImage>();
         Companies = new HashSet<Company>();
@@ -101,7 +101,7 @@ public class Offer
     public virtual OfferType? OfferType { get; private set; }
     
     public virtual OfferStatus? OfferStatus{ get; set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
+    public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
     public virtual ICollection<OfferDetailImage> OfferDetailImages { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }

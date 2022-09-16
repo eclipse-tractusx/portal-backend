@@ -49,7 +49,7 @@ public class AppReleaseProcessController : ControllerBase
     }
     
     /// <summary>
-    /// Update active apps in the marketplace for given appId for same company as user
+    /// Add app details to a newly created owned app under the app release/publishing process.
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="updateModel"></param>

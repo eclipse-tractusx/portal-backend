@@ -28,6 +28,7 @@ public class PortalRepositories : IPortalRepositories
     private readonly PortalDbContext _dbContext;
 
     private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+        { typeof(IAgreementRepository), context => new AgreementRepository(context) },
         { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
         { typeof(IAppReleaseRepository), context => new AppReleaseRepository(context) },
         { typeof(ICompanyRepository), context => new CompanyRepository(context) },
@@ -92,12 +93,12 @@ public class PortalRepositories : IPortalRepositories
     }
 
     /// <inheritdoc />
-    public TEntity Remove<TEntity>(TEntity entity)
-        where TEntity : class
+    public TEntity Remove<TEntity>(TEntity entity) where TEntity : class
         => _dbContext.Remove(entity).Entity;
 
-    public void RemoveRange<TEntity>(IEnumerable<TEntity> entities)
+    public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
         => _dbContext.RemoveRange(entities);
+    
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
 }
