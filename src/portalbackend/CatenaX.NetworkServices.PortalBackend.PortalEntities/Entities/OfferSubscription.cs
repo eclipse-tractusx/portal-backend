@@ -34,6 +34,7 @@ public class OfferSubscription : IAuditable
     /// </summary>
     protected OfferSubscription()
     {
+        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
 
     /// <summary>
@@ -94,11 +95,6 @@ public class OfferSubscription : IAuditable
     /// <inheritdoc />
     public Guid? LastEditorId { get; set; }
 
-    /// <summary>
-    /// The given consent
-    /// </summary>
-    public Guid? ConsentId { get; set; }
-
     // Navigation properties
     /// <summary>
     /// Subscribed app.
@@ -116,6 +112,6 @@ public class OfferSubscription : IAuditable
     public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
     
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
-    
-    public virtual Consent? Consent { get; private set; }
+
+    public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

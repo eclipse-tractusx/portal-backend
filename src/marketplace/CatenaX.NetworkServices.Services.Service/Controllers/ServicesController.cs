@@ -135,6 +135,25 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// Creates new service agreement consents 
     /// </summary>
+    /// <remarks>Example: Post: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/serviceAgreementConsent</remarks>
+    /// <response code="204">Returns no content.</response>
+    /// <response code="400">Company or company user wasn't assigned to the user.</response>
+    /// <response code="404">No Service was found for the given id.</response>
+    [HttpPost]
+    [Route("{subscriptionId}/serviceAgreementConsents")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> CreateOrUpdateServiceAgreementConsents([FromRoute] Guid subscriptionId, [FromBody] IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentData)
+    {
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateOrUpdateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentData, iamUserId).ConfigureAwait(false));
+        return this.NoContent();
+    }
+
+    /// <summary>
+    /// Creates new service agreement consents 
+    /// </summary>
     /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service subscription the consent should get set for.</param>
     /// <param name="serviceAgreementConsentData">the service agreement consent.</param>
     /// <remarks>Example: Post: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/serviceAgreementConsent</remarks>
