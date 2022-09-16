@@ -180,9 +180,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentData,
+        IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas,
         string iamUserId) =>
-        _offerService.CreateOrUpdateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentData, iamUserId, OfferTypeId.SERVICE);
+        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {

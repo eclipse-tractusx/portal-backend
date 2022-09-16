@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -42,5 +42,5 @@ public interface IConsentAssignedOfferSubscriptionRepository
     /// <param name="offerSubscriptionId">id of the offer subscription</param>
     /// <param name="agreementIds">id of agreement</param>
     /// <returns>List of existing consent assigned offer subscription</returns>
-    IAsyncEnumerable<ConsentAssignedOfferSubscriptionUpdateData> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId, IEnumerable<Guid> agreementIds);
+    IAsyncEnumerable<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId, IEnumerable<Guid> agreementIds);
 }

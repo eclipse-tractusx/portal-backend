@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -46,11 +46,12 @@ public class ConsentAssignedOfferSubscriptionRepository : IConsentAssignedOfferS
         _portalDbContext.ConsentAssignedOfferSubscriptions.Add(new ConsentAssignedOfferSubscription(offerSubscriptionId, consentId)).Entity;
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ConsentAssignedOfferSubscriptionUpdateData> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId,
+    public IAsyncEnumerable<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId,
             IEnumerable<Guid> agreementIds) =>
-        _portalDbContext.ConsentAssignedOfferSubscriptions.Where(x =>
-            x.OfferSubscriptionId == offerSubscriptionId &&
-            agreementIds.Any(a => a == x.Consent!.AgreementId))
-            .Select(x => new ConsentAssignedOfferSubscriptionUpdateData(x.ConsentId, x.Consent!.AgreementId))
+        _portalDbContext.ConsentAssignedOfferSubscriptions
+            .Where(x =>
+                x.OfferSubscriptionId == offerSubscriptionId &&
+                agreementIds.Any(a => a == x.Consent!.AgreementId))
+            .Select(x => new ValueTuple<Guid,Guid,ConsentStatusId>(x.ConsentId, x.Consent!.AgreementId, x.Consent.ConsentStatusId))
             .ToAsyncEnumerable();
 }

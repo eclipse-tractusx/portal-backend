@@ -429,7 +429,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOrUpdateServiceAgreementConsentAsync(A<Guid>._, A<IEnumerable<ServiceAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<ServiceAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 
