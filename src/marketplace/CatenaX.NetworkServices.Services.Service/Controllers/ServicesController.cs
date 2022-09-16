@@ -145,9 +145,9 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> CreateOrUpdateServiceAgreementConsents([FromRoute] Guid subscriptionId, [FromBody] IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentData)
+    public async Task<NoContentResult> CreateOrUpdateServiceAgreementConsents([FromRoute] Guid subscriptionId, [FromBody] IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas)
     {
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateOrUpdateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentData, iamUserId).ConfigureAwait(false));
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateOrUpdateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId).ConfigureAwait(false));
         return this.NoContent();
     }
 

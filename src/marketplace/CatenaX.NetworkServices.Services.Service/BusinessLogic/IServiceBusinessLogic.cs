@@ -94,7 +94,7 @@ public interface IServiceBusinessLogic
     /// Creates the non existing Consents for the given subscription id or updates the status of the existing
     /// </summary>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="serviceAgreementConsentData">Service Agreement Consent Data</param>
+    /// <param name="serviceAgreementConsentDatas">Service Agreement Consent Data</param>
     /// <param name="iamUserId">id of the iam user</param>
-    Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentData, string iamUserId);
+    Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas, string iamUserId);
 }
