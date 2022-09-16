@@ -25,6 +25,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
@@ -34,14 +35,17 @@ namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    
+    private readonly AppsSettings _settings;
+
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories)
+    /// <param name="settings"></param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
+        _settings = settings.Value;
     }
     
     /// <inheritdoc/>
@@ -152,9 +156,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"AppId must not be empty");
         }
-        if (!(documentTypeId == DocumentTypeId.APP_CONTRACT || documentTypeId == DocumentTypeId.DATA_CONTRACT))
+        if (!_settings.DocumentTypeIds.Contains(documentTypeId))
         {
-            throw new ArgumentException($"documentType must  be either APP_CONTRACT or DATA_CONTRACT");
+            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
         }
         if (string.IsNullOrEmpty(document.FileName))
         {
