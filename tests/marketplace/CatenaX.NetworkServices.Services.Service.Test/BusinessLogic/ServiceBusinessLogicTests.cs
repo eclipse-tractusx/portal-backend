@@ -21,6 +21,7 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -30,6 +31,7 @@ using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace CatenaX.NetworkServices.Services.Service.Test.BusinessLogic;
@@ -39,9 +41,14 @@ public class ServiceBusinessLogicTests
     private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly string _notAssignedCompanyIdUser = "395f955b-f11b-4a74-ab51-92a526c1973c";
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+    private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
+    private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+    private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
+    private readonly IAgreementRepository _agreementRepository;
+    private readonly IConsentRepository _consentRepository;
     private readonly IOfferRepository _offerRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly ILanguageRepository _languageRepository;
@@ -60,11 +67,15 @@ public class ServiceBusinessLogicTests
         _iamUser = iamUser;
 
         _portalRepositories = A.Fake<IPortalRepositories>();
+        _agreementRepository = A.Fake<IAgreementRepository>();
+        _consentRepository = A.Fake<IConsentRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
+        _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15 }));
+        
         SetupRepositories(companyUser, iamUser);
     }
 
@@ -125,6 +136,7 @@ public class ServiceBusinessLogicTests
             {
                 OfferTypeId = OfferTypeId.SERVICE 
             });
+        
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
@@ -139,6 +151,7 @@ public class ServiceBusinessLogicTests
         result.Should().Be(serviceId);
         apps.Should().HaveCount(1);
     }
+    
     [Fact]
     public async Task CreateServiceOffering_WithWrongIamUser_ThrowsException()
     {
@@ -336,6 +349,123 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Get Service Agreement
+
+    [Fact]
+    public async Task GetServiceAgreement_WithUserId_ReturnsServiceDetailData()
+    {
+        // Arrange
+        var offerService = A.Fake<IOfferService>();
+        var data = _fixture.CreateMany<AgreementData>(1);
+        A.CallTo(() => offerService.GetOfferAgreement(A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<OfferTypeId>._))
+            .Returns(data.ToAsyncEnumerable());
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+
+        // Act
+        var result = await sut.GetServiceAgreement(_iamUser.UserEntityId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle();
+    }
+
+    #endregion
+
+    #region Get Subscription Details
+
+    [Fact]
+    public async Task GetSubscriptionDetails_WithValidId_ReturnsSubscriptionDetailData()
+    {
+        // Arrange
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var result = await sut.GetSubscriptionDetailAsync(_validSubscriptionId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        result.OfferId.Should().Be(_existingServiceId);
+    }
+
+    [Fact]
+    public async Task GetSubscriptionDetails_WithInvalidId_ThrowsException()
+    {
+        // Arrange
+        var notExistingId = Guid.NewGuid();
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        async Task Action() => await sut.GetSubscriptionDetailAsync(notExistingId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        ex.Message.Should().Be($"Subscription {notExistingId} does not exist");
+    }
+
+    #endregion
+
+    #region Create Service Agreement Consent
+
+    [Fact]
+    public async Task CreateServiceAgreementConsent_ReturnsCorrectId()
+    {
+        // Arrange
+        var consentId = Guid.NewGuid();
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => consentId);
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+
+        // Act
+        var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
+        var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, serviceAgreementConsentData, _iamUser.UserEntityId);
+
+        // Assert
+        result.Should().Be(consentId);
+    }
+
+    #endregion
+
+    #region Get Service Consent Detail Data
+
+    [Fact]
+    public async Task GetServiceConsentDetailData_WithValidId_ReturnsServiceConsentDetailData()
+    {
+        // Arrange
+        var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
+            .ReturnsLazily(() => data);
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+
+        // Act
+        var result = await sut.GetServiceConsentDetailDataAsync(_validConsentId).ConfigureAwait(false);
+
+        // Assert
+        result.Id.Should().Be(_validConsentId);
+        result.CompanyName.Should().Be("The Company");
+    }
+
+    [Fact]
+    public async Task GetServiceConsentDetailData_WithInValidId_ReturnsServiceConsentDetailData()
+    {
+        // Arrange
+        var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
+        var offerService = A.Fake<IOfferService>();
+        var invalidConsentId = Guid.NewGuid();
+        A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
+            .Throws(() => new NotFoundException("Test"));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+
+        // Act
+        async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
@@ -382,6 +512,51 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.CheckServiceExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .Returns(false);
         
+        var agreementData = _fixture.CreateMany<AgreementData>(1);
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
+            .Returns(agreementData.ToAsyncEnumerable());
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
+            .Returns(new List<AgreementData>().ToAsyncEnumerable());
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>.That.Matches(x => x == _existingAgreementId), A<Guid>._, A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
+            .ReturnsLazily(() => true);
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>.That.Not.Matches(x => x == _existingAgreementId), A<Guid>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => false);
+        A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
+            .ReturnsLazily(() => false);
+
+        var offerSubscription = _fixture.Create<OfferSubscription>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
+                A<Guid>.That.Matches(x => x == _validSubscriptionId),
+                A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+            .ReturnsLazily(() =>
+                new SubscriptionDetailData(_existingServiceId, "Super Service", OfferSubscriptionStatusId.ACTIVE));
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
+                A<Guid>.That.Not.Matches(x => x == _validSubscriptionId),
+                A<string>.That.Matches(x => x == iamUser.UserEntityId)))
+            .ReturnsLazily(() => (SubscriptionDetailData?)null);
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
+                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscription?, Guid>(_companyUser.CompanyId, offerSubscription, _companyUser.Id));
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
+                A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId),
+                A<OfferTypeId>._))
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscription?, Guid>(_companyUser.CompanyId, (OfferSubscription?)null, _companyUser.Id));
+        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
+                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Not.Matches(x => x == iamUser.UserEntityId),
+                A<OfferTypeId>._))
+            .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
+
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
+            .ReturnsLazily(() =>
+                new ConsentDetailData(_validConsentId, "The Company", _companyUser.Id, ConsentStatusId.ACTIVE,
+                    "Agreed"));
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
+            .ReturnsLazily(() => (ConsentDetailData?)null);
+        A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
+            .ReturnsLazily(() => (ConsentDetailData?)null);
+        
+        A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);

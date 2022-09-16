@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,27 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Tests.Shared;
+namespace CatenaX.NetworkServices.Offers.Library.Service;
 
-public class AsyncEnumeratorStub<T> : IAsyncEnumerator<T>
-{
-    private readonly IEnumerator<T> _inner;
-
-    public AsyncEnumeratorStub(IEnumerator<T> inner)
-    {
-        _inner = inner;
-    }
-
-    public T Current => _inner.Current;
-
-    public ValueTask<bool> MoveNextAsync()
-    {
-        return new ValueTask<bool>(_inner.MoveNext());
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _inner.Dispose();
-        return ValueTask.CompletedTask;
-    }
+/// <summary>
+/// Business logic for handling offer-related operations. Includes persistence layer access.
+/// </summary>
+public interface IOfferSetupService
+{ 
+    Task<bool> AutoSetupOffer(Guid serviceId, string serviceDetailsAutoSetupUrl);
 }

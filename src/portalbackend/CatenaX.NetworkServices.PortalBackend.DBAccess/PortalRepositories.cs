@@ -28,6 +28,7 @@ public class PortalRepositories : IPortalRepositories
     private readonly PortalDbContext _dbContext;
 
     private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+        { typeof(IAgreementRepository), context => new AgreementRepository(context) },
         { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
         { typeof(IAppReleaseRepository), context => new AppReleaseRepository(context) },
         { typeof(ICompanyRepository), context => new CompanyRepository(context) },

@@ -18,9 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
+using System.Text.Json.Serialization;
 
-public interface IOfferSetupService
-{ 
-    Task<bool> AutoSetupOffer(Guid serviceId, string serviceDetailsAutoSetupUrl);
-}
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+
+public record OfferAutoSetupData(
+    [property: JsonPropertyName("customer")] CustomerData Customer, 
+    [property: JsonPropertyName("properties")] PropertyData Properties);
+
+public record CustomerData(
+    [property: JsonPropertyName("organizationName")] string OrganizationName, 
+    [property: JsonPropertyName("country")] string Country, 
+    [property: JsonPropertyName("email")] string Email);
+
+public record PropertyData(
+    [property: JsonPropertyName("bpnNumber")] string BpnNumber, 
+    [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId, 
+    [property: JsonPropertyName("serviceId")] Guid ServiceId);
