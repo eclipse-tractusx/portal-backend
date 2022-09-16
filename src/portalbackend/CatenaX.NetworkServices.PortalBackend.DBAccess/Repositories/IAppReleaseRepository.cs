@@ -69,31 +69,4 @@ public interface IAppReleaseRepository
     /// <param name="description"></param>
     /// <returns></returns>
     UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
-    
-    /// <summary>
-    /// Return all agreements for agreement category app_contract
-    /// </summary>
-    /// <param name="categoryId"></param>
-    /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId);
-    
-    /// <summary>
-    /// Return matching Agreement and Consent for agreement category app_contract and offer id
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="userId"></param>
-    /// <param name="categoryId"></param>
-    /// <returns></returns>
-    Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId);
-
-    /// <summary>
-    /// Return matching Agreement ,Consent,CompanyUserId and CompanyId for agreement category app_contract , offer id and offer status created
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="userId"></param>
-    /// <param name="statusId"></param>
-    /// <param name="categoryId"></param>
-    /// <returns></returns>
-    Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
-
 }

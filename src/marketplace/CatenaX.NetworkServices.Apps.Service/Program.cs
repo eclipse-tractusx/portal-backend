@@ -24,7 +24,7 @@ using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
-
+using CatenaX.NetworkServices.Offers.Library.Service;
 var VERSION = "v2";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +47,7 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddTransient<IOfferService, OfferService>();
 
 
 builder.Build()

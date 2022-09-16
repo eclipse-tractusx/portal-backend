@@ -25,6 +25,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 
@@ -37,16 +38,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
-
+    private readonly IOfferService _offerService;
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories"></param>
     /// <param name="settings"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings)
+    /// <param name="offerService"></param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService)
     {
         _portalRepositories = portalRepositories;
         _settings = settings.Value;
+        _offerService = offerService;
     }
     
     /// <inheritdoc/>
@@ -237,25 +240,19 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     
     /// <inheritdoc/>
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
-        _portalRepositories.GetInstance<IAppReleaseRepository>().GetAgreements(AgreementCategoryId.APP_CONTRACT);
+        _offerService.GetOfferAgreementDataAsync(AgreementCategoryId.APP_CONTRACT);
 
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
     {
-        var result = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetOfferAgreementConsentById(appId, userId, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
-        if (result == null)
-        {
-            throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
-        }
-        return result;
+        return await _offerService.GetOfferAgreementConsentById(appId, userId, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
     }
     
     /// <inheritdoc/>
     public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
     {
-        var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
         var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
-        var offerAgreementConsentData = await appReleaseRepository.GetOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
+        var offerAgreementConsentData = await _offerService.GetOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
         if (offerAgreementConsentData == null)
         {
             throw new NotFoundException($"offer {appId} does not exist");

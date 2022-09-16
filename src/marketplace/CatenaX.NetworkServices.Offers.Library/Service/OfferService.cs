@@ -87,4 +87,20 @@ public class OfferService : IOfferService
 
         return consentDetails;
     }
+
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync(AgreementCategoryId categoryId)=>
+        _portalRepositories.GetInstance<IAgreementRepository>().GetAgreements(categoryId);
+
+    public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId)
+    {
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(appId, userId, categoryId).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
+        }
+        return result;
+    }
+
+    public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId) =>
+        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(appId, userId, statusId, categoryId);
 }
