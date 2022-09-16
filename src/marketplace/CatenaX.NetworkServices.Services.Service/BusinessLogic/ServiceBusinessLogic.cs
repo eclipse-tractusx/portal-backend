@@ -141,10 +141,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         }
 
         var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
-        bool autoSetupResult;
+        bool? autoSetupResult = null;
         if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
         {
-            autoSetupResult = await _offerSetupService.AutoSetupOffer(serviceId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+            autoSetupResult = await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
         }
 
         if (serviceDetails.SalesManagerId.HasValue)
@@ -154,6 +154,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 serviceDetails.AppName,
                 RequestorCompanyName = companyName,
                 UserEmail = requesterEmail,
+                autoSetupResult
             };
             _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(serviceDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
                 notification =>

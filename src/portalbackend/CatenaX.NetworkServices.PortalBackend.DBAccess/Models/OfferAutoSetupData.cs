@@ -29,7 +29,7 @@ public record OfferAutoSetupData(
 public record CustomerData(
     [property: JsonPropertyName("organizationName")] string OrganizationName, 
     [property: JsonPropertyName("country")] string Country, 
-    [property: JsonPropertyName("email")] string Email);
+    [property: JsonPropertyName("email")] string? Email);
 
 public record PropertyData(
     [property: JsonPropertyName("bpnNumber")] string BpnNumber, 

@@ -25,5 +25,5 @@ namespace CatenaX.NetworkServices.Offers.Library.Service;
 /// </summary>
 public interface IOfferSetupService
 { 
-    Task<bool> AutoSetupOffer(Guid serviceId, string serviceDetailsAutoSetupUrl);
+    Task<bool> AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl);
 }
