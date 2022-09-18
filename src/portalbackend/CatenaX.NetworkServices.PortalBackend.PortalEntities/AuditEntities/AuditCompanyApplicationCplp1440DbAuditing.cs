@@ -27,7 +27,7 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 /// <summary>
 /// Audit entity for <see cref="CompanyApplication"/> only needed for configuration purposes
 /// </summary>
-public class AuditCompanyApplicationCplp1440DbAuditing : CompanyApplication, IAuditEntity
+public class AuditCompanyApplicationCplp1440DbAuditing : IAuditEntity
 {
     /// <inheritdoc />
     public Guid AuditId { get; set; }
@@ -47,5 +47,5 @@ public class AuditCompanyApplicationCplp1440DbAuditing : CompanyApplication, IAu
     public AuditOperationId AuditOperationId { get; set; }
     
     /// <inheritdoc />
-    public new DateTimeOffset DateLastChanged { get; set; }
+    public DateTimeOffset DateLastChanged { get; set; }
 }
