@@ -239,7 +239,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
     }
 
-    private async ValueTask ValidateUploadOwnIdpUsersHeadersAsync(StreamReader reader)
+    private static async ValueTask ValidateUploadOwnIdpUsersHeadersAsync(StreamReader reader)
     {
         var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
         if (firstLine == null)
@@ -249,7 +249,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         ParseUploadOwnIdpUsersCSVFirstLine(firstLine);
     }
 
-    private void ParseUploadOwnIdpUsersCSVFirstLine(string firstLine)
+    private static void ParseUploadOwnIdpUsersCSVFirstLine(string firstLine)
     {
         var headers = firstLine.Split(",").GetEnumerator();
         foreach (var csvHeader in new [] { "FirstName", "LastName", "Email", "ProviderUserName", "ProviderUserId", "Roles" })
@@ -265,7 +265,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    private (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
+    private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
@@ -297,7 +297,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         return (firstName, lastName, email, providerUserName, providerUserId, roles);
     }
 
-    private IEnumerable<string> ParseUploadOwnIdpUsersRoles(IEnumerator<string> items)
+    private static IEnumerable<string> ParseUploadOwnIdpUsersRoles(IEnumerator<string> items)
     {
         while (items.MoveNext())
         {
@@ -309,7 +309,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    private async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
+    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
 

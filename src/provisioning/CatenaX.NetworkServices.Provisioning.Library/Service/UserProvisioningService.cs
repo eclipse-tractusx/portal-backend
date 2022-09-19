@@ -115,7 +115,7 @@ public class UserProvisioningService : IUserProvisioningService
             
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-            yield return new (companyUser?.Id ?? default, user.UserName, error);
+            yield return new (companyUser?.Id ?? Guid.Empty, user.UserName, error);
         }
     }
 

@@ -531,7 +531,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             {
                 var (companyUserId, profile, identityProviderLinks) = ParseCSVLine(nextLine, numIdps, existingAliase);
                 var (userEntityId, existingProfile, links) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
-                var existingLinks = await links.ToListAsync().ConfigureAwait(false);
+                var existingLinks = await links.ToListAsync(cancellationToken).ConfigureAwait(false);
                 var updated = false;
 
                 foreach (var identityProviderLink in identityProviderLinks)
