@@ -100,6 +100,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Keycloak.Library", "keycloak\CatenaX.NetworkServices.Keycloak.Library\CatenaX.NetworkServices.Keycloak.Library.csproj", "{548B597B-2C63-46AC-AFDB-5F3DCF6EEEDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatenaX.NetworkServices.Framework.IO", "framework\CatenaX.NetworkServices.Framework.IO\CatenaX.NetworkServices.Framework.IO.csproj", "{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -566,6 +568,18 @@ Global
 		{3B79DD50-31F5-4F84-B1C8-5A6BFF053A0A}.Release|x64.Build.0 = Release|Any CPU
 		{3B79DD50-31F5-4F84-B1C8-5A6BFF053A0A}.Release|x86.ActiveCfg = Release|Any CPU
 		{3B79DD50-31F5-4F84-B1C8-5A6BFF053A0A}.Release|x86.Build.0 = Release|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Debug|x64.Build.0 = Debug|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Debug|x86.Build.0 = Debug|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Release|x64.ActiveCfg = Release|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Release|x64.Build.0 = Release|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Release|x86.ActiveCfg = Release|Any CPU
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -609,6 +623,7 @@ Global
 		{89ADF427-5F55-40EF-B4D8-B7B130ACF39C} = {3DD94567-71F8-4A68-A7DB-C95237F2F638}
 		{13813E0E-2DF0-405E-81B4-1D7FD2D4714D} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
 		{3B79DD50-31F5-4F84-B1C8-5A6BFF053A0A} = {D9D8E4C0-B711-11EC-B6B4-B7D64E83755B}
+		{A9F71F75-DEBB-4A26-A15B-C9F6EE2B2120} = {79657784-5B49-4B63-B7EF-57620C4EEA20}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2EB6265F-323A-4BF3-969E-003D64A14B64}

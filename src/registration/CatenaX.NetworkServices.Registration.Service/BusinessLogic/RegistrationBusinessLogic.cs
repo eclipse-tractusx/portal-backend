@@ -76,7 +76,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
         }
 
-        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
+        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(document.FileName))
             {
@@ -99,7 +99,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             using var sha256 = SHA256.Create();
             using var ms = new MemoryStream((int)document.Length);
             
-            document.CopyTo(ms);
+            await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
             var hash = sha256.ComputeHash(ms);
             var documentContent = ms.GetBuffer();
             if (ms.Length != document.Length || documentContent.Length != document.Length)
@@ -108,7 +108,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             
             _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            return await _portalRepositories.SaveAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
