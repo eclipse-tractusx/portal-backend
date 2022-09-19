@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220916132329_CPLP-1406-AddConsentAssignedOfferSubscription")]
+    [Migration("20220919090657_CPLP-1406-AddConsentAssignedOfferSubscription")]
     partial class CPLP1406AddConsentAssignedOfferSubscription
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
