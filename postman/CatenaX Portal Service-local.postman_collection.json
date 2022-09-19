@@ -206,12 +206,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{apiUrl}}services/{{serviceId}}/serviceAgreementConsent",
+					"raw": "{{apiUrl}}services/{{offerSubscriptionId}}/serviceAgreementConsent",
 					"host": [
 						"{{apiUrl}}services"
 					],
 					"path": [
-						"{{serviceId}}",
+						"{{offerSubscriptionId}}",
 						"serviceAgreementConsent"
 					]
 				}
@@ -248,12 +248,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}services/serviceAgreementData",
+					"raw": "{{apiUrl}}services/serviceAgreementData/{{serviceId}}",
 					"host": [
 						"{{apiUrl}}services"
 					],
 					"path": [
-						"serviceAgreementData"
+						"serviceAgreementData",
+						"{{serviceId}}"
 					]
 				}
 			},
@@ -371,18 +372,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}services/{{serviceId}}?lang=\"en\"",
+					"raw": "{{apiUrl}}services/{{serviceId}}",
 					"host": [
 						"{{apiUrl}}services"
 					],
 					"path": [
 						"{{serviceId}}"
-					],
-					"query": [
-						{
-							"key": "lang",
-							"value": "\"en\""
-						}
 					]
 				}
 			},
