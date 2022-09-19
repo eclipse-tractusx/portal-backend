@@ -103,6 +103,9 @@ public class UserRepository : IUserRepository
                 iamUserId,
                 companyUser.Id)).Entity;
 
+    public IamUser RemoveIamUser(IamUser iamUser) =>
+        _dbContext.Remove(iamUser).Entity;
+
     public IQueryable<CompanyUser> GetOwnCompanyUserQuery(
         string adminUserId,
         Guid? companyUserId = null,
@@ -218,25 +221,6 @@ public class UserRepository : IUserRepository
                 company!.IdentityProviders
                     .Where(identityProvider => identityProvider.IdentityProviderCategoryId == identityProviderCategoryId)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
-            .SingleOrDefaultAsync();
-
-    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias, bool IsSharedIdp)> GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
-        _dbContext.IamUsers
-            .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => new {
-                Company = iamUser!.CompanyUser!.Company,
-                CompanyUser = iamUser.CompanyUser,
-                IdentityProvider = iamUser!.CompanyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
-            })
-            .Select(s => new ValueTuple<Guid,string?,string?,Guid,string?,bool>(
-                s.Company!.Id,
-                s.Company.Name,
-                s.Company!.BusinessPartnerNumber,
-                s.CompanyUser!.Id,
-                s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
-                s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED
-            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc/>

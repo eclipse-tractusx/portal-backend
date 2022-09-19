@@ -72,7 +72,6 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
-builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 

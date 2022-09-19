@@ -47,7 +47,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IProvisioningDBAccess _provisioningDBAccess;
-    private readonly IPortalBackendDBAccess _portalDBAccess;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
     private readonly IMailingService _mailingService;
@@ -60,7 +59,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// <param name="provisioningManager">Provisioning Manager</param>
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="provisioningDBAccess">Provisioning DBAccess</param>
-    /// <param name="portalDBAccess">Portal DBAccess</param>
     /// <param name="mailingService">Mailing Service</param>
     /// <param name="logger">logger</param>
     /// <param name="settings">Settings</param>
@@ -69,7 +67,6 @@ public class UserBusinessLogic : IUserBusinessLogic
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         IProvisioningDBAccess provisioningDBAccess,
-        IPortalBackendDBAccess portalDBAccess,
         IPortalRepositories portalRepositories,
         IMailingService mailingService,
         ILogger<UserBusinessLogic> logger,
@@ -78,7 +75,6 @@ public class UserBusinessLogic : IUserBusinessLogic
         _provisioningManager = provisioningManager;
         _userProvisioningService = userProvisioningService;
         _provisioningDBAccess = provisioningDBAccess;
-        _portalDBAccess = portalDBAccess;
         _portalRepositories = portalRepositories;
         _userRepository = _portalRepositories.GetInstance<IUserRepository>();
         _mailingService = mailingService;
@@ -529,13 +525,13 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
     {
-        var iamIdpAlias = await _portalDBAccess.GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
+        var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
         if (iamIdpAlias == null)
         {
             throw new NotFoundException($"iamUser {adminUserId} is not a shared idp user");
         }
 
-        await foreach (var companyUser in _portalDBAccess.GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
+        await foreach (var companyUser in _portalRepositories.GetInstance<IUserRolesRepository>().GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
         {
             var success = false;
             try
@@ -552,7 +548,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 yield return companyUser.Id;
             }
         }
-        await _portalDBAccess.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     private async Task DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
@@ -565,11 +561,12 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
         await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false); //TODO doesn't handle the case where user is both shared and own idp user
 
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
         {
-            _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
+            userRolesRepository.RemoveCompanyUserAssignedRole(assignedRole);
         }
-        _portalDBAccess.RemoveIamUser(companyUser.IamUser);
+        _portalRepositories.GetInstance<IUserRepository>().RemoveIamUser(companyUser.IamUser);
         companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
     }
 
@@ -622,7 +619,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId)
     {
-        var idpUserName = await _portalDBAccess.GetIdpCategoryIdByUserIdAsync(companyUserId, adminUserId).ConfigureAwait(false);
+        var idpUserName = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdpCategoryIdByUserIdAsync(companyUserId, adminUserId).ConfigureAwait(false);
         if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
         {
             if (await CanResetPassword(adminUserId).ConfigureAwait(false))

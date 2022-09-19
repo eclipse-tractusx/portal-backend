@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -60,6 +61,28 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             new IamIdentityProvider(
                 idpAlias,
                 identityProvider.Id)).Entity;
+
+    public Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders
+                .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias))
+            .SingleOrDefaultAsync();
+
+    public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId) =>
+        _context.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId
+                && companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+            .Select(companyUser => new IdpUser
+            {
+                TargetIamUserId = companyUser.IamUser!.UserEntityId,
+                IdpName = companyUser.Company!.IdentityProviders
+                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    .SingleOrDefault()
+            }).SingleOrDefaultAsync();
 
     public Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
         _context.IdentityProviders
@@ -141,5 +164,24 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault(),
                 companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias, bool IsSharedIdp)> GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => new {
+                Company = iamUser!.CompanyUser!.Company,
+                CompanyUser = iamUser.CompanyUser,
+                IdentityProvider = iamUser!.CompanyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
+            })
+            .Select(s => new ValueTuple<Guid,string?,string?,Guid,string?,bool>(
+                s.Company!.Id,
+                s.Company.Name,
+                s.Company!.BusinessPartnerNumber,
+                s.CompanyUser!.Id,
+                s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED
+            ))
             .SingleOrDefaultAsync();
 }
