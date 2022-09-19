@@ -192,7 +192,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
         _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
-        return await _portalRepositories.SaveAsync(cancellationToken).ConfigureAwait(false);
+        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
     /// <inheritdoc/>

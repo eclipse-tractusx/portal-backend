@@ -30,7 +30,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
     {
         Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
         IAsyncEnumerable<string> GetClientRolesCompositeAsync();
-        Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId);
+        Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the file content from the persistence store for the given user
