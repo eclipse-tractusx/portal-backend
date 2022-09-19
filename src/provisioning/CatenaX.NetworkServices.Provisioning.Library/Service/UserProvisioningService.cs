@@ -107,27 +107,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
 
-                if (user.Roles.Any())
-                {
-                    var invalidRoles = user.Roles.Except(userRoleIds.Keys);
-                    if (invalidRoles.Any())
-                    {
-                        throw new ControllerArgumentException($"invalid Roles: [{string.Join(", ",invalidRoles)}]");
-                    }
-                    var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                    {
-                        { clientId, user.Roles }
-                    };
-                    var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
-                    foreach (var role in assignedRoles)
-                    {
-                        userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleIds[role]);
-                    }
-                    if (assignedRoles.Count() < user.Roles.Count())
-                    {
-                        throw new ConflictException($"invalid role data, client: {clientId}, [{String.Join(", ",user.Roles.Except(assignedRoles))}] has not been assigned in keycloak");
-                    }
-                }
+                await AssignRolesToNewUser(userRolesRepository, user.Roles, companyUser.Id, centralUserId, clientId, userRoleIds);
             }
             catch (Exception e)
             {
@@ -137,6 +117,31 @@ public class UserProvisioningService : IUserProvisioningService
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
             yield return new (companyUser.Id, user.UserName, error);
+        }
+    }
+
+    private async Task AssignRolesToNewUser(IUserRolesRepository userRolesRepository, IEnumerable<string> roles, Guid companyUserId, string centralUserId, string clientId, IDictionary<string,Guid> userRoleIds)
+    {
+        if (roles.Any())
+        {
+            var invalidRoles = roles.Except(userRoleIds.Keys);
+            if (invalidRoles.Any())
+            {
+                throw new ControllerArgumentException($"invalid Roles: [{string.Join(", ",invalidRoles)}]");
+            }
+            var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+            {
+                { clientId, roles }
+            };
+            var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
+            foreach (var role in assignedRoles)
+            {
+                userRolesRepository.CreateCompanyUserAssignedRole(companyUserId, userRoleIds[role]);
+            }
+            if (assignedRoles.Count() < roles.Count())
+            {
+                throw new ConflictException($"invalid role data, client: {clientId}, [{String.Join(", ", roles.Except(assignedRoles))}] has not been assigned in keycloak");
+            }
         }
     }
 
