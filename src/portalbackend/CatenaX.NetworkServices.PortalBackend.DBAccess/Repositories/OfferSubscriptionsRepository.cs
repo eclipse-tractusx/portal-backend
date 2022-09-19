@@ -139,6 +139,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     public Task<OfferAutoSetupData?> GetAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new OfferAutoSetupData(new CustomerData(x.Company!.Name, "de", x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email), new PropertyData(x.Company!.BusinessPartnerNumber!, offerSubscriptionId, x.OfferId)))
+            .Select(x => new OfferAutoSetupData(new CustomerData(x.Company!.Name, x.Company!.Address!.CountryAlpha2Code, x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email), new PropertyData(x.Company!.BusinessPartnerNumber!, offerSubscriptionId, x.OfferId)))
             .SingleOrDefaultAsync();
 }
