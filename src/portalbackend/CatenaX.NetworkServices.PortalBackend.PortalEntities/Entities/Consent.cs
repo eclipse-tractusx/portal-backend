@@ -5,20 +5,24 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 public class Consent
 {
-    private Consent() {}
+    private Consent()
+    {
+        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+    }
 
     /// <summary>
     /// Please only use when attaching the Consent to the database
     /// </summary>
     /// <param name="id"></param>
-    public Consent(Guid id)
+    public Consent(Guid id) 
+        :this()
     {
         Id = id;
     }
 
     public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
+        : this(id)
     {
-        Id = id;
         AgreementId = agreementId;
         CompanyId = companyId;
         CompanyUserId = companyUserId;
@@ -49,5 +53,5 @@ public class Consent
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; private set; }
     public virtual Document? Document { get; private set; }
-    public virtual OfferSubscription? OfferSubscription { get; private set; }
+    public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

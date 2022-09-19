@@ -70,6 +70,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
     public virtual DbSet<Consent> Consents { get; set; } = default!;
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
+    public virtual DbSet<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
@@ -210,9 +211,6 @@ public class PortalDbContext : DbContext
                         j.HasOne(e => e.OfferSubscriptionStatus)
                             .WithMany(e => e.OfferSubscriptions)
                             .HasForeignKey(e => e.OfferSubscriptionStatusId)
-                            .OnDelete(DeleteBehavior.ClientSetNull);
-                        j.HasOne(e => e.Consent)
-                            .WithOne(e => e.OfferSubscription)
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
@@ -653,6 +651,22 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.ConsentStatus)
                 .WithMany(p => p!.Consents)
                 .HasForeignKey(d => d.ConsentStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+        });
+        
+        modelBuilder.Entity<ConsentAssignedOfferSubscription>(entity =>
+        {
+            entity.HasKey(e => new { e.ConsentId, e.OfferSubscriptionId });
+
+            entity.HasOne(d => d.Consent)
+                .WithMany(p => p!.ConsentAssignedOfferSubscriptions)
+                .HasForeignKey(d => d.ConsentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.OfferSubscription)
+                .WithMany(p => p!.ConsentAssignedOfferSubscriptions)
+                .HasForeignKey(d => d.OfferSubscriptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
