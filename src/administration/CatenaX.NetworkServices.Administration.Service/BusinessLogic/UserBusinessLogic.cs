@@ -235,6 +235,44 @@ public class UserBusinessLogic : IUserBusinessLogic
         return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
     }
 
+    private async ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    {
+        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+
+        using var stream = document.OpenReadStream();
+        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
+
+        int numCreated = 0;
+        var errors = new List<String>();
+        int numLines = 0;
+
+        try
+        {
+            await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
+
+            await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+                companyNameIdpAliasData,
+                _settings.Portal.KeyCloakClientID,
+                ParseUploadOwnIdpUsersCSVLines(reader, companyNameIdpAliasData.IsShardIdp)))
+            {
+                numLines++;
+                if (result.Error != null)
+                {
+                    errors.Add($"line: {numLines}, message: {result.Error.Message}");
+                }
+                else
+                {
+                    numCreated++;
+                }
+            }
+        }
+        catch(TaskCanceledException tce)
+        {
+            errors.Add($"line: {numLines}, message: {tce.Message}");
+        }
+        return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
+    }
+
     private static async ValueTask ValidateUploadOwnIdpUsersHeadersAsync(StreamReader reader)
     {
         var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
@@ -242,11 +280,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             throw new ControllerArgumentException("uploaded file contains no lines");
         }
-        ParseUploadOwnIdpUsersCSVFirstLine(firstLine);
-    }
 
-    private static void ParseUploadOwnIdpUsersCSVFirstLine(string firstLine)
-    {
         var headers = firstLine.Split(",").GetEnumerator();
         foreach (var csvHeader in new [] { "FirstName", "LastName", "Email", "ProviderUserName", "ProviderUserId", "Roles" })
         {
@@ -258,6 +292,18 @@ public class UserBusinessLogic : IUserBusinessLogic
             {
                 throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
             }
+        }
+    }
+
+    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
+    {
+        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+
+        while (nextLine != null)
+        {
+            var (firstName, lastName, email, providerUserName, providerUserId, roles) = ParseUploadOwnIdpUsersCSVLine(nextLine, isSharedIdp);
+            yield return new UserCreationInfoIdp(firstName, lastName, email, roles, providerUserName, providerUserId);
+            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         }
     }
 
@@ -303,56 +349,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             yield return items.Current;
         }
-    }
-
-    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
-    {
-        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-
-        while (nextLine != null)
-        {
-            var (firstName, lastName, email, providerUserName, providerUserId, roles) = ParseUploadOwnIdpUsersCSVLine(nextLine, isSharedIdp);
-            yield return new UserCreationInfoIdp(firstName, lastName, email, roles, providerUserName, providerUserId);
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        }
-    }
-
-    private async ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
-
-        using var stream = document.OpenReadStream();
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
-
-        int numCreated = 0;
-        var errors = new List<String>();
-        int numLines = 0;
-
-        try
-        {
-            await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
-
-            await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                companyNameIdpAliasData,
-                _settings.Portal.KeyCloakClientID,
-                ParseUploadOwnIdpUsersCSVLines(reader, companyNameIdpAliasData.IsShardIdp)))
-            {
-                numLines++;
-                if (result.Error != null)
-                {
-                    errors.Add($"line: {numLines}, message: {result.Error.Message}");
-                }
-                else
-                {
-                    numCreated++;
-                }
-            }
-        }
-        catch(TaskCanceledException tce)
-        {
-            errors.Add($"line: {numLines}, message: {tce.Message}");
-        }
-        return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
     }
 
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
