@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 /// <summary>
@@ -32,7 +34,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 public record ServiceOfferingData(
     string Title,
     string Price,
-    string ThumbnailUrl,
+    string? ThumbnailUrl,
     string? ContactEmail,
     Guid SalesManager,
     IEnumerable<ServiceDescription> Descriptions);
@@ -43,3 +45,10 @@ public record ServiceOfferingData(
 /// <param name="LanguageCode">the language code (2-chars)</param>
 /// <param name="Description">the service description</param>
 public record ServiceDescription(string LanguageCode, string Description);
+
+/// <summary>
+/// Data object for the service agreement consent
+/// </summary>
+/// <param name="AgreementId">Id of the agreement</param>
+/// <param name="ConsentStatusId">Id of the consent status</param>
+public record ServiceAgreementConsentData(Guid AgreementId, ConsentStatusId ConsentStatusId);

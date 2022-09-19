@@ -104,12 +104,4 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 companyRole.CompanyRoleDescriptions.SingleOrDefault(desc =>
                     desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description
             )).AsAsyncEnumerable();
-
-    public IAsyncEnumerable<AgreementData> GetAgreementsUntrackedAsync() =>
-        _dbContext.Agreements
-            .AsNoTracking()
-            .Select(agreement => new AgreementData(
-                agreement.Id,
-                agreement.Name))
-            .AsAsyncEnumerable();
 }
