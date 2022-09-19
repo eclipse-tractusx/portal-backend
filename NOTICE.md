@@ -36,6 +36,12 @@ This project leverages the following third party content.
 
 See DEPENDENCIES file.
 
+This project uses and has modified the following code:
+
+* License: MIT License
+* Licence Path: https://github.com/lvermeulen/Keycloak.Net/blob/main/LICENSE
+* Source URL: https://github.com/lvermeulen/Keycloak.Net
+
 ## Cryptography
 
 Content may contain encryption software. The country in which you are currently
