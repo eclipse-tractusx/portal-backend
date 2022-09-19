@@ -159,7 +159,6 @@ nuget/nuget/-/xunit/2.4.1
 nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.4.1
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/NETStandard.Library/1.6.1
@@ -199,7 +198,6 @@ nuget/nuget/-/FakeItEasy/7.3.1
 nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/Flurl.Http.Signed/3.2.4
@@ -232,7 +230,6 @@ nuget/nuget/-/Testcontainers/2.1.0
 nuget/nuget/-/xunit/2.4.1
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Humanizer.Core/2.8.26
 nuget/nuget/-/NETStandard.Library/1.6.1
@@ -258,7 +255,6 @@ nuget/nuget/-/FakeItEasy/7.3.1
 nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit.runner.visualstudio/2.4.5
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/Flurl.Http.Signed/3.2.4
@@ -310,7 +306,6 @@ nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit/2.4.1
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/Flurl.Http.Signed/3.2.4
@@ -378,7 +373,6 @@ nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit/2.4.1
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/NETStandard.Library/1.6.1
@@ -422,7 +416,6 @@ nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit/2.4.1
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/NETStandard.Library/1.6.1
@@ -449,7 +442,6 @@ nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit/2.4.1
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Castle.Core/4.3.1
-   > Docker.DotNet                                                                      3.125.10
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Fare/2.1.1
 nuget/nuget/-/Flurl.Http.Signed/3.2.4
