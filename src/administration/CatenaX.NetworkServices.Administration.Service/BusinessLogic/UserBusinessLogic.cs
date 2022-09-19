@@ -216,11 +216,11 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
     {
+        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
         var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+                companyNameIdpAliasData,
                 _settings.Portal.KeyCloakClientID,
-                Enumerable.Repeat(userCreationInfo, 1).ToAsyncEnumerable(),
-                iamUserId,
-                identityProviderId)
+                Enumerable.Repeat(userCreationInfo, 1).ToAsyncEnumerable())
             .FirstAsync()
             .ConfigureAwait(false);
         if(result.Error != null)
@@ -265,7 +265,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    private (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line)
+    private (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
@@ -288,7 +288,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new ControllerArgumentException($"value for ProviderUserName type string expected");
         }
         var providerUserName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
+        if(!items.MoveNext() || (!isSharedIdp && string.IsNullOrWhiteSpace(items.Current)))
         {
             throw new ControllerArgumentException($"value for ProviderUserId type string expected");
         }
@@ -309,13 +309,13 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    private async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader)
+    private async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
 
         while (nextLine != null)
         {
-            var (firstName, lastName, email, providerUserName, providerUserId, roles) = ParseUploadOwnIdpUsersCSVLine(nextLine);
+            var (firstName, lastName, email, providerUserName, providerUserId, roles) = ParseUploadOwnIdpUsersCSVLine(nextLine, isSharedIdp);
             yield return new UserCreationInfoIdp(firstName, lastName, email, roles, providerUserName, providerUserId);
             nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         }
@@ -323,6 +323,8 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
+        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+
         using var stream = document.OpenReadStream();
         var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
 
@@ -335,10 +337,9 @@ public class UserBusinessLogic : IUserBusinessLogic
             await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
 
             await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                    _settings.Portal.KeyCloakClientID,
-                    ParseUploadOwnIdpUsersCSVLines(reader),
-                    iamUserId,
-                    identityProviderId))
+                companyNameIdpAliasData,
+                _settings.Portal.KeyCloakClientID,
+                ParseUploadOwnIdpUsersCSVLines(reader, companyNameIdpAliasData.IsShardIdp)))
             {
                 numLines++;
                 if (result.Error != null)

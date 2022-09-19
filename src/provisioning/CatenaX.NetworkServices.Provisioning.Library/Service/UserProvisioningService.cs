@@ -45,20 +45,12 @@ public class UserProvisioningService : IUserProvisioningService
         _portalRepositories = portalRepositories;
     }
 
-    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, string iamUserId, Guid identityProviderId = default)
+    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var (companyId, companyName, businessPartnerNumber, alias, isSharedIdp) = await (identityProviderId == Guid.Empty
-            ? GetSharedIdpUserCreationCompanyIdpData(userRepository, iamUserId)
-            : GetOwnIdpUserCreationCompanyIdpData(userRepository, identityProviderId, iamUserId)
-        ).ConfigureAwait(false);
-
-        if (companyName == null)
-        {
-            throw new ConflictException($"assertion failed: companyName of company {companyId} should never be null here");
-        }
+        var (companyId, companyName, businessPartnerNumber, creatorId, alias, isSharedIdp) = companyNameIdpAliasData;
 
         var userRoleIds = await userRolesRepository
             .GetUserRolesWithIdAsync(clientId)
@@ -67,8 +59,6 @@ public class UserProvisioningService : IUserProvisioningService
                 roleWithId => roleWithId.Id
             )
             .ConfigureAwait(false);
-
-        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
 
         var password = isSharedIdp ? new Password() : null;
 
@@ -129,6 +119,27 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
+    public async Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+        }
+
+        if (result.IdpAlias == null)
+        {
+            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with own idp {identityProviderId}");
+        }
+
+        if (result.CompanyName == null)
+        {
+            throw new ConflictException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+        }
+
+        return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, result.IsSharedIdp);
+    }
+
     private async Task ValidateDuplicateUsers(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
     {
         await foreach (var userEntityId in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))
@@ -171,34 +182,5 @@ public class UserProvisioningService : IUserProvisioningService
                 throw new ConflictException($"invalid role data, client: {clientId}, [{String.Join(", ", roles.Except(assignedRoles))}] has not been assigned in keycloak");
             }
         }
-    }
-
-    private async Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string Alias, bool IsSharedKeycloak)> GetSharedIdpUserCreationCompanyIdpData(IUserRepository userRepository, string iamUserId)
-    {
-        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
-        if (result != default)
-        {
-            var idpAlias = result.IdpAliase.SingleOrDefault();
-            if (idpAlias == null)
-            {
-                throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any shared idp");
-            }
-            return new ValueTuple<Guid,string?,string?,string,bool>(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, idpAlias, true);
-        }
-        throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
-    }
-
-    private async Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string Alias, bool IsSharedKeycloak)> GetOwnIdpUserCreationCompanyIdpData(IUserRepository userRepository, Guid identityProviderId, string iamUserId)
-    {
-        var result = await userRepository.GetCompanyNameIdpAliasUntreackedAsync(iamUserId, identityProviderId).ConfigureAwait(false);
-        if (result != default)
-        {
-            if (result.IdpAlias == null)
-            {
-                throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with own idp {identityProviderId}");
-            }
-            return new ValueTuple<Guid,string?,string?,string,bool>(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.IdpAlias, false);
-        }
-        throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
     }
 }
