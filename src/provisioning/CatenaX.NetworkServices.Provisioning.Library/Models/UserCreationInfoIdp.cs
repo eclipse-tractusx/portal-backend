@@ -25,10 +25,10 @@ namespace CatenaX.NetworkServices.Provisioning.Library.Models;
 public record UserCreationInfoIdp(
 
     [property: JsonPropertyName("firstName")]
-    string? FirstName,
+    string FirstName,
     
     [property: JsonPropertyName("lastName")]
-    string? LastName,
+    string LastName,
 
     [property: JsonPropertyName("email")]
     string Email,

@@ -36,6 +36,7 @@ public interface IUserRepository
     IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
     Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
+    IAsyncEnumerable<string> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId);
     Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);

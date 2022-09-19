@@ -19,8 +19,10 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using PasswordGenerator;
@@ -72,12 +74,15 @@ public class UserProvisioningService : IUserProvisioningService
 
         await foreach(var user in userCreationInfos)
         {
-            var companyUser = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId);
-
+            CompanyUser? companyUser = null;
             Exception? error = null;
 
             try
             {
+                await ValidateDuplicateUsers(userRepository, alias, user, companyId).ConfigureAwait(false);
+
+                companyUser = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId);
+
                 var providerUserId = isSharedIdp
                     ? await _provisioningManager.CreateSharedRealmUserAsync(
                         alias,
@@ -113,10 +118,33 @@ public class UserProvisioningService : IUserProvisioningService
             {
                 error = e;
             }
-
+            if(companyUser == null && error == null)
+            {
+                error = new UnexpectedConditionException($"failed to create companyUser for provider userid {user.UserId}, username {user.UserName} while not throwing any error");
+            }
+            
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-            yield return new (companyUser.Id, user.UserName, error);
+            yield return new (companyUser?.Id ?? default, user.UserName, error);
+        }
+    }
+
+    private async Task ValidateDuplicateUsers(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
+    {
+        await foreach (var userEntityId in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))
+        {
+            try
+            {
+                if (await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).AnyAsync(link =>
+                    alias == link.Alias && (user.UserId == link.UserId || user.UserName == link.UserName)).ConfigureAwait(false))
+                {
+                    throw new ConflictException($"existing user {userEntityId} in keycloak for provider userid {user.UserId}, {user.UserName}");
+                }
+            }
+            catch(KeycloakEntityNotFoundException)
+            {
+                // when searching for duplicates this is not a validation-error
+            }
         }
     }
 
