@@ -32,7 +32,6 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
-using PasswordGenerator;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
@@ -82,130 +81,82 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
     {
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var companyNameIdpAliasData = await GetCompanyNameSharedIdpAliasData(createdById).ConfigureAwait(false);
 
-        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdById, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
-        }
-        var (companyId, companyName, businessPartnerNumber, idpAliase) = result;
-        if (companyName == null)
-        {
-            throw new Exception($"assertion failed: companyName of company {companyId} should never be null here");
-        }
-        var idpAlias = idpAliase.SingleOrDefault();
-        if (idpAlias == null)
-        {
-            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
-        }
+        var userCreationInfoIdps = usersToCreate.Select(user =>
+            new UserCreationInfoIdp(
+                user.firstName ?? "",
+                user.lastName ?? "",
+                user.eMail,
+                user.Roles,
+                user.userName ?? user.eMail,
+                ""
+            )).ToAsyncEnumerable();
+
+        var emailData = usersToCreate.ToDictionary(
+            user => user.userName ?? user.eMail,
+            user => (user.eMail, user.Message));
 
         var clientId = _settings.Portal.KeyCloakClientID;
 
-        var roles = usersToCreate
-                .SelectMany(user => user.Roles)
-                .Where(role => !String.IsNullOrWhiteSpace(role))
-                .Distinct();
-
-        var userRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
-            clientId,
-            roles
-            )
-            .ToDictionaryAsync(
-                companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
-                companyRoleWithId => companyRoleWithId.CompanyUserRoleId
-            )
-            .ConfigureAwait(false);
-
-        foreach (var role in roles)
+        await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).ConfigureAwait(false))
         {
-            if (!userRoleIds.ContainsKey(role))
+            var (email, message) = emailData[userName];
+            Exception? mailError = null;
+
+            if (error == null)
             {
-                throw new ArgumentException($"invalid Role: {role}");
-            }
-        }
-
-        var pwd = new Password();
-
-        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
-        foreach (UserCreationInfo user in usersToCreate)
-        {
-            bool success = false;
-            try
-            {
-                var password = pwd.Next();
-                var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
-                    idpAlias,
-                    new UserProfile(
-                        user.userName ?? user.eMail,
-                        user.firstName,
-                        user.lastName,
-                        user.eMail,
-                        password
-                    ),
-                    _provisioningManager.GetStandardAttributes(
-                        alias: idpAlias,
-                        organisationName: companyName,
-                        businessPartnerNumber: businessPartnerNumber
-                    )
-                ).ConfigureAwait(false);
-
-                var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
-
-                var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
-                if (validRoles.Count() > 0)
-                {
-                    var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                    {
-                        { clientId, validRoles }
-                    };
-                    var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
-                    foreach (var role in assignedRoles)
-                    {
-                        userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleIds[role]);
-                    }
-                    if (assignedRoles.Count() < validRoles.Count())
-                    {
-                        //TODO change return-type of method to include role-assignment-error information if assignedRoles is not the same as validRoles
-                        _logger.LogError($"invalid role data, client: {clientId}, [{String.Join(", ",validRoles.Except(assignedRoles))}] has not been assigned in keycloak");
-                    }
-                }
-
-                userRepository.CreateIamUser(companyUser, centralUserId);
-
-                var inviteTemplateName = "PortalTemplate";
-                if (!string.IsNullOrWhiteSpace(user.Message))
-                {
-                    inviteTemplateName = "PortalTemplateWithMessage";
-                }
+                var inviteTemplateName = string.IsNullOrWhiteSpace(message)
+                    ? "PortalTemplate"
+                    : "PortalTemplateWithMessage";
 
                 var mailParameters = new Dictionary<string, string>
                 {
-                    { "password", password },
-                    { "companyname", companyName },
-                    { "message", user.Message ?? "" },
+                    { "password", password ?? "" },
+                    { "companyname", companyNameIdpAliasData.CompanyName },
+                    { "message", message ?? "" },
                     { "nameCreatedBy", createdById },
                     { "url", _settings.Portal.BasePortalAddress },
-                    { "username", user.eMail },
+                    { "username", userName },
                 };
 
-                await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
+                try
+                {
+                    await _mailingService.SendMails(email, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
+                }
+                catch(Exception e)
+                {
+                    mailError = e;
+                }
 
-                success = true;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Error while creating user {user.userName ?? user.eMail}");
+                yield return email;
             }
 
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-            if (success)
-            {
-                yield return user.eMail;
-            }
+            _logger.LogError(mailError == null ? error : mailError, $"Error while creating user {userName ?? email}");
         }
+    }
+
+    private async Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+        }
+        var (companyId, companyName, businessPartnerNumber, companyUserId, idpAliase) = result;
+        if (companyName == null)
+        {
+            throw new Exception($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+        }
+        if (!idpAliase.Any())
+        {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any shared idp");
+        }
+        if (idpAliase.Count() > 1)
+        {
+            throw new ConflictException($"user {iamUserId} is associated with more than one shared idp");
+        }
+        return new CompanyNameIdpAliasData(companyId, companyName, businessPartnerNumber, companyUserId, idpAliase.First(), true);
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
