@@ -63,7 +63,6 @@ public class AuditEntityV1Attribute : Attribute
         var propertiesWithPrefix = string.Join(",", baseEntityProperties.Select(x => $"{_prefix}{x}"));
 
         return $"INSERT INTO portal.{auditTableName} ( " +
-               $"{nameof(IAuditable.Id).ToLower()}, " +
                $"{snakeCaseStrategy.GetPropertyName(nameof(IAuditEntity.AuditId), false).ToLower()}, " +
                $"{string.Join(",", properties)}, " +
                $"{snakeCaseStrategy.GetPropertyName(nameof(IAuditable.LastEditorId), false)}, " +
@@ -71,7 +70,6 @@ public class AuditEntityV1Attribute : Attribute
                $"{snakeCaseStrategy.GetPropertyName(nameof(IAuditEntity.AuditOperationId), false)} ) " +
                "SELECT " +
                "gen_random_uuid(), " +
-               $"{_prefix}{entity.GetColumnName(nameof(IAuditable.Id), tableName)}, " +
                $"{string.Join(",", propertiesWithPrefix)}, " +
                $"{_prefix}{entity.GetColumnName(nameof(IAuditable.LastEditorId), tableName)}, " +
                "CURRENT_DATE, " +
