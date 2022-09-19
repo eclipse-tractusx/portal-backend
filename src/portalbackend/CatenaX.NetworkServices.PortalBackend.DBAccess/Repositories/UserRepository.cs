@@ -131,6 +131,17 @@ public class UserRepository : IUserRepository
                 companyUser.Email))
             .SingleOrDefaultAsync();
 
+    public IAsyncEnumerable<string> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId) =>
+        _dbContext.CompanyUsers
+            .AsNoTracking()
+            .Where(companyUser =>
+                companyUser.CompanyId == companyId &&
+                    (companyUser.Email == email ||
+                    companyUser.Firstname == firstName ||
+                    companyUser.Lastname == lastName ))
+            .Select(companyUser => companyUser.IamUser!.UserEntityId)
+            .AsAsyncEnumerable();
+            
     public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()

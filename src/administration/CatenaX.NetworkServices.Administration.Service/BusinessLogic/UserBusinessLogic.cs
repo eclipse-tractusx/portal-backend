@@ -226,7 +226,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         if(result.Error != null)
         {
             throw result.Error;
-        } 
+        }
         return result.CompanyUserId;
     }
 
