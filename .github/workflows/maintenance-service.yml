@@ -3,8 +3,9 @@ name: Maintenance-Service
 on:
   push:
     paths:
-      # service path
+      # service and transitive paths
       - 'src/maintenance/CatenaX.NetworkServices.Maintenance.App/**'
+      - 'src/portalbackend/CatenaX.NetworkServices.PortalBackend.PortalEntities/**'
       # workflow file
       - '.github/workflows/maintenance-service.yml'
       # dockerfile

@@ -3,8 +3,10 @@ name: Provisioning-Service
 on: 
   push:
     paths:
-      # service path
-      - 'src/provisioning/CatenaX.NetworkServices.Provisioning.Service/**'
+      # service and transitive paths
+      - 'src/provisioning/**'
+      - 'src/framework/**'
+      - 'src/keycloak/**'
       # workflow file
       - '.github/workflows/provisioning-service.yml'
       # dockerfile
