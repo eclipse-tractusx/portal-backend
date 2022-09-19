@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Framework.IO;
 using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
@@ -323,29 +324,36 @@ public class UserBusinessLogic : IUserBusinessLogic
     private async ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
         using var stream = document.OpenReadStream();
-        var reader = new StreamReader(stream, Encoding.UTF8);
-
-        await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
+        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
 
         int numCreated = 0;
         var errors = new List<String>();
         int numLines = 0;
 
-        await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                _settings.Portal.KeyCloakClientID,
-                ParseUploadOwnIdpUsersCSVLines(reader),
-                iamUserId,
-                identityProviderId))
+        try
         {
-            numLines++;
-            if (result.Error != null)
+            await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
+
+            await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+                    _settings.Portal.KeyCloakClientID,
+                    ParseUploadOwnIdpUsersCSVLines(reader),
+                    iamUserId,
+                    identityProviderId))
             {
-                errors.Add($"line: {numLines}, message: {result.Error.Message}");
+                numLines++;
+                if (result.Error != null)
+                {
+                    errors.Add($"line: {numLines}, message: {result.Error.Message}");
+                }
+                else
+                {
+                    numCreated++;
+                }
             }
-            else
-            {
-                numCreated++;
-            }
+        }
+        catch(TaskCanceledException tce)
+        {
+            errors.Add($"line: {numLines}, message: {tce.Message}");
         }
         return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
     }

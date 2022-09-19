@@ -67,6 +67,19 @@ public class UserController : ControllerBase
     public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
         this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
 
+    /// <summary>
+    /// Create a new user for a specific identityprovider
+    /// </summary>
+    /// <param name="identityProviderId">the id of the identityprovider</param>
+    /// <param name="userToCreate">properties and identityprovider link data for the user to create</param>
+    /// <returns>the id of the newly created company-user</returns>
+    /// <remarks>
+    /// Example: POST: api/administration/users/identityprovider/owncompany/identityprovider/{identityProviderId}/users
+    /// </remarks>
+    /// <response code="200">Returns a file of users.</response>
+    /// <response code="400">user is not associated with a company.</response>
+    /// <response code="415">Content type didn't match the expected value.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
     [Route("owncompany/identityprovider/{identityProviderId}/users")]
@@ -76,6 +89,20 @@ public class UserController : ControllerBase
         return CreatedAtRoute(nameof(GetOwnCompanyUserDetails), new { companyUserId = result }, result);
     }
 
+    /// <summary>
+    /// Create new users for a specific identityprovider by upload of csv-file
+    /// </summary>
+    /// <param name="identityProviderId">the id of the identityprovider</param>
+    /// <param name="document">The file including the users</param>
+    /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
+    /// <returns>Returns a status of the document processing</returns>
+    /// <remarks>
+    /// Example: POST: api/administration/users/identityprovider/owncompany/identityprovider/{identityProviderId}/usersfile
+    /// </remarks>
+    /// <response code="200">Returns a file of users.</response>
+    /// <response code="400">user is not associated with a company.</response>
+    /// <response code="415">Content type didn't match the expected value.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
     [Consumes("multipart/form-data")]

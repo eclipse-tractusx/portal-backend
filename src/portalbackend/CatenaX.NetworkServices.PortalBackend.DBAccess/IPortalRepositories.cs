@@ -48,5 +48,5 @@ public interface IPortalRepositories
 
     public T GetInstance<T>();
 
-    public Task<int> SaveAsync();
+    public Task<int> SaveAsync(CancellationToken cancellationToken = default);
 }

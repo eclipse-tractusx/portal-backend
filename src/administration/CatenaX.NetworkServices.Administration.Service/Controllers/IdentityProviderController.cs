@@ -239,6 +239,7 @@ public class IdentityProviderController : ControllerBase
     /// Upload the users and adds them to the user provider 
     /// </summary>
     /// <param name="document">The file including the users</param>
+    /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
     /// <returns>Returns a status of the document processing</returns>
     /// <remarks>
     /// Example: POST: api/administration/identityprovider/owncompany/usersfile
@@ -256,8 +257,8 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-        public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document) =>
-            this.WithIamUserId(iamUserId => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, iamUserId));
+        public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+            this.WithIamUserId(iamUserId => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, iamUserId, cancellationToken));
     
     /// <summary>
     /// Adds the user to the given identity provider

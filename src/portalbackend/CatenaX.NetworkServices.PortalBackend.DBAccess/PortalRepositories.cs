@@ -100,5 +100,5 @@ public class PortalRepositories : IPortalRepositories
         => _dbContext.RemoveRange(entities);
     
 
-    public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
+    public Task<int> SaveAsync(CancellationToken cancellationToken = default) => _dbContext.SaveChangesAsync(cancellationToken);
 }
