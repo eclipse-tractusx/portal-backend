@@ -52,6 +52,7 @@ public class ServiceBusinessLogicTests
     private readonly IOfferRepository _offerRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly ILanguageRepository _languageRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
 
@@ -72,6 +73,7 @@ public class ServiceBusinessLogicTests
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
+        _notificationRepository = A.Fake<INotificationRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
         _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15 }));
@@ -257,6 +259,20 @@ public class ServiceBusinessLogicTests
                 var companyAssignedApp = new OfferSubscription(companyAssignedAppId, appId, companyId, appSubscriptionStatusId, requesterId, creatorId);
                 companyAssignedApps.Add(companyAssignedApp);
             });
+        var notificationId = Guid.NewGuid();
+        var notifications = new List<Notification>(); 
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
+            .Invokes(x =>
+            {
+                var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
+                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
+                var isRead = x.Arguments.Get<bool>("isRead");
+                var setOptionalParameter = x.Arguments.Get< Action<Notification>?>("setOptionalParameter");
+
+                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameter?.Invoke(notification);
+                notifications.Add(notification);
+            });
         _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
@@ -265,6 +281,7 @@ public class ServiceBusinessLogicTests
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
+        notifications.Should().HaveCount(1);
     }
     
     [Fact]
@@ -521,6 +538,8 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._))
             .ReturnsLazily(() => (ServiceDetailData?)null);
         
+        A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceId)))
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
         
@@ -582,6 +601,7 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
     }
 

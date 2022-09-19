@@ -27,18 +27,24 @@ namespace CatenaX.NetworkServices.Offers.Library.Service;
 public class OfferSetupService : IOfferSetupService
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public OfferSetupService(IPortalRepositories portalRepositories)
+    public OfferSetupService(IPortalRepositories portalRepositories, IHttpClientFactory httpClientFactory)
     {
         _portalRepositories = portalRepositories;
+        _httpClientFactory = httpClientFactory;
     }
     
     /// <inheritdoc />
     public async Task<bool> AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
     {
-        var httpClient = new HttpClient();
-
+        using var httpClient = _httpClientFactory.CreateClient();
         var offerAutoSetupData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
+        if (offerAutoSetupData == null)
+        {
+            return false;
+        }
+
         var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, offerAutoSetupData).ConfigureAwait(false);
 
         return response.IsSuccessStatusCode;
