@@ -43,7 +43,7 @@ public class UserProvisioningService : IUserProvisioningService
         _portalRepositories = portalRepositories;
     }
 
-    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, string iamUserId, Guid identityProviderId)
+    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, string iamUserId, Guid identityProviderId = default)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();

@@ -107,7 +107,7 @@ public partial class ProvisioningManager : IProvisioningManager
         return userIdCentral;
     }
 
-    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias, string? organisationName, string? businessPartnerNumber)
+    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias = null, string? organisationName = null, string? businessPartnerNumber = null)
     {
         var attributes = new List<(string,IEnumerable<string>)>();
         if (alias != null)
