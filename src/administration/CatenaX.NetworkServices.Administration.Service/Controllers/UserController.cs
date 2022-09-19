@@ -69,12 +69,25 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
-    [Route("owncompany/identityProvider/{identityProviderId}/users")]
+    [Route("owncompany/identityprovider/{identityProviderId}/users")]
     public async Task<CreatedAtRouteResult> CreateOwnIdpOwnCompanyUser([FromBody] UserCreationInfoIdp userToCreate, [FromRoute] Guid identityProviderId)
     {
         var result = await this.WithIamUserId(adminUserId => _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate, adminUserId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetOwnCompanyUserDetails), new { companyUserId = result }, result);
     }
+
+    [HttpPost]
+    [Authorize(Roles = "add_user_account")]
+    [Consumes("multipart/form-data")]
+    [Route("owncompany/identityprovider/{identityProviderId}/usersfile")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(typeof(IdentityProviderUserCreationStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+        public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromRoute] Guid identityProviderId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+            this.WithIamUserId(iamUserId => _logic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, iamUserId, cancellationToken));
+
     /// <summary>
     /// Get Company User Data
     /// </summary>
