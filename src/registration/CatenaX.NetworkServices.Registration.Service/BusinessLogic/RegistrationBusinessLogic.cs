@@ -108,7 +108,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             }
             
             _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-            return await _portalRepositories.SaveAsync(cancellationToken).ConfigureAwait(false);
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
