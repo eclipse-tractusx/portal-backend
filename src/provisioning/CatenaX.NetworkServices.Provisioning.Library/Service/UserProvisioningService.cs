@@ -121,7 +121,7 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");

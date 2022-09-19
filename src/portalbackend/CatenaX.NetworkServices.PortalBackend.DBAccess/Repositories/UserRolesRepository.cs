@@ -42,6 +42,18 @@ public class UserRolesRepository : IUserRolesRepository
                 userRoleId
             )).Entity;
 
+    public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId) =>
+        _dbContext.CompanyUsers
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser => companyUserIds.Contains(companyUser.Id) && companyUser.IamUser!.UserEntityId != null)
+            .Include(companyUser => companyUser.CompanyUserAssignedRoles)
+            .Include(companyUser => companyUser.IamUser)
+            .AsAsyncEnumerable();
+
+    public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
+        _dbContext.Remove(companyUserAssignedRole).Entity;
+
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
             .AsNoTracking()
