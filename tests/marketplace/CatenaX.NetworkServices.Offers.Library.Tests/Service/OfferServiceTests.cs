@@ -79,7 +79,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var result = await sut.GetOfferAgreement(_iamUser.UserEntityId, OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOfferAgreement(_existingServiceId, OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().ContainSingle();
@@ -93,7 +93,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var agreementData = await sut.GetOfferAgreement(Guid.NewGuid().ToString(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var agreementData = await sut.GetOfferAgreement(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         agreementData.Should().BeEmpty();
@@ -396,9 +396,9 @@ public class OfferServiceTests
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
 
         var agreementData = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForOfferId(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(agreementData.ToAsyncEnumerable());
-        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForIamUser(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
+        A.CallTo(() => _agreementRepository.GetOfferAgreementDataForOfferId(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(new List<AgreementData>().ToAsyncEnumerable());
 
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
