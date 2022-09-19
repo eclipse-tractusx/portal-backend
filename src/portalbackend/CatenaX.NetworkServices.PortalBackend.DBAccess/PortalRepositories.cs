@@ -36,6 +36,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IClientRepository), context => new ClientRepository(context) },
         { typeof(ICompanyRepository), context => new CompanyRepository(context) },
         { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
+        { typeof(IConsentAssignedOfferSubscriptionRepository), context => new ConsentAssignedOfferSubscriptionRepository(context) },
         { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
         { typeof(IConsentRepository), context => new ConsentRepository(context) },
         { typeof(ICountryRepository), context => new CountryRepository(context) },

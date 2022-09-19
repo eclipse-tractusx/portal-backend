@@ -198,6 +198,12 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
+    public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
+        IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas,
+        string iamUserId) =>
+        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
+
+    /// <inheritdoc />
     public async Task<ServiceAutoSetupResponseData> AutoSetupService(ServiceAutoSetupData data, string iamUserId)
     {
         var offerDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
