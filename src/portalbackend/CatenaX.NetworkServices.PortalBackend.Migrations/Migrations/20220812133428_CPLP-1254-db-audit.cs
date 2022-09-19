@@ -152,8 +152,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_users_audit(); DROP TRIGGER audit_company_users ON company_users;");
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_assigned_apps_audit(); DROP TRIGGER audit_company_assigned_apps ON company_assigned_apps;");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_users_audit(); DROP TRIGGER audit_company_users ON portal.company_users;");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_assigned_apps_audit(); DROP TRIGGER audit_company_assigned_apps ON portal.company_assigned_apps;");
 
             migrationBuilder.DropTable(
                 name: "audit_company_assigned_apps_cplp_1254_db_audit",
