@@ -50,4 +50,13 @@ public interface IAgreementRepository
     /// </summary>
     /// <returns>Returns an async enumerable of agreement data</returns>
     IAsyncEnumerable<AgreementData> GetAgreementsForCompanyRolesUntrackedAsync();
+
+    /// <summary>
+    /// Checks whether the given agreements exists in the database
+    /// </summary>
+    /// <param name="agreementIds">Ids of the agreements</param>
+    /// <param name="subscriptionId">Id of subscription the agreement must be associated with</param>
+    /// <param name="offerTypeId">The OfferTypeId that the agreement must be associated with</param>
+    /// <returns>Returns <c>true</c> if the agreements were found, otherwise <c>false</c>.</returns>
+    Task<bool> CheckAgreementsExistsForSubscriptionAsync(IEnumerable<Guid> agreementIds, Guid subscriptionId, OfferTypeId offerTypeId);
 }
