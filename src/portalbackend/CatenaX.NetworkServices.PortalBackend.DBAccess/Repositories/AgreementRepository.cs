@@ -67,4 +67,12 @@ public class AgreementRepository : IAgreementRepository
                 agreement.Id,
                 agreement.Name))
             .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<bool> CheckAgreementsExistsForSubscriptionAsync(IEnumerable<Guid> agreementIds, Guid subscriptionId, OfferTypeId offerTypeId) =>
+        _context.Agreements.AnyAsync(agreement =>
+            agreementIds.Any(a => a == agreement.Id) &&
+            agreement.AgreementAssignedOffers.Any(aao =>
+                aao.Offer!.OfferTypeId == offerTypeId &&
+                aao.Offer.OfferSubscriptions.Any(subscription => subscription.Id == subscriptionId)));
 }
