@@ -93,15 +93,16 @@ public partial class ProvisioningManager
             userId,
             alias);
 
-    private async Task<string> CreateSharedRealmUserAsync(KeycloakClient keycloak, string realm, UserProfile profile)
+    public async Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile)
     {
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
         var newUser = CloneUser(_Settings.SharedUser);
         newUser.UserName = profile.UserName;
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
         newUser.Credentials ??= profile.Password == null ? null : Enumerable.Repeat( new Credentials { Type = "Password", Value = profile.Password }, 1);
-        var newUserId = await keycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
+        var newUserId = await sharedKeycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
         if (newUserId == null)
         {
             throw new KeycloakNoSuccessException($"failed to created shared user {profile.UserName} in realm {realm}");
@@ -109,7 +110,7 @@ public partial class ProvisioningManager
         return newUserId;
     }
 
-    private async Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
+    public async Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
     {
         var newUser = CloneUser(_Settings.CentralUser);
         newUser.UserName = profile.UserName;
@@ -131,27 +132,6 @@ public partial class ProvisioningManager
         }
         return newUserId;
     }
-
-    private Task CreateCentralIdentityProviderLinks(string userId, IEnumerable<IdentityProviderLink> identityProviderLinks) =>
-        Task.WhenAll(
-            identityProviderLinks.Select(identityProviderLink =>
-                _CentralIdp.AddUserSocialLoginProviderAsync(
-                    _Settings.CentralRealm,
-                    userId,
-                    identityProviderLink.Alias,
-                    new FederatedIdentity {
-                        IdentityProvider = identityProviderLink.Alias,
-                        UserId = identityProviderLink.UserId,
-                        UserName = identityProviderLink.UserName
-                    }))
-            );
-
-    private Task LinkCentralSharedRealmUserAsync(string alias, string centralUserId, string sharedUserId, string sharedUserName) =>
-        _CentralIdp.AddUserSocialLoginProviderAsync(_Settings.CentralRealm, centralUserId, alias, new FederatedIdentity {
-            IdentityProvider = alias,
-            UserId = sharedUserId,
-            UserName = sharedUserName
-        });
 
     private User CloneUser(User user) =>
         JsonSerializer.Deserialize<User>(JsonSerializer.Serialize(user))!;

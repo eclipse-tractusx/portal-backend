@@ -29,6 +29,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
+using CatenaX.NetworkServices.Provisioning.Library.Service;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
@@ -42,6 +43,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
     public class UserBusinessLogic : IUserBusinessLogic
     {
         private readonly IProvisioningManager _provisioningManager;
+        private readonly IUserProvisioningService _userProvisioningService;
         private readonly IProvisioningDBAccess _provisioningDBAccess;
         private readonly IPortalBackendDBAccess _portalDBAccess;
         private readonly IPortalRepositories _portalRepositories;
@@ -54,6 +56,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         /// Constructor.
         /// </summary>
         /// <param name="provisioningManager">Provisioning Manager</param>
+        /// <param name="userProvisioningService">User Provisioning Service</param>
         /// <param name="provisioningDBAccess">Provisioning DBAccess</param>
         /// <param name="portalDBAccess">Portal DBAccess</param>
         /// <param name="mailingService">Mailing Service</param>
@@ -62,6 +65,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
         /// <param name="portalRepositories">Portal Repositories</param>
         public UserBusinessLogic(
             IProvisioningManager provisioningManager,
+            IUserProvisioningService userProvisioningService,
             IProvisioningDBAccess provisioningDBAccess,
             IPortalBackendDBAccess portalDBAccess,
             IPortalRepositories portalRepositories,
@@ -70,6 +74,7 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             IOptions<UserSettings> settings)
         {
             _provisioningManager = provisioningManager;
+            _userProvisioningService = userProvisioningService;
             _provisioningDBAccess = provisioningDBAccess;
             _portalDBAccess = portalDBAccess;
             _portalRepositories = portalRepositories;
@@ -84,15 +89,17 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             var userRepository = _portalRepositories.GetInstance<IUserRepository>();
             var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-            var (companyId, companyName, businessPartnerNumber, idpAlias) = await userRepository.GetCompanyNameIdpAliasUntrackedAsync(createdById);
-            if (companyId == default)
+            var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdById, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+            if (result == default)
             {
                 throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
             }
+            var (companyId, companyName, businessPartnerNumber, idpAliase) = result;
             if (companyName == null)
             {
                 throw new Exception($"assertion failed: companyName of company {companyId} should never be null here");
             }
+            var idpAlias = idpAliase.SingleOrDefault();
             if (idpAlias == null)
             {
                 throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
@@ -203,6 +210,22 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                     yield return user.eMail;
                 }
             }
+        }
+
+        public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
+        {
+            var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+                    _settings.Portal.KeyCloakClientID,
+                    Enumerable.Repeat(userCreationInfo, 1).ToAsyncEnumerable(),
+                    iamUserId,
+                    identityProviderId)
+                .FirstAsync()
+                .ConfigureAwait(false);
+            if(result.Error != null)
+            {
+                throw result.Error;
+            } 
+            return result.CompanyUserId;
         }
 
         public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(

@@ -195,18 +195,33 @@ public class UserRepository : IUserRepository
             .Select(iamUser => iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias)> GetCompanyNameIdpAliasUntrackedAsync(string iamUserId) =>
+    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IdpAliase)> GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser!.CompanyUser!.Company)
-            .Select(company => ((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias))new (
+            .Select(company => new ValueTuple<Guid,string?,string?,IEnumerable<string>>(
                 company!.Id,
                 company.Name,
                 company!.BusinessPartnerNumber,
                 company!.IdentityProviders
-                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                    .SingleOrDefault()!.IamIdentityProvider!.IamIdpAlias)).SingleOrDefaultAsync();
+                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == identityProviderCategoryId)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias)> GetCompanyNameIdpAliasUntreackedAsync(string iamUserId, Guid identityProviderId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser!.CompanyUser!.Company)
+            .Select(company => new ValueTuple<Guid,string?,string?,string?>(
+                company!.Id,
+                company.Name,
+                company!.BusinessPartnerNumber,
+                company!.IdentityProviders
+                    .SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)!.IamIdentityProvider!.IamIdpAlias
+            ))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc/>
     public Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId) =>

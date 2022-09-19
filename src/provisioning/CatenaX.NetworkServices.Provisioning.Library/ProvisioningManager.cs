@@ -91,34 +91,18 @@ public partial class ProvisioningManager : IProvisioningManager
 
     public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
     {
-        var sharedKeycloak = await GetSharedKeycloakClient(idpName).ConfigureAwait(false);
-        var userIdShared = await CreateSharedRealmUserAsync(sharedKeycloak, idpName, userProfile).ConfigureAwait(false);
+        var userIdShared = await CreateSharedRealmUserAsync(idpName, userProfile).ConfigureAwait(false);
 
-        var userIdCentral = await CreateCentralUserLinkedToIdp(
-            new UserProfile(
-                idpName + "." + userIdShared,
-                userProfile.FirstName,
-                userProfile.LastName,
-                userProfile.Email),
-            attributes,
-            Enumerable.Repeat<IdentityProviderLink>(new IdentityProviderLink(idpName, userIdShared, userProfile.UserName),1)
-        ).ConfigureAwait(false);
-
-        return userIdCentral;
-    }
-
-    public async Task<string> CreateCentralUserLinkedToIdp(UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes, IEnumerable<IdentityProviderLink> identityProviderLinks)
-    {
         var userIdCentral = await CreateCentralUserAsync(
             new UserProfile(
-                userProfile.UserName,
+                idpName + "." + userIdShared,
                 userProfile.FirstName,
                 userProfile.LastName,
                 userProfile.Email),
             attributes
         ).ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderLinks(userIdCentral, identityProviderLinks).ConfigureAwait(false);
+        await AddProviderUserLinkToCentralUserAsync(userIdCentral, new IdentityProviderLink(idpName, userIdShared, userProfile.UserName)).ConfigureAwait(false);
 
         return userIdCentral;
     }
