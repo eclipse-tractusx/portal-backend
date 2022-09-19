@@ -32,7 +32,6 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
 
 public class TestDbFixture : IAsyncLifetime
 {
-    // private PortalDbContext _context = null!;
     private readonly PostgreSqlTestcontainer _container;
 
     public TestDbFixture()

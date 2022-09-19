@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.Web;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
@@ -41,6 +42,7 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddPortalRepositories(builder.Configuration);
 
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
+    .AddTransient<IOfferService, OfferService>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
 
 builder.Build()
