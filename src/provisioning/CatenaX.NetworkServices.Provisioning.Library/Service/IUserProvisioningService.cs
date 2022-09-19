@@ -24,5 +24,6 @@ namespace CatenaX.NetworkServices.Provisioning.Library.Service;
 
 public interface IUserProvisioningService
 {
-    IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, string iamUserId, Guid identityProviderId = default);
+    IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos);
+    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
 }

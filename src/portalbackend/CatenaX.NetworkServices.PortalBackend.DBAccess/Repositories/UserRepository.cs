@@ -220,17 +220,22 @@ public class UserRepository : IUserRepository
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, string? IdpAlias)> GetCompanyNameIdpAliasUntreackedAsync(string iamUserId, Guid identityProviderId) =>
+    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias, bool IsSharedIdp)> GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => iamUser!.CompanyUser!.Company)
-            .Select(company => new ValueTuple<Guid,string?,string?,string?>(
-                company!.Id,
-                company.Name,
-                company!.BusinessPartnerNumber,
-                company!.IdentityProviders
-                    .SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)!.IamIdentityProvider!.IamIdpAlias
+            .Select(iamUser => new {
+                Company = iamUser!.CompanyUser!.Company,
+                CompanyUser = iamUser.CompanyUser,
+                IdentityProvider = iamUser!.CompanyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
+            })
+            .Select(s => new ValueTuple<Guid,string?,string?,Guid,string?,bool>(
+                s.Company!.Id,
+                s.Company.Name,
+                s.Company!.BusinessPartnerNumber,
+                s.CompanyUser!.Id,
+                s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED
             ))
             .SingleOrDefaultAsync();
 
