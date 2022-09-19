@@ -92,7 +92,7 @@ public class ServicesController : ControllerBase
     [HttpPost]
     [Route("{serviceId}/subscribe")]
     [Authorize(Roles = "subscribe_service")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId)
@@ -111,7 +111,7 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("subscription/{subscriptionId}", Name = nameof(GetSubscriptionDetail))]
     [Authorize(Roles = "view_service_offering")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) => 
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, iamUserId));
@@ -163,7 +163,7 @@ public class ServicesController : ControllerBase
     [HttpPost]
     [Route("{subscriptionId}/serviceAgreementConsent")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> CreateServiceAgreementConsent([FromRoute] Guid subscriptionId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData)
@@ -184,7 +184,7 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("serviceConsent/{serviceConsentId}", Name = nameof(GetServiceAgreementConsentDetail))]
     [Authorize(Roles = "view_service_offering")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ConsentDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ConsentDetailData> GetServiceAgreementConsentDetail([FromRoute] Guid serviceConsentId) => 
         _serviceBusinessLogic.GetServiceConsentDetailDataAsync(serviceConsentId);
@@ -198,29 +198,7 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("serviceAgreementData/{serviceId}")]
     [Authorize(Roles = "subscribe_service_offering")]
-<<<<<<< Updated upstream
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AgreementData> GetServiceAgreement() =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceAgreement(iamUserId));
-=======
     [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementData> GetServiceAgreement([FromRoute] Guid serviceId) =>
         _serviceBusinessLogic.GetServiceAgreement(serviceId);
-
-    /// <summary>
-    /// Auto setup the service
-    /// </summary>
-    /// <remarks>Example: POST: /api/services/autoSetup</remarks>
-    /// <response code="200">Returns the service agreement data.</response>
-    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
-    /// <response code="404">Offer Subscription not found.</response>
-    [HttpPost]
-    [Route("autoSetup")]
-    [Authorize(Roles = "activate_subscription")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<ServiceAutoSetupResponseData> AutoSetupService([FromBody] ServiceAutoSetupData data)
-        => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupService(data, iamUserId));
->>>>>>> Stashed changes
 }
