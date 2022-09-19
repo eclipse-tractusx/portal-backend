@@ -24,7 +24,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 
 public interface IUserProvisioningService
 {
-    IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, CancellationToken cancellationToken = default);
     Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
     Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId);
 }
