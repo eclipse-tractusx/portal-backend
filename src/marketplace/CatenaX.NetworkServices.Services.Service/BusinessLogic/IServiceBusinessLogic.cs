@@ -79,9 +79,9 @@ public interface IServiceBusinessLogic
     /// <summary>
     /// Gets the service agreement data
     /// </summary>
-    /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="serviceId">Id of the service to get the agreements for</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId);
+    IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId);
 
     /// <summary>
     /// Gets the service consent detail data

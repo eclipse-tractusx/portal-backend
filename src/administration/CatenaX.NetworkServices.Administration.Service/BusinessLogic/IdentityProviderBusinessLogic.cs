@@ -624,16 +624,16 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private async ValueTask UpdateUserProfileAsync(string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias, Guid creatorId)
     {
-        if (!await _provisioningManager.UpdateCentralUserAsync(userEntityId, profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "").ConfigureAwait(false))
-        {
-            throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
-        }
+        var (firstName, lastName, email) = (profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "");
+
+        await _provisioningManager.UpdateCentralUserAsync(userEntityId, firstName, lastName, email).ConfigureAwait(false);
+
         if (sharedIdpAlias != null)
         {
             var sharedIdpLink = existingLinks.FirstOrDefault(link => link.Alias == sharedIdpAlias);
-            if (sharedIdpLink != default && !await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "").ConfigureAwait(false))
+            if (sharedIdpLink != default)
             {
-                throw new UnexpectedConditionException($"error updating central keycloak-user {userEntityId}");
+                await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName, lastName, email).ConfigureAwait(false);
             }
         }
         _portalRepositories.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default, creatorId), companyUser =>

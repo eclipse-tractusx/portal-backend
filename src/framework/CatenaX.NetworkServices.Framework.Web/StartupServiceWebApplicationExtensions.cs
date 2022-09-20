@@ -41,9 +41,8 @@ public static class StartupServiceWebApplicationExtensions
         {
             app.UseDeveloperExceptionPage();
             var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
-                .Select(config => new Uri(config.ConnectionString))
-                .Where(uri => uri.Scheme == "https")
-                .Select(uri => uri.Scheme + "://" + uri.Host)
+                .Where(config => config.ConnectionString.StartsWith("https://"))
+                .Select(config => config.ConnectionString)
                 .Distinct();
             FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
         }

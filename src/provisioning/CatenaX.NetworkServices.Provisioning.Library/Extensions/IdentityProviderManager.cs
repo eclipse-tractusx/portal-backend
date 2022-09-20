@@ -19,12 +19,11 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Flurl;
-using Keycloak.Net.Models.IdentityProviders;
-using Keycloak.Net.Models.OpenIDConfiguration;
+using CatenaX.NetworkServices.Keycloak.Library.Models.IdentityProviders;
+using CatenaX.NetworkServices.Keycloak.Library.Models.OpenIDConfiguration;
 using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json;
@@ -65,15 +64,12 @@ public partial class ProvisioningManager
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         _Settings.IdpPrefix + (await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false));
 
-    private async ValueTask CreateCentralIdentityProviderAsync(string alias, string organisationName, IdentityProvider identityProvider)
+    private Task CreateCentralIdentityProviderAsync(string alias, string organisationName, IdentityProvider identityProvider)
     {
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;
         newIdp.DisplayName = organisationName;
-        if (! await _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to set up central identityprovider {alias} for {organisationName}");
-        }
+        return _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp);
     }
 
     private async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
@@ -83,10 +79,7 @@ public partial class ProvisioningManager
         identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
         identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
         identityProvider.Config.JwksUrl = config.JwksUri.ToString();
-        if (! await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to update central identityprovider {alias}");
-        }
+        await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
     }
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url)
@@ -136,21 +129,11 @@ public partial class ProvisioningManager
         return _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias);
     }
 
-    private async ValueTask UpdateCentralIdentityProviderAsync(string alias, IdentityProvider identityProvider)
-    {
-        if (! await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to update config of central identityprovider {alias}");
-        }
-    }
+    private Task UpdateCentralIdentityProviderAsync(string alias, IdentityProvider identityProvider) =>
+        _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider);
 
-    public async ValueTask DeleteCentralIdentityProviderAsync(string alias)
-    {
-        if (! await _CentralIdp.DeleteIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to delete central identityprovider {alias}");
-        }
-    }
+    public Task DeleteCentralIdentityProviderAsync(string alias) =>
+        _CentralIdp.DeleteIdentityProviderAsync(_Settings.CentralRealm, alias);
 
     public async IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias)
     {
@@ -170,10 +153,7 @@ public partial class ProvisioningManager
         var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
         identityProvider.Enabled = true;
         identityProvider.Config.HideOnLoginPage = "false";
-        if (!await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to enable central identityprovider {alias}");
-        }
+        await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
     }
 
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
@@ -181,77 +161,73 @@ public partial class ProvisioningManager
         var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false);
         return new Url(openidconfig.Issuer)
             .AppendPathSegment("/broker/")
-            .AppendPathSegment(alias)
+            .AppendPathSegment(alias, true)
             .AppendPathSegment("/endpoint")
             .ToString();
     }
 
-    private async ValueTask<string> GetCentralBrokerEndpointSAMLAsync(string alias)
+    private async ValueTask<string?> GetCentralBrokerEndpointSAMLAsync(string alias)
     {
         var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(false);
-        return new Url(samlDescriptor.EntityId)
-            .AppendPathSegment("/broker/")
-            .AppendPathSegment(alias)
-            .AppendPathSegment("/endpoint")
-            .ToString();
+        return samlDescriptor != null
+            ? new Url(samlDescriptor.EntityId)
+                .AppendPathSegment("/broker/")
+                .AppendPathSegment(alias, true)
+                .AppendPathSegment("/endpoint")
+                .ToString()
+            : null;
     }
 
-    private async ValueTask CreateCentralIdentityProviderTenantMapperAsync(string alias)
-    {
-        if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
-        {
-            Name=_Settings.MappedIdpAttribute + "-mapper",
-            _IdentityProviderMapper="hardcoded-attribute-idp-mapper",
-            IdentityProviderAlias=alias,
-            Config=new Dictionary<string,object>
+    private Task CreateCentralIdentityProviderTenantMapperAsync(string alias) =>
+        _CentralIdp.AddIdentityProviderMapperAsync(
+            _Settings.CentralRealm,
+            alias,
+            new IdentityProviderMapper
             {
-                ["syncMode"]="INHERIT",
-                ["attribute"]=_Settings.MappedIdpAttribute,
-                ["attribute.value"]=alias
-            }
-        }).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to create tenant-mapper for identityprovider {alias}");
-        }
-    }
+                Name=_Settings.MappedIdpAttribute + "-mapper",
+                _IdentityProviderMapper="hardcoded-attribute-idp-mapper",
+                IdentityProviderAlias=alias,
+                Config=new Dictionary<string,object>
+                {
+                    ["syncMode"]="INHERIT",
+                    ["attribute"]=_Settings.MappedIdpAttribute,
+                    ["attribute.value"]=alias
+                }
+            });
     
-    private async ValueTask CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName)
-    {
-        if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
-        {
-            Name=_Settings.MappedCompanyAttribute + "-mapper",
-            _IdentityProviderMapper="hardcoded-attribute-idp-mapper",
-            IdentityProviderAlias=alias,
-            Config=new Dictionary<string,object>
+    private Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName) =>
+        _CentralIdp.AddIdentityProviderMapperAsync(
+            _Settings.CentralRealm,
+            alias,
+            new IdentityProviderMapper
             {
-                ["syncMode"]="INHERIT",
-                ["attribute"]=_Settings.MappedCompanyAttribute,
-                ["attribute.value"]=organisationName
-            }
-        }).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to create organisation-mapper for identityprovider {alias}, organisation {organisationName}");
-        }
-    }
+                Name=_Settings.MappedCompanyAttribute + "-mapper",
+                _IdentityProviderMapper="hardcoded-attribute-idp-mapper",
+                IdentityProviderAlias=alias,
+                Config=new Dictionary<string,object>
+                {
+                    ["syncMode"]="INHERIT",
+                    ["attribute"]=_Settings.MappedCompanyAttribute,
+                    ["attribute.value"]=organisationName
+                }
+            });
 
-    private async ValueTask CreateCentralIdentityProviderUsernameMapperAsync(string alias)
-    {
-        if (! await _CentralIdp.AddIdentityProviderMapperAsync(_Settings.CentralRealm, alias, new IdentityProviderMapper
-        {
-            Name="username-mapper",
-            _IdentityProviderMapper="oidc-username-idp-mapper",
-            IdentityProviderAlias=alias,
-            Config=new Dictionary<string,object>
+    private Task CreateCentralIdentityProviderUsernameMapperAsync(string alias) =>
+        _CentralIdp.AddIdentityProviderMapperAsync(
+            _Settings.CentralRealm,
+            alias,
+            new IdentityProviderMapper
             {
-                ["syncMode"]="INHERIT",
-                ["target"]="LOCAL",
-                ["template"]=_Settings.UserNameMapperTemplate
-            }
-        }).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to create username-mapper for identityprovider {alias}");
-        }
-    }
+                Name="username-mapper",
+                _IdentityProviderMapper="oidc-username-idp-mapper",
+                IdentityProviderAlias=alias,
+                Config=new Dictionary<string,object>
+                {
+                    ["syncMode"]="INHERIT",
+                    ["target"]="LOCAL",
+                    ["template"]=_Settings.UserNameMapperTemplate
+                }
+            });
 
     private IdentityProvider GetIdentityProviderTemplate(IamIdentityProviderProtocol providerProtocol)
     {

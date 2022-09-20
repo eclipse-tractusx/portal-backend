@@ -3,8 +3,14 @@ name: Administration-Service
 on:
   push:
     paths:
-      # service path
-      - 'src/administration/CatenaX.NetworkServices.Administration.Service/**'
+      # service and transitive paths
+      - 'src/administration/**'
+      - 'src/framework/**'
+      - 'src/keycloak/**'
+      - 'src/mailing/**'
+      - 'src/notification/**'
+      - 'src/portalbackend/**'
+      - 'src/provisioning/**'
       # workflow file
       - '.github/workflows/administration-service.yml'
       # dockerfile
