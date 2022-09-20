@@ -48,14 +48,9 @@ public class AgreementRepository : IAgreementRepository
                 aao.Offer.OfferSubscriptions.Any(subscription => subscription.Id == subscriptionId)));
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId) =>
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForOfferId(Guid offerId, OfferTypeId offerTypeId) =>
         _context.Agreements
-            .Where(x => x.AgreementAssignedOffers
-                .Any(app => 
-                    app.Offer!.OfferTypeId == offerTypeId &&
-                    (app.Offer!.OfferSubscriptions.Any(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)) ||
-                        app.Offer!.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
-                ))
+            .Where(x => x.AgreementAssignedOffers.Any(offer => offer.Offer!.OfferTypeId == offerTypeId && offer.OfferId == offerId))
             .Select(x => new AgreementData(x.Id, x.Name))
             .AsAsyncEnumerable();
     
@@ -69,8 +64,7 @@ public class AgreementRepository : IAgreementRepository
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId)
-    =>
+    public IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId) =>
         _context.Agreements
             .AsNoTracking()
             .Where(agreement=>agreement.AgreementCategoryId == categoryId)
@@ -81,8 +75,7 @@ public class AgreementRepository : IAgreementRepository
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>
-    public Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId)
-    =>
+    public Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId) =>
         _context.Offers
             .AsNoTracking()
             .Where(offer=>offer.Id == appId && offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
@@ -94,8 +87,7 @@ public class AgreementRepository : IAgreementRepository
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
-    public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId)
-    =>
+    public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId) =>
         _context.Offers
             .AsNoTracking()
             .Where(offer=>offer.Id == appId && offer.OfferStatusId == statusId 
@@ -109,4 +101,11 @@ public class AgreementRepository : IAgreementRepository
                 consentAssignedOffer.Consent!.ConsentStatusId
             ))))
             .SingleOrDefaultAsync();
+    /// <inheritdoc />
+    public Task<bool> CheckAgreementsExistsForSubscriptionAsync(IEnumerable<Guid> agreementIds, Guid subscriptionId, OfferTypeId offerTypeId) =>
+        _context.Agreements.AnyAsync(agreement =>
+            agreementIds.Any(a => a == agreement.Id) &&
+            agreement.AgreementAssignedOffers.Any(aao =>
+                aao.Offer!.OfferTypeId == offerTypeId &&
+                aao.Offer.OfferSubscriptions.Any(subscription => subscription.Id == subscriptionId)));
 }
