@@ -30,10 +30,10 @@ public interface IAppReleaseRepository
     /// <summary>
     /// Return the Company User Id
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<Guid> GetCompanyUserIdForOfferUntrackedAsync(Guid appId, string userId);
+    Task<Guid> GetCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId);
     
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
@@ -46,10 +46,10 @@ public interface IAppReleaseRepository
     /// <summary>
     /// Verify that user is linked to the appId
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<bool> IsProviderCompanyUserAsync(Guid appId,string userId);
+    Task<bool> IsProviderCompanyUserAsync(Guid offerId,string userId);
     
     /// <summary>
     /// Add User Role for App Id
