@@ -47,6 +47,14 @@ public interface IConsentRepository
     void RemoveConsents(IEnumerable<Consent> consents);
 
     /// <summary>
+    /// Add consent Id and offer Id in consent_assigned_offer table
+    /// </summary>
+    /// <param name="consentId"></param>
+    /// <param name="offerId"></param>
+    /// <returns></returns>
+    ConsentAssignedOffer CreateConsentAssignedOffer(Guid consentId, Guid offerId);
+
+    /// <summary>
     /// Gets the details of the consent
     /// </summary>
     /// <param name="consentId">Id of the Consent</param>

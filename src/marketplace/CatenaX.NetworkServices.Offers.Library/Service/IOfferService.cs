@@ -90,5 +90,5 @@ public interface IOfferService
     /// <param name="iamUserId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<int> CreaeteOrUpdateOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
+    Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
 }

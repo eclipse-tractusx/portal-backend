@@ -32,6 +32,10 @@ public class ConsentRepository : IConsentRepository
     public void RemoveConsents(IEnumerable<Consent> consents) => 
         _portalDbContext.RemoveRange(consents);
 
+    ///<inheritdoc/>
+    public ConsentAssignedOffer CreateConsentAssignedOffer(Guid consentId, Guid offerId) =>
+        _portalDbContext.ConsentAssignedOffers.Add(new ConsentAssignedOffer(consentId, offerId)).Entity;
+
     /// <inheritdoc />
     public Task<ConsentDetailData?> GetConsentDetailData(Guid consentId, OfferTypeId offerTypeId) =>
         _portalDbContext.Consents

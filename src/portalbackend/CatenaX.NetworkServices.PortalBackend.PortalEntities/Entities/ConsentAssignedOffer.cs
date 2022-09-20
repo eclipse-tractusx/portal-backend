@@ -24,10 +24,10 @@ public class ConsentAssignedOffer
 {
     private ConsentAssignedOffer() {}
 
-    public ConsentAssignedOffer(Guid offerId, Guid consentId)
+    public ConsentAssignedOffer(Guid consentId, Guid offerId)
     {
-        OfferId = offerId;
         ConsentId = consentId;
+        OfferId = offerId;
     }
 
     public Guid OfferId { get; private set; }
