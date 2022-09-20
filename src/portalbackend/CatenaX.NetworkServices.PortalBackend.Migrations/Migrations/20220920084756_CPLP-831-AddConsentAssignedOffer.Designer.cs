@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220914095506_CPLP-831-AddConsentAssignedOffer")]
+    [Migration("20220920084756_CPLP-831-AddConsentAssignedOffer")]
     partial class CPLP831AddConsentAssignedOffer
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -263,10 +263,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
-                    b.Property<Guid?>("OfferId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
                     b.Property<Guid?>("UseCaseId")
                         .HasColumnType("uuid")
                         .HasColumnName("use_case_id");
@@ -279,9 +275,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("IssuerCompanyId")
                         .HasDatabaseName("ix_agreements_issuer_company_id");
-
-                    b.HasIndex("OfferId")
-                        .HasDatabaseName("ix_agreements_offer_id");
 
                     b.HasIndex("UseCaseId")
                         .HasDatabaseName("ix_agreements_use_case_id");
@@ -328,6 +321,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.ToTable("agreement_assigned_document_templates", "portal");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedOffer", b =>
+                {
+                    b.Property<Guid>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<Guid>("OfferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_id");
+
+                    b.HasKey("AgreementId", "OfferId")
+                        .HasName("pk_agreement_assigned_offers");
+
+                    b.HasIndex("OfferId")
+                        .HasDatabaseName("ix_agreement_assigned_offers_offer_id");
+
+                    b.ToTable("agreement_assigned_offers", "portal");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -360,6 +372,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 3,
                             Label = "DATA_CONTRACT"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "SERVICE_CONTRACT"
                         });
                 });
 
@@ -1290,6 +1307,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_consent_assigned_offers_offer_id");
 
                     b.ToTable("consent_assigned_offers", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOfferSubscription", b =>
+                {
+                    b.Property<Guid>("ConsentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("consent_id");
+
+                    b.Property<Guid>("OfferSubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_subscription_id");
+
+                    b.HasKey("ConsentId", "OfferSubscriptionId")
+                        .HasName("pk_consent_assigned_offer_subscriptions");
+
+                    b.HasIndex("OfferSubscriptionId")
+                        .HasDatabaseName("ix_consent_assigned_offer_subscriptions_offer_subscription_id");
+
+                    b.ToTable("consent_assigned_offer_subscriptions", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
@@ -4232,11 +4268,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_agreements_companies_issuer_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
-                        .WithMany("Agreements")
-                        .HasForeignKey("OfferId")
-                        .HasConstraintName("fk_agreements_offers_offer_id");
-
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany("Agreements")
                         .HasForeignKey("UseCaseId")
@@ -4245,8 +4276,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("AgreementCategory");
 
                     b.Navigation("IssuerCompany");
-
-                    b.Navigation("Offer");
 
                     b.Navigation("UseCase");
                 });
@@ -4287,6 +4316,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Agreement");
 
                     b.Navigation("DocumentTemplate");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedOffer", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                        .WithMany("AgreementAssignedOffers")
+                        .HasForeignKey("AgreementId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_assigned_offers_agreements_agreement_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
+                        .WithMany("AgreementAssignedOffers")
+                        .HasForeignKey("OfferId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_assigned_offers_offers_offer_id");
+
+                    b.Navigation("Agreement");
+
+                    b.Navigation("Offer");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
@@ -4697,6 +4745,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Offer");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOfferSubscription", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", "Consent")
+                        .WithMany("ConsentAssignedOfferSubscriptions")
+                        .HasForeignKey("ConsentId")
+                        .IsRequired()
+                        .HasConstraintName("fk_consent_assigned_offer_subscriptions_consents_consent_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
+                        .WithMany("ConsentAssignedOfferSubscriptions")
+                        .HasForeignKey("OfferSubscriptionId")
+                        .IsRequired()
+                        .HasConstraintName("fk_consent_assigned_offer_subscriptions_offer_subscriptions_of");
+
+                    b.Navigation("Consent");
+
+                    b.Navigation("OfferSubscription");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
@@ -5006,6 +5073,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Navigation("AgreementAssignedDocumentTemplates");
 
+                    b.Navigation("AgreementAssignedOffers");
+
                     b.Navigation("Consents");
                 });
 
@@ -5114,6 +5183,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
                 {
+                    b.Navigation("ConsentAssignedOfferSubscriptions");
+
                     b.Navigation("ConsentAssignedOffers");
                 });
 
@@ -5187,7 +5258,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", b =>
                 {
-                    b.Navigation("Agreements");
+                    b.Navigation("AgreementAssignedOffers");
 
                     b.Navigation("AppInstances");
 
@@ -5212,6 +5283,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", b =>
                 {
                     b.Navigation("AppSubscriptionDetail");
+
+                    b.Navigation("ConsentAssignedOfferSubscriptions");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>
