@@ -141,7 +141,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
-        this.WithIamUserId(userId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId,userId));
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, iamUserId));
 
     /// <summary>
     /// Update or Insert Consent

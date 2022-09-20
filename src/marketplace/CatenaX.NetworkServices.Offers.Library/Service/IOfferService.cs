@@ -77,18 +77,18 @@ public interface IOfferService
     /// Return Offer Agreement Consent
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="userId"></param>
+    /// <param name="iamUserId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// 
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="userId"></param>
+    /// <param name="iamUserId"></param>
     /// <param name="statusId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    Task<OfferAgreementConsentUpdate?> GetProviderOfferAgreementConsent(Guid offerId, string userId, OfferStatusId statusId, OfferTypeId offerTypeId);
+    Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId);
 }
