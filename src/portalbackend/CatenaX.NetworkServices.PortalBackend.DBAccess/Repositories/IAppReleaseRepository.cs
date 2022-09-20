@@ -33,7 +33,7 @@ public interface IAppReleaseRepository
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId);
+    Task<Guid> GetCompanyUserIdForOfferUntrackedAsync(Guid appId, string userId);
     
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
@@ -42,7 +42,7 @@ public interface IAppReleaseRepository
     /// <param name="documentId"></param>
     /// <returns></returns>
     OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId);
-    
+
     /// <summary>
     /// Verify that user is linked to the appId
     /// </summary>

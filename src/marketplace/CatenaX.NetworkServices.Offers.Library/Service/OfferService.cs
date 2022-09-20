@@ -147,16 +147,18 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsent;
     }
 
-    public async Task<int> CreaeteOrUpdateOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
     {
         var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
+
         var (companyUserId, companyId, dbAgreements) = await GetProviderOfferAgreementConsent(offerId, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
 
         foreach (var agreementId in offerAgreementConsent.Agreements
                 .ExceptBy(dbAgreements.Select(db => db.AgreementId), input => input.AgreementId)
                 .Select(input => input.AgreementId))
         {
-            consentRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+            var consent = consentRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+            consentRepository.CreateConsentAssignedOffer(consent.Id, offerId);
         }
         foreach (var (agreementId, consentStatus) in offerAgreementConsent.Agreements
                 .IntersectBy(dbAgreements.Select(d => d.AgreementId), input => input.AgreementId)

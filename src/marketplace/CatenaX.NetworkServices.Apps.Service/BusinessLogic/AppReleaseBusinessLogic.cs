@@ -178,7 +178,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
+        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForOfferUntrackedAsync(appId, userId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
@@ -260,5 +260,5 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
-        _offerService.CreaeteOrUpdateOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
+        _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
 }
