@@ -19,11 +19,9 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Laraue.EfCoreTriggers.Common.Extensions;
-using Laraue.EfCoreTriggers.Common.TriggerBuilders;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities;
@@ -524,18 +522,12 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<AuditCompanyApplicationCplp1440DbAuditing>(entity =>
         {
-            entity.Property(x => x.Id)
-                .HasDefaultValueSql("gen_random_uuid()");
-            
             entity.Property(x => x.DateLastChanged)
                 .HasDefaultValueSql("CURRENT_DATE");
         });
         
         modelBuilder.Entity<AuditOfferSubscriptionCplp1440DbAuditing>(entity =>
         {
-            entity.Property(x => x.Id)
-                .HasDefaultValueSql("gen_random_uuid()");
-            
             entity.Property(x => x.DateLastChanged)
                 .HasDefaultValueSql("CURRENT_DATE");
         });
@@ -615,9 +607,6 @@ public class PortalDbContext : DbContext
         
         modelBuilder.Entity<AuditCompanyUserCplp1440DbAuditing>(entity =>
         {
-            entity.Property(x => x.Id)
-                .HasDefaultValueSql("gen_random_uuid()");
-            
             entity.Property(x => x.DateLastChanged)
                 .HasDefaultValueSql("CURRENT_DATE");
         });
@@ -714,7 +703,7 @@ public class PortalDbContext : DbContext
                         Firstname = newValue.Firstname,
                         Lastlogin = newValue.Lastlogin,
                         Lastname = newValue.Lastname,
-                        LastEditorId = newValue.LastEditorId
+                        LastEditorId = newValue.LastEditorId,
                     })));
             entity.AfterUpdate(trigger => trigger
                 .Action(action => action
@@ -748,9 +737,6 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<AuditCompanyUserAssignedRoleCplp1440DbAuditing>(entity =>
         {
-            entity.Property(x => x.Id)
-                .HasDefaultValueSql("gen_random_uuid()");
-            
             entity.Property(x => x.DateLastChanged)
                 .HasDefaultValueSql("CURRENT_DATE");
         });

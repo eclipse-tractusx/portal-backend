@@ -24,13 +24,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplicationCplp1440DbAuditing", b =>
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplication", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnName("id");
 
                     b.Property<int>("ApplicationStatusId")
                         .HasColumnType("integer")
@@ -53,68 +52,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("date_created");
 
                     b.Property<DateTimeOffset>("DateLastChanged")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed")
-                        .HasDefaultValueSql("CURRENT_DATE");
+                        .HasColumnName("date_last_changed");
 
                     b.Property<Guid?>("LastEditorId")
                         .HasColumnType("uuid")
                         .HasColumnName("last_editor_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_company_application_cplp1440db_auditing");
+                        .HasName("pk_audit_company_applications_cplp_1255_audit_company_applicat");
 
-                    b.ToTable("audit_company_application_cplp1440db_auditing", "portal");
+                    b.ToTable("audit_company_applications_cplp_1255_audit_company_applications", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUserAssignedRoleCplp1440DbAuditing", b =>
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<Guid>("AuditId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_id");
-
-                    b.Property<int>("AuditOperationId")
-                        .HasColumnType("integer")
-                        .HasColumnName("audit_operation_id");
-
-                    b.Property<Guid>("CompanyUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_user_id");
-
-                    b.Property<DateTimeOffset>("DateLastChanged")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed")
-                        .HasDefaultValueSql("CURRENT_DATE");
-
-                    b.Property<Guid?>("LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("last_editor_id");
-
-                    b.Property<Guid>("UserRoleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_role_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_audit_company_user_assigned_role_cplp1440db_auditing");
-
-                    b.ToTable("audit_company_user_assigned_role_cplp1440db_auditing", "portal");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUserCplp1440DbAuditing", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnName("id");
 
                     b.Property<Guid>("AuditId")
                         .HasColumnType("uuid")
@@ -137,10 +93,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("date_created");
 
                     b.Property<DateTimeOffset>("DateLastChanged")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed")
-                        .HasDefaultValueSql("CURRENT_DATE");
+                        .HasColumnName("date_last_changed");
 
                     b.Property<string>("Email")
                         .HasMaxLength(255)
@@ -166,18 +120,17 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("lastname");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_company_user_cplp1440db_auditing");
+                        .HasName("pk_audit_company_users_cplp_1254_db_audit");
 
-                    b.ToTable("audit_company_user_cplp1440db_auditing", "portal");
+                    b.ToTable("audit_company_users_cplp_1254_db_audit", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditOfferSubscriptionCplp1440DbAuditing", b =>
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUserAssignedRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnName("id");
 
                     b.Property<Guid>("AuditId")
                         .HasColumnType("uuid")
@@ -187,44 +140,26 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("audit_operation_id");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyUserId")
                         .HasColumnType("uuid")
-                        .HasColumnName("company_id");
+                        .HasColumnName("company_user_id");
 
                     b.Property<DateTimeOffset>("DateLastChanged")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed")
-                        .HasDefaultValueSql("CURRENT_DATE");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("text")
-                        .HasColumnName("display_name");
+                        .HasColumnName("date_last_changed");
 
                     b.Property<Guid?>("LastEditorId")
                         .HasColumnType("uuid")
                         .HasColumnName("last_editor_id");
 
-                    b.Property<Guid>("OfferId")
+                    b.Property<Guid>("UserRoleId")
                         .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
-                    b.Property<int>("OfferSubscriptionStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("offer_subscription_status_id");
-
-                    b.Property<Guid>("RequesterId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("requester_id");
+                        .HasColumnName("user_role_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_offer_subscription_cplp1440db_auditing");
+                        .HasName("pk_audit_company_user_assigned_roles_cplp_1255_audit_company_a");
 
-                    b.ToTable("audit_offer_subscription_cplp1440db_auditing", "portal");
+                    b.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -323,6 +258,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<Guid?>("OfferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_id");
+
                     b.Property<Guid?>("UseCaseId")
                         .HasColumnType("uuid")
                         .HasColumnName("use_case_id");
@@ -335,6 +274,9 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("IssuerCompanyId")
                         .HasDatabaseName("ix_agreements_issuer_company_id");
+
+                    b.HasIndex("OfferId")
+                        .HasDatabaseName("ix_agreements_offer_id");
 
                     b.HasIndex("UseCaseId")
                         .HasDatabaseName("ix_agreements_use_case_id");
@@ -381,25 +323,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.ToTable("agreement_assigned_document_templates", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedOffer", b =>
-                {
-                    b.Property<Guid>("AgreementId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("agreement_id");
-
-                    b.Property<Guid>("OfferId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
-                    b.HasKey("AgreementId", "OfferId")
-                        .HasName("pk_agreement_assigned_offers");
-
-                    b.HasIndex("OfferId")
-                        .HasDatabaseName("ix_agreement_assigned_offers_offer_id");
-
-                    b.ToTable("agreement_assigned_offers", "portal");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -432,11 +355,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 3,
                             Label = "DATA_CONTRACT"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "SERVICE_CONTRACT"
                         });
                 });
 
@@ -663,11 +581,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_applications_company_id");
 
                     b.ToTable("company_applications", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION", "CREATE FUNCTION LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"application_status_id\", \"date_created\", \"company_id\", \"last_editor_id\") SELECT OLD.id, \r\n  3, \r\n  OLD.application_status_id, \r\n  OLD.date_created, \r\n  OLD.company_id, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION AFTER DELETE\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION", "CREATE FUNCTION LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"application_status_id\", \"date_created\", \"company_id\", \"last_editor_id\") SELECT NEW.id, \r\n  1, \r\n  NEW.application_status_id, \r\n  NEW.date_created, \r\n  NEW.company_id, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION AFTER INSERT\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION", "CREATE FUNCTION LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"application_status_id\", \"date_created\", \"company_id\", \"last_editor_id\") SELECT OLD.id, \r\n  2, \r\n  OLD.application_status_id, \r\n  OLD.date_created, \r\n  OLD.company_id, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION AFTER UPDATE\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION();");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
@@ -1071,11 +984,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_users_company_user_status_id");
 
                     b.ToTable("company_users", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_COMPANYUSER", "CREATE FUNCTION LC_TRIGGER_AFTER_DELETE_COMPANYUSER() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYUSER$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"company_id\", \"company_user_status_id\", \"email\", \"firstname\", \"lastlogin\", \"lastname\", \"last_editor_id\") SELECT OLD.id, \r\n  3, \r\n  OLD.company_id, \r\n  OLD.company_user_status_id, \r\n  OLD.email, \r\n  OLD.firstname, \r\n  OLD.lastlogin, \r\n  OLD.lastname, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYUSER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYUSER AFTER DELETE\r\nON portal.company_users\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_DELETE_COMPANYUSER();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYUSER", "CREATE FUNCTION LC_TRIGGER_AFTER_INSERT_COMPANYUSER() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYUSER$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"company_id\", \"company_user_status_id\", \"email\", \"firstname\", \"lastlogin\", \"lastname\", \"last_editor_id\") SELECT NEW.id, \r\n  1, \r\n  NEW.company_id, \r\n  NEW.company_user_status_id, \r\n  NEW.email, \r\n  NEW.firstname, \r\n  NEW.lastlogin, \r\n  NEW.lastname, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYUSER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYUSER AFTER INSERT\r\nON portal.company_users\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_INSERT_COMPANYUSER();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYUSER", "CREATE FUNCTION LC_TRIGGER_AFTER_UPDATE_COMPANYUSER() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYUSER$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"company_id\", \"company_user_status_id\", \"email\", \"firstname\", \"lastlogin\", \"lastname\", \"last_editor_id\") SELECT OLD.id, \r\n  2, \r\n  OLD.company_id, \r\n  OLD.company_user_status_id, \r\n  OLD.email, \r\n  OLD.firstname, \r\n  OLD.lastlogin, \r\n  OLD.lastname, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYUSER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYUSER AFTER UPDATE\r\nON portal.company_users\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_UPDATE_COMPANYUSER();");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
@@ -1139,11 +1047,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_user_assigned_roles_user_role_id");
 
                     b.ToTable("company_user_assigned_roles", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE", "CREATE FUNCTION LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"user_role_id\", \"company_user_id\", \"last_editor_id\") SELECT OLD.id, \r\n  3, \r\n  OLD.user_role_id, \r\n  OLD.company_user_id, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE AFTER DELETE\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE", "CREATE FUNCTION LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"user_role_id\", \"company_user_id\", \"last_editor_id\") SELECT NEW.id, \r\n  1, \r\n  NEW.user_role_id, \r\n  NEW.company_user_id, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE AFTER INSERT\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE", "CREATE FUNCTION LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"user_role_id\", \"company_user_id\", \"last_editor_id\") SELECT OLD.id, \r\n  2, \r\n  OLD.user_role_id, \r\n  OLD.company_user_id, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE AFTER UPDATE\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE();");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
@@ -1365,25 +1268,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.ToTable("consents", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOfferSubscription", b =>
-                {
-                    b.Property<Guid>("ConsentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("consent_id");
-
-                    b.Property<Guid>("OfferSubscriptionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_subscription_id");
-
-                    b.HasKey("ConsentId", "OfferSubscriptionId")
-                        .HasName("pk_consent_assigned_offer_subscriptions");
-
-                    b.HasIndex("OfferSubscriptionId")
-                        .HasDatabaseName("ix_consent_assigned_offer_subscriptions_offer_subscription_id");
-
-                    b.ToTable("consent_assigned_offer_subscriptions", "portal");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -1413,6 +1297,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                             Label = "INACTIVE"
                         });
                 });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOfferSubscription", b =>
+            {
+                b.Property<Guid>("ConsentId")
+                    .HasColumnType("uuid")
+                    .HasColumnName("consent_id");
+
+                b.Property<Guid>("OfferSubscriptionId")
+                    .HasColumnType("uuid")
+                    .HasColumnName("offer_subscription_id");
+
+                b.HasKey("ConsentId", "OfferSubscriptionId")
+                    .HasName("pk_consent_assigned_offer_subscriptions");
+
+                b.HasIndex("OfferSubscriptionId")
+                    .HasDatabaseName("ix_consent_assigned_offer_subscriptions_offer_subscription_id");
+
+                b.ToTable("consent_assigned_offer_subscriptions", "portal");
+            });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Country", b =>
                 {
@@ -4058,11 +3961,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_offer_subscriptions_offer_subscription_status_id");
 
                     b.ToTable("offer_subscriptions", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION", "CREATE FUNCTION LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\") SELECT OLD.id, \r\n  3, \r\n  OLD.offer_subscription_status_id, \r\n  OLD.display_name, \r\n  OLD.description, \r\n  OLD.requester_id, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION AFTER DELETE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION", "CREATE FUNCTION LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\") SELECT NEW.id, \r\n  1, \r\n  NEW.offer_subscription_status_id, \r\n  NEW.display_name, \r\n  NEW.description, \r\n  NEW.requester_id, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION AFTER INSERT\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION", "CREATE FUNCTION LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription_cplp1440db_auditing (\"audit_id\", \"audit_operation_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\") SELECT OLD.id, \r\n  2, \r\n  OLD.offer_subscription_status_id, \r\n  OLD.display_name, \r\n  OLD.description, \r\n  OLD.requester_id, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION AFTER UPDATE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION();");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>
@@ -4317,6 +4215,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_agreements_companies_issuer_company_id");
 
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
+                        .WithMany("Agreements")
+                        .HasForeignKey("OfferId")
+                        .HasConstraintName("fk_agreements_offers_offer_id");
+
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany("Agreements")
                         .HasForeignKey("UseCaseId")
@@ -4325,6 +4228,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("AgreementCategory");
 
                     b.Navigation("IssuerCompany");
+
+                    b.Navigation("Offer");
 
                     b.Navigation("UseCase");
                 });
@@ -4365,25 +4270,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Agreement");
 
                     b.Navigation("DocumentTemplate");
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedOffer", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
-                        .WithMany("AgreementAssignedOffers")
-                        .HasForeignKey("AgreementId")
-                        .IsRequired()
-                        .HasConstraintName("fk_agreement_assigned_offers_agreements_agreement_id");
-
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
-                        .WithMany("AgreementAssignedOffers")
-                        .HasForeignKey("OfferId")
-                        .IsRequired()
-                        .HasConstraintName("fk_agreement_assigned_offers_offers_offer_id");
-
-                    b.Navigation("Agreement");
-
-                    b.Navigation("Offer");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
@@ -4776,23 +4662,23 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentAssignedOfferSubscription", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", "Consent")
-                        .WithMany("ConsentAssignedOfferSubscriptions")
-                        .HasForeignKey("ConsentId")
-                        .IsRequired()
-                        .HasConstraintName("fk_consent_assigned_offer_subscriptions_consents_consent_id");
+            {
+                b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", "Consent")
+                    .WithMany("ConsentAssignedOfferSubscriptions")
+                    .HasForeignKey("ConsentId")
+                    .IsRequired()
+                    .HasConstraintName("fk_consent_assigned_offer_subscriptions_consents_consent_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
-                        .WithMany("ConsentAssignedOfferSubscriptions")
-                        .HasForeignKey("OfferSubscriptionId")
-                        .IsRequired()
-                        .HasConstraintName("fk_consent_assigned_offer_subscriptions_offer_subscriptions_of");
+                b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
+                    .WithMany("ConsentAssignedOfferSubscriptions")
+                    .HasForeignKey("OfferSubscriptionId")
+                    .IsRequired()
+                    .HasConstraintName("fk_consent_assigned_offer_subscriptions_offer_subscriptions_of");
 
-                    b.Navigation("Consent");
+                b.Navigation("Consent");
 
-                    b.Navigation("OfferSubscription");
-                });
+                b.Navigation("OfferSubscription");
+            });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
@@ -5103,8 +4989,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Navigation("AgreementAssignedDocumentTemplates");
 
-                    b.Navigation("AgreementAssignedOffers");
-
                     b.Navigation("Consents");
                 });
 
@@ -5211,11 +5095,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Connectors");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
-                {
-                    b.Navigation("ConsentAssignedOfferSubscriptions");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
                 {
                     b.Navigation("Consents");
@@ -5286,7 +5165,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", b =>
                 {
-                    b.Navigation("AgreementAssignedOffers");
+                    b.Navigation("Agreements");
 
                     b.Navigation("AppInstances");
 
@@ -5309,8 +5188,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscription", b =>
                 {
                     b.Navigation("AppSubscriptionDetail");
-
-                    b.Navigation("ConsentAssignedOfferSubscriptions");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>
