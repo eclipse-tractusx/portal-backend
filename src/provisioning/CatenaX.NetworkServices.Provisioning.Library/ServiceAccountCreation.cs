@@ -46,16 +46,6 @@ public class ServiceAccountCreation : IServiceAccountCreation
     }
 
     /// <inheritdoc />
-    public Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData>
-        userRoleData)> CreateServiceAccountAsync(
-        string name,
-        string description,
-        IamClientAuthMethod iamClientAuthMethod,
-        IEnumerable<Guid> userRoleIds,
-        Guid companyId) => 
-            this.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, companyId, Enumerable.Empty<string>());
-
-    /// <inheritdoc />
     public async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> CreateServiceAccountAsync(
         string name, 
         string description, 
