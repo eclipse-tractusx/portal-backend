@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using Keycloak.Net;
+using CatenaX.NetworkServices.Keycloak.Library;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Keycloak.Factory;
