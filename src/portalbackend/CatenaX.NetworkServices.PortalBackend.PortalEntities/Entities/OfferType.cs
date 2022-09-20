@@ -9,6 +9,7 @@ public class OfferType
     {
         Label = null!;
         Offers = new HashSet<Offer>();
+        AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
     }
 
     public OfferType(OfferTypeId offerTypeId) : this()
@@ -24,4 +25,5 @@ public class OfferType
 
     // Navigation properties
     public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
 }

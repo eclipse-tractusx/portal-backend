@@ -10,6 +10,31 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "agreement_assigned_offer_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    agreement_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    offer_type_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_agreement_assigned_offer_types", x => new { x.agreement_id, x.offer_type_id });
+                    table.ForeignKey(
+                        name: "fk_agreement_assigned_offer_types_agreements_agreement_id",
+                        column: x => x.agreement_id,
+                        principalSchema: "portal",
+                        principalTable: "agreements",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_agreement_assigned_offer_types_offer_types_offer_type_id",
+                        column: x => x.offer_type_id,
+                        principalSchema: "portal",
+                        principalTable: "offer_types",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "consent_assigned_offers",
                 schema: "portal",
                 columns: table => new
@@ -35,6 +60,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_agreement_assigned_offer_types_offer_type_id",
+                schema: "portal",
+                table: "agreement_assigned_offer_types",
+                column: "offer_type_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_consent_assigned_offers_offer_id",
                 schema: "portal",
                 table: "consent_assigned_offers",
@@ -43,6 +74,10 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "agreement_assigned_offer_types",
+                schema: "portal");
+
             migrationBuilder.DropTable(
                 name: "consent_assigned_offers",
                 schema: "portal");
