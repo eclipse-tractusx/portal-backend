@@ -363,7 +363,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.name is null || appDetails.thumbnailUrl is null 
             || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
@@ -394,7 +393,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(App)}.{nameof(appDetails.descriptionShort)}");
             }
-            throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+            throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
         }
         _portalRepositories.Attach(new Offer(appId), app =>
         {
@@ -405,7 +404,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var notificationContent = new
         {
             appId,
-            RequestorCompanyName = companyName
+            RequestorCompanyName = appDetails.companyName
         };
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
