@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.Apps.Service.ViewModels;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
 namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
 
@@ -56,4 +57,27 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
+    
+    /// <summary>
+    /// Return Agreements for App_Contract Category
+    /// </summary>
+    /// <returns></returns>
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync();
+
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId);
+    
+    /// <summary>
+    /// Update Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="offerAgreementConsents"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
 }
