@@ -35,6 +35,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
     public class ServiceControllerTest
     {
         private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+        private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
         private readonly IFixture _fixture;
         private readonly IServiceBusinessLogic _logic;
         private readonly ServicesController _controller;
@@ -161,14 +162,14 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
         {
             //Arrange
             var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
-            A.CallTo(() => _logic.GetServiceAgreement(A<string>._))
+            A.CallTo(() => _logic.GetServiceAgreement(A<Guid>._))
                 .Returns(agreementData);
 
             //Act
-            var result = await this._controller.GetServiceAgreement().ToListAsync().ConfigureAwait(false);
+            var result = await this._controller.GetServiceAgreement(ServiceId).ToListAsync().ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.GetServiceAgreement(IamUserId)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.GetServiceAgreement(ServiceId)).MustHaveHappenedOnceExactly();
             result.Should().HaveCount(5);
         }
         
