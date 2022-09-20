@@ -34,6 +34,7 @@ public class OfferSubscription : IAuditable
     /// </summary>
     protected OfferSubscription()
     {
+        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
 
     /// <summary>
@@ -111,4 +112,6 @@ public class OfferSubscription : IAuditable
     public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
     
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
+
+    public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

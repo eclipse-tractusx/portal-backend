@@ -1,4 +1,4 @@
-using Keycloak.Net.Models.Users;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Users;
 
 namespace CatenaX.NetworkServices.Provisioning.Library
 {

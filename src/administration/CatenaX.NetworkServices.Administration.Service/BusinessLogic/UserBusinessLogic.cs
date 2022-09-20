@@ -328,15 +328,13 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
             }
-            if (!await _provisioningManager.UpdateSharedRealmUserAsync(
+            await _provisioningManager.UpdateSharedRealmUserAsync(
                 iamIdpAlias,
                 userIdShared,
                 ownCompanyUserEditableDetails.FirstName ?? "",
                 ownCompanyUserEditableDetails.LastName ?? "",
-                ownCompanyUserEditableDetails.Email ?? "").ConfigureAwait(false))
-            {
-                throw new Exception($"failed to update shared realm userid {userIdShared} in realm {iamIdpAlias}");
-            }
+                ownCompanyUserEditableDetails.Email ?? "").ConfigureAwait(false);
+
             companyUser.Firstname = ownCompanyUserEditableDetails.FirstName;
             companyUser.Lastname = ownCompanyUserEditableDetails.LastName;
             companyUser.Email = ownCompanyUserEditableDetails.Email;
@@ -366,11 +364,9 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
             }
-            if (await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false))
-            {
-                return await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            }
-            return -1;
+            await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false);
+
+            return await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
@@ -386,7 +382,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
                 var success = false;
                 try
                 {
-                    success = await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false);
+                    await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false);
+                    success = true;
                 }
                 catch (Exception e)
                 {
@@ -400,22 +397,22 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             await _portalDBAccess.SaveAsync().ConfigureAwait(false);
         }
 
-        private async Task<bool> DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
+        private async Task DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
         {
             var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
-            if (userIdShared != null
-                && (await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false))
-                && (await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false))) //TODO doesn't handle the case where user is both shared and own idp user
+            if (userIdShared == null)
             {
-                foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
-                {
-                    _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
-                }
-                _portalDBAccess.RemoveIamUser(companyUser.IamUser);
-                companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
-                return true;
+                throw new UnexpectedConditionException($"user {companyUser.IamUser!.UserEntityId} not found in central idp");
             }
-            return false;
+            await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
+            await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false); //TODO doesn't handle the case where user is both shared and own idp user
+
+            foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
+            {
+                _portalDBAccess.RemoveCompanyUserAssignedRole(assignedRole);
+            }
+            _portalDBAccess.RemoveIamUser(companyUser.IamUser);
+            companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
         }
 
         [Obsolete]
@@ -472,12 +469,8 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             {
                 if (await CanResetPassword(adminUserId).ConfigureAwait(false))
                 {
-                    var updatedPassword = await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
-                    if (!updatedPassword)
-                    {
-                        throw new Exception("password reset failed");
-                    }
-                    return updatedPassword;
+                    await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
+                    return true;
                 }
                 throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
             }

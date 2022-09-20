@@ -20,25 +20,25 @@
 
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using Keycloak.Net;
-using Keycloak.Net.Models.Users;
+using CatenaX.NetworkServices.Keycloak.Library;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Users;
 using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    public async Task<bool> UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
+    public async Task UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
     {
         var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
         var user = await sharedKeycloak.GetUserAsync(realm, userId).ConfigureAwait(false);
         user.FirstName = firstName;
         user.LastName = lastName;
         user.Email = email;
-        return await sharedKeycloak.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
+        await sharedKeycloak.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
     }
 
-    public async Task<bool> UpdateCentralUserAsync(string userId, string firstName, string lastName, string email)
+    public async Task UpdateCentralUserAsync(string userId, string firstName, string lastName, string email)
     {
         var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
         if (user.FirstName != firstName || user.LastName != lastName || user.Email != email)
@@ -46,18 +46,17 @@ public partial class ProvisioningManager
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Email = email;
-            return await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
+            await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
         }
-        return true;
     }
 
-    public async Task<bool> DeleteSharedRealmUserAsync(string realm, string userId)
+    public async Task DeleteSharedRealmUserAsync(string realm, string userId)
     {
         var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
-        return await sharedKeycloak.DeleteUserAsync(realm, userId).ConfigureAwait(false);
+        await sharedKeycloak.DeleteUserAsync(realm, userId).ConfigureAwait(false);
     }
 
-    public Task<bool> DeleteCentralRealmUserAsync(string userId) =>
+    public Task DeleteCentralRealmUserAsync(string userId) =>
         _CentralIdp.DeleteUserAsync(_Settings.CentralRealm, userId);
 
     public async Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId) =>
@@ -132,17 +131,12 @@ public partial class ProvisioningManager
         return newUserId;
     }
 
-    private async Task LinkCentralSharedRealmUserAsync(string alias, string centralUserId, string sharedUserId, string sharedUserName)
-    {
-        if (! await _CentralIdp.AddUserSocialLoginProviderAsync(_Settings.CentralRealm, centralUserId, alias, new FederatedIdentity {
+    private Task LinkCentralSharedRealmUserAsync(string alias, string centralUserId, string sharedUserId, string sharedUserName) =>
+        _CentralIdp.AddUserSocialLoginProviderAsync(_Settings.CentralRealm, centralUserId, alias, new FederatedIdentity {
             IdentityProvider = alias,
             UserId = sharedUserId,
             UserName = sharedUserName
-        }).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to create link in between central user {centralUserId} and shared realm {alias} user {sharedUserId}");
-        }
-    }
+        });
 
     private User CloneUser(User user) =>
         JsonSerializer.Deserialize<User>(JsonSerializer.Serialize(user))!;

@@ -507,14 +507,11 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return result;
         }
 
-        public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync()
-        {
-            var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
-            return new CompanyRoleAgreementData(
-                (await companyRolesRepository.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
-                (await companyRolesRepository.GetAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
+        public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync() =>
+            new CompanyRoleAgreementData(
+                (await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
+                (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
             );
-        }
 
         public async Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId)
         {

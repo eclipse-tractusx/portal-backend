@@ -130,19 +130,27 @@ public interface IOfferRepository
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>
-    /// Get app data by AppId ,User Id and with status created
+    /// Check whether the app is in status created and whether the
+    /// loggedin user belongs to the apps provider company
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
-    /// <returns>Return Async Enumerable of App Data</returns>
-    Task<(IEnumerable<OfferDescription> descriptions, IEnumerable<OfferDetailImage> images)> GetAppByIdAsync(Guid appId, string userId);
+    /// <returns>ValueTuple, first item is true if the app is in status CREATED,
+    /// second item is true if the user is eligible to edit it</returns>
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId);
     
+    /// <summary>
+    /// Add App Detail Images
+    /// </summary>
+    /// <param name="appImages"></param>
+    void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
+
     /// <summary>
     /// Get App Release data by App Id
     /// </summary>
     /// <param name="appId"></param>
     /// <returns></returns>
-    Task<AppReleaseData?> GetAppReleaseDataByIdAsync(Guid appId);
+    Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId);
 
     /// <summary>
     /// Checks if an service with the given id exists in the persistence layer. 
@@ -162,8 +170,9 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="serviceId">the service to get from the persistence storage</param>
     /// <param name="languageShortName">the language short code for the descriptions</param>
+    /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the ServiceDetailData or null</returns>
-    Task<(Guid Id, string? Title, string Provider, string? LeadPictureUri, string? ContactEmail, string? Description, string? Price)> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName);
+    Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
