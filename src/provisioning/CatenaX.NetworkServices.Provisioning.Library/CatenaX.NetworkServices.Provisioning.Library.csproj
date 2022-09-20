@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\keycloak\src\Keycloak.Net\Keycloak.Net.csproj" />
+    <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Library\CatenaX.NetworkServices.Keycloak.Library.csproj" />
     <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Factory\CatenaX.NetworkServices.Keycloak.Factory.csproj" />
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\CatenaX.NetworkServices.Provisioning.DBAccess\CatenaX.NetworkServices.Provisioning.DBAccess.csproj" />

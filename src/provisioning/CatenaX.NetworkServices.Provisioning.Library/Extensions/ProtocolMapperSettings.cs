@@ -1,5 +1,5 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using Keycloak.Net.Models.ProtocolMappers;
+using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 

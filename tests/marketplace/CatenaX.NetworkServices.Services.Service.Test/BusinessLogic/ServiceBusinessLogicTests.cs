@@ -494,7 +494,6 @@ public class ServiceBusinessLogicTests
     public async Task GetServiceConsentDetailData_WithInValidId_ReturnsServiceConsentDetailData()
     {
         // Arrange
-        var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
         var offerService = A.Fake<IOfferService>();
         var invalidConsentId = Guid.NewGuid();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
@@ -505,7 +504,7 @@ public class ServiceBusinessLogicTests
         async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        await Assert.ThrowsAsync<NotFoundException>(Action);
     }
 
     #endregion

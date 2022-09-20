@@ -21,9 +21,9 @@
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using Keycloak.Net;
-using Keycloak.Net.Models.Clients;
-using Keycloak.Net.Models.ProtocolMappers;
+using CatenaX.NetworkServices.Keycloak.Library;
+using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
+using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
 using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
@@ -51,19 +51,11 @@ public partial class ProvisioningManager
         var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         client.Name = config.Name;
         client.ClientAuthenticatorType = IamClientAuthMethodToInternal(config.IamClientAuthMethod);
-        if (! await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false))
-        {
-            throw new Exception($"failed to update client {internalClientId}");
-        }
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
     }
 
-    public async Task DeleteCentralClientAsync(string internalClientId)
-    {
-        if (! await _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to delete client {internalClientId} in central keycloak {_Settings.CentralRealm}");
-        }
-    }
+    public Task DeleteCentralClientAsync(string internalClientId) =>
+        _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId);
 
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
     {
@@ -97,10 +89,7 @@ public partial class ProvisioningManager
         var newClient = Clone(_Settings.SharedRealmClient);
         newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
         newClient.Attributes["jwks.url"] = config.JwksUrl;
-        if (! await keycloak.CreateClientAsync(realm,newClient))
-        {
-            throw new KeycloakNoSuccessException($"failed to create shared realm {realm} client for redirect-uri {config.RedirectUri}");
-        }
+        await keycloak.CreateClientAsync(realm,newClient).ConfigureAwait(false);
     }
 
     private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri)
@@ -116,9 +105,8 @@ public partial class ProvisioningManager
         return newClientId;
     }
 
-    private async Task CreateCentralOIDCClientAudienceMapperAsync(string internalClientId, string clientAudienceId)
-    {
-        if (! await _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper {
+    private Task CreateCentralOIDCClientAudienceMapperAsync(string internalClientId, string clientAudienceId) =>
+        _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper {
             Name = $"{clientAudienceId}-mapper",
             Protocol = "openid-connect",
             _ProtocolMapper = "oidc-audience-mapper",
@@ -128,11 +116,7 @@ public partial class ProvisioningManager
                 IdTokenClaim = "false",
                 AccessTokenClaim = "true",
             }
-        }).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to create audience-mapper for audience: {clientAudienceId}, internal clientid: {internalClientId}");
-        }
-    }
+        });
 
     private async Task<string?> GetCentralInternalClientIdFromClientIDAsync(string clientId) =>
         (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))?.Id;

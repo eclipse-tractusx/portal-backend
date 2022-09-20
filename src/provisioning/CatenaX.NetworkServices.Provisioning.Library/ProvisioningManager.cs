@@ -23,8 +23,7 @@ using CatenaX.NetworkServices.Keycloak.Factory;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using Keycloak.Net;
-using Keycloak.Net.Models.ProtocolMappers;
+using CatenaX.NetworkServices.Keycloak.Library;
 using Microsoft.Extensions.Options;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
@@ -77,10 +76,7 @@ public partial class ProvisioningManager : IProvisioningManager
     public async ValueTask DeleteSharedIdpRealmAsync(string alias)
     {
         var sharedKeycloak = _Factory.CreateKeycloakClient("shared");
-        if (! await sharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to delete shared realm {alias}");
-        }
+        await sharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false);
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
@@ -142,10 +138,7 @@ public partial class ProvisioningManager : IProvisioningManager
         user.Attributes[_Settings.MappedBpnAttribute] = (user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
             ? existingBpns.Concat(bpns).Distinct()
             : bpns;
-        if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to set bpns {bpns} for central user {userId}");
-        }
+        await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
     }
 
     public Task AddProtocolMapperAsync(string clientId) => 
@@ -165,13 +158,10 @@ public partial class ProvisioningManager : IProvisioningManager
 
         user.Attributes[_Settings.MappedBpnAttribute] = existingBpns.Where(bpn => bpn != businessPartnerNumber);
 
-        if (!await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false))
-        {
-            throw new KeycloakNoSuccessException($"failed to delete bpn for central user {userId}");
-        }
+        await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
     }
 
-    public async Task<bool> ResetSharedUserPasswordAsync(string realm, string userId)
+    public async Task ResetSharedUserPasswordAsync(string realm, string userId)
     {
         var providerUserId = await GetProviderUserIdForCentralUserIdAsync(realm, userId).ConfigureAwait(false);
         if (providerUserId == null)
@@ -179,12 +169,16 @@ public partial class ProvisioningManager : IProvisioningManager
             throw new KeycloakEntityNotFoundException($"userId {userId} is not linked to shared realm {realm}");
         }
         var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
-        return await sharedKeycloak.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
+        await sharedKeycloak.SendUserUpdateAccountEmailAsync(realm, providerUserId, Enumerable.Repeat("UPDATE_PASSWORD", 1)).ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
     {
         var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
+        if (idOfClient == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
+        }
         return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
             .Where(r => r.Composite == true).Select(x => x.Name);
     }
