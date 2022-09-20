@@ -40,10 +40,10 @@ public interface IAgreementRepository
     /// <summary>
     /// Gets the agreement data that have an app id set
     /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">Specific offer type</param>
     /// <returns>Returns an async enumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForOfferId(Guid offerId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// Gets the agreement data untracked from the database
