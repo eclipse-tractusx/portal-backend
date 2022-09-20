@@ -114,6 +114,19 @@
 		},
 		{
 			"name": "Subscribe to App",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"var offerSubscriptionId = responseJson;\r",
+							"pm.collectionVariables.set(\"offerSubscriptionId\", offerSubscriptionId)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -135,6 +148,34 @@
 					"path": [
 						"{{serviceId}}",
 						"subscribe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Subscription Detail",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/subscription/{{offerSubscriptionId}}",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"subscription",
+						"{{offerSubscriptionId}}"
 					]
 				}
 			},
@@ -165,12 +206,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{apiUrl}}services/{{serviceId}}/serviceAgreementConsent",
+					"raw": "{{apiUrl}}services/{{offerSubscriptionId}}/serviceAgreementConsent",
 					"host": [
 						"{{apiUrl}}services"
 					],
 					"path": [
-						"{{serviceId}}",
+						"{{offerSubscriptionId}}",
 						"serviceAgreementConsent"
 					]
 				}
@@ -207,12 +248,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}services/serviceAgreementData",
+					"raw": "{{apiUrl}}services/serviceAgreementData/{{serviceId}}",
 					"host": [
 						"{{apiUrl}}services"
 					],
 					"path": [
-						"serviceAgreementData"
+						"serviceAgreementData",
+						"{{serviceId}}"
 					]
 				}
 			},
@@ -248,7 +290,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Phils Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": \"ac1cf001-7fbc-1f2f-817f-bce058020001\",\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"description\" : \"Das ist ein neuer service\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"description\" : \"Thats a new service\"\r\n        }\r\n    ]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": \"ac1cf001-7fbc-1f2f-817f-bce058020001\",\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"description\" : \"Das ist ein neuer service\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"description\" : \"Thats a new service\"\r\n        }\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -262,6 +304,80 @@
 					],
 					"path": [
 						"addservice"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AutoSetup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"requestId\": \"{{offerSubscriptionId}}\",\r\n    \"offerUrl\": \"https://www.super-service.de\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}services/autoSetup",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"autoSetup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Service",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/{{serviceId}}",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"{{serviceId}}"
 					]
 				}
 			},
@@ -300,6 +416,11 @@
 		{
 			"key": "agreementId",
 			"value": ""
+		},
+		{
+			"key": "offerSubscriptionId",
+			"value": "",
+			"type": "default"
 		}
 	]
 }

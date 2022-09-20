@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Keycloak.Net;
+using CatenaX.NetworkServices.Keycloak.Library;
 
 namespace CatenaX.NetworkServices.Keycloak.Factory;
 

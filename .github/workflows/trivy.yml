@@ -245,7 +245,7 @@ jobs:
         with:
           sarif_file: "trivy-results6.sarif"
 
-  analyze-product-portal-backend-service-service:
+  analyze-product-portal-backend-services-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -266,7 +266,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "ghcr.io/catenax-ng/product-portal-backend_service-service:latest"
+          image-ref: "ghcr.io/catenax-ng/product-portal-backend_services-service:latest"
           format: "sarif"
           output: "trivy-results4.sarif"
           exit-code: "1"
