@@ -3,8 +3,11 @@ name: Notification-Service
 on:
   push:
     paths:
-      # service path
-      - 'src/notification/CatenaX.NetworkServices.Notification.Service/**'
+      # service and transitive paths
+      - 'src/notification/**'
+      - 'src/framework/**'
+      - 'src/keycloak/**'
+      - 'src/portalbackend/**'
       # workflow file
       - '.github/workflows/notification-service.yml'
       # dockerfile
