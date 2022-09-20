@@ -56,16 +56,16 @@ public interface IAgreementRepository
     /// </summary>
     /// <param name="categoryId"></param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetAgreements(AgreementCategoryId categoryId);
+    IAsyncEnumerable<AgreementData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
 
     /// <summary>
     /// Return matching Agreement and Consent for agreement category app_contract and offer id
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
-    /// <param name="categoryId"></param>
+    /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<OfferAgreementConsent?> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId);
+    Task<(OfferAgreementConsent OfferAgreementConsent, bool IsProviderCompany)> GetOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Return matching Agreement ,Consent,CompanyUserId and CompanyId for agreement category app_contract , offer id and offer status created
@@ -75,7 +75,7 @@ public interface IAgreementRepository
     /// <param name="statusId"></param>
     /// <param name="categoryId"></param>
     /// <returns></returns>
-    Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
+    Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId);
     /// Checks whether the given agreements exists in the database
     /// </summary>
     /// <param name="agreementIds">Ids of the agreements</param>

@@ -121,7 +121,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreement(Guid offerId, OfferTypeId offerTypeId) => 
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementsAsync(Guid offerId, OfferTypeId offerTypeId) => 
         _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForOfferId(offerId, offerTypeId);
 
     /// <inheritdoc />
@@ -137,19 +137,34 @@ public class OfferService : IOfferService
         return consentDetails;
     }
 
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync(AgreementCategoryId categoryId)=>
-        _portalRepositories.GetInstance<IAgreementRepository>().GetAgreements(categoryId);
+    public IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId)=>
+        _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
 
-    public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId)
+    public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(appId, userId, categoryId).ConfigureAwait(false);
-        if (result == null)
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(offerId, iamUserId, offerTypeId).ConfigureAwait(false);
+        if (result == default)
         {
-            throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
+            throw new NotFoundException($"offer {offerId}, offertype {offerTypeId} does not exist");
         }
-        return result;
+        if (!result.IsProviderCompany)
+        {
+            throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
+        }
+        return result.OfferAgreementConsent;
     }
 
-    public Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId) =>
-        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(appId, userId, statusId, categoryId);
+    public async Task<OfferAgreementConsentUpdate?> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, iamUserId, statusId, offerTypeId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"offer {offerId}, offertype {offerTypeId}, offerStatus {statusId} does not exist");
+        }
+        if (!result.IsProviderCompany)
+        {
+            throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
+        }
+        return result.OfferAgreementConsentUpdate;
+    }
 }

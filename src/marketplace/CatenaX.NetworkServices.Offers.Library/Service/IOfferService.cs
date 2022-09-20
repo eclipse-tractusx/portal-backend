@@ -57,7 +57,7 @@ public interface IOfferService
     /// <param name="offerId">Id of the offer to get the agreements for</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreement(Guid offerId, OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer consent detail data
@@ -69,26 +69,26 @@ public interface IOfferService
     /// <summary>
     /// Return Agreements for App_Contract Category
     /// </summary>
-    /// <param name="AgreementCategoryId">Category Id of the Agreement</param>
+    /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync(AgreementCategoryId categoryId);
+    IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId);
     
     /// <summary>
     /// Return Offer Agreement Consent
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
-    /// <param name="AgreementCategoryId">Category Id of the Agreement</param>
+    /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId, AgreementCategoryId categoryId);
+    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string userId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
     /// <param name="statusId"></param>
-    /// <param name="categoryId"></param>
+    /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
+    Task<OfferAgreementConsentUpdate?> GetProviderOfferAgreementConsent(Guid offerId, string userId, OfferStatusId statusId, OfferTypeId offerTypeId);
 }

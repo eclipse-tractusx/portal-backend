@@ -240,19 +240,19 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     
     /// <inheritdoc/>
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
-        _offerService.GetOfferAgreementDataAsync(AgreementCategoryId.APP_CONTRACT);
+        _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);
 
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
     {
-        return await _offerService.GetOfferAgreementConsentById(appId, userId, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
+        return await _offerService.GetProviderOfferAgreementConsentById(appId, userId, OfferTypeId.APP).ConfigureAwait(false);
     }
     
     /// <inheritdoc/>
     public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
     {
         var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
-        var offerAgreementConsentData = await _offerService.GetOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, AgreementCategoryId.APP_CONTRACT).ConfigureAwait(false);
+        var offerAgreementConsentData = await _offerService.GetProviderOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, OfferTypeId.APP).ConfigureAwait(false);
         if (offerAgreementConsentData == null)
         {
             throw new NotFoundException($"offer {appId} does not exist");
