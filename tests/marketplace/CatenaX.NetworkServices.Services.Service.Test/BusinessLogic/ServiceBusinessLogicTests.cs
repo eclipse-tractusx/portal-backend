@@ -776,7 +776,7 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => "cl1");
         
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<string>._, A<string>._,
-                A<IamClientAuthMethod>._, A<IEnumerable<Guid>>._, A<Guid>._, A<IEnumerable<string>>._))
+                A<IamClientAuthMethod>._, A<IEnumerable<Guid>>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ"))))
             .ReturnsLazily(() => 
                 new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>(
                     "sa2", 
