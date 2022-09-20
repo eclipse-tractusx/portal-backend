@@ -18,9 +18,12 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "audit_company_users_cplp_1254_db_audit");
 
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_users_audit();DROP TRIGGER audit_company_users ON  portal.company_users;");
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_user_assigned_roles_audit(); DROP TRIGGER audit_company_user_assigned_roles ON portal.company_user_assigned_roles; ");
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_applications_audit(); DROP TRIGGER audit_company_applications ON portal.company_applications;");
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_users ON portal.company_users;");
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_user_assigned_roles ON portal.company_user_assigned_roles;");
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_applications ON portal.company_applications; ");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_users_audit(); DROP FUNCTION IF EXISTS portal.process_company_user_assigned_roles_audit();");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_user_assigned_roles_audit(); DROP FUNCTION IF EXISTS portal.process_company_users_audit();");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_applications_audit(); DROP FUNCTION IF EXISTS portal.process_company_applications_audit();");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

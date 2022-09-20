@@ -219,37 +219,43 @@ public class PortalDbContext : DbContext
                             .Action(action => action
                                 .Insert(newValue => new AuditOfferSubscriptionCplp1440DbAuditing
                                 {
+                                    Id = new Guid(),
                                     AuditId = newValue.Id,
                                     AuditOperationId = AuditOperationId.INSERT,
                                     OfferSubscriptionStatusId = newValue.OfferSubscriptionStatusId,
                                     DisplayName = newValue.DisplayName,
                                     Description = newValue.Description,
                                     RequesterId = newValue.RequesterId,
-                                    LastEditorId = newValue.LastEditorId
+                                    LastEditorId = newValue.LastEditorId,
+                                    DateLastChanged = new DateTimeOffset()
                                 })))
                         .AfterUpdate(trigger => trigger
                             .Action(action => action
                                 .Insert((oldEntity, newEntity) => new AuditOfferSubscriptionCplp1440DbAuditing
                                 {
+                                    Id = new Guid(),
                                     AuditId = oldEntity.Id,
                                     AuditOperationId = AuditOperationId.UPDATE,
                                     OfferSubscriptionStatusId = oldEntity.OfferSubscriptionStatusId,
                                     DisplayName = oldEntity.DisplayName,
                                     Description = oldEntity.Description,
                                     RequesterId = oldEntity.RequesterId,
-                                    LastEditorId = oldEntity.LastEditorId
+                                    LastEditorId = oldEntity.LastEditorId,
+                                    DateLastChanged = new DateTimeOffset()
                                 })))
                         .AfterDelete(trigger => trigger
                             .Action(action => action
                                 .Insert(deletedEntity => new AuditOfferSubscriptionCplp1440DbAuditing
                                 {
+                                    Id = new Guid(),
                                     AuditId = deletedEntity.Id,
                                     AuditOperationId = AuditOperationId.DELETE,
                                     OfferSubscriptionStatusId = deletedEntity.OfferSubscriptionStatusId,
                                     DisplayName = deletedEntity.DisplayName,
                                     Description = deletedEntity.Description,
                                     RequesterId = deletedEntity.RequesterId,
-                                    LastEditorId = deletedEntity.LastEditorId
+                                    LastEditorId = deletedEntity.LastEditorId,
+                                    DateLastChanged = new DateTimeOffset()
                                 })));
                     }
                 );
@@ -489,47 +495,41 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert(newValue => new AuditCompanyApplicationCplp1440DbAuditing
                     {
+                        Id = new Guid(),
                         AuditId = newValue.Id,
                         AuditOperationId = AuditOperationId.INSERT,
                         ApplicationStatusId = newValue.ApplicationStatusId,
                         DateCreated = newValue.DateCreated,
                         CompanyId = newValue.CompanyId,
-                        LastEditorId = newValue.LastEditorId
+                        LastEditorId = newValue.LastEditorId,
+                        DateLastChanged = new DateTimeOffset()
                     })));
             entity.AfterUpdate(trigger => trigger
                 .Action(action => action
                     .Insert((oldEntity, newEntity) => new AuditCompanyApplicationCplp1440DbAuditing
                     {
+                        Id = new Guid(),
                         AuditId = oldEntity.Id,
                         AuditOperationId = AuditOperationId.UPDATE,
                         ApplicationStatusId = oldEntity.ApplicationStatusId,
                         DateCreated = oldEntity.DateCreated,
                         CompanyId = oldEntity.CompanyId,
-                        LastEditorId = oldEntity.LastEditorId
+                        LastEditorId = oldEntity.LastEditorId,
+                        DateLastChanged = new DateTimeOffset()
                     })));
             entity.AfterDelete(trigger => trigger
                 .Action(action => action
                     .Insert(deletedEntity => new AuditCompanyApplicationCplp1440DbAuditing
                     {
+                        Id = new Guid(),
                         AuditId = deletedEntity.Id,
                         AuditOperationId = AuditOperationId.DELETE,
                         ApplicationStatusId = deletedEntity.ApplicationStatusId,
                         DateCreated = deletedEntity.DateCreated,
                         CompanyId = deletedEntity.CompanyId,
-                        LastEditorId = deletedEntity.LastEditorId
+                        LastEditorId = deletedEntity.LastEditorId,
+                        DateLastChanged = new DateTimeOffset()
                     })));
-        });
-
-        modelBuilder.Entity<AuditCompanyApplicationCplp1440DbAuditing>(entity =>
-        {
-            entity.Property(x => x.DateLastChanged)
-                .HasDefaultValueSql("CURRENT_DATE");
-        });
-        
-        modelBuilder.Entity<AuditOfferSubscriptionCplp1440DbAuditing>(entity =>
-        {
-            entity.Property(x => x.DateLastChanged)
-                .HasDefaultValueSql("CURRENT_DATE");
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -605,12 +605,6 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyStatus(e))
             );
         
-        modelBuilder.Entity<AuditCompanyUserCplp1440DbAuditing>(entity =>
-        {
-            entity.Property(x => x.DateLastChanged)
-                .HasDefaultValueSql("CURRENT_DATE");
-        });
-        
         modelBuilder.Entity<CompanyUser>(entity =>
         {
             entity.HasOne(d => d.Company)
@@ -657,31 +651,37 @@ public class PortalDbContext : DbContext
                                 .Action(action => action
                                     .Insert(newValue => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
                                     {
+                                        Id = new Guid(),
                                         AuditId = newValue.Id,
                                         AuditOperationId = AuditOperationId.INSERT,
                                         UserRoleId = newValue.UserRoleId,
                                         CompanyUserId = newValue.CompanyUserId,
-                                        LastEditorId = newValue.LastEditorId
+                                        LastEditorId = newValue.LastEditorId,
+                                        DateLastChanged = new DateTimeOffset()
                                     })));
                             j.AfterUpdate(trigger => trigger
                                 .Action(action => action
                                     .Insert((oldEntity, newEntity) => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
                                     {
+                                        Id = new Guid(),
                                         AuditId = oldEntity.Id,
                                         AuditOperationId = AuditOperationId.UPDATE,
                                         UserRoleId = oldEntity.UserRoleId,
                                         CompanyUserId = oldEntity.CompanyUserId,
-                                        LastEditorId = oldEntity.LastEditorId
+                                        LastEditorId = oldEntity.LastEditorId,
+                                        DateLastChanged = new DateTimeOffset()
                                     })));
                             j.AfterDelete(trigger => trigger
                                 .Action(action => action
                                     .Insert(deletedEntity => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
                                     {
+                                        Id = new Guid(),
                                         AuditId = deletedEntity.Id,
                                         AuditOperationId = AuditOperationId.DELETE,
                                         UserRoleId = deletedEntity.UserRoleId,
                                         CompanyUserId = deletedEntity.CompanyUserId,
-                                        LastEditorId = deletedEntity.LastEditorId
+                                        LastEditorId = deletedEntity.LastEditorId,
+                                        DateLastChanged = new DateTimeOffset()
                                     })));
                         });
 
@@ -695,6 +695,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert(newValue => new AuditCompanyUserCplp1440DbAuditing
                     {
+                        Id = new Guid(),
                         AuditId = newValue.Id,
                         AuditOperationId = AuditOperationId.INSERT,
                         CompanyId = newValue.CompanyId,
@@ -704,11 +705,13 @@ public class PortalDbContext : DbContext
                         Lastlogin = newValue.Lastlogin,
                         Lastname = newValue.Lastname,
                         LastEditorId = newValue.LastEditorId,
+                        DateLastChanged = new DateTimeOffset()
                     })));
             entity.AfterUpdate(trigger => trigger
                 .Action(action => action
                     .Insert((oldEntity, newEntity) => new AuditCompanyUserCplp1440DbAuditing
                     {
+                        Id = new Guid(),
                         AuditId = oldEntity.Id,
                         AuditOperationId = AuditOperationId.UPDATE,
                         CompanyId = oldEntity.CompanyId,
@@ -717,12 +720,14 @@ public class PortalDbContext : DbContext
                         Firstname = oldEntity.Firstname,
                         Lastlogin = oldEntity.Lastlogin,
                         Lastname = oldEntity.Lastname,
-                        LastEditorId = oldEntity.LastEditorId
+                        LastEditorId = oldEntity.LastEditorId,
+                        DateLastChanged = new DateTimeOffset()
                     })));
             entity.AfterDelete(trigger => trigger
                 .Action(action => action
                     .Insert(deletedEntity => new AuditCompanyUserCplp1440DbAuditing
                     {
+                        Id = new Guid(),
                         AuditId = deletedEntity.Id,
                         AuditOperationId = AuditOperationId.DELETE,
                         CompanyId = deletedEntity.CompanyId,
@@ -731,14 +736,9 @@ public class PortalDbContext : DbContext
                         Firstname = deletedEntity.Firstname,
                         Lastlogin = deletedEntity.Lastlogin,
                         Lastname = deletedEntity.Lastname,
-                        LastEditorId = deletedEntity.LastEditorId
+                        LastEditorId = deletedEntity.LastEditorId,
+                        DateLastChanged = new DateTimeOffset()
                     })));
-        });
-
-        modelBuilder.Entity<AuditCompanyUserAssignedRoleCplp1440DbAuditing>(entity =>
-        {
-            entity.Property(x => x.DateLastChanged)
-                .HasDefaultValueSql("CURRENT_DATE");
         });
 
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
