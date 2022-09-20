@@ -16,21 +16,6 @@ public class CompanyRolesRepository : ICompanyRolesRepository
         _dbContext = portalDbContext;
     }
 
-    public Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, string? Comment = null, string? Target = null, Guid? DocumentId = null) =>
-        _dbContext.Consents.Add(
-            new Consent(
-                Guid.NewGuid(),
-                agreementId,
-                companyId,
-                companyUserId,
-                consentStatusId,
-                DateTimeOffset.UtcNow)
-            {
-                Comment = Comment,
-                Target = Target,
-                DocumentId = DocumentId
-            }).Entity;
-
     public CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId) =>
         _dbContext.CompanyAssignedRoles.Add(
             new CompanyAssignedRole(

@@ -249,42 +249,16 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
-    public async Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
+    public Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
     {
-        var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
-        var offerAgreementConsentData = await _offerService.GetProviderOfferAgreementConsent(appId, userId, OfferStatusId.CREATED, OfferTypeId.APP).ConfigureAwait(false);
-        if (offerAgreementConsentData == null)
+        if (appId == Guid.Empty)
         {
-            throw new NotFoundException($"offer {appId} does not exist");
+            throw new ControllerArgumentException($"AppId must not be empty");
         }
-        if (offerAgreementConsentData.companyUserId == Guid.Empty)
-        {
-            throw new ForbiddenException($"UserId {userId} is not assigned with Offer {appId}");
-        }
-        var companyId = offerAgreementConsentData.companyId;
-        var companyUserId = offerAgreementConsentData.companyUserId;
-
-        foreach (var agreementId in offerAgreementConsents.Agreements.ExceptBy(offerAgreementConsentData.Agreements.Select(d=>d.AgreementId),input=>input.AgreementId)
-                .Select(input =>input.AgreementId))
-        {
-            companyRolesRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
-        }
-        foreach (var (agreementId,consentStatus)
-            in offerAgreementConsents.Agreements.IntersectBy(
-                offerAgreementConsentData.Agreements.Select(d => d.AgreementId), offerConsentInput => offerConsentInput.AgreementId)
-                    .Select(offerConsentInput => (offerConsentInput.AgreementId, offerConsentInput.ConsentStatusId)))
-        {
-            var existing = offerAgreementConsentData.Agreements.First(d => d.AgreementId == agreementId);
-            _portalRepositories.Attach(new Consent(existing.ConsentId), consen =>
-            {
-                if (consentStatus != existing.ConsentStatusId)
-                {
-                    consen.ConsentStatusId = consentStatus;
-                }
-            });
-            
-        }
-
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return SubmitOfferConsentInternalAsync(appId, offerAgreementConsents, userId);
     }
+
+    /// <inheritdoc/>
+    private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
+        _offerService.CreaeteOrUpdateOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
 }
