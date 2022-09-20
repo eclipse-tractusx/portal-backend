@@ -31,14 +31,14 @@ public class FlurlErrorHandler
     {
         FlurlHttp.Configure(settings => settings.OnError = (call) =>
         {
-            var message = $"{call.Response?.ReasonPhrase}: {call.Request?.RequestUri}";
+            var message = $"{call.HttpResponseMessage?.ReasonPhrase ?? "ReasonPhrase is null"}: {call.HttpRequestMessage.RequestUri}";
 
             if (debugEnabled)
             {
-                var request = call.Request == null ? "" : $"{call.Request.Method} {call.Request.RequestUri} HTTP/{call.Request.Version}\n{call.Request.Headers}\n";
+                var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
                 var requestBody = call.RequestBody == null ? "\n" : call.RequestBody.ToString() + "\n\n";
-                var response = call.Response == null ? "" : call.Response.ReasonPhrase + "\n";
-                var responseContent = call.Response?.Content == null ? "" : call.Response.Content.ReadAsStringAsync().Result + "\n";
+                var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
+                var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
                 logger.LogError(call.Exception, request + requestBody + response + responseContent);
             }
             else
@@ -46,19 +46,22 @@ public class FlurlErrorHandler
                 logger.LogError(call.Exception, message);
             }
 
-            switch (call.HttpStatus)
+            if (call.HttpResponseMessage != null)
             {
-                case HttpStatusCode.NotFound:
-                    throw new KeycloakEntityNotFoundException(message, call.Exception);
+                switch (call.HttpResponseMessage.StatusCode)
+                {
+                    case HttpStatusCode.NotFound:
+                        throw new KeycloakEntityNotFoundException(message, call.Exception);
 
-                case HttpStatusCode.Conflict:
-                    throw new KeycloakEntityConflictException(message, call.Exception);
+                    case HttpStatusCode.Conflict:
+                        throw new KeycloakEntityConflictException(message, call.Exception);
 
-                case HttpStatusCode.BadRequest:
-                    throw new ArgumentException(message, call.Exception);
+                    case HttpStatusCode.BadRequest:
+                        throw new ArgumentException(message, call.Exception);
 
-                default:
-                    throw new ServiceException(message, call.Exception, call.HttpStatus.GetValueOrDefault());
+                    default:
+                        throw new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode);
+                }
             }
         });
     }
