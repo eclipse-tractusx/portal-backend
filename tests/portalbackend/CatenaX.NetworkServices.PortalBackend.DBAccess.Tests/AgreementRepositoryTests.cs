@@ -137,7 +137,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var results = await sut.GetOfferAgreementDataForIamUser("3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetOfferAgreementDataForOfferId(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
     
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -151,7 +151,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferAgreementDataForIamUser(Guid.NewGuid().ToString(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOfferAgreementDataForOfferId(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

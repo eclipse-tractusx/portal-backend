@@ -40,10 +40,10 @@ public interface IAgreementRepository
     /// <summary>
     /// Gets the agreement data that have an app id set
     /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">Specific offer type</param>
     /// <returns>Returns an async enumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForOfferId(Guid offerId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// Gets the agreement data untracked from the database
@@ -76,4 +76,11 @@ public interface IAgreementRepository
     /// <param name="categoryId"></param>
     /// <returns></returns>
     Task<OfferAgreementConsentUpdate?> GetOfferAgreementConsent(Guid appId, string userId, OfferStatusId statusId, AgreementCategoryId categoryId);
+    /// Checks whether the given agreements exists in the database
+    /// </summary>
+    /// <param name="agreementIds">Ids of the agreements</param>
+    /// <param name="subscriptionId">Id of subscription the agreement must be associated with</param>
+    /// <param name="offerTypeId">The OfferTypeId that the agreement must be associated with</param>
+    /// <returns>Returns <c>true</c> if the agreements were found, otherwise <c>false</c>.</returns>
+    Task<bool> CheckAgreementsExistsForSubscriptionAsync(IEnumerable<Guid> agreementIds, Guid subscriptionId, OfferTypeId offerTypeId);
 }

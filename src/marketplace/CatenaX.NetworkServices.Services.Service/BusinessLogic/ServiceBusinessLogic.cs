@@ -24,7 +24,6 @@ using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -172,12 +171,18 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             serviceAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetServiceAgreement(string iamUserId) => 
-        _offerService.GetOfferAgreement(iamUserId, OfferTypeId.SERVICE);
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) => 
+        _offerService.GetOfferAgreement(serviceId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>
         _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
+
+    /// <inheritdoc />
+    public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
+        IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas,
+        string iamUserId) =>
+        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {

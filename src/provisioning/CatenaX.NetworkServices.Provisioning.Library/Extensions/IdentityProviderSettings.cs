@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using Keycloak.Net.Models.IdentityProviders;
+using CatenaX.NetworkServices.Keycloak.Library.Models.IdentityProviders;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
