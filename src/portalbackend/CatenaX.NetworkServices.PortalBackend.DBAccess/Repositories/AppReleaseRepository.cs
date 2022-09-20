@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -43,21 +42,21 @@ public class AppReleaseRepository : IAppReleaseRepository
     }
     
     ///<inheritdoc/>
-    public  Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId)
+    public  Task<Guid> GetCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId)
     =>
         _context.Offers
-            .Where(a => a.Id == appId && a.OfferStatusId == OfferStatusId.CREATED)
+            .Where(a => a.Id == offerId && a.OfferStatusId == OfferStatusId.CREATED)
             .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
     public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
         _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
-    
+
     ///<inheritdoc/>
-    public Task<bool> IsProviderCompanyUserAsync(Guid appId, string userId) =>
+    public Task<bool> IsProviderCompanyUserAsync(Guid offerId, string userId) =>
         _context.Offers
-            .AnyAsync(a => a.Id == appId
+            .AnyAsync(a => a.Id == offerId
                 && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
 
     ///<inheritdoc/>

@@ -172,7 +172,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) => 
-        _offerService.GetOfferAgreement(serviceId, OfferTypeId.SERVICE);
+        _offerService.GetOfferAgreementsAsync(serviceId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>

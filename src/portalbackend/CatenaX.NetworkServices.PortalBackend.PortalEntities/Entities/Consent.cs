@@ -7,7 +7,8 @@ public class Consent
 {
     private Consent()
     {
-        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+        ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
+        ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
 
     /// <summary>
@@ -53,5 +54,6 @@ public class Consent
     public virtual CompanyUser? CompanyUser { get; private set; }
     public virtual ConsentStatus? ConsentStatus { get; private set; }
     public virtual Document? Document { get; private set; }
+    public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }
