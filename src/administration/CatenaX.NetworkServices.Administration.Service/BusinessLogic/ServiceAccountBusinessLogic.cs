@@ -64,14 +64,14 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ControllerArgumentException("name must not be empty","name");
         }
 
-        var companyId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
+        if (result != default)
         {
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
         var (name, description, iamClientAuthMethod, userRoleIds) = serviceAccountCreationInfos;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, companyId);
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, result.CompanyId, Enumerable.Repeat(result.Bpn, 1));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
