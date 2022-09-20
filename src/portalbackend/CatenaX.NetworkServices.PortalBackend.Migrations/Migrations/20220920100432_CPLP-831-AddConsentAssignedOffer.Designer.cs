@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220920084756_CPLP-831-AddConsentAssignedOffer")]
+    [Migration("20220920100432_CPLP-831-AddConsentAssignedOffer")]
     partial class CPLP831AddConsentAssignedOffer
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -338,6 +338,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_agreement_assigned_offers_offer_id");
 
                     b.ToTable("agreement_assigned_offers", "portal");
+                });
+
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedOfferType", b =>
+                {
+                    b.Property<Guid>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<int>("OfferTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("offer_type_id");
+
+                    b.HasKey("AgreementId", "OfferTypeId")
+                        .HasName("pk_agreement_assigned_offer_types");
+
+                    b.HasIndex("OfferTypeId")
+                        .HasDatabaseName("ix_agreement_assigned_offer_types_offer_type_id");
+
+                    b.ToTable("agreement_assigned_offer_types", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
@@ -4337,6 +4356,25 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Offer");
                 });
 
+            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedOfferType", b =>
+                {
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                        .WithMany("AgreementAssignedOfferTypes")
+                        .HasForeignKey("AgreementId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_assigned_offer_types_agreements_agreement_id");
+
+                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferType", "OfferType")
+                        .WithMany("AgreementAssignedOfferTypes")
+                        .HasForeignKey("OfferTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_assigned_offer_types_offer_types_offer_type_id");
+
+                    b.Navigation("Agreement");
+
+                    b.Navigation("OfferType");
+                });
+
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "App")
@@ -5073,6 +5111,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
                     b.Navigation("AgreementAssignedDocumentTemplates");
 
+                    b.Navigation("AgreementAssignedOfferTypes");
+
                     b.Navigation("AgreementAssignedOffers");
 
                     b.Navigation("Consents");
@@ -5294,6 +5334,8 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.OfferType", b =>
                 {
+                    b.Navigation("AgreementAssignedOfferTypes");
+
                     b.Navigation("Offers");
                 });
 
