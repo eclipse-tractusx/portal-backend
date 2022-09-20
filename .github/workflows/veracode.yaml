@@ -218,7 +218,7 @@ jobs:
           filepath: "portal-backend-marketplace-app.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Apps.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
+          include: 'CatenaX.NetworkServices.Apps.Service.dll'
 
   analyze-portal-migrations:
     runs-on: ubuntu-latest
