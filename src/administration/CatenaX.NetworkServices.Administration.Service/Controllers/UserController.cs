@@ -170,7 +170,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyUserDetails> GetOwnCompanyUserDetails([FromRoute] Guid companyUserId) =>
-        this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetails(companyUserId, iamUserId));
+        this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetailsAsync(companyUserId, iamUserId));
 
     /// <summary>
     /// Adds the given business partner numbers to the user for the given id.

@@ -69,7 +69,7 @@ public class UserProvisioningService : IUserProvisioningService
 
             try
             {
-                await ValidateDuplicateUsers(userRepository, alias, user, companyId).ConfigureAwait(false);
+                await ValidateDuplicateUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
 
                 companyUser = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
@@ -102,7 +102,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
 
-                await AssignRolesToNewUser(userRolesRepository, user.Roles, companyUser.Id, centralUserId, clientId, userRoleIds);
+                await AssignRolesToNewUserAsync(userRolesRepository, user.Roles, companyUser.Id, centralUserId, clientId, userRoleIds).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -140,7 +140,7 @@ public class UserProvisioningService : IUserProvisioningService
         return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, result.IsSharedIdp);
     }
 
-    private async Task ValidateDuplicateUsers(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
+    private async Task ValidateDuplicateUsersAsync(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
     {
         await foreach (var userEntityId in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))
         {
@@ -159,7 +159,7 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
-    private async Task AssignRolesToNewUser(IUserRolesRepository userRolesRepository, IEnumerable<string> roles, Guid companyUserId, string centralUserId, string clientId, IDictionary<string,Guid> userRoleIds)
+    private async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<string> roles, Guid companyUserId, string centralUserId, string clientId, IDictionary<string,Guid> userRoleIds)
     {
         if (roles.Any())
         {
