@@ -83,6 +83,11 @@ public class UserController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
     [Route("owncompany/identityprovider/{identityProviderId}/users")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<CreatedAtRouteResult> CreateOwnIdpOwnCompanyUser([FromBody] UserCreationInfoIdp userToCreate, [FromRoute] Guid identityProviderId)
     {
         var result = await this.WithIamUserId(adminUserId => _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate, adminUserId)).ConfigureAwait(false);
