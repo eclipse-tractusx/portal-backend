@@ -140,7 +140,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         
         var (requesterId, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
+        var companyName = await GetOrCreateCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
         {
@@ -333,7 +333,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
     }
     
-    private async Task<string> GetCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)
+    private async Task<string> GetOrCreateCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)
     {
         var companyAssignedAppRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var companyAppSubscriptionData = await companyAssignedAppRepository
