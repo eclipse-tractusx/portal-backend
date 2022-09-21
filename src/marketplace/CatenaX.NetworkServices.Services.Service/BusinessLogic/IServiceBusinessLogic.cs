@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Services.Service.ViewModels;
 
 namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 

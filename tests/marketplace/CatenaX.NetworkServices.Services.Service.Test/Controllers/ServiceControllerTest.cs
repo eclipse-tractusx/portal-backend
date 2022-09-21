@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Services.Service.Controllers;
+using CatenaX.NetworkServices.Services.Service.ViewModels;
 using CatenaX.NetworkServices.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
