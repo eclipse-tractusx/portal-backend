@@ -236,11 +236,11 @@ public class OfferRepository : IOfferRepository
             ));
 
      /// <inheritdoc />
-    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId) => 
+    public Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId) => 
         _context.Offers
             .AsNoTracking()
-            .Where(x => x.Id == serviceId)
-            .Select(offer => new ServiceDetailData(
+            .Where(x => x.Id == serviceId && x.OfferTypeId == offerTypeId)
+            .Select(offer => new OfferDetailData(
                 offer.Id,
                 offer.Name,
                 offer.Provider,

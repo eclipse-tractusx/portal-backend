@@ -31,6 +31,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
+using CatenaX.NetworkServices.Provisioning.Library.Service;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
@@ -642,7 +643,7 @@ public class ServiceBusinessLogicTests
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
         var serviceDetailData = new AsyncEnumerableStub<ValueTuple<Guid, string?, string, string?, string?, string?>>(_fixture.CreateMany<ValueTuple<Guid, string?, string, string?, string?, string?>>(5));
-        var serviceDetail = _fixture.Build<ServiceDetailData>()
+        var serviceDetail = _fixture.Build<OfferDetailData>()
             .With(x => x.Id, _existingServiceId)
             .Create();
         
@@ -665,13 +666,13 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
         
-        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en"), A<string>._))
+        A.CallTo(() => _offerRepository.GetOfferDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en"), A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => serviceDetail with {OfferSubscriptionDetailData = new []
             {
                 new OfferSubscriptionStateDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE)
             }});
-        A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._))
-            .ReturnsLazily(() => (ServiceDetailData?)null);
+        A.CallTo(() => _offerRepository.GetOfferDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => (OfferDetailData?)null);
 
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
             .Returns(new List<string> { "en" }.ToAsyncEnumerable());
