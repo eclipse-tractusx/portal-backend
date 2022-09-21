@@ -97,11 +97,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.DateCreated,
                         application.Company!.Name,
                         application.Invitations.SelectMany(invitation =>
-                            invitation.CompanyUser!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT).Select(document =>
+                            invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
                                 new DocumentDetails(document.DocumentHash)
-                                {
-                                    DocumentTypeId = document.DocumentTypeId,
-                                })))
+                                )))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)
