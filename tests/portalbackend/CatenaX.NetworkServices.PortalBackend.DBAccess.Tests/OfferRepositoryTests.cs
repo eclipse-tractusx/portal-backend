@@ -58,6 +58,7 @@ public class OfferRepositoryTests
         var apps = _fixture.Build<Offer>()
             .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
             .With(a => a.OfferTypeId, OfferTypeId.APP)
+            .With(a => a.OfferStatusId, OfferStatusId.ACTIVE)
             .CreateMany();
         var appsDbSet = apps.AsFakeDbSet();
         var languagesDbSet = new List<Language>().AsFakeDbSet();
