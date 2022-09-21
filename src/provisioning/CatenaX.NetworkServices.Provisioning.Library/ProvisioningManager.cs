@@ -25,6 +25,7 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -304,4 +305,8 @@ public partial class ProvisioningManager : IProvisioningManager
         var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(false);
         return _Factory.CreateKeycloakClient("shared", clientId, secret);
     }
+
+    private static T Clone<T>(T cloneObject) 
+        where T : class =>
+        JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
 }
