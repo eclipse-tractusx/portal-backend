@@ -36,7 +36,9 @@ public class DocumentDetails
     {
         DocumentHash = documentHash;
     }
-    
+
+    [JsonPropertyName("documentType")]
+    public DocumentTypeId? DocumentTypeId { get; set; }
     [JsonPropertyName("documentHash")]
     public byte[] DocumentHash { get; set; }
 }
