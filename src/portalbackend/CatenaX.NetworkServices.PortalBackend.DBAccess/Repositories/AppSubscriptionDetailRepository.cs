@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,25 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
-public static class OfferData
+public class AppSubscriptionDetailRepository : IAppSubscriptionDetailRepository
 {
-    public static readonly ImmutableList<Offer> Offers = ImmutableList.Create(
-        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
-        {
-            OfferStatusId = OfferStatusId.ACTIVE,
-        },
-        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.SERVICE)
-        {
-            Name = "Newest Service",
-            ContactEmail = "service-test@mail.com",
-            OfferStatusId = OfferStatusId.ACTIVE,
-            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
-        }
-    );
+    private readonly PortalDbContext _portalDbContext;
+
+    public AppSubscriptionDetailRepository(PortalDbContext portalDbContext)
+    {
+        _portalDbContext = portalDbContext;
+    }
+
+    /// <inheritdoc />
+    public AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null)
+    {
+        var appSubscriptionDetails = _portalDbContext.AppSubscriptionDetails.Add(new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId)).Entity;
+        updateOptionalFields?.Invoke(appSubscriptionDetails);
+        return appSubscriptionDetails;
+    }
 }

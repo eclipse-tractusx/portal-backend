@@ -25,6 +25,7 @@ using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -125,11 +126,16 @@ public partial class ProvisioningManager : IProvisioningManager
         return attributes;
     }
 
-    public async Task<string> SetupClientAsync(string redirectUrl)
+    public async Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames = null)
     {
         var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
         var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
         await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
+        if (optionalRoleNames != null && optionalRoleNames.Any())
+        {
+            await this.AssignClientRolesToClient(internalId, optionalRoleNames).ConfigureAwait(false);
+        }
+
         return clientId;
     }
 
@@ -142,6 +148,12 @@ public partial class ProvisioningManager : IProvisioningManager
             : bpns;
         await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
     }
+
+    public Task AddProtocolMapperAsync(string clientId) => 
+        _CentralIdp.CreateClientProtocolMapperAsync(
+            _Settings.CentralRealm, 
+            clientId,
+            Clone(_Settings.ClientProtocolMapper));
 
     public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
     {
@@ -293,4 +305,8 @@ public partial class ProvisioningManager : IProvisioningManager
         var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(false);
         return _Factory.CreateKeycloakClient("shared", clientId, secret);
     }
+
+    private static T Clone<T>(T cloneObject) 
+        where T : class =>
+        JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
 }

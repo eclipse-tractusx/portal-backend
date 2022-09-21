@@ -236,11 +236,11 @@ public class OfferRepository : IOfferRepository
             ));
 
      /// <inheritdoc />
-    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId) => 
+    public Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId) => 
         _context.Offers
             .AsNoTracking()
-            .Where(x => x.Id == serviceId)
-            .Select(offer => new ServiceDetailData(
+            .Where(x => x.Id == serviceId && x.OfferTypeId == offerTypeId)
+            .Select(offer => new OfferDetailData(
                 offer.Id,
                 offer.Name,
                 offer.Provider,
@@ -248,7 +248,7 @@ public class OfferRepository : IOfferRepository
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
-                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionDetailData(x.Id, x.OfferSubscriptionStatusId))
+                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
 

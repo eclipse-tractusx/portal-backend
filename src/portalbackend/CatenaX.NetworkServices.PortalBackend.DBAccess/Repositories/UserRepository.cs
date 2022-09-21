@@ -207,6 +207,13 @@ public class UserRepository : IUserRepository
             .Select(iamUser => iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
+    public Task<(Guid CompanyId, string Bpn)> GetCompanyIdAndBpnForIamUserUntrackedAsync(string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => new ValueTuple<Guid, string>(iamUser.CompanyUser!.Company!.Id, iamUser.CompanyUser!.Company!.BusinessPartnerNumber!))
+            .SingleOrDefaultAsync();
+
     public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IdpAliase)> GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId) =>
         _dbContext.IamUsers
             .AsNoTracking()
