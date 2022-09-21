@@ -1,5 +1,5 @@
-﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
+/********************************************************************************
+ * Copyright (c) 2021,2022 Microsoft and BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -424,6 +424,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
 
             var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
+            var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
 
             var companyRoleAgreementConsentData = await companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, iamUserId).ConfigureAwait(false);
 
@@ -489,7 +490,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                     && !activeConsents.Any(activeConsent =>
                         activeConsent.AgreementId == agreementConsent.AgreementId)))
             {
-                companyRolesRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+                consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
             }
 
             UpdateApplicationStatus(application, UpdateApplicationSteps.CompanyRoleAgreementConsents);

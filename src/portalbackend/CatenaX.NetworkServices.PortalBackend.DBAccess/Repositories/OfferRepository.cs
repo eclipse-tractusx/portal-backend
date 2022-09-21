@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -71,34 +71,23 @@ public class OfferRepository : IOfferRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
+    public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
-            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.OfferTypeId == OfferTypeId.APP)
-            .Select(a => new {
+            .Where(offer => offer.DateReleased.HasValue && offer.DateReleased <= DateTime.UtcNow && offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.ACTIVE)
+            .Select(a => new ValueTuple<Guid,string?,string,IEnumerable<string>,string?,string?,string?>(
                 a.Id,
                 a.Name,
-                VendorCompanyName = a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
-                UseCaseNames = a.UseCases.Select(uc => uc.Name),
+                a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
+                a.UseCases.Select(uc => uc.Name),
                 a.ThumbnailUrl,
-                ShortDescription =
-                    _context.Languages.Any(l => l.ShortName == languageShortName)
+                _context.Languages.Any(l => l.ShortName == languageShortName)
                         ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                             ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
                         : null,
-                LicenseText = a.OfferLicenses
+                a.OfferLicenses
                     .Select(license => license.Licensetext)
-                    .FirstOrDefault()
-            }).AsAsyncEnumerable().Select(app => new AppData(
-                app.Name ?? Constants.ErrorString,
-                app.ShortDescription ?? Constants.ErrorString,
-                app.VendorCompanyName ?? Constants.ErrorString,
-                app.LicenseText ?? Constants.ErrorString,
-                app.ThumbnailUrl ?? Constants.ErrorString
-                )
-            {
-                Id = app.Id,
-                UseCases = app.UseCaseNames.Select(name => name).ToList()
-            });
+                    .FirstOrDefault()))
+            .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName)
