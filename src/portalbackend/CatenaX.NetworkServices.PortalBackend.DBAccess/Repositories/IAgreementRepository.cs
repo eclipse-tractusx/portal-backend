@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -75,6 +75,7 @@ public interface IAgreementRepository
     /// <param name="statusId"></param>
     /// <param name="categoryId"></param>
     /// <returns></returns>
+    
     Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId);
     /// Checks whether the given agreements exists in the database
     /// </summary>
