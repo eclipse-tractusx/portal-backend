@@ -18,21 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
-/// View model of an application's detailed data specific for service consents
+/// Repository for accessing and creating app subscription detail on persistence layer.
 /// </summary>
-/// <param name="Id">ID of the service</param>
-/// <param name="CompanyName">Name of the company that gave the consent</param>
-/// <param name="CompanyUserId">ID of the company that gave the consent</param>
-/// <param name="ConsentStatus">Consent Status</param>
-/// <param name="AgreementName">The agreement name</param>
-public record ConsentDetailData(
-    Guid Id,
-    string CompanyName,
-    Guid CompanyUserId,
-    ConsentStatusId ConsentStatus,
-    string AgreementName);
+public interface IAppSubscriptionDetailRepository
+{
+    /// <summary>
+    /// Add app Id and Document Id in App Assigned Document table 
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription to link the details to</param>
+    /// <param name="updateOptionalFields">Action to update the optional fields</param>
+    /// <returns>The created App subscription detail</returns>
+    AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null);
+}

@@ -21,8 +21,10 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
+using CatenaX.NetworkServices.Services.Service.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -127,9 +129,9 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("{serviceId}", Name = nameof(GetServiceDetails))]
     [Authorize(Roles = "view_service_offering")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
+    public Task<OfferDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, iamUserId));
     
     /// <summary>
@@ -201,4 +203,20 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementData> GetServiceAgreement([FromRoute] Guid serviceId) =>
         _serviceBusinessLogic.GetServiceAgreement(serviceId);
+
+    /// <summary>
+    /// Auto setup the service
+    /// </summary>
+    /// <remarks>Example: POST: /api/services/autoSetup</remarks>
+    /// <response code="200">Returns the service agreement data.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    [HttpPost]
+    [Route("autoSetup")]
+    [Authorize(Roles = "activate_subscription")]
+    [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
+        => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupService(data, iamUserId));
 }

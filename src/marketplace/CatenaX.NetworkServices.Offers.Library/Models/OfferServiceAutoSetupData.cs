@@ -18,21 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Offers.Library.Models;
 
 /// <summary>
-/// View model of an application's detailed data specific for service consents
+/// Data object to retrieve the needed data to auto setup an service
 /// </summary>
-/// <param name="Id">ID of the service</param>
-/// <param name="CompanyName">Name of the company that gave the consent</param>
-/// <param name="CompanyUserId">ID of the company that gave the consent</param>
-/// <param name="ConsentStatus">Consent Status</param>
-/// <param name="AgreementName">The agreement name</param>
-public record ConsentDetailData(
-    Guid Id,
-    string CompanyName,
-    Guid CompanyUserId,
-    ConsentStatusId ConsentStatus,
-    string AgreementName);
+/// <param name="RequestId">Id of the offer subscription</param>
+/// <param name="OfferUrl">Url of the service</param>
+public record OfferAutoSetupData(Guid RequestId, string OfferUrl);
+
+/// <summary>
+/// Response data for the service auto setup
+/// </summary>
+/// <param name="TechnicalUserId">Id of the created technical user</param>
+/// <param name="TechnicalUserSecret">User secret for the created user</param>
+public record OfferAutoSetupResponseData(Guid TechnicalUserId, string? TechnicalUserSecret);

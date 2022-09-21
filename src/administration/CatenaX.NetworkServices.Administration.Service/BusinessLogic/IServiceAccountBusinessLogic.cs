@@ -21,7 +21,6 @@
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Provisioning.Library.ViewModels;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
