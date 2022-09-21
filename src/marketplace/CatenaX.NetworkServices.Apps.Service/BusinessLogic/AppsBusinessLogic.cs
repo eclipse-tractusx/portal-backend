@@ -343,21 +343,21 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ControllerArgumentException($"user {iamUserId} is not assigned with a company");
         }
 
-        var (companyId, companyAssignedApp, companyName, companyUserId) = companyAppSubscriptionData;
-        if (companyAssignedApp == null)
+        var (companyId, offerSubscription, companyName, companyUserId) = companyAppSubscriptionData;
+        if (offerSubscription == null)
         {
             companyAssignedAppRepository.CreateOfferSubscription(appId, companyId, OfferSubscriptionStatusId.PENDING,
                 requesterId, companyUserId);
         }
         else
         {
-            if (companyAssignedApp.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
+            if (offerSubscription.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
                 or OfferSubscriptionStatusId.PENDING)
             {
                 throw new ConflictException($"company {companyId} is already subscribed to {appId}");
             }
 
-            companyAssignedApp.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+            offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         }
 
         return companyName;
