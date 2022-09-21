@@ -73,7 +73,7 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
-            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.OfferTypeId == OfferTypeId.APP)
+            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.OfferTypeId == OfferTypeId.APP && app.OfferStatusId == OfferStatusId.ACTIVE)
             .Select(a => new {
                 a.Id,
                 a.Name,
