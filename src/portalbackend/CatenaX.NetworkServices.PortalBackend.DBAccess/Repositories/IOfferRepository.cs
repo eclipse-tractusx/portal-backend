@@ -63,8 +63,8 @@ public interface IOfferRepository
     /// Gets all active apps with an optional filtered with the languageShortName
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
-    /// <returns>Returns a async enumerable of <see cref="AppData"/></returns>
-    IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName);
+    /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
+    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
