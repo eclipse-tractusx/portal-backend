@@ -20,6 +20,7 @@
 
 using AutoFixture;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
@@ -196,9 +197,9 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
         {
             //Arrange
             var offerSubscriptionId = Guid.NewGuid();
-            var data = new ServiceAutoSetupData(offerSubscriptionId, "https://test.de");
-            var responseData = new ServiceAutoSetupResponseData(Guid.NewGuid(), "abcPW");
-            A.CallTo(() => _logic.AutoSetupService(A<ServiceAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+            var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
+            var responseData = new OfferAutoSetupResponseData(Guid.NewGuid(), "abcPW");
+            A.CallTo(() => _logic.AutoSetupService(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
                 .Returns(responseData);
 
             //Act
@@ -206,7 +207,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.AutoSetupService(data, IamUserId)).MustHaveHappenedOnceExactly();
-            Assert.IsType<ServiceAutoSetupResponseData>(result);
+            Assert.IsType<OfferAutoSetupResponseData>(result);
             result.Should().Be(responseData);
         }
     }

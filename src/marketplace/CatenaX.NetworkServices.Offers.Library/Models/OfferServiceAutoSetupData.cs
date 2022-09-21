@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,18 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Offers.Library.Models;
 
 /// <summary>
 /// Data object to retrieve the needed data to auto setup an service
 /// </summary>
 /// <param name="RequestId">Id of the offer subscription</param>
 /// <param name="OfferUrl">Url of the service</param>
-public record ServiceAutoSetupData(Guid RequestId, string OfferUrl);
+public record OfferAutoSetupData(Guid RequestId, string OfferUrl);
 
 /// <summary>
 /// Response data for the service auto setup
 /// </summary>
 /// <param name="TechnicalUserId">Id of the created technical user</param>
 /// <param name="TechnicalUserSecret">User secret for the created user</param>
-public record ServiceAutoSetupResponseData(Guid TechnicalUserId, string? TechnicalUserSecret);
+public record OfferAutoSetupResponseData(Guid TechnicalUserId, string? TechnicalUserSecret);

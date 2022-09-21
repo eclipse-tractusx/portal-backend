@@ -33,7 +33,7 @@ public class AppSubscriptionDetailRepository : IAppSubscriptionDetailRepository
     }
 
     /// <inheritdoc />
-    public AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields)
+    public AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null)
     {
         var appSubscriptionDetails = _portalDbContext.AppSubscriptionDetails.Add(new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId)).Entity;
         updateOptionalFields?.Invoke(appSubscriptionDetails);

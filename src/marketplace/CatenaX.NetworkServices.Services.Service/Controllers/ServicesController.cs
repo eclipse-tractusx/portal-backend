@@ -21,6 +21,7 @@
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.Keycloak.Authentication;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Services.Service.ViewModels;
@@ -213,9 +214,9 @@ public class ServicesController : ControllerBase
     [HttpPost]
     [Route("autoSetup")]
     [Authorize(Roles = "activate_subscription")]
-    [ProducesResponseType(typeof(OfferDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<ServiceAutoSetupResponseData> AutoSetupService([FromBody] ServiceAutoSetupData data)
+    public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
         => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupService(data, iamUserId));
 }
