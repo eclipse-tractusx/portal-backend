@@ -79,7 +79,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var result = await sut.GetOfferAgreement(_existingServiceId, OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOfferAgreementsAsync(_existingServiceId, OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().ContainSingle();
@@ -93,7 +93,7 @@ public class OfferServiceTests
         var sut = _fixture.Create<OfferService>();
 
         // Act
-        var agreementData = await sut.GetOfferAgreement(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var agreementData = await sut.GetOfferAgreementsAsync(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
         // Assert
         agreementData.Should().BeEmpty();
