@@ -160,9 +160,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
+    public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
     {        
-        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, iamUserId).ConfigureAwait(false);
+        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferDetailByIdUntrackedAsync(serviceId, lang, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (serviceDetailData == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
