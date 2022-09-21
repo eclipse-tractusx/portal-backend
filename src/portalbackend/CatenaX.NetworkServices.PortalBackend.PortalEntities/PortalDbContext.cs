@@ -41,6 +41,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
     public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
     public virtual DbSet<AgreementAssignedOffer> AgreementAssignedOffers { get; set; } = default!;
+    public virtual DbSet<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
@@ -100,6 +101,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<ServiceProviderCompanyDetail> ServiceProviderCompanyDetails { get; set; } = default!;
     
+    public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
@@ -172,13 +174,43 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        modelBuilder.Entity<AgreementAssignedOfferType>(entity =>
+        {
+            entity.HasKey(e => new { e.AgreementId, e.OfferTypeId });
+
+            entity.HasOne(d => d.Agreement)
+                .WithMany(p => p!.AgreementAssignedOfferTypes)
+                .HasForeignKey(d => d.AgreementId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.OfferType)
+                .WithMany(p => p.AgreementAssignedOfferTypes)
+                .HasForeignKey(d => d.OfferTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<AgreementCategory>()
             .HasData(
                 Enum.GetValues(typeof(AgreementCategoryId))
                     .Cast<AgreementCategoryId>()
                     .Select(e => new AgreementCategory(e))
             );
+        
+        modelBuilder.Entity<ConsentAssignedOffer>(entity =>
+        {
+            entity.HasKey(e => new { e.ConsentId, e.OfferId });
 
+            entity.HasOne(d => d.Consent)
+                .WithMany(p => p!.ConsentAssignedOffers)
+                .HasForeignKey(d => d.ConsentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Offer)
+                .WithMany(p => p!.ConsentAssignedOffers!)
+                .HasForeignKey(d => d.OfferId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+        
         modelBuilder.Entity<Offer>(entity =>
         {
             entity.HasOne(d => d.ProviderCompany)

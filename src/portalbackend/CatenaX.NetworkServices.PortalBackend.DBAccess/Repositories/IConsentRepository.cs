@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -38,13 +38,21 @@ public interface IConsentRepository
     /// <param name="consentStatusId">Id of the consent status</param>
     /// <param name="setupOptionalFields">Action to setup the optional fields of the consent</param>
     /// <returns>Returns the newly created consent</returns>
-    Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields);
+    Consent CreateConsent(Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields = null);
     
     /// <summary>
     /// Remove the given consents from the database
     /// </summary>
     /// <param name="consents">The consents that should be removed.</param>
     void RemoveConsents(IEnumerable<Consent> consents);
+
+    /// <summary>
+    /// Add consent Id and offer Id in consent_assigned_offer table
+    /// </summary>
+    /// <param name="consentId"></param>
+    /// <param name="offerId"></param>
+    /// <returns></returns>
+    ConsentAssignedOffer CreateConsentAssignedOffer(Guid consentId, Guid offerId);
 
     /// <summary>
     /// Gets the details of the consent

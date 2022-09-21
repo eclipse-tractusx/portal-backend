@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -62,6 +62,50 @@ public class AgreementRepository : IAgreementRepository
                 agreement.Id,
                 agreement.Name))
             .AsAsyncEnumerable();
+
+    ///<inheritdoc/>
+    public IAsyncEnumerable<AgreementData> GetAgreementDataForOfferType(OfferTypeId offerTypeId) =>
+        _context.Agreements
+            .AsNoTracking()
+            .Where(agreement=>agreement.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId))
+            .Select(agreement=> new  AgreementData(
+                agreement.Id,
+                agreement.Name
+            ))
+            .AsAsyncEnumerable();
+
+    ///<inheritdoc/>
+    public Task<(OfferAgreementConsent OfferAgreementConsent, bool IsProviderCompany)> GetOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(offer=>offer.Id == offerId && 
+                offer.OfferTypeId == offerTypeId)
+            .Select(offer=> new ValueTuple<OfferAgreementConsent,bool>(
+                new OfferAgreementConsent(
+                    offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AgreementConsentStatus(
+                    consentAssignedOffer.Consent!.AgreementId,
+                    consentAssignedOffer.Consent.ConsentStatusId))),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            ))
+            .SingleOrDefaultAsync();
+    
+    ///<inheritdoc/>
+    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(offer=>offer.Id == appId &&
+                offer.OfferStatusId == statusId &&
+                offer.OfferTypeId == offerTypeId)
+            .Select(offer=> new ValueTuple<OfferAgreementConsentUpdate,bool>(
+                new OfferAgreementConsentUpdate(
+                    offer.ProviderCompany!.CompanyUsers.Select(companyUser=>companyUser.Id).SingleOrDefault(),
+                    offer.ProviderCompany.Id,
+                    offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AppAgreementConsentStatus(
+                    consentAssignedOffer.Consent!.AgreementId,
+                    consentAssignedOffer.Consent.Id,
+                    consentAssignedOffer.Consent.ConsentStatusId))),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<bool> CheckAgreementsExistsForSubscriptionAsync(IEnumerable<Guid> agreementIds, Guid subscriptionId, OfferTypeId offerTypeId) =>
