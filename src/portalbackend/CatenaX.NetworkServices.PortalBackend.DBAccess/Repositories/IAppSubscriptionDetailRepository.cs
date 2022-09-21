@@ -33,5 +33,5 @@ public interface IAppSubscriptionDetailRepository
     /// <param name="offerSubscriptionId">Id of the offer subscription to link the details to</param>
     /// <param name="updateOptionalFields">Action to update the optional fields</param>
     /// <returns>The created App subscription detail</returns>
-    AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields);
+    AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null);
 }

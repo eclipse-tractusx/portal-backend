@@ -68,7 +68,7 @@ public interface IOfferSubscriptionsRepository
     /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="iamUserId">the iam user id</param>
     /// <returns>returns the subscription detail data if found</returns>
-    Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId);
+    Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer details for the given id.
@@ -76,5 +76,5 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerSubscriptionId">Id of the offer subscription.</param>
     /// <param name="iamUserId">Id of the iamUser.</param>
     /// <returns>Returns the offer details.</returns>
-    Task<OfferSubscriptionDetailData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId);
+    Task<OfferSubscriptionDetailData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
 }
