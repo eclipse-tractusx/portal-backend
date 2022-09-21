@@ -90,7 +90,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId)
     {
         var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
 
@@ -134,7 +134,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.StatusId = status;
             });
 
-        await _connectorsSdFactoryService.RegisterConnector(connectorInputModel, accessToken, providerBusinessPartnerNumber).ConfigureAwait(false);
+        await _connectorsSdFactoryService.RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, Guid.NewGuid()).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

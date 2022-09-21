@@ -45,6 +45,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid _companyWithoutBpnId = Guid.NewGuid();
     private static readonly Guid _invalidCompanyId = Guid.NewGuid();
     private static readonly Guid _invalidHostId = Guid.NewGuid();
+    private static readonly string _iamUserId = Guid.NewGuid().ToString();
     private static readonly string _accessToken = "validToken";
     private static readonly List<Connector> _connectors = new();
     private readonly ICountryRepository _countryRepository;
@@ -91,7 +92,7 @@ public class ConnectorsBusinessLogicTests
             _validCompanyId);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -106,7 +107,7 @@ public class ConnectorsBusinessLogicTests
             _validCompanyId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -122,7 +123,7 @@ public class ConnectorsBusinessLogicTests
             _invalidCompanyId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -138,7 +139,7 @@ public class ConnectorsBusinessLogicTests
             _companyWithoutBpnId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -154,7 +155,7 @@ public class ConnectorsBusinessLogicTests
             _invalidHostId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -219,12 +220,12 @@ public class ConnectorsBusinessLogicTests
             });
 
         A.CallTo(() =>
-                _connectorsSdFactoryService.RegisterConnector(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
-                    A<string>._))
+                _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
+                    A<string>._, A<Guid>._))
             .ReturnsLazily(() => Task.CompletedTask);
         A.CallTo(() =>
-                _connectorsSdFactoryService.RegisterConnector(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
-                    A<string>._))
+                _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
+                    A<string>._, A<Guid>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
     }
 

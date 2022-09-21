@@ -45,6 +45,26 @@ public static class ControllerExtensions
         return idConsumingFunction(sub);
     }
 
+    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<string, string, T> tokenConsumingFunction)
+    {
+        var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
+        if (authorization == null || !authorization.StartsWith("Bearer "))
+        {
+            throw new ArgumentException("Request does not contain a Bearer-token in authorization-header", nameof(authorization));
+        }
+        var bearer = authorization.Substring("Bearer ".Length);
+        if (string.IsNullOrWhiteSpace(bearer))
+        {
+            throw new ArgumentException("Bearer-token in authorization-header must not be empty", nameof(authorization));
+        }
+        
+        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
+        if (string.IsNullOrWhiteSpace(sub))
+        {
+            throw new ArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
+        }
+        return tokenConsumingFunction(bearer, sub);
+    }
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
     {
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();

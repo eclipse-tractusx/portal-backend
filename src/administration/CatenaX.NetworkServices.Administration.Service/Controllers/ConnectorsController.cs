@@ -94,13 +94,13 @@ public class ConnectorsController : ControllerBase
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
-    //[Authorize(Roles = "add_connectors")]
+    [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ActionResult<ConnectorData>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<ConnectorData>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
     {
-        var connectorData = await this.WithBearerToken(token => _businessLogic.CreateConnectorAsync(connectorInputModel, token)).ConfigureAwait(false);
+        var connectorData = await this.WithIamUserAndBearerToken((token, iamUserId) => _businessLogic.CreateConnectorAsync(connectorInputModel, token, iamUserId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
 
