@@ -20,7 +20,6 @@
 
 using CatenaX.NetworkServices.Framework.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 
