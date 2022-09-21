@@ -357,7 +357,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerService = A.Fake<IOfferService>();
         var data = _fixture.CreateMany<AgreementData>(1);
-        A.CallTo(() => offerService.GetOfferAgreement(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
+        A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), Options.Create(new ServiceSettings()), offerService);
 

@@ -18,32 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-
 namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
-public class OfferType
+public class ConsentAssignedOffer
 {
-    private OfferType()
+    private ConsentAssignedOffer() {}
+
+    public ConsentAssignedOffer(Guid consentId, Guid offerId)
     {
-        Label = null!;
-        Offers = new HashSet<Offer>();
-        AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
+        ConsentId = consentId;
+        OfferId = offerId;
     }
 
-    public OfferType(OfferTypeId offerTypeId) : this()
-    {
-        Id = offerTypeId;
-        Label = offerTypeId.ToString();
-    }
-
-    public OfferTypeId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    public Guid OfferId { get; private set; }
+    public Guid ConsentId { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<Offer> Offers { get; private set; }
-    public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
+    public virtual Offer? Offer { get; private set; }
+    public virtual Consent? Consent { get; private set; }
 }
+
