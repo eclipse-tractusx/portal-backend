@@ -32,7 +32,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220919090657_CPLP-1406-AddConsentAssignedOfferSubscription")]
+    [Migration("20220916132329_CPLP-1406-AddConsentAssignedOfferSubscription")]
     partial class CPLP1406AddConsentAssignedOfferSubscription
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3709,11 +3709,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 11,
                             Label = "APP_RELEASE_REQUEST"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Label = "TECHNICAL_USER_CREATION"
                         });
                 });
 
