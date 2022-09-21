@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -40,10 +40,10 @@ public interface IAgreementRepository
     /// <summary>
     /// Gets the agreement data that have an app id set
     /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">Specific offer type</param>
     /// <returns>Returns an async enumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForIamUser(string iamUserId, OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementDataForOfferId(Guid offerId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// Gets the agreement data untracked from the database
@@ -52,6 +52,31 @@ public interface IAgreementRepository
     IAsyncEnumerable<AgreementData> GetAgreementsForCompanyRolesUntrackedAsync();
 
     /// <summary>
+    /// Return all agreements for agreement category app_contract
+    /// </summary>
+    /// <param name="categoryId"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<AgreementData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Return matching Agreement and Consent for agreement category app_contract and offer id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(OfferAgreementConsent OfferAgreementConsent, bool IsProviderCompany)> GetOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Return matching Agreement ,Consent,CompanyUserId and CompanyId for agreement category app_contract , offer id and offer status created
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <param name="statusId"></param>
+    /// <param name="categoryId"></param>
+    /// <returns></returns>
+    
+    Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId);
     /// Checks whether the given agreements exists in the database
     /// </summary>
     /// <param name="agreementIds">Ids of the agreements</param>
