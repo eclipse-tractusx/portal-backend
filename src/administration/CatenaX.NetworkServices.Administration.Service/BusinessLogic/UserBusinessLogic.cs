@@ -415,12 +415,12 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    public async Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid companyUserId, string adminUserId)
+    public async Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid companyUserId, string iamUserId)
     {
-        var details = await _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(companyUserId, adminUserId).ConfigureAwait(false);
+        var details = await _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(companyUserId, iamUserId).ConfigureAwait(false);
         if (details == null)
         {
-            throw new NotFoundException($"no company-user data found for user {companyUserId} in company of {adminUserId}");
+            throw new NotFoundException($"no company-user data found for user {companyUserId} in company of {iamUserId}");
         }
         return details;
     }
