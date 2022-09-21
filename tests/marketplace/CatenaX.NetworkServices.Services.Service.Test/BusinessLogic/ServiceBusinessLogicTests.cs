@@ -21,18 +21,12 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Notification.Library;
-using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Provisioning.Library.Service;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Tests.Shared;
 using FakeItEasy;
@@ -51,7 +45,6 @@ public class ServiceBusinessLogicTests
     private readonly Guid _pendingSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
     private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
     private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
-    private readonly string _bpn = "CAXSDUMMYCATENAZZ";
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
