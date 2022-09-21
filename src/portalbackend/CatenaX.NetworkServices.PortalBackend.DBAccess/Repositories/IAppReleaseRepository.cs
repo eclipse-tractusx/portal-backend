@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -31,10 +30,10 @@ public interface IAppReleaseRepository
     /// <summary>
     /// Return the Company User Id
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<Guid> GetCompanyUserIdForAppUntrackedAsync(Guid appId, string userId);
+    Task<Guid> GetCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId);
     
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
@@ -43,14 +42,14 @@ public interface IAppReleaseRepository
     /// <param name="documentId"></param>
     /// <returns></returns>
     OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId);
-    
+
     /// <summary>
     /// Verify that user is linked to the appId
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<bool> IsProviderCompanyUserAsync(Guid appId,string userId);
+    Task<bool> IsProviderCompanyUserAsync(Guid offerId,string userId);
     
     /// <summary>
     /// Add User Role for App Id
@@ -68,5 +67,4 @@ public interface IAppReleaseRepository
     /// <param name="description"></param>
     /// <returns></returns>
     UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
-
 }

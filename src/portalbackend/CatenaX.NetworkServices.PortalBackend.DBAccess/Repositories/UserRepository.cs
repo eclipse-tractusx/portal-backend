@@ -147,10 +147,11 @@ public class UserRepository : IUserRepository
     public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
-            .Where(companyUser => companyUser.Id == companyUserId
-                                  && companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                                  && companyUser.Company!.CompanyUsers.Any(companyUser =>
-                                      companyUser.IamUser!.UserEntityId == iamUserId))
+            .Where(companyUser =>
+                companyUser.Id == companyUserId &&
+                companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE &&
+                companyUser.Company!.CompanyUsers.Any(cu =>
+                    cu.IamUser!.UserEntityId == iamUserId))
             .Select(companyUser => new CompanyUserDetails(
                 companyUser.Id,
                 companyUser.DateCreated,
@@ -158,15 +159,12 @@ public class UserRepository : IUserRepository
                     assignedPartner.BusinessPartnerNumber),
                 companyUser.Company!.Name,
                 companyUser.CompanyUserStatusId,
-                companyUser.Company!.OfferSubscriptions
-                    .Where(app => app.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE)
-                    .Select(app => new CompanyUserAssignedRoleDetails(
-                        app.OfferId,
-                        app.Offer!.UserRoles
-                            .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
-                            .Select(role => role.UserRoleText)
-                    ))
-                    )
+                companyUser.UserRoles.Select(x => x.Offer!)
+                    .Distinct()
+                    .Select(offer => new CompanyUserAssignedRoleDetails(
+                        offer.Id,
+                        offer.UserRoles.Where(role => companyUser.UserRoles.Contains(role)).Select(x => x.UserRoleText)
+                    )))
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
