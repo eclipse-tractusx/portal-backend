@@ -18,6 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 
-public record UserProfile(string UserName, string? FirstName, string? LastName, string Email, string? Password = null);
+namespace CatenaX.NetworkServices.Provisioning.Library.Service;
+
+public interface IUserProvisioningService
+{
+    IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos);
+    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
+}
