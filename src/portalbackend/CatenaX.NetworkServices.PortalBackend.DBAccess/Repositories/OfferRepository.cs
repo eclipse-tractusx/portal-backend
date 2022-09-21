@@ -264,8 +264,11 @@ public class OfferRepository : IOfferRepository
                 c.ThumbnailUrl,
                 c.SalesManagerId,
                 c.ProviderCompanyId,
+                c.ProviderCompany!.Name,
                 c.OfferDescriptions.Any(description => (description.DescriptionLong == "")),
                 c.OfferDescriptions.Any(description => (description.DescriptionShort == ""))
             ))
             .SingleOrDefaultAsync();
+
+    
 }
