@@ -44,9 +44,10 @@ public interface IConnectorsBusinessLogic
     /// Add a connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <returns>View model of created connector.</returns>
     /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
-    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken);
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>View model of created connector.</returns>
+    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
