@@ -24,7 +24,6 @@ using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Keycloak.Library;
 using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
 using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
-using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -141,8 +140,4 @@ public partial class ProvisioningManager
 
     private async Task<string> GetNextClientIdAsync() =>
         _Settings.ClientPrefix + (await _ProvisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(false));
-
-    private static T Clone<T>(T cloneObject) 
-        where T : class =>
-        JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
 }
