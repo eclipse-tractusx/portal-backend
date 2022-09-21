@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -58,6 +58,7 @@ public class OfferRepositoryTests
         var apps = _fixture.Build<Offer>()
             .With(a => a.DateReleased, DateTimeOffset.MinValue) // all are active
             .With(a => a.OfferTypeId, OfferTypeId.APP)
+            .With(a => a.OfferStatusId, OfferStatusId.ACTIVE)
             .CreateMany();
         var appsDbSet = apps.AsFakeDbSet();
         var languagesDbSet = new List<Language>().AsFakeDbSet();
@@ -74,8 +75,8 @@ public class OfferRepositoryTests
         // Assert
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(apps.Count());
-        results.Should().AllBeOfType<AppData>();
-        results.Should().AllSatisfy(a => a.Should().Match<AppData>(a => apps.Any(app => app.Id == a.Id)));
+        results.Should().AllBeOfType<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)>();
+        results.Should().AllSatisfy(a => a.Should().Match<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)>(a => apps.Any(app => app.Id == a.Id)));
     }
 
     [Fact]
