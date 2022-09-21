@@ -31,6 +31,7 @@ public class RegistrationSettings
         PartnerUserInitialRoles = null!;
         CompanyAdminRoles = null!;
         WelcomeNotificationTypeIds = null!;
+        DocumentTypeIds = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
@@ -47,6 +48,13 @@ public class RegistrationSettings
     /// </summary>
     [Required]
     public IEnumerable<NotificationTypeId> WelcomeNotificationTypeIds { get; set; }
+
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId?> DocumentTypeIds { get; set; }
 }
 
 public static class RegistrationSettingsExtension
