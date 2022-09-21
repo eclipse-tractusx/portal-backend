@@ -76,7 +76,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             return _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
         }
 
-        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId)
+        public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(document.FileName))
             {
@@ -99,7 +99,7 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
             using var sha256 = SHA256.Create();
             using var ms = new MemoryStream((int)document.Length);
             
-            document.CopyTo(ms);
+            await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
             var hash = sha256.ComputeHash(ms);
             var documentContent = ms.GetBuffer();
             if (ms.Length != document.Length || documentContent.Length != document.Length)
@@ -272,14 +272,16 @@ namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
                 applicationData.IdpAlias,
                 new UserProfile(
                     userCreationInfo.userName ?? userCreationInfo.eMail,
+                    userCreationInfo.firstName,
+                    userCreationInfo.lastName,
                     userCreationInfo.eMail,
-                    applicationData.CompanyName
+                    password
+                ),
+                _provisioningManager.GetStandardAttributes(
+                    alias: applicationData.IdpAlias,
+                    organisationName: applicationData.CompanyName
                 )
-                {
-                    FirstName = userCreationInfo.firstName,
-                    LastName = userCreationInfo.lastName,
-                    Password = password
-                }).ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
             var companyUserId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
             var companyUser = userRepository.CreateCompanyUser(userCreationInfo.firstName, userCreationInfo.lastName, userCreationInfo.eMail, applicationData.CompanyId, CompanyUserStatusId.ACTIVE, companyUserId);

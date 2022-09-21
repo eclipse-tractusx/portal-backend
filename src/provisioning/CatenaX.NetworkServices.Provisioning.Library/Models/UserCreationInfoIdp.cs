@@ -18,18 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess
-{
-    public interface IPortalBackendDBAccess
-    {
-        Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
-        IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUser);
-        CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);
-        IamUser RemoveIamUser(IamUser iamUser);
-        Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
-        Task<int> SaveAsync();
-    }
-}
+namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+
+public record UserCreationInfoIdp(
+
+    [property: JsonPropertyName("firstName")]
+    string FirstName,
+    
+    [property: JsonPropertyName("lastName")]
+    string LastName,
+
+    [property: JsonPropertyName("email")]
+    string Email,
+
+    [property: JsonPropertyName("roles")]
+    IEnumerable<string> Roles,
+
+    [property: JsonPropertyName("userName")]
+    string UserName,
+
+    [property: JsonPropertyName("userId")]
+    string UserId
+);

@@ -18,19 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Provisioning.Library.Models;
 
-/// <summary>
-/// Data Object for the App Release Details
-/// </summary>
-/// <param name="name"></param>
-/// <param name="thumbnailUrl"></param>
-/// <param name="provider"></param>
-/// <param name="salesManagerId"></param>
-/// <param name="providerCompanyId"></param>
-/// <param name="companyName"></param>
-/// <param name="appStatusId"></param>
-/// <param name="lastChanged"></param>
-/// <param name="description"></param>
-/// <returns></returns>
-public record OfferReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, string companyName, bool descriptionLongIsNullOrEmpty, bool descriptionShortIsNullOrEmpty);
+namespace CatenaX.NetworkServices.Provisioning.Library.Service;
+
+public interface IUserProvisioningService
+{
+    IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos);
+    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
+}
