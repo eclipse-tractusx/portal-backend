@@ -44,20 +44,20 @@ public interface IOfferService
     /// Updates the existing consent offer subscriptions in the database and creates new entries for the non existing.
     /// </summary>
     /// <param name="subscriptionId">Id of the offer subscription</param>
-    /// <param name="serviceAgreementConsentData">List of the agreement and status of the consent</param>
+    /// <param name="offerAgreementConsentDatas">List of the agreement and status of the consent</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
         IEnumerable<ServiceAgreementConsentData> offerAgreementConsentDatas,
         string iamUserId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Gets the offer agreement data
     /// </summary>
-    /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="offerId">Id of the offer to get the agreements for</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId, OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer consent detail data
@@ -65,4 +65,30 @@ public interface IOfferService
     /// <param name="consentId">Id of the offer consent</param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Return Agreements for App_Contract Category
+    /// </summary>
+    /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
+    /// <returns></returns>
+    IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
+    /// <returns></returns>
+    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Create or Update consent to agreements associated with an offer
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="offerAgreementConsent"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
+    /// <returns></returns>
+    Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
 }

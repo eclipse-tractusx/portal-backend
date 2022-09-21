@@ -24,6 +24,8 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Offers.Library.Service;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 
@@ -36,16 +38,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
-
+    private readonly IOfferService _offerService;
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories"></param>
     /// <param name="settings"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings)
+    /// <param name="offerService"></param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService)
     {
         _portalRepositories = portalRepositories;
         _settings = settings.Value;
+        _offerService = offerService;
     }
     
     /// <inheritdoc/>
@@ -174,7 +178,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForAppUntrackedAsync(appId, userId).ConfigureAwait(false);
+        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForOfferUntrackedAsync(appId, userId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
@@ -230,4 +234,28 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+    
+    /// <inheritdoc/>
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
+        _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);
+
+    /// <inheritdoc/>
+    public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
+    {
+        return await _offerService.GetProviderOfferAgreementConsentById(appId, userId, OfferTypeId.APP).ConfigureAwait(false);
+    }
+    
+    /// <inheritdoc/>
+    public Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
+    {
+        if (appId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"AppId must not be empty");
+        }
+        return SubmitOfferConsentInternalAsync(appId, offerAgreementConsents, userId);
+    }
+
+    /// <inheritdoc/>
+    private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
+        _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
 }

@@ -44,19 +44,7 @@ public class OfferService : IOfferService
     public async Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
         Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
-            .ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
-        }
-
-        var (companyId, offerSubscription, companyUserId) = result;
-        if (offerSubscription is null)
-        {
-            throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
-        }
+        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, iamUserId, offerTypeId).ConfigureAwait(false);
 
         if (!await _portalRepositories.GetInstance<IAgreementRepository>()
                 .CheckAgreementExistsForSubscriptionAsync(agreementId, subscriptionId, offerTypeId).ConfigureAwait(false))
@@ -64,7 +52,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException($"Invalid Agreement {agreementId} for subscription {subscriptionId}", nameof(agreementId));
         }
 
-        var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId, null);
+        var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId);
         _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>().CreateConsentAssignedOfferSubscription(consent.Id, offerSubscription.Id);
         
         await _portalRepositories.SaveAsync();
@@ -75,19 +63,7 @@ public class OfferService : IOfferService
     public async Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId, IEnumerable<ServiceAgreementConsentData> offerAgreementConsentDatas,
         string iamUserId, OfferTypeId offerTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
-            .ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
-        }
-
-        var (companyId, offerSubscription, companyUserId) = result;
-        if (offerSubscription is null)
-        {
-            throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
-        }
+        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, iamUserId, offerTypeId).ConfigureAwait(false);
 
         if (!await _portalRepositories
                 .GetInstance<IAgreementRepository>()
@@ -115,14 +91,31 @@ public class OfferService : IOfferService
         
         foreach (var consentData in offerAgreementConsentDatas.ExceptBy(offerSubscriptionConsents.Select(x => x.AgreementId), consentData => consentData.AgreementId))
         {
-            var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(consentData.AgreementId, companyId, companyUserId, consentData.ConsentStatusId, null);
+            var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(consentData.AgreementId, companyId, companyUserId, consentData.ConsentStatusId);
             consentAssignedOfferSubscriptionRepository.CreateConsentAssignedOfferSubscription(consent.Id, offerSubscription.Id);
         }
     }
 
+    private async Task<(Guid CompanyId, OfferSubscription OfferSubscription, Guid CompanyUserId)> GetOfferSubscriptionCompanyAndUserAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
+        }
+        var (companyId, offerSubscription, companyUserId) = result;
+        if (offerSubscription is null)
+        {
+            throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
+        }
+        return (companyId, offerSubscription, companyUserId);
+    }
+
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetOfferAgreement(string iamUserId, OfferTypeId offerTypeId) => 
-        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForIamUser(iamUserId, offerTypeId);
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementsAsync(Guid offerId, OfferTypeId offerTypeId) => 
+        _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementDataForOfferId(offerId, offerTypeId);
 
     /// <inheritdoc />
     public async Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId)
@@ -135,5 +128,66 @@ public class OfferService : IOfferService
         }
 
         return consentDetails;
+    }
+
+    public IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId)=>
+        _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
+
+    public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(offerId, iamUserId, offerTypeId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"offer {offerId}, offertype {offerTypeId} does not exist");
+        }
+        if (!result.IsProviderCompany)
+        {
+            throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
+        }
+        return result.OfferAgreementConsent;
+    }
+
+    public async Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
+
+        var (companyUserId, companyId, dbAgreements) = await GetProviderOfferAgreementConsent(offerId, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+
+        foreach (var agreementId in offerAgreementConsent.Agreements
+                .ExceptBy(dbAgreements.Select(db => db.AgreementId), input => input.AgreementId)
+                .Select(input => input.AgreementId))
+        {
+            var consent = consentRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
+            consentRepository.CreateConsentAssignedOffer(consent.Id, offerId);
+        }
+        foreach (var (agreementId, consentStatus) in offerAgreementConsent.Agreements
+                .IntersectBy(dbAgreements.Select(d => d.AgreementId), input => input.AgreementId)
+                .Select(input => (input.AgreementId, input.ConsentStatusId)))
+        {
+            var existing = dbAgreements.First(d => d.AgreementId == agreementId);
+            _portalRepositories.Attach(new Consent(existing.ConsentId), consent =>
+            {
+                if (consentStatus != existing.ConsentStatusId)
+                {
+                    consent.ConsentStatusId = consentStatus;
+                }
+            });
+        }
+
+        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, iamUserId, statusId, offerTypeId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"offer {offerId}, offertype {offerTypeId}, offerStatus {statusId} does not exist");
+        }
+        if (!result.IsProviderCompany)
+        {
+            throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
+        }
+        return result.OfferAgreementConsentUpdate;
     }
 }
