@@ -24,7 +24,7 @@
  * SOFTWARE.
  ********************************************************************************/
 
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
 
