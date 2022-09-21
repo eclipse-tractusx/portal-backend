@@ -28,8 +28,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="provider"></param>
 /// <param name="salesManagerId"></param>
 /// <param name="providerCompanyId"></param>
+/// <param name="companyName"></param>
 /// <param name="appStatusId"></param>
 /// <param name="lastChanged"></param>
 /// <param name="description"></param>
 /// <returns></returns>
-public record OfferReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, bool descriptionLongIsNullOrEmpty, bool descriptionShortIsNullOrEmpty);
+public record OfferReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, string companyName, bool descriptionLongIsNullOrEmpty, bool descriptionShortIsNullOrEmpty);
