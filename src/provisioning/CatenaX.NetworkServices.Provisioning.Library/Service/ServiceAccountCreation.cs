@@ -26,7 +26,7 @@ using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace CatenaX.NetworkServices.Provisioning.Library.Service;
 
 /// <inheritdoc />
 public class ServiceAccountCreation : IServiceAccountCreation
