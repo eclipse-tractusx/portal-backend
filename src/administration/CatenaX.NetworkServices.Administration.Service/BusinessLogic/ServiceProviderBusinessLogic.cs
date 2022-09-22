@@ -22,6 +22,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -47,7 +48,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ControllerArgumentException("Url must start with https and the maximum allowe length is 100 characters", nameof(data.Url));
         }
 
-        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyIsServiceProviderAndExistsForIamUser(companyId, iamUserId).ConfigureAwait(false))
+        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyIsServiceProviderAndExistsForIamUser(companyId, iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company {companyId}");
         }

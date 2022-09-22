@@ -127,10 +127,10 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<bool> CheckCompanyIsServiceProviderAndExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId) =>
+    public Task<bool> CheckCompanyIsServiceProviderAndExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId, CompanyRoleId companyRole) =>
         _context.Companies.AnyAsync(c =>
             c.Id == serviceProviderCompanyId &&
-            c.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER) &&
+            c.CompanyAssignedRoles.Any(car => car.CompanyRoleId == companyRole) &&
             c.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId));
 
     /// <inheritdoc />
