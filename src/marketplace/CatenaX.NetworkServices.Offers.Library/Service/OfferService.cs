@@ -19,25 +19,39 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Notification.Library;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using CatenaX.NetworkServices.Provisioning.Library.Service;
 
 namespace CatenaX.NetworkServices.Offers.Library.Service;
 
 public class OfferService : IOfferService
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IProvisioningManager _provisioningManager;
+    private readonly IServiceAccountCreation _serviceAccountCreation;
+    private readonly INotificationService _notificationService;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
-    public OfferService(IPortalRepositories portalRepositories)
+    public OfferService(IPortalRepositories portalRepositories,
+        IProvisioningManager provisioningManager,
+        IServiceAccountCreation serviceAccountCreation,
+        INotificationService notificationService)
     {
         _portalRepositories = portalRepositories;
+        _provisioningManager = provisioningManager;
+        _serviceAccountCreation = serviceAccountCreation;
+        _notificationService = notificationService;
     }
 
     /// <inheritdoc />
@@ -189,5 +203,75 @@ public class OfferService : IOfferService
             throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
         }
         return result.OfferAgreementConsentUpdate;
+    }
+
+    public async Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var offerDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetOfferDetailsAndCheckUser(data.RequestId, iamUserId, offerTypeId).ConfigureAwait(false);
+        if (offerDetails == null)
+        {
+            throw new NotFoundException($"OfferSubscription {data.RequestId} does not exist");
+        }
+
+        if (offerDetails.Status is not OfferSubscriptionStatusId.PENDING)
+        {
+            throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
+        }
+
+        if (offerDetails.CompanyUserId == Guid.Empty)
+        {
+            throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
+        }
+
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerDetails.OfferId).ConfigureAwait(false);
+        var redirectUrl = data.OfferUrl.EndsWith("/") ? $"{data.OfferUrl}*" : $"{data.OfferUrl}/*";
+        var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, userRoles).ConfigureAwait(false);
+        var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
+        
+        var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
+        _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
+            .CreateAppSubscriptionDetail(data.RequestId, (appSubscriptionDetail) =>
+            {
+                appSubscriptionDetail.AppInstanceId = appInstance.Id;
+                appSubscriptionDetail.AppSubscriptionUrl = data.OfferUrl;
+            });
+        
+        var serviceAccountUserRoles = await userRolesRepository
+            .GetUserRoleDataUntrackedAsync(serviceAccountRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
+        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+            .CreateServiceAccountAsync(
+                clientId, 
+                description, 
+                IamClientAuthMethod.SECRET, 
+                serviceAccountUserRoles.Select(x => x.UserRoleId), 
+                offerDetails.CompanyId, 
+                Enumerable.Repeat(offerDetails.Bpn, 1))
+            .ConfigureAwait(false);
+
+        var offerSubscription = new OfferSubscription(data.RequestId);
+        _portalRepositories.Attach(offerSubscription, (subscription =>
+        {
+            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        }));
+        
+        await _notificationService.CreateNotifications(
+            companyAdminRoles,
+            offerDetails.CompanyUserId,
+            new (string?, NotificationTypeId)[]
+            {
+                (null, NotificationTypeId.TECHNICAL_USER_CREATION),
+                (null, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION)
+            }).ConfigureAwait(false);
+        
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId,
+            NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        
+        return new OfferAutoSetupResponseData(serviceAccountId, serviceAccountData.AuthData.Secret);
     }
 }

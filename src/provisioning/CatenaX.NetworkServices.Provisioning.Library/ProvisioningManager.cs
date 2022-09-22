@@ -20,11 +20,12 @@
 
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.Keycloak.Factory;
+using CatenaX.NetworkServices.Keycloak.Library;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Keycloak.Library;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -89,40 +90,52 @@ public partial class ProvisioningManager : IProvisioningManager
         return idpName;
     }
 
-    public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile)
+    public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
     {
-        var sharedKeycloak = await GetSharedKeycloakClient(idpName).ConfigureAwait(false);
-        var userIdShared = await CreateSharedRealmUserAsync(sharedKeycloak, idpName, userProfile).ConfigureAwait(false);
+        var userIdShared = await CreateSharedRealmUserAsync(idpName, userProfile).ConfigureAwait(false);
 
-        if (userIdShared == null)
-        {
-            throw new KeycloakNoSuccessException($"failed to created user {userProfile.UserName} in shared realm {idpName}");
-        }
+        var userIdCentral = await CreateCentralUserAsync(
+            new UserProfile(
+                idpName + "." + userIdShared,
+                userProfile.FirstName,
+                userProfile.LastName,
+                userProfile.Email),
+            attributes
+        ).ConfigureAwait(false);
 
-        var userIdCentral = await CreateCentralUserAsync(idpName, new UserProfile(
-            idpName + "." + userIdShared,
-            userProfile.Email,
-            userProfile.OrganisationName) {
-                FirstName = userProfile.FirstName,
-                LastName = userProfile.LastName,
-                BusinessPartnerNumber = userProfile.BusinessPartnerNumber
-            }).ConfigureAwait(false);
-
-        if (userIdCentral == null)
-        {
-            throw new KeycloakNoSuccessException($"failed to created user {userProfile.UserName} in central realm for organization {userProfile.OrganisationName}");
-        }
-
-        await LinkCentralSharedRealmUserAsync(idpName, userIdCentral, userIdShared, userProfile.UserName).ConfigureAwait(false);
+        await AddProviderUserLinkToCentralUserAsync(userIdCentral, new IdentityProviderLink(idpName, userIdShared, userProfile.UserName)).ConfigureAwait(false);
 
         return userIdCentral;
     }
 
-    public async Task<string> SetupClientAsync(string redirectUrl)
+    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias = null, string? organisationName = null, string? businessPartnerNumber = null)
+    {
+        var attributes = new List<(string,IEnumerable<string>)>();
+        if (alias != null)
+        {
+            attributes.Add(new (_Settings.MappedIdpAttribute, Enumerable.Repeat<string>(alias,1)));
+        }
+        if (organisationName != null)
+        {
+            attributes.Add(new (_Settings.MappedCompanyAttribute, Enumerable.Repeat<string>(organisationName,1)));
+        }
+        if (businessPartnerNumber != null)
+        {
+            attributes.Add(new (_Settings.MappedBpnAttribute, Enumerable.Repeat<string>(businessPartnerNumber,1)));
+        }
+        return attributes;
+    }
+
+    public async Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames = null)
     {
         var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
         var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
         await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
+        if (optionalRoleNames != null && optionalRoleNames.Any())
+        {
+            await this.AssignClientRolesToClient(internalId, optionalRoleNames).ConfigureAwait(false);
+        }
+
         return clientId;
     }
 
@@ -135,6 +148,12 @@ public partial class ProvisioningManager : IProvisioningManager
             : bpns;
         await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
     }
+
+    public Task AddProtocolMapperAsync(string clientId) => 
+        _CentralIdp.CreateClientProtocolMapperAsync(
+            _Settings.CentralRealm, 
+            clientId,
+            Clone(_Settings.ClientProtocolMapper));
 
     public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
     {
@@ -286,4 +305,8 @@ public partial class ProvisioningManager : IProvisioningManager
         var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(false);
         return _Factory.CreateKeycloakClient("shared", clientId, secret);
     }
+
+    private static T Clone<T>(T cloneObject) 
+        where T : class =>
+        JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
 }

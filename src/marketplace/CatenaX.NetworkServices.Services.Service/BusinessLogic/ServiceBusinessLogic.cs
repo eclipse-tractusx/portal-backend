@@ -21,11 +21,13 @@
 using System.Text.Json;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.Services.Service.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -48,7 +50,11 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
     /// <param name="offerService">Access to the offer service</param>
     /// <param name="settings">Access to the settings</param>
-    public ServiceBusinessLogic(IPortalRepositories portalRepositories, IOfferSetupService offerSetupService, IOfferService offerService, IOptions<ServiceSettings> settings)
+    public ServiceBusinessLogic(
+        IPortalRepositories portalRepositories, 
+        IOfferSetupService offerSetupService, 
+        IOfferService offerService, 
+        IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
@@ -168,9 +174,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
+    public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
     {        
-        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, iamUserId).ConfigureAwait(false);
+        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferDetailByIdUntrackedAsync(serviceId, lang, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (serviceDetailData == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
@@ -183,7 +189,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId)
     {
         var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId).ConfigureAwait(false);
+            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (subscriptionDetailData is null)
         {
             throw new NotFoundException($"Subscription {subscriptionId} does not exist");
@@ -212,6 +218,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         string iamUserId) =>
         _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
 
+    /// <inheritdoc />
+    public Task<OfferAutoSetupResponseData> AutoSetupService(OfferAutoSetupData data, string iamUserId) =>
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
+
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {
         if (languageCodes.Any())
@@ -220,7 +230,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 .GetLanguageCodesUntrackedAsync(languageCodes)
                 .ToListAsync()
                 .ConfigureAwait(false);
-            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes);
+            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes).ToList();
             if (notFoundLanguageCodes.Any())
             {
                 throw new ControllerArgumentException(

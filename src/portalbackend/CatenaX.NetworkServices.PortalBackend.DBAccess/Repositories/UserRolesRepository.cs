@@ -42,6 +42,18 @@ public class UserRolesRepository : IUserRolesRepository
                 userRoleId
             )).Entity;
 
+    public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId) =>
+        _dbContext.CompanyUsers
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser => companyUserIds.Contains(companyUser.Id) && companyUser.IamUser!.UserEntityId != null)
+            .Include(companyUser => companyUser.CompanyUserAssignedRoles)
+            .Include(companyUser => companyUser.IamUser)
+            .AsAsyncEnumerable();
+
+    public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
+        _dbContext.Remove(companyUserAssignedRole).Entity;
+
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
             .AsNoTracking()
@@ -97,7 +109,14 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-     public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
+    public IAsyncEnumerable<(string Role,Guid Id)> GetUserRolesWithIdAsync(string keyCloakClientId) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
+            .Select(userRole => new ValueTuple<string,Guid>(userRole.UserRoleText, userRole.Id))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
@@ -114,4 +133,11 @@ public class UserRolesRepository : IUserRolesRepository
                    userRole.UserRoleDescriptions.SingleOrDefault(desc =>
                    desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description))
            .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<List<string>> GetUserRolesForOfferIdAsync(Guid offerId) => 
+        _dbContext.UserRoles
+            .Where(x => x.OfferId == offerId)
+            .Select(x => x.UserRoleText)
+            .ToListAsync();
 }

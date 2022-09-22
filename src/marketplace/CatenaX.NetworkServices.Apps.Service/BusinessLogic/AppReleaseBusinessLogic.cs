@@ -184,22 +184,19 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
         }
         var documentName = document.FileName;
-        using (var sha512Hash = SHA512.Create())
+        using var sha512Hash = SHA512.Create();
+        using var ms = new MemoryStream((int)document.Length);
+
+        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        var hash = sha512Hash.ComputeHash(ms);
+        var documentContent = ms.GetBuffer();
+        if (ms.Length != document.Length || documentContent.Length != document.Length)
         {
-            using (var ms = new MemoryStream((int)document.Length))
-            {
-                await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-                var hash = sha512Hash.ComputeHash(ms);
-                var documentContent = ms.GetBuffer();
-                if (ms.Length != document.Length || documentContent.Length != document.Length)
-                {
-                    throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
-                }
-                var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
-                _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
-                return await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            }
+            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         }
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
+        _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
+        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
     /// <inheritdoc/>

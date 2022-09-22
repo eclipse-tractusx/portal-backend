@@ -73,34 +73,23 @@ public class OfferRepository : IOfferRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
+    public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
-            .Where(app => app.DateReleased.HasValue && app.DateReleased <= DateTime.UtcNow && app.OfferTypeId == OfferTypeId.APP)
-            .Select(a => new {
+            .Where(offer => offer.DateReleased.HasValue && offer.DateReleased <= DateTime.UtcNow && offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.ACTIVE)
+            .Select(a => new ValueTuple<Guid,string?,string,IEnumerable<string>,string?,string?,string?>(
                 a.Id,
                 a.Name,
-                VendorCompanyName = a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
-                UseCaseNames = a.UseCases.Select(uc => uc.Name),
+                a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
+                a.UseCases.Select(uc => uc.Name),
                 a.ThumbnailUrl,
-                ShortDescription =
-                    _context.Languages.Any(l => l.ShortName == languageShortName)
+                _context.Languages.Any(l => l.ShortName == languageShortName)
                         ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                             ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
                         : null,
-                LicenseText = a.OfferLicenses
+                a.OfferLicenses
                     .Select(license => license.Licensetext)
-                    .FirstOrDefault()
-            }).AsAsyncEnumerable().Select(app => new AppData(
-                app.Name ?? Constants.ErrorString,
-                app.ShortDescription ?? Constants.ErrorString,
-                app.VendorCompanyName ?? Constants.ErrorString,
-                app.LicenseText ?? Constants.ErrorString,
-                app.ThumbnailUrl ?? Constants.ErrorString
-                )
-            {
-                Id = app.Id,
-                UseCases = app.UseCaseNames.Select(name => name).ToList()
-            });
+                    .FirstOrDefault()))
+            .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName)
@@ -249,11 +238,11 @@ public class OfferRepository : IOfferRepository
             ));
 
      /// <inheritdoc />
-    public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId) => 
+    public Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId) => 
         _context.Offers
             .AsNoTracking()
-            .Where(x => x.Id == serviceId)
-            .Select(offer => new ServiceDetailData(
+            .Where(x => x.Id == serviceId && x.OfferTypeId == offerTypeId)
+            .Select(offer => new OfferDetailData(
                 offer.Id,
                 offer.Name,
                 offer.Provider,
@@ -261,7 +250,7 @@ public class OfferRepository : IOfferRepository
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
-                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionDetailData(x.Id, x.OfferSubscriptionStatusId))
+                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
 
@@ -277,8 +266,11 @@ public class OfferRepository : IOfferRepository
                 c.ThumbnailUrl,
                 c.SalesManagerId,
                 c.ProviderCompanyId,
+                c.ProviderCompany!.Name,
                 c.OfferDescriptions.Any(description => (description.DescriptionLong == "")),
                 c.OfferDescriptions.Any(description => (description.DescriptionShort == ""))
             ))
             .SingleOrDefaultAsync();
+
+    
 }

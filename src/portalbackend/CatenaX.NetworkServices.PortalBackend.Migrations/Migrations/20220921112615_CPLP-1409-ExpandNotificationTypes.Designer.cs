@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220921103742_CPLP-1408-ServiceProviderCompanyDetail")]
-    partial class CPLP1408ServiceProviderCompanyDetail
+    [Migration("20220921112615_CPLP-1409-ExpandNotificationTypes")]
+    partial class CPLP1409ExpandNotificationTypes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -3727,6 +3727,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         {
                             Id = 11,
                             Label = "APP_RELEASE_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Label = "TECHNICAL_USER_CREATION"
                         });
                 });
 
@@ -4108,35 +4113,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                             Id = 3,
                             Label = "SERVICE"
                         });
-                });
-
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AutoSetupUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("auto_setup_url");
-
-                    b.Property<Guid?>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.HasKey("Id")
-                        .HasName("pk_service_provider_company_details");
-
-                    b.HasIndex("CompanyId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_service_provider_company_details_company_id");
-
-                    b.ToTable("service_provider_company_details", "portal");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", b =>
@@ -5096,16 +5072,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("Offer");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", b =>
-                {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
-                        .WithOne("ServiceProviderCompanyDetail")
-                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", "CompanyId")
-                        .HasConstraintName("fk_service_provider_company_details_companies_company_id");
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Offer", "Offer")
@@ -5188,8 +5154,6 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.Navigation("ProvidedConnectors");
 
                     b.Navigation("ProvidedOffers");
-
-                    b.Navigation("ServiceProviderCompanyDetail");
                 });
 
             modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>

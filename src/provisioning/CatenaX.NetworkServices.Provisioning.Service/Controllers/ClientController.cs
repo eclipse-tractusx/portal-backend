@@ -66,12 +66,7 @@ namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
             try
             {
                 var clientId = await _logic.CreateClient(clientSetupData).ConfigureAwait(false);
-                if (clientId != null)
-                {
-                    return new OkObjectResult(clientId);
-                }
-                _logger.LogError("unsuccessful");
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                return new OkObjectResult(clientId);
             }
             catch (Exception e)
             {
