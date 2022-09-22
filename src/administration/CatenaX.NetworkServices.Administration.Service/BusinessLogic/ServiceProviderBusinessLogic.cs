@@ -47,7 +47,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ControllerArgumentException("Url must start with https and the maximum allowe length is 100 characters", nameof(data.Url));
         }
 
-        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyExistsForIamUser(companyId, iamUserId).ConfigureAwait(false))
+        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyIsServiceProviderAndExistsForIamUser(companyId, iamUserId).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company {companyId}");
         }

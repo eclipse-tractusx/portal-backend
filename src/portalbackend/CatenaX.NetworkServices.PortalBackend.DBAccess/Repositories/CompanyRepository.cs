@@ -127,9 +127,10 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<bool> CheckCompanyExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId) =>
+    public Task<bool> CheckCompanyIsServiceProviderAndExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId) =>
         _context.Companies.AnyAsync(c =>
             c.Id == serviceProviderCompanyId &&
+            c.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.SERVICE_PROVIDER) &&
             c.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId));
 
     /// <inheritdoc />
