@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Keycloak.Authentication;
@@ -37,46 +38,51 @@ public static class ControllerExtensions
     /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
     public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
     {
-        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
-        if (string.IsNullOrWhiteSpace(sub))
-        {
-            throw new ArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
-        }
+        var sub = controller.GetSub();
         return idConsumingFunction(sub);
     }
 
     public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<string, string, T> tokenConsumingFunction)
     {
-        var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
-        if (authorization == null || !authorization.StartsWith("Bearer "))
-        {
-            throw new ArgumentException("Request does not contain a Bearer-token in authorization-header", nameof(authorization));
-        }
-        var bearer = authorization.Substring("Bearer ".Length);
-        if (string.IsNullOrWhiteSpace(bearer))
-        {
-            throw new ArgumentException("Bearer-token in authorization-header must not be empty", nameof(authorization));
-        }
-        
+        var bearer = controller.GetBearerToken();
+        var sub = controller.GetSub();
+
+        return tokenConsumingFunction(bearer, sub);
+    }
+
+    public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
+    {
+        var bearer = controller.GetBearerToken();
+        return tokenConsumingFunction(bearer);
+    }
+
+    private static string GetSub(this ControllerBase controller)
+    {
         var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
         if (string.IsNullOrWhiteSpace(sub))
         {
-            throw new ArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
+            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
         }
-        return tokenConsumingFunction(bearer, sub);
+
+        return sub;
     }
-    public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
+
+    private static string GetBearerToken(this ControllerBase controller)
     {
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
         if (authorization == null || !authorization.StartsWith("Bearer "))
         {
-            throw new ArgumentException("Request does not contain a Bearer-token in authorization-header", nameof(authorization));
+            throw new ControllerArgumentException("Request does not contain a Bearer-token in authorization-header",
+                nameof(authorization));
         }
-        var bearer = authorization.Substring("Bearer ".Length);
+
+        var bearer = authorization["Bearer ".Length..];
         if (string.IsNullOrWhiteSpace(bearer))
         {
-            throw new ArgumentException("Bearer-token in authorization-header must not be empty", nameof(authorization));
+            throw new ControllerArgumentException("Bearer-token in authorization-header must not be empty",
+                nameof(authorization));
         }
-        return tokenConsumingFunction(bearer);
+
+        return bearer;
     }
 }
