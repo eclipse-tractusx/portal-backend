@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220922062852_CPLP-1408-ServiceProviderCompanyDetail")]
+    [Migration("20220922124441_CPLP-1408-ServiceProviderCompanyDetail")]
     partial class CPLP1408ServiceProviderCompanyDetail
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -4123,10 +4123,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AutoSetupUrl")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("auto_setup_url");
 
-                    b.Property<Guid?>("CompanyId")
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
 
@@ -5106,6 +5107,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithOne("ServiceProviderCompanyDetail")
                         .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", "CompanyId")
+                        .IsRequired()
                         .HasConstraintName("fk_service_provider_company_details_companies_company_id");
 
                     b.Navigation("Company");
