@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using Microsoft.Extensions.Options;
 
@@ -65,23 +66,24 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
         {
             throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
         }
-        
-        var content = System.Text.Encoding.UTF8.GetBytes(await response.Content.ReadAsStringAsync());
+
+        await using var stream = await response.Content.ReadAsStreamAsync();
         using var sha512Hash = SHA512.Create();
-        using var ms = new MemoryStream(content, 0 , content.Length);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
         var hash = await sha512Hash.ComputeHashAsync(ms);
         var documentContent = ms.GetBuffer();
-        if (ms.Length != content.Length || documentContent.Length != content.Length)
+        if (ms.Length != stream.Length || documentContent.Length != stream.Length)
         {
-            throw new ControllerArgumentException($"document transmitted length {content.Length} doesn't match actual length {ms.Length}.");
+            throw new ControllerArgumentException($"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
         }
-        
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash,
-            doc =>
-            {
-                doc.DocumentTypeId = DocumentTypeId.SELF_DESCRIPTION_EDC;
-            }
-        );
+
+        void SetupOptionalFields(Document doc)
+        {
+            doc.DocumentTypeId = DocumentTypeId.SELF_DESCRIPTION_EDC;
+        }
+
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, SetupOptionalFields);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;
     }

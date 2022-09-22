@@ -31,7 +31,7 @@ public class ConnectorsSdFactoryServiceTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
     private readonly ConnectorsSdFactoryService _service;
-    private readonly IList<Document> _documents;
+    private readonly ICollection<Document> _documents;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public ConnectorsSdFactoryServiceTests()
@@ -39,8 +39,9 @@ public class ConnectorsSdFactoryServiceTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _documents = new HashSet<Document>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _settings = new ConnectorsSettings
@@ -55,7 +56,7 @@ public class ConnectorsSdFactoryServiceTests
         _service = new ConnectorsSdFactoryService(Options.Create(_settings), _httpClientFactory, _portalRepositories);
     }
 
-    [Fact(Skip = "Check memory stream implementation")]
+    [Fact]
     public async Task RegisterConnectorAsync_WithValidData_CreatesDocumentInDatabase()
     {
         // Arrange

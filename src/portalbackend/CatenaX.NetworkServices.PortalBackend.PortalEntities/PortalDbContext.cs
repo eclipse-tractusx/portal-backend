@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -786,6 +786,11 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Connector>(entity =>
         {
+            entity.HasOne(d => d.SelfDescriptionDocument)
+                .WithOne(p => p!.Connector!)
+                .HasForeignKey<Connector>(d => d.SelfDescriptionDocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
             entity.HasOne(d => d.Status)
                 .WithMany(p => p.Connectors)
                 .HasForeignKey(d => d.StatusId)

@@ -74,6 +74,12 @@ public class Document
     public virtual CompanyUser? CompanyUser { get; set; }
     public virtual DocumentType? DocumentType { get; set; }
     public virtual DocumentStatus? DocumentStatus { get; set; }
+
+    /// <summary>
+    /// Mapping to an optional the connector
+    /// </summary>
+    public virtual Connector? Connector { get; set; }
+
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
 }

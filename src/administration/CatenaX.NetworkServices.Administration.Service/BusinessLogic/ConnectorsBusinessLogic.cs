@@ -134,7 +134,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.StatusId = status;
             });
 
-        await _connectorsSdFactoryService.RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, Guid.NewGuid()).ConfigureAwait(false);
+        var documentId = await _connectorsSdFactoryService.RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, Guid.NewGuid()).ConfigureAwait(false);
+        createdConnector.SelfDescriptionDocumentId = documentId;
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
