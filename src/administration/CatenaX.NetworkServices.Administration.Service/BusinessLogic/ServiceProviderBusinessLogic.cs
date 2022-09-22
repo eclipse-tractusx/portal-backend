@@ -45,12 +45,12 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     {
         if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
         {
-            throw new ControllerArgumentException("Url must start with https and the maximum allowe length is 100 characters", nameof(data.Url));
+            throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        if (await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyIsServiceProviderAndExistsForIamUser(companyId, iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false))
+        if (!await _portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyIsServiceProviderAndExistsForIamUser(companyId, iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company {companyId}");
+            throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company {companyId}", nameof(iamUserId));
         }
 
         _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(companyId, data.Url);

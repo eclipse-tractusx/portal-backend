@@ -49,7 +49,27 @@ public static class BaseSeed
                 AddressId = new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"),
                 Shortname = "Catena-X",
                 BusinessPartnerNumber = "CAXSDUMMYCATENAZZ",
-            }
+            },
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
+            {
+                AddressId = new Guid("12302f9b-418c-4b8c-aea8-3eedf67e6a02"),
+                Shortname = "Test",
+            },
+        });
+        
+        dbContext.CompanyRoles.AddRange(new List<CompanyRole>
+        {
+            new(CompanyRoleId.ACTIVE_PARTICIPANT),
+            new(CompanyRoleId.APP_PROVIDER),
+            new(CompanyRoleId.SERVICE_PROVIDER)
+        }); 
+        
+        dbContext.CompanyAssignedRoles.AddRange(new List<CompanyAssignedRole>
+        {
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.SERVICE_PROVIDER),
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.APP_PROVIDER),
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new(new Guid("12302f9b-418c-4b8c-aea8-3eedf67e6a02"), CompanyRoleId.ACTIVE_PARTICIPANT)
         });
 
         dbContext.CompanyUsers.AddRange(new List<CompanyUser>
