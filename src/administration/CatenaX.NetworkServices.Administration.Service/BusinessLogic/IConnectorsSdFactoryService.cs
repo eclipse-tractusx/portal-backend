@@ -36,5 +36,5 @@ public interface IConnectorsSdFactoryService
     /// <param name="bpn">the bpn</param>
     /// <param name="companyUserId">Id of the companyUser</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, Guid companyUserId);
+    Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, Guid companyUserId);
 }

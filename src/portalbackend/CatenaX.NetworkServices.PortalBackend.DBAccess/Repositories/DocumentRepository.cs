@@ -41,19 +41,19 @@ public class DocumentRepository : IDocumentRepository
     }
 
     /// <inheritdoc />
-    public Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId) =>
-        _dbContext.Documents.Add(
-            new Document(
-                Guid.NewGuid(),
-                documentContent,
-                hash,
-                documentName,
-                DateTimeOffset.UtcNow,
-                DocumentStatusId.PENDING)
-            {
-                DocumentTypeId = documentTypeId,
-                CompanyUserId = companyUserId
-            }).Entity;
+    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, Action<Document>? setupOptionalFields)
+    {
+        var document = new Document(
+            Guid.NewGuid(),
+            documentContent,
+            hash,
+            documentName,
+            DateTimeOffset.UtcNow,
+            DocumentStatusId.PENDING);
+        
+        setupOptionalFields?.Invoke(document);
+        return _dbContext.Documents.Add(document).Entity;
+    }
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId) =>

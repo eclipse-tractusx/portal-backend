@@ -130,20 +130,17 @@ public class ConnectorsSdFactoryServiceTests
 
     private void SetupRepositoryMethods()
     { 
-        A.CallTo(() => _documentRepository.CreateDocument(A<Guid>._, A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._))
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<Action<Document>?>._))
             .Invokes(x =>
             {
-                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
                 var documentName = x.Arguments.Get<string>("documentName")!;
                 var documentContent = x.Arguments.Get<byte[]>("documentContent")!;
                 var hash = x.Arguments.Get<byte[]>("hash")!;
-                var documentTypeId = x.Arguments.Get<DocumentTypeId>("documentTypeId");
-                
-                var document = new Document(Guid.NewGuid(), documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING)
-                {
-                    CompanyUserId = companyUserId,
-                    DocumentTypeId = documentTypeId
-                };
+                var setupOptionalFields = x.Arguments.Get<Action<Document>?>("setupOptionalFields");
+
+                var document = new Document(Guid.NewGuid(), documentContent, hash, documentName, DateTimeOffset.UtcNow,
+                    DocumentStatusId.PENDING);
+                setupOptionalFields?.Invoke(document);
                 _documents.Add(document);
             });
     }
