@@ -34,4 +34,8 @@
     <PackageReference Include="System.Json" Version="4.7.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
+  </ItemGroup>
+
 </Project>
