@@ -22,7 +22,7 @@ using System.Text.Json.Serialization;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public record OfferAutoSetupData(
+public record OfferThirdPartyAutoSetupData(
     [property: JsonPropertyName("customer")] CustomerData Customer, 
     [property: JsonPropertyName("properties")] PropertyData Properties);
 

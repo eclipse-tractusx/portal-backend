@@ -20,10 +20,12 @@
 
 using AutoFixture;
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
 using CatenaX.NetworkServices.Services.Service.Controllers;
+using CatenaX.NetworkServices.Services.Service.ViewModels;
 using CatenaX.NetworkServices.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
@@ -106,7 +108,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
         {
             //Arrange
             var serviceId = Guid.NewGuid();
-            var serviceDetailData = _fixture.Create<ServiceDetailData>();
+            var serviceDetailData = _fixture.Create<OfferDetailData>();
             A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, IamUserId))
                 .Returns(serviceDetailData);
 
@@ -115,7 +117,7 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
 
             //Assert
             A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
-            Assert.IsType<ServiceDetailData>(result);
+            Assert.IsType<OfferDetailData>(result);
             result.Should().Be(serviceDetailData);
         }
         
@@ -188,6 +190,25 @@ namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
             //Assert
             A.CallTo(() => _logic.GetServiceConsentDetailDataAsync(consentId)).MustHaveHappenedOnceExactly();
             result.CompanyName.Should().Be("Test Company");
+        }
+        
+        [Fact]
+        public async Task AutoSetupService_ReturnsExpected()
+        {
+            //Arrange
+            var offerSubscriptionId = Guid.NewGuid();
+            var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
+            var responseData = new OfferAutoSetupResponseData(Guid.NewGuid(), "abcPW");
+            A.CallTo(() => _logic.AutoSetupService(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+                .Returns(responseData);
+
+            //Act
+            var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.AutoSetupService(data, IamUserId)).MustHaveHappenedOnceExactly();
+            Assert.IsType<OfferAutoSetupResponseData>(result);
+            result.Should().Be(responseData);
         }
     }
 }

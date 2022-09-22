@@ -74,4 +74,15 @@ public partial class ProvisioningManager
             }
         )).ConfigureAwait(false))
         .ToDictionary(clientRole => clientRole.client, clientRole => clientRole.rolesList);
+
+    private Task AssignClientRolesToClient(string clientId, IEnumerable<string> clientRoleNames) =>
+        Task.WhenAll(clientRoleNames.Select(x => new Role
+        {
+            Name = x,
+            ClientRole = true
+        }).Select(async role =>
+            {
+                await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, clientId, role).ConfigureAwait(false);
+            }
+        ));
 }

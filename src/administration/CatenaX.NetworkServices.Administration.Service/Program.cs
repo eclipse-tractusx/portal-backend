@@ -26,6 +26,7 @@ using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.Provisioning.DBAccess;
 using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Provisioning.Library.Service;
 using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -46,6 +47,8 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddMailingAndTemplateManager(builder.Configuration)
                 .AddPortalRepositories(builder.Configuration)
                 .AddProvisioningManager(builder.Configuration);
+
+builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
 builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
                 .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
@@ -69,7 +72,6 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
-builder.Services.AddTransient<IPortalBackendDBAccess, PortalBackendDBAccess>();
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 

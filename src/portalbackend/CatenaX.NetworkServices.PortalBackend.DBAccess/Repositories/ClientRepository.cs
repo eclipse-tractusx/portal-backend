@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,18 +18,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+
+/// <inheritdoc />
+public class ClientRepository : IClientRepository
 {
-    public interface IPortalBackendDBAccess
+    private readonly PortalDbContext _dbContext;
+
+    /// <summary>
+    /// Creates an instance of <see cref="ClientRepository"/>
+    /// </summary>
+    /// <param name="dbContext">Access to the database</param>
+    public ClientRepository(PortalDbContext dbContext)
     {
-        Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
-        IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUser);
-        CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);
-        IamUser RemoveIamUser(IamUser iamUser);
-        Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
-        Task<int> SaveAsync();
+        _dbContext = dbContext;
     }
+
+    /// <inheritdoc />
+    public IamClient CreateClient(string clientId) =>
+        _dbContext.IamClients.Add(new IamClient(Guid.NewGuid(), clientId)).Entity;
 }

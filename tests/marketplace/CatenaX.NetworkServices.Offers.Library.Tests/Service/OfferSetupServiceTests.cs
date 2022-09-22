@@ -111,10 +111,10 @@ public class OfferSetupServiceTests
     {
         A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId)))
-            .ReturnsLazily(() => new OfferAutoSetupData(new CustomerData("Test Provider", "de", "tony@stark.com"), new PropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId)));
+            .ReturnsLazily(() => new OfferThirdPartyAutoSetupData(new CustomerData("Test Provider", "de", "tony@stark.com"), new PropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId)));
         A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId)))
-            .ReturnsLazily(() => (OfferAutoSetupData?)null);
+            .ReturnsLazily(() => (OfferThirdPartyAutoSetupData?)null);
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
     }

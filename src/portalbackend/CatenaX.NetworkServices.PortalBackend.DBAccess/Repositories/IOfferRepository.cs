@@ -63,8 +63,8 @@ public interface IOfferRepository
     /// Gets all active apps with an optional filtered with the languageShortName
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
-    /// <returns>Returns a async enumerable of <see cref="AppData"/></returns>
-    IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName);
+    /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
+    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
@@ -170,8 +170,9 @@ public interface IOfferRepository
     /// <param name="serviceId">the service to get from the persistence storage</param>
     /// <param name="languageShortName">the language short code for the descriptions</param>
     /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the ServiceDetailData or null</returns>
-    Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId);
+    Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
