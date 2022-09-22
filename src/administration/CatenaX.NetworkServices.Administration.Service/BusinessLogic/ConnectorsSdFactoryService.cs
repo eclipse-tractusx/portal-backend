@@ -52,7 +52,7 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, Guid companyUserId)
+    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, Guid companyUserId)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -76,7 +76,13 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
             throw new ControllerArgumentException($"document transmitted length {content.Length} doesn't match actual length {ms.Length}.");
         }
         
-        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, $"SelfDescription_{bpn}.json", documentContent, hash, DocumentTypeId.SELF_DESCRIPTION_EDC);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash,
+            doc =>
+            {
+                doc.DocumentTypeId = DocumentTypeId.SELF_DESCRIPTION_EDC;
+            }
+        );
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return document.Id;
     }
 }

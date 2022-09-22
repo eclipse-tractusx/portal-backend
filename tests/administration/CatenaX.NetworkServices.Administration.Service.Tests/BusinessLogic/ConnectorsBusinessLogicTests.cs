@@ -219,10 +219,9 @@ public class ConnectorsBusinessLogicTests
                 _connectors.Add(connector);
             });
 
-        A.CallTo(() =>
-                _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
+        A.CallTo(() => _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
                     A<string>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
+            .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
                 _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
                     A<string>._, A<Guid>._))
