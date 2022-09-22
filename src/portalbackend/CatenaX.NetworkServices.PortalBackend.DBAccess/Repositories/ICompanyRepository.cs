@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 
@@ -55,14 +56,15 @@ public interface ICompanyRepository
     /// <returns> Business partner numbers of all active companies</returns>
     IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
     Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId);
-    
+
     /// <summary>
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
     /// <param name="serviceProviderCompanyId">Id of the company to check</param>
     /// <param name="iamUserId">IAm User Id</param>
+    /// <param name="companyRole">The company Role</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<bool> CheckCompanyIsServiceProviderAndExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId);
+    Task<bool> CheckCompanyIsServiceProviderAndExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId, CompanyRoleId companyRole);
 
     /// <summary>
     /// Creates service provider company details
