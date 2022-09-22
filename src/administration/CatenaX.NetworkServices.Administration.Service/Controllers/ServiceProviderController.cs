@@ -36,12 +36,12 @@ public class ServiceProviderController : ControllerBase
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="404">Service Provider was not found.</response>
     [HttpPost]
-    [Route("{serviceProviderId}")]
+    [Route("{companyId:guid}")]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(OkResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OkResult>> ExecuteCompanyUserCreation([FromQuery] Guid companyId, [FromBody] ServiceProviderDetailData data)
+    public async Task<OkResult> CreateServiceProviderCompanyDetail([FromQuery] Guid companyId, [FromBody] ServiceProviderDetailData data)
     {
         await this.WithIamUserId(createdByName =>
             _logic.CreateServiceProviderCompanyDetails(companyId, data, createdByName)).ConfigureAwait(false);

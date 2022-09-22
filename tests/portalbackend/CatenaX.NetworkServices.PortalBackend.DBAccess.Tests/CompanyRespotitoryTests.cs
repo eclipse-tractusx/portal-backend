@@ -22,6 +22,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -31,30 +32,29 @@ using FakeItEasy;
 using FakeItEasy.Sdk;
 using FluentAssertions;
 using Xunit;
+using Xunit.Extensions.AssemblyFixture;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="CompanyRepository"/>
 /// </summary>
-public class CompanyRepositoryTests
+public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
-    private readonly PortalDbContext _contextFake;
-    private readonly Guid _validCompanyId = Guid.NewGuid(); 
-    private readonly Guid _companyWithoutBpnId = Guid.NewGuid(); 
-    private readonly List<Company> _companies = new();
+    private readonly TestDbFixture _dbTestDbFixture;
 
-    public CompanyRepositoryTests()
+    private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+    private readonly Guid _companyWithoutBpnId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99");
+    
+    public CompanyRepositoryTests(TestDbFixture testDbFixture)
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
 
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _contextFake = A.Fake<PortalDbContext>();
-
-        SetupCompanyDb();
+        _dbTestDbFixture = testDbFixture;
     }
 
     #region GetConnectorCreationCompanyDataAsync
@@ -63,7 +63,6 @@ public class CompanyRepositoryTests
     public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequested_ReturnsCompanyWithBpn()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
         var parameter = new List<(Guid companyId, bool bpnRequested)>
         {
             new(_validCompanyId, true)
@@ -82,7 +81,6 @@ public class CompanyRepositoryTests
     public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequestedFalse_ReturnsCompanyWithoutBpn()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
         var parameter = new List<(Guid companyId, bool bpnRequested)>
         {
             new(_validCompanyId, false)
@@ -101,7 +99,6 @@ public class CompanyRepositoryTests
     public async Task GetConnectorCreationCompanyDataAsync_WithNotExistingCompany_ReturnsEmptyList()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
         var parameter = new List<(Guid companyId, bool bpnRequested)>
         {
             new(Guid.NewGuid(), true)
@@ -119,7 +116,6 @@ public class CompanyRepositoryTests
     public async Task GetConnectorCreationCompanyDataAsync_WithCompanyWithoutBpnAndBpnRequested_ReturnsNullBpn()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
         var parameter = new List<(Guid companyId, bool bpnRequested)>
         {
             new(_companyWithoutBpnId, true)
@@ -136,24 +132,12 @@ public class CompanyRepositoryTests
 
     #endregion
 
-    private void SetupCompanyDb()
-    {
-        _companies.Add(new Company(_validCompanyId, "testName", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
-        {
-            BusinessPartnerNumber = "BUISNESSPARTNERNO"
-        });
-        _companies.Add(new Company(_companyWithoutBpnId, "withoutBpn", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow));
-        
-        A.CallTo(() => _contextFake.Companies).Returns(_companies.AsFakeDbSet());
-    }
-
     #region GetAllMemberCompaniesBPN
 
     [Fact]
     public async Task GetAllMemberCompaniesBPN__ReturnsBPNList()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
         var sut = _fixture.Create<CompanyRepository>();
 
         // Act
@@ -162,5 +146,43 @@ public class CompanyRepositoryTests
         // Assert
         results.Should().NotBeNullOrEmpty();
     }
-     #endregion
+    
+    #endregion
+    
+    #region Create ServiceProviderCompanyDetail
+
+    [Fact]
+    public async Task CreateServiceProviderCompanyDetail_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateServiceProviderCompanyDetail(_validCompanyId, url);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.CompanyId.Should().Be(_validCompanyId);
+        results.AutoSetupUrl.Should().Be(url);
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<ServiceProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+    }
+
+    #endregion
+    
+    #region Setup
+    
+    private async Task<(CompanyRepository, PortalDbContext)> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        _fixture.Inject(context);
+        var sut = _fixture.Create<CompanyRepository>();
+        return (sut, context);
+    }
+
+    #endregion
 }
