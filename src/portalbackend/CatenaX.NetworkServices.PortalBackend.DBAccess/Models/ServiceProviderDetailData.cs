@@ -18,32 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class ServiceProviderCompanyDetail
-{
-    private ServiceProviderCompanyDetail()
-    {
-        AutoSetupUrl = null!;
-    }
-    
-    public ServiceProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
-        : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        AutoSetupUrl = autoSetupUrl;
-        DateCreated = dateCreated;
-    }
-
-    public Guid Id { get; private set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public string AutoSetupUrl { get; set; }
-
-    public Guid CompanyId { get; set; }
-
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
-}
+public record ServiceProviderDetailData(string Url);

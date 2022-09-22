@@ -55,4 +55,20 @@ public interface ICompanyRepository
     /// <returns> Business partner numbers of all active companies</returns>
     IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
     Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId);
+    
+    /// <summary>
+    /// Checks whether the iamUser is assigned to the company and the company exists
+    /// </summary>
+    /// <param name="serviceProviderCompanyId">Id of the company to check</param>
+    /// <param name="iamUserId">IAm User Id</param>
+    /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
+    Task<bool> CheckCompanyExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId);
+
+    /// <summary>
+    /// Creates service provider company details
+    /// </summary>
+    /// <param name="companyId">Id of the company</param>
+    /// <param name="dataUrl">Url for the service provider</param>
+    /// <returns>Returns the newly created entity</returns>
+    ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl);
 }

@@ -126,4 +126,13 @@ public class CompanyRepository : ICompanyRepository
             })
             .SingleOrDefaultAsync();
 
+    /// <inheritdoc />
+    public Task<bool> CheckCompanyExistsForIamUser(Guid serviceProviderCompanyId, string iamUserId) =>
+        _context.Companies.AnyAsync(c =>
+            c.Id == serviceProviderCompanyId &&
+            c.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId));
+
+    /// <inheritdoc />
+    public ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl) =>
+        _context.ServiceProviderCompanyDetails.Add(new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
 }

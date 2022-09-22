@@ -18,32 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-public class ServiceProviderCompanyDetail
+namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+
+/// <summary>
+/// Service to handle communication with the service provider details
+/// </summary>
+public interface IServiceProviderBusinessLogic
 {
-    private ServiceProviderCompanyDetail()
-    {
-        AutoSetupUrl = null!;
-    }
-    
-    public ServiceProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
-        : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        AutoSetupUrl = autoSetupUrl;
-        DateCreated = dateCreated;
-    }
-
-    public Guid Id { get; private set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public string AutoSetupUrl { get; set; }
-
-    public Guid CompanyId { get; set; }
-
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
+    /// <summary>
+    /// Creates service provider company details
+    /// </summary>
+    /// <param name="companyId">Id of the service provider company</param>
+    /// <param name="data">Detail data for the service provider</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    Task CreateServiceProviderCompanyDetails(Guid companyId, ServiceProviderDetailData data, string iamUserId);
 }
