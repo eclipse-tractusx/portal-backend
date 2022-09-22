@@ -42,6 +42,7 @@ public interface IUserRepository
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
+    Task<(Guid CompanyId, string Bpn)> GetCompanyIdAndBpnForIamUserUntrackedAsync(string iamUserId);
     Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IdpAliase)> GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId);
     /// <summary>
     /// Gets the CompanyUser Id for the given IamUser Id

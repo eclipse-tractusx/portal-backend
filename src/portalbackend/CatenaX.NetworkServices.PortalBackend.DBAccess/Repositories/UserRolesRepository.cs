@@ -133,4 +133,11 @@ public class UserRolesRepository : IUserRolesRepository
                    userRole.UserRoleDescriptions.SingleOrDefault(desc =>
                    desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description))
            .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<List<string>> GetUserRolesForOfferIdAsync(Guid offerId) => 
+        _dbContext.UserRoles
+            .Where(x => x.OfferId == offerId)
+            .Select(x => x.UserRoleText)
+            .ToListAsync();
 }

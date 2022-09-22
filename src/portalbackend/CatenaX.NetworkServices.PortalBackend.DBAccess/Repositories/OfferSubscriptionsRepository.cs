@@ -129,9 +129,25 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId) =>
+    public Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
-            .Where(os => os.Id == subscriptionId && os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
+            .Where(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId && os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
             .Select(os => new SubscriptionDetailData(os.OfferId, os.Offer!.Name!, os.OfferSubscriptionStatusId))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferSubscriptionDetailData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId && x.Offer!.OfferTypeId == offerTypeId)
+            .Select(x => new OfferSubscriptionDetailData(
+                    x.OfferSubscriptionStatusId, 
+                    x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
+                    x.Company!.Name,
+                    x.CompanyId,
+                    x.RequesterId,
+                    x.OfferId,
+                    x.Offer!.Name!,
+                    x.Company.BusinessPartnerNumber!
+            ))
             .SingleOrDefaultAsync();
 }

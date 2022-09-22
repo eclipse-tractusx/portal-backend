@@ -1,0 +1,710 @@
+{
+	"info": {
+		"_postman_id": "f2bfb2d0-e703-4484-810d-f09eb09be892",
+		"name": "CatenaX Portal Registration local",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"var bodyToken = responseJson.access_token;",
+							"pm.collectionVariables.set(\"keycloakToken\", bodyToken)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "client_id",
+							"value": "Cl1-CX-Registration",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "Idp3.c27cf876-915e-4c41-9e51-e7be702f443f",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://devhost:8443/iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+					"protocol": "https",
+					"host": [
+						"devhost"
+					],
+					"port": "8443",
+					"path": [
+						"iamcentral",
+						"auth",
+						"realms",
+						"CX-Central",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Documents",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJvTGI2ZDRTaWRUZXFQM1N5Y0EzeVpacFRkQm5FQnlTUGI3blRoWGkxQ0dZIn0.eyJleHAiOjE2NTY0MDQxOTMsImlhdCI6MTY1NjQwMzg5MywiYXV0aF90aW1lIjoxNjU2NDAxMzg1LCJqdGkiOiIyMTMyOWJkMi01MWY3LTRmYzctYTAwYS00ZmFlYWNmZDBkOTgiLCJpc3MiOiJodHRwczovL2Rldmhvc3Q6ODQ0My9pYW1jZW50cmFsL2F1dGgvcmVhbG1zL0NYLUNlbnRyYWwiLCJhdWQiOlsiQ2wyLUNYLVBvcnRhbCIsIkNsMS1DWC1SZWdpc3RyYXRpb24iXSwic3ViIjoiZTliMWMwZTQtOTUzZC00NTM5LWI3MDMtZGNhOWU5MTFlYWI1IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiQ2wyLUNYLVBvcnRhbCIsIm5vbmNlIjoiZTg1NzIwYjEtYTE2Ni00Mjk0LWIyZjItNjdhZTI2ZTE1MDQyIiwic2Vzc2lvbl9zdGF0ZSI6IjVkZmQwZTdmLTk4ZDktNDVhNS1hY2RjLTA1YzdkODQzODdjZSIsImFjciI6IjAiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9jYXRlbmF4aW50YWtzc3J2Lmdlcm1hbnl3ZXN0Y2VudHJhbC5jbG91ZGFwcC5henVyZS5jb20iLCJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJodHRwczovL2NhdGVuYXhpbnRha3Nwb3J0YWwuZ2VybWFueXdlc3RjZW50cmFsLmNsb3VkYXBwLmF6dXJlLmNvbSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJkZWZhdWx0LXJvbGVzLWNhdGVuYS14IHJlYWxtIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJDbDEtQ1gtUmVnaXN0cmF0aW9uIjp7InJvbGVzIjpbImludml0ZV91c2VyIiwiQ1ggQWRtaW4iLCJ1cGxvYWRfZG9jdW1lbnRzIiwiYWRkX2NvbXBhbnlfZGF0YSIsInN1Ym1pdF9yZWdpc3RyYXRpb24iLCJzaWduX2NvbnNlbnQiLCJDb21wYW55IEFkbWluIiwidmlld19yZWdpc3RyYXRpb24iXX0sIkNsMi1DWC1Qb3J0YWwiOnsicm9sZXMiOlsidmlld19zdWJtaXR0ZWRfYXBwbGljYXRpb25zIiwidmlld19jbGllbnRfcm9sZXMiLCJkZWxldGVfZG9jdW1lbnRzIiwiYWRkX3NlbWFudGljX21vZGVsIiwidmlld19kb2N1bWVudHMiLCJhZGRfZGlnaXRpYWxfdHdpbiIsInNldHVwX2Nvbm5lY3RvciIsInZpZXdfdGVjaF91c2VyX21hbmFnZW1lbnQiLCJhZGRfdXNlcl9hY2NvdW50IiwiYXBwcm92ZV9uZXdfcGFydG5lciIsImRlbGV0ZV91c2VyX2FjY291bnQiLCJhZGRfYXBwIiwiZGVsZXRlX3RlY2hfdXNlcl9tYW5hZ2VtZW50IiwiYWRkX3RlY2hfdXNlcl9tYW5hZ2VtZW50Iiwidmlld19zZW1hbnRpY19odWIiLCJDWCBBZG1pbiIsImZpbHRlcl9hcHBzIiwic2V0dXBfaWRwIiwiaW52aXRlX25ld19wYXJ0bmVyIiwidmlld191c2VyX21hbmFnZW1lbnQiLCJ2aWV3X2RpZ2l0YWxfdHdpbnMiLCJ2aWV3X2FwcHMiLCJlZGl0X2FwcHMiLCJkZWxldGVfYXBwcyJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI1ZGZkMGU3Zi05OGQ5LTQ1YTUtYWNkYy0wNWM3ZDg0Mzg3Y2UiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlRlc3R1c2VyIERldmhvc3QiLCJvcmdhbmlzYXRpb24iOiJEZXZob3N0IFNoYXJlZCBJZHAiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJpZHAxLjZlYzQ2Y2Q0LTVhZWMtNDZjMy04OGRjLTJhMjgzOTk0YWI5MiIsImdpdmVuX25hbWUiOiJUZXN0dXNlciIsImZhbWlseV9uYW1lIjoiRGV2aG9zdCIsImVtYWlsIjoibm8uZW1haWxAY2F0ZW5hLm5ldCIsInRlbmFudCI6ImlkcDEifQ.bt5uzFIHXgoeiiKTSYMv5x4ukuvY7VYg0HZCrAFiDAHwvTPxgVZEuhH-kj0ZpEI-A2BO5dVdKr6282gqSUov8QlLOq3xHzBAFHkVc8oH-255IlCWSr2D2UR3XGd7cVQdQyHvYihqSzxqXMdiRHR6O2CTmFi67YURIJ5m0d834benFOJloWVL9Uj3043-m_AjPAJBT83wn6ng0fHDQSNxgtFqnmoMIq4U2uU7haEtj6Jp8N_wdrAnjdfRlk7FTWUDF9fZk6xk6mebR-sZrclSGJllK7rKy0n1NwJKEViJlQjNdBnPsyje4QB_z6gY8xRwOrTUpKV2CjLpffiRBhwDRA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "document",
+							"type": "file",
+							"src": "/C:/Users/pisn/Downloads/main.pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/documentType/CX_FRAME_CONTRACT/documents",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"documentType",
+						"CX_FRAME_CONTRACT",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/applications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"var bodyToken = responseJson[0].applicationId;",
+							"pm.collectionVariables.set(\"applicationId\", bodyToken)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/applications",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/application/0195a85f-e465-4571-b980-d1351dd76a9f/companyDetailsWithAddress",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();",
+							"var companyId = responseJson.companyId;",
+							"pm.collectionVariables.set(\"companyId\", companyId)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\": \"devhost-test\",\n  \"firstName\": \"Testuser\",\n  \"lastName\": \"Devhost\",\n  \"email\": \"norbert.truchsess@t-online.de\",\n  \"organisationName\": \"Devhost Shared Idp\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/companyDetailsWithAddress",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"companyDetailsWithAddress"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/application/0195a85f-e465-4571-b980-d1351dd76a9f/status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\": \"devhost-test\",\n  \"firstName\": \"Testuser\",\n  \"lastName\": \"Devhost\",\n  \"email\": \"norbert.truchsess@t-online.de\",\n  \"organisationName\": \"Devhost Shared Idp\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/status",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/application/0195a85f-e465-4571-b980-d1351dd76a9f/status Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/status?status=DECLINED",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"status"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "DECLINED"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/application/0195a85f-e465-4571-b980-d1351dd76a9f/companyDetailsWithAddress Copy",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"companyId\": \"{{companyId}}\",\n    \"bpn\": \"ASDF12345\",\n    \"name\": \"A CompanyName\",\n    \"shortName\": \"myCorp\",\n    \"city\": \"Berlin\",\n    \"region\": \"Brandenburg\",\n    \"streetadditional\": \"none\",\n    \"streetname\": \"MyStreet\",\n    \"streetnumber\": \"0815\",\n    \"zipcode\": \"01234\",\n    \"countryAlpha2Code\": \"DE\",\n    \"taxId\": \"0123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/companyDetailsWithAddress",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"companyDetailsWithAddress"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/application/0195a85f-e465-4571-b980-d1351dd76a9f/companyDetailsWithAddress",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"norbert.truchsess@web.de\",\n    \"roles\": [\"Signing Manager\"],\n    \"message\": \"hello Signing Manager\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/inviteNewUser",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"inviteNewUser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "companyRoleAgreementConsents (https://localhost:5001/api/registration/application/{{applicationId}}/companyRoleAgreementConsents)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"companyRoles\": [\"ACTIVE_PARTICIPANT\", \"APP_PROVIDER\"],\n    \"agreements\": [\n        {\n            \"agreementId\": \"aa0a0000-7fbc-1f2f-817f-bce0502c1010\",\n            \"consentStatus\": \"ACTIVE\"\n        },\n        {\n            \"agreementId\": \"aa0a0000-7fbc-1f2f-817f-bce0502c1013\",\n            \"consentStatus\": \"ACTIVE\"\n        },\n        {\n            \"agreementId\": \"aa0a0000-7fbc-1f2f-817f-bce0502c1011\",\n            \"consentStatus\": \"ACTIVE\"\n        }\n    ]\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/companyRoleAgreementConsents",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"companyRoleAgreementConsents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AgreementConsents (https://localhost:5001/api/registration/application/{{applicationId}}/companyRoleAgreementConsents)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/companyRoleAgreementConsents",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"companyRoleAgreementConsents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "companyRoleAgreementData (https://localhost:5001/api/registration/companyRoleAgreementData)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/companyRoleAgreementData",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"companyRoleAgreementData"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "invitedusers (https://localhost:5001/api/registration/application/{{applicationId}}/invitedusers)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/invitedusers",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"invitedusers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:5001/api/registration/application/{{applicationId}}/invitedusers Copy",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "document",
+							"type": "file",
+							"src": "/home/norbert/Nextcloud/i3/Ladekarten/ejoin/fa_22201221.pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/documentType/DATA_CONTRACT/documents",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"documentType",
+						"DATA_CONTRACT",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET RegistrationData",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/registrationData",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"registrationData"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "submitRegistration https://localhost:5001/api/registration/application/{{applicationId}}/submitRegistration",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/registration/application/{{applicationId}}/submitRegistration",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"registration",
+						"application",
+						"{{applicationId}}",
+						"submitRegistration"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "keycloakToken",
+			"value": ""
+		},
+		{
+			"key": "applicationId",
+			"value": ""
+		},
+		{
+			"key": "companyId",
+			"value": ""
+		}
+	]
+}
