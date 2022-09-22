@@ -4121,10 +4121,11 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AutoSetupUrl")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("auto_setup_url");
 
-                    b.Property<Guid?>("CompanyId")
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
 
@@ -5104,6 +5105,7 @@ namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
                     b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithOne("ServiceProviderCompanyDetail")
                         .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", "CompanyId")
+                        .IsRequired()
                         .HasConstraintName("fk_service_provider_company_details_companies_company_id");
 
                     b.Navigation("Company");
