@@ -171,7 +171,7 @@ public interface IOfferRepository
     /// <param name="languageShortName">the language short code for the descriptions</param>
     /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the ServiceDetailData or null</returns>
-    Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId);
+    Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.

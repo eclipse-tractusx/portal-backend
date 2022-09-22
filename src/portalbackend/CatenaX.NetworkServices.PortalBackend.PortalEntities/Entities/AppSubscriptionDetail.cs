@@ -37,10 +37,12 @@ public class AppSubscriptionDetail
     /// Creates a new instance of <see cref="AppSubscriptionDetail"/>
     /// </summary>
     /// <param name="id">Id of the entity</param>
-    public AppSubscriptionDetail(Guid id) 
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    public AppSubscriptionDetail(Guid id, Guid offerSubscriptionId) 
         : this()
     {
         this.Id = id;
+        this.OfferSubscriptionId = offerSubscriptionId;
     }
     
     /// <summary>

@@ -24,7 +24,6 @@ using CatenaX.NetworkServices.Provisioning.Library.Enums;
 using CatenaX.NetworkServices.Keycloak.Library;
 using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
 using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
-using System.Text.Json;
 
 namespace CatenaX.NetworkServices.Provisioning.Library;
 
@@ -86,7 +85,7 @@ public partial class ProvisioningManager
 
     private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
     {
-        var newClient = CloneClient(_Settings.SharedRealmClient);
+        var newClient = Clone(_Settings.SharedRealmClient);
         newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
         newClient.Attributes["jwks.url"] = config.JwksUrl;
         await keycloak.CreateClientAsync(realm,newClient).ConfigureAwait(false);
@@ -94,7 +93,7 @@ public partial class ProvisioningManager
 
     private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri)
     {
-        var newClient = CloneClient(_Settings.CentralOIDCClient);
+        var newClient = Clone(_Settings.CentralOIDCClient);
         newClient.ClientId = clientId;
         newClient.RedirectUris = Enumerable.Repeat<string>(redirectUri, 1);
         var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
@@ -141,7 +140,4 @@ public partial class ProvisioningManager
 
     private async Task<string> GetNextClientIdAsync() =>
         _Settings.ClientPrefix + (await _ProvisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(false));
-
-    private Client CloneClient(Client client) =>
-        JsonSerializer.Deserialize<Client>(JsonSerializer.Serialize(client))!;
 }
