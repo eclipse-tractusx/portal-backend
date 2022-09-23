@@ -20,30 +20,27 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests;
 
 /// <summary>
-/// Tests the functionality of the <see cref="UserRepositoryTests"/>
+/// Tests the functionality of the <see cref="OfferSubscriptionsRepositoryTests"/>
 /// </summary>
-public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
+public class OfferSubscriptionsRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string ValidIamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
+    private readonly Guid _existingSubscruptionId = new("28149c6d-833f-49c5-aea2-ab6a5a37f462");
+    private const string IamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
+    private const string InvalidUser = "4b8f156e-5dfc-4a58-9384-1efb195c1c34";
 
-    public UserRepositoryTests(TestDbFixture testDbFixture)
+    public OfferSubscriptionsRepositoryTests(TestDbFixture testDbFixture)
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -53,43 +50,67 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetOwnCompanAndCompanyUseryId
+    #region GetAutoSetupDataAsync
 
     [Fact]
-    public async Task GetOwnCompanAndCompanyUseryId_WithValidIamUser_ReturnsExpectedResult()
+    public async Task GetAutoSetupDataAsync_WithValidSubscriptionAndUser_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryId(ValidIamUserId).ConfigureAwait(false);
+        var results = await sut.GetAutoSetupDataAsync(_existingSubscruptionId, IamUserId).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
-        result.companyName.Should().Be("Catena-X");
+        results.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task GetOwnCompanAndCompanyUseryId_WithNotExistingIamUser_ReturnsDefault()
+    public async Task GetAutoSetupDataAsync_WithNotExistingSubscription_ReturnsNull()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryId(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var results = await sut.GetAutoSetupDataAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
 
         // Assert
-        (result == default).Should().BeTrue();
+        results.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAutoSetupDataAsync_WithNotExistingUser_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAutoSetupDataAsync(_existingSubscruptionId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        results.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAutoSetupDataAsync_WithOtherCompanyUser_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAutoSetupDataAsync(_existingSubscruptionId, InvalidUser).ConfigureAwait(false);
+
+        // Assert
+        results.Should().BeNull();
     }
 
     #endregion
 
-    private async Task<(UserRepository, PortalDbContext)> CreateSut()
+    private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         _fixture.Inject(context);
-        var sut = _fixture.Create<UserRepository>();
+        var sut = _fixture.Create<OfferSubscriptionsRepository>();
         return (sut, context);
     }
 }
