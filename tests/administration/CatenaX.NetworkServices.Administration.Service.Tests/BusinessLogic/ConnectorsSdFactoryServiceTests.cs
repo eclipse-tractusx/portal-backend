@@ -1,4 +1,24 @@
-﻿using System;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,8 +46,6 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic;
 public class ConnectorsSdFactoryServiceTests
 {
     private readonly Guid _companyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
-    private readonly IFixture _fixture;
-    private readonly ConnectorsSettings _settings;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
     private readonly ConnectorsSdFactoryService _service;
@@ -36,24 +54,22 @@ public class ConnectorsSdFactoryServiceTests
 
     public ConnectorsSdFactoryServiceTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _documents = new HashSet<Document>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _settings = new ConnectorsSettings
+        var settings = new ConnectorsSettings
         {
             SdFactoryUrl = "https://www.api.sdfactory.com"
         };
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
 
-        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        
-        _service = new ConnectorsSdFactoryService(Options.Create(_settings), _httpClientFactory, _portalRepositories);
+        _service = new ConnectorsSdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories);
     }
 
     [Fact]
@@ -122,6 +138,7 @@ public class ConnectorsSdFactoryServiceTests
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
         exception.Message.Should().Be($"Access to SD factory failed with status code {HttpStatusCode.BadRequest}");
     }
+
     private static HttpContent FormContent(string s, string contentType)
     {
         HttpContent content = new StringContent(s);
@@ -144,5 +161,7 @@ public class ConnectorsSdFactoryServiceTests
                 setupOptionalFields?.Invoke(document);
                 _documents.Add(document);
             });
+        
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
     }
 }
