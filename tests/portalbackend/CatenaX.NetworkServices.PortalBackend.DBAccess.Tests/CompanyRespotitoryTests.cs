@@ -45,7 +45,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly TestDbFixture _dbTestDbFixture;
 
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-    private readonly Guid _companyWithoutBpnId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99");
     
     public CompanyRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -57,98 +56,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetConnectorCreationCompanyDataAsync
-
-    [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequested_ReturnsCompanyWithBpn()
-    {
-        // Arrange
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(_validCompanyId, true)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
-
-        // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
-
-        // Assert
-        results.Should().ContainSingle();
-        results.All(x => x.BusinessPartnerNumber is not null).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequestedFalse_ReturnsCompanyWithoutBpn()
-    {
-        // Arrange
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(_validCompanyId, false)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
-
-        // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
-
-        // Assert
-        results.Should().ContainSingle();
-        results.All(x => x.BusinessPartnerNumber is null).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithNotExistingCompany_ReturnsEmptyList()
-    {
-        // Arrange
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(Guid.NewGuid(), true)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
-
-        // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
-
-        // Assert
-        results.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithCompanyWithoutBpnAndBpnRequested_ReturnsNullBpn()
-    {
-        // Arrange
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(_companyWithoutBpnId, true)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
-
-        // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
-
-        // Assert
-        results.Should().ContainSingle();
-        results.All(x => x.BusinessPartnerNumber is null).Should().BeTrue();
-    }
-
-    #endregion
-
-    #region GetAllMemberCompaniesBPN
-
-    [Fact]
-    public async Task GetAllMemberCompaniesBPN__ReturnsBPNList()
-    {
-        // Arrange
-        var sut = _fixture.Create<CompanyRepository>();
-
-        // Act
-        var results = await sut.GetAllMemberCompaniesBPNAsync().ToListAsync();
-
-        // Assert
-        results.Should().NotBeNullOrEmpty();
-    }
-    
-    #endregion
-    
     #region Create ServiceProviderCompanyDetail
 
     [Fact]
@@ -170,6 +77,36 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<ServiceProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+    }
+
+    #endregion
+    
+    #region Check Company is ServiceProvider and exists for IamUser
+
+    [Fact]
+    public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithValidData_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.CheckCompanyIsServiceProviderAndExistsForIamUser(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "3d8142f1-860b-48aa-8c2b-1ccb18699f66", CompanyRoleId.SERVICE_PROVIDER);
+
+        // Assert
+        results.Should().BeTrue();
+    }
+    
+    [Fact]
+    public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithNonServiceProviderCompany_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.CheckCompanyIsServiceProviderAndExistsForIamUser(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), "4b8f156e-5dfc-4a58-9384-1efb195c1c34", CompanyRoleId.SERVICE_PROVIDER);
+
+        // Assert
+        results.Should().BeFalse();
     }
 
     #endregion
