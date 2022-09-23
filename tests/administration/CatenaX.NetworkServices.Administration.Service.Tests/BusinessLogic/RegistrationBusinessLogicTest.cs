@@ -111,6 +111,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService);
         }
 
+        #region ApprovePartnerRequest
+        
         [Fact]
         public async Task ApprovePartnerRequest_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications()
         {
@@ -192,6 +194,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             ex.ParamName.Should().Be($"bpn");
         }
 
+        #endregion
+        
         #region Setup
 
         private void SetupFakes(
