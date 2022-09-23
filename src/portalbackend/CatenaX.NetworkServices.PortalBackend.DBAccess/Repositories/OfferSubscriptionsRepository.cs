@@ -154,7 +154,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public Task<OfferThirdPartyAutoSetupData?> GetAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
         _context.OfferSubscriptions
-            .Where(x => x.Id == offerSubscriptionId)
+            .Where(x => x.Id == offerSubscriptionId && x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
             .Select(x => new OfferThirdPartyAutoSetupData(new CustomerData(x.Company!.Name, x.Company!.Address!.CountryAlpha2Code, x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email), new PropertyData(x.Company!.BusinessPartnerNumber!, offerSubscriptionId, x.OfferId)))
             .SingleOrDefaultAsync();
 }
