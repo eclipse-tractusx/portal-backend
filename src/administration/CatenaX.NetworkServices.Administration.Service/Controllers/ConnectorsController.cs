@@ -95,10 +95,10 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Route("")]
     [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ActionResult<ConnectorData>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<ConnectorData>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
+    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
     {
         var connectorData = await this.WithIamUserAndBearerToken((token, iamUserId) => _businessLogic.CreateConnectorAsync(connectorInputModel, token, iamUserId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
