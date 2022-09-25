@@ -118,7 +118,8 @@ public class OfferRepository : IOfferRepository
                     .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == appId))
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
-                Languages = a.SupportedLanguages.Select(l => l.ShortName)
+                Languages = a.SupportedLanguages.Select(l => l.ShortName),
+                DocumentData = a.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))
             })
             .SingleAsync().ConfigureAwait(false);
 
@@ -138,7 +139,8 @@ public class OfferRepository : IOfferRepository
             DetailPictureUris = app.DetailPictureUris,
             ContactEmail = app.ContactEmail,
             ContactNumber = app.ContactNumber,
-            Languages = app.Languages
+            Languages = app.Languages,
+            Document = app.DocumentData.Select(d =>new KeyValuePair<DocumentTypeId, List<DocumentData>>(d.documentTypeId, new List<DocumentData>{new DocumentData(d.documentId, d.documentName)})).ToList()
         };
     }
 

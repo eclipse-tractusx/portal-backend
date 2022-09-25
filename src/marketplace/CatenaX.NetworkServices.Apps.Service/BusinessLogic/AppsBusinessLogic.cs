@@ -79,9 +79,35 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null) =>
-        _portalRepositories.GetInstance<IOfferRepository>()
-            .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName);
+    public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName).ConfigureAwait(false);
+        var appDetailResponse = new AppDetailResponse(result.Title, result.LeadPictureUri, result.ProviderUri, result.Provider, result.LongDescription, result.Price);
+        var documentDict = new Dictionary<DocumentTypeId, List<DocumentData>>();
+        foreach(KeyValuePair<DocumentTypeId, List<DocumentData>> kvp in result.Document )
+        {
+            if(!documentDict.ContainsKey(kvp.Key))
+            {
+                documentDict.Add(kvp.Key, new List<DocumentData>() { new DocumentData(kvp.Value[0].documentId, kvp.Value[0].documentName) });
+            }
+            else
+            {
+                documentDict[kvp.Key].Add(new DocumentData(kvp.Value[0].documentId, kvp.Value[0].documentName));
+            }
+            
+        }
+        appDetailResponse.Id = result.Id;
+        appDetailResponse.IsSubscribed = result.IsSubscribed;
+        appDetailResponse.Tags = result.Tags;
+        appDetailResponse.UseCases = result.UseCases;
+        appDetailResponse.DetailPictureUris = result.DetailPictureUris;
+        appDetailResponse.ContactEmail = result.ContactEmail;
+        appDetailResponse.ContactNumber = result.ContactNumber;
+        appDetailResponse.Languages = result.Languages;
+        appDetailResponse.Document = documentDict;
+        return appDetailResponse;
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId) =>

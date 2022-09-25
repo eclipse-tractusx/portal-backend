@@ -19,13 +19,14 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
 
 /// <summary>
 /// View model of an application's detailed data.
 /// </summary>
-public record AppDetailsData(string Title, string LeadPictureUri, string ProviderUri, string Provider, string LongDescription, string Price)
+public record AppDetailResponse(string Title, string LeadPictureUri, string ProviderUri, string Provider, string LongDescription, string Price)
 {
     /// <summary>
     /// ID of the app.
@@ -96,27 +97,11 @@ public record AppDetailsData(string Title, string LeadPictureUri, string Provide
     /// Languages that the app is available in.
     /// </summary>
     public IEnumerable<string> Languages { get; set; } = new List<string>();
-
+    
     /// <summary>
-    /// document assigned to offer
+    /// Document assigned for offer 
     /// </summary>
-    /// <returns></returns>      
-    public List<KeyValuePair<DocumentTypeId, List<DocumentData>>> Document { get; set; } = new List<KeyValuePair<DocumentTypeId, List<DocumentData>>>();
+    /// <returns></returns>
+    public IDictionary<DocumentTypeId, List<DocumentData>> Document { get; set; } = new Dictionary<DocumentTypeId, List<DocumentData>>();
 }
 
-/// <summary>
-/// Model for Document
-/// </summary>
-/// <param name="documentId"></param>
-/// <param name="documentName"></param>
-/// <returns></returns>
-public record DocumentData(Guid documentId, string documentName);
-
-/// <summary>
-/// Model for Document with Type
-/// </summary>
-/// <param name="documentTypeId"></param>
-/// <param name="documentId"></param>
-/// <param name="documentName"></param>
-/// <returns></returns>
-public record DocumentTypeData(DocumentTypeId documentTypeId, Guid documentId, string documentName);
