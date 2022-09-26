@@ -34,7 +34,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Test.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.BusinessLogic;
 
 public class ServiceBusinessLogicTests
 {
