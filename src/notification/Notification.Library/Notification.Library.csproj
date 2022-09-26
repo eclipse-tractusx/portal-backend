@@ -27,8 +27,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
-      <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
+      <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+      <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     </ItemGroup>
 
 </Project>
