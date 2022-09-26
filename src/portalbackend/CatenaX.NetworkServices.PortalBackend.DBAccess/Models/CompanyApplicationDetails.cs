@@ -52,13 +52,13 @@ public class CompanyApplicationDetails
 
 public class DocumentDetails
 {
-    public DocumentDetails(byte[] documentHash)
+    public DocumentDetails(Guid documentId)
     {
-        DocumentHash = documentHash;
+        DocumentId = documentId;
     }
 
     [JsonPropertyName("documentType")]
     public DocumentTypeId? DocumentTypeId { get; set; }
-    [JsonPropertyName("documentHash")]
-    public byte[] DocumentHash { get; set; }
+    [JsonPropertyName("documentId")]
+    public Guid DocumentId { get; set; }
 }
