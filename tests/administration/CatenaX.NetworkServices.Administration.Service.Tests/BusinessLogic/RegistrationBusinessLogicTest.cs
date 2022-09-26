@@ -199,21 +199,18 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
         public async Task GetCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
         {
             // Arrange
-            //var companyApp = _fixture.CreateMany<CompanyApplication>().AsQueryable();
+            var companyAppStatus = new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
             var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
-            var companyAppStatus = _fixture.CreateMany<CompanyApplicationStatusId>();
-            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string>._, companyAppStatus))
+            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
                 .Returns(companyApplicationData.AsQueryable());
 
             // Act
             var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null);
 
             // Assert
-            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string>._, companyAppStatus)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>?>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
             Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
             result.Content.Should().HaveCount(5);
-
-            
         }
 
         #region Setup
