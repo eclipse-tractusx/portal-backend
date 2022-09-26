@@ -51,6 +51,14 @@ public class UserRolesRepository : IUserRolesRepository
             .Include(companyUser => companyUser.IamUser)
             .AsAsyncEnumerable();
 
+    public IAsyncEnumerable<(Guid CompanyUserRoleId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId) =>
+        _dbContext.CompanyUserAssignedRoles
+            .Where(cuar => 
+                roleNames.Any(x => x == cuar.UserRole!.UserRoleText) &&
+                cuar.CompanyUser!.IamUser!.UserEntityId == iamUserId)
+            .Select(cuar => new ValueTuple<Guid, Guid>(cuar.Id, cuar.UserRole!.Id))
+            .AsAsyncEnumerable();
+    
     public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
         _dbContext.Remove(companyUserAssignedRole).Entity;
 
@@ -79,6 +87,27 @@ public class UserRolesRepository : IUserRolesRepository
             }
         }
     }
+
+    public IAsyncEnumerable<CompanyUserRoleDeletionData> GetAssignedRolesForDeletion(Guid companyUserId, IEnumerable<string> userRoles) =>
+        _dbContext.CompanyUserAssignedRoles
+            .AsNoTracking()
+            .Where(x => x.CompanyUserId == companyUserId && userRoles.All(ur => ur != x.UserRole!.UserRoleText))
+            .Select(x => new CompanyUserRoleDeletionData(
+                    x.Id,
+                    x.UserRoleId,
+                    x.UserRole!.UserRoleText,
+                    x.CompanyUserId))
+            .ToAsyncEnumerable();
+    
+    public IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(string clientClientId, Guid companyUserId, IEnumerable<string> userRoles) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientClientId) && userRoles.Contains(userRole.UserRoleText) && !userRole.CompanyUsers.Any(cu => cu.Id == companyUserId && cu.CompanyUserAssignedRoles.All(x => x.UserRoleId != userRole.Id)))
+            .Select(userRole => new UserRoleWithId(
+                userRole.UserRoleText,
+                userRole.Id
+            ))
+            .ToAsyncEnumerable();
 
     public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
         _dbContext.UserRoles
