@@ -668,25 +668,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
-        var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)
-            .ConfigureAwait(false);
-        if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
-        {
-            throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
-        }
-        
-        if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
-        {
-            throw new NotFoundException($"User not found");
-        }
-        
-        var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>().GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(iamClientId))
-        {
-            throw new ArgumentException($"invalid appId {appId}", nameof(appId));
-        }
-        var roles = userRoleInfo.Roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
+        var (companyUser, iamClientId, roles) = await CompanyIamUser(appId, userRoleInfo, adminUserId);
 
         var success = new List<UserRoleMessage.Message>();
         var warning = new List<UserRoleMessage.Message>();
@@ -733,25 +715,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task UpdateUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
-        var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)
-            .ConfigureAwait(false);
-        if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
-        {
-            throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
-        }
-        
-        if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
-        {
-            throw new NotFoundException($"User not found");
-        }
-        
-        var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>().GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(iamClientId))
-        {
-            throw new ArgumentException($"invalid appId {appId}", nameof(appId));
-        }
-        var roles = userRoleInfo.Roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
+        var (companyUser, iamClientId, roles) = await CompanyIamUser(appId, userRoleInfo, adminUserId);
 
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var rolesToAdd = await userRoleRepository.GetRolesToAdd(iamClientId, userRoleInfo.CompanyUserId, roles).ToListAsync().ConfigureAwait(false);
@@ -770,6 +734,33 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUser.TargetIamUserId, roleNamesToDelete).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task<(CompanyIamUser? companyUser, string iamClientId, List<string> roles)> CompanyIamUser(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+    {
+        var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)
+            .ConfigureAwait(false);
+        if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
+        {
+            throw new NotFoundException(
+                $"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
+        }
+
+        if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
+        {
+            throw new NotFoundException($"User not found");
+        }
+
+        var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(iamClientId))
+        {
+            throw new ArgumentException($"invalid appId {appId}", nameof(appId));
+        }
+
+        var roles = userRoleInfo.Roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
+        return (companyUser, iamClientId, roles);
     }
 
     public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
