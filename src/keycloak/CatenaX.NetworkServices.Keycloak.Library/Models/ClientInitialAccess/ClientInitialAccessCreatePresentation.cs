@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.ClientInitialAccess;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ClientInitialAccess;
 
 public class ClientInitialAccessCreatePresentation
 {

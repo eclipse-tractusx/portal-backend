@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.Key;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Key;
 using Flurl.Http;
 
-namespace CatenaX.NetworkServices.Keycloak.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

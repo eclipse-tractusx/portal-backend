@@ -18,19 +18,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Offers.Library.Models;
-using CatenaX.NetworkServices.Offers.Library.Service;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Services.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IServiceBusinessLogic"/>.

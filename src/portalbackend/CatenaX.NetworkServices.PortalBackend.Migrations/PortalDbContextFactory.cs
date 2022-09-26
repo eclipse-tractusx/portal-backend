@@ -23,7 +23,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 
 public class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbContext>
 {

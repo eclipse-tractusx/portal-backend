@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Common.Converters;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationPermissions;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 
 public class AuthorizationPermission
 {

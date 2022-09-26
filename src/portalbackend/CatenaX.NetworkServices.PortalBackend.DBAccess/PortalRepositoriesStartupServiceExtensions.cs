@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 
 public static class PortalRepositoriesStartupServiceExtensions
 {

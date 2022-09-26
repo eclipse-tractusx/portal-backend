@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Registration.Service.BPN.Model;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace CatenaX.NetworkServices.Registration.Service.BPN
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
 {
     public class BPNAccess : IBPNAccess
     {

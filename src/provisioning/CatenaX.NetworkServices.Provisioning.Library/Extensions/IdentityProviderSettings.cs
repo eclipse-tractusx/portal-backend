@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Library.Models.IdentityProviders;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {

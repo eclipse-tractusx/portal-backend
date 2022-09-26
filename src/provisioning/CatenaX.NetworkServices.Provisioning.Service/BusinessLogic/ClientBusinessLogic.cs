@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.Models;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.BusinessLogic
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.BusinessLogic
 {
     public class ClientBusinessLogic : IClientBusinessLogic
     {

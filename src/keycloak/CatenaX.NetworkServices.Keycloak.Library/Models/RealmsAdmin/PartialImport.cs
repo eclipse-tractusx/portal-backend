@@ -24,13 +24,13 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Common.Converters;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Groups;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Users;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Groups;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Users;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class PartialImport
 {

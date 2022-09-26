@@ -20,16 +20,16 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
 using System.Text.Json;
 
-namespace CatenaX.NetworkServices.Notification.Library.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Library.Tests;
 
 public class NotificationServiceTests
 {

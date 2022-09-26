@@ -21,10 +21,10 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CatenaX.NetworkServices.Provisioning.Service.BusinessLogic;
-using CatenaX.NetworkServices.Provisioning.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.Models;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Controllers
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.Controllers
 {
     /// <summary>
     /// The controller provides the possibility to create a client

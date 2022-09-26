@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Basic model for user role data needed to display user roles.

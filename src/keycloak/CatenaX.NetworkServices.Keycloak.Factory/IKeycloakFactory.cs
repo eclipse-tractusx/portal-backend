@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
 
-namespace CatenaX.NetworkServices.Keycloak.Factory;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Factory;
 
 public interface IKeycloakFactory
 {

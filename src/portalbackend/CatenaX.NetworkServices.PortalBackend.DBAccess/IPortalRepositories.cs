@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 
 public interface IPortalRepositories
 {

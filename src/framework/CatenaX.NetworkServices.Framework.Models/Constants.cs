@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 
 /// <summary>
 /// Provides constant values

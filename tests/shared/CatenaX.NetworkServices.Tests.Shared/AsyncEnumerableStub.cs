@@ -20,7 +20,7 @@
 
 using System.Linq.Expressions;
 
-namespace CatenaX.NetworkServices.Tests.Shared
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared
 {
     public class AsyncEnumerableStub<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
     {

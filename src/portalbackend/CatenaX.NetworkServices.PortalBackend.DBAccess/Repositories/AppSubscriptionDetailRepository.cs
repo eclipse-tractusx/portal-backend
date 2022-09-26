@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public class AppSubscriptionDetailRepository : IAppSubscriptionDetailRepository
 {

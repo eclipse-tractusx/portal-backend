@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.OpenIDConfiguration;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 
 public class OpenIDConfiguration
 {

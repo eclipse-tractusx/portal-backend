@@ -24,7 +24,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 public class GeneralHttpErrorHandler
 {

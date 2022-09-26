@@ -19,20 +19,20 @@
  ********************************************************************************/
 
 using AutoFixture;
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Offers.Library.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Services.Service.BusinessLogic;
-using CatenaX.NetworkServices.Services.Service.Controllers;
-using CatenaX.NetworkServices.Services.Service.ViewModels;
-using CatenaX.NetworkServices.Tests.Shared.Extensions;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Services.Service.Test.Controllers
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Test.Controllers
 {
     public class ServiceControllerTest
     {

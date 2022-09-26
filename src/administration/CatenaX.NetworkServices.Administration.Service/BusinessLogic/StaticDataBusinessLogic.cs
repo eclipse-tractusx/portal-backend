@@ -19,11 +19,11 @@
  ********************************************************************************/
 
  
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IStaticDataBusinessLogic"/> making use of <see cref="IStaticDataRepository"/> to retrieve data.

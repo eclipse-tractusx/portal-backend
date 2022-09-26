@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -28,7 +28,7 @@ using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 [assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Tests.Setup;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 
 public class TestDbFixture : IAsyncLifetime
 {

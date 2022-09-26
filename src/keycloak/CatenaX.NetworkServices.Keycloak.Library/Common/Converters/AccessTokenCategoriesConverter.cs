@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Common.Converters;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
 
 public class AccessTokenCategoriesConverter : JsonEnumConverter<AccessTokenCategories>
 {

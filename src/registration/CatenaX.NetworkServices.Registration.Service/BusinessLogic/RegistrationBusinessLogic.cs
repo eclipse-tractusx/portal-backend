@@ -18,24 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Mailing.SendMail;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Registration.Service.BPN;
-using CatenaX.NetworkServices.Registration.Service.BPN.Model;
-using CatenaX.NetworkServices.Registration.Service.Model;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-namespace CatenaX.NetworkServices.Registration.Service.BusinessLogic
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic
 {
     public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {

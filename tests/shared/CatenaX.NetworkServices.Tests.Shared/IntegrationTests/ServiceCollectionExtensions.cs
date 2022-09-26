@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
-using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CatenaX.NetworkServices.Tests.Shared.IntegrationTests;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public static class ServiceCollectionExtensions
 {

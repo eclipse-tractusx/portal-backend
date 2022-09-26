@@ -18,21 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Administration.Service.Models;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Framework.IO;
-using CatenaX.NetworkServices.Keycloak.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
 using System.Text;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 {

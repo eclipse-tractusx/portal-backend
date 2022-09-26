@@ -24,14 +24,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
-using CatenaX.NetworkServices.Keycloak.Library.Models.ClientScopes;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Common;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Groups;
-using CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ClientScopes;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Common;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Groups;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Flurl.Http;
 
-namespace CatenaX.NetworkServices.Keycloak.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

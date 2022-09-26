@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.Roles;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Roles;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class Roles
 {

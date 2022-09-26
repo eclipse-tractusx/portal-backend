@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using  CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using  Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling static data api requests.

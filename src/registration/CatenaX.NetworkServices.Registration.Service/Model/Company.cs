@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Registration.Service.Model
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model
 {
 
 	public class Company

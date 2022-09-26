@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Administration.Service.Custodian.Models;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
 
-namespace CatenaX.NetworkServices.Administration.Service.Custodian;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 
 public interface ICustodianService
 {

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {

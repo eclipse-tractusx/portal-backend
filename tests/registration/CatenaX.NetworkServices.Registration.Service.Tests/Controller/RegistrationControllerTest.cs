@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using AutoFixture;
-using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.Controllers;
-using CatenaX.NetworkServices.Registration.Service.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Registration.Service.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationControllerTest
 {

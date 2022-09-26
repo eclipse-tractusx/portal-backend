@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.AuthenticationManagement;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticationFlowExecution
 {

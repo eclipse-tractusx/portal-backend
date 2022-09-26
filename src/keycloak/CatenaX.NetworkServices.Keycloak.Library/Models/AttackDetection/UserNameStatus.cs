@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.AttackDetection;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AttackDetection;
 
 public class UserNameStatus
 {

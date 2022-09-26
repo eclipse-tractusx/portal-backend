@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Administration.Service.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating connectors for documents.

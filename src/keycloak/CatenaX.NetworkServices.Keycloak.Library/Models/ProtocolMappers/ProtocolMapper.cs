@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
 public class ProtocolMapper
 {

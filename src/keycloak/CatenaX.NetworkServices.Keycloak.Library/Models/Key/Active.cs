@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Key;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Key;
 
 public class Active
 {

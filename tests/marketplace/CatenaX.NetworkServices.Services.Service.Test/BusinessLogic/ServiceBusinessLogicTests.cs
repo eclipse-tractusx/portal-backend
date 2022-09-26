@@ -20,21 +20,21 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Offers.Library.Service;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Services.Service.BusinessLogic;
-using CatenaX.NetworkServices.Tests.Shared;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Services.Service.Test.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Test.BusinessLogic;
 
 public class ServiceBusinessLogicTests
 {

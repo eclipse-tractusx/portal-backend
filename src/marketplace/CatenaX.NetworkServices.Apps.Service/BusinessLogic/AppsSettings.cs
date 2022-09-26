@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Apps.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Config Settings for Apps

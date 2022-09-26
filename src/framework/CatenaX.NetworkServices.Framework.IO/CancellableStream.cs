@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.IO;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 
 public sealed class CancellableStream : Stream
 {

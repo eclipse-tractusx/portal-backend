@@ -19,12 +19,12 @@
  ********************************************************************************/
 
 using System;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     public partial class CPLP1213AddServices : Migration
     {

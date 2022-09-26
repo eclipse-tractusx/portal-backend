@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Cors;
-using CatenaX.NetworkServices.Framework.Swagger;
-using CatenaX.NetworkServices.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Cors;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Swagger;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Framework.Web;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {

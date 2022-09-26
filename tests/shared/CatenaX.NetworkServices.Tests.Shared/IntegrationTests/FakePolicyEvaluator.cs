@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 
-namespace CatenaX.NetworkServices.Tests.Shared.IntegrationTests;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public class FakePolicyEvaluator : IPolicyEvaluator
 {

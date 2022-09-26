@@ -18,14 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.ErrorHandling;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using CatenaX.NetworkServices.Keycloak.Library;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
-using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {

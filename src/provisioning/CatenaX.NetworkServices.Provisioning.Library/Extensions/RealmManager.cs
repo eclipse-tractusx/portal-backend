@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library;
-using CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using System.Text.Json;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {

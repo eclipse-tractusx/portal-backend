@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationPermissions;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Common.Converters;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
 
 public class DecisionStrategiesConverter : JsonEnumConverter<DecisionStrategy>
 {

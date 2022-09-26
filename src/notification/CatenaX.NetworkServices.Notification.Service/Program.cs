@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Web;
-using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";

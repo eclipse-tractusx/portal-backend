@@ -21,7 +21,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 
-namespace CatenaX.NetworkServices.Provisioning.Mail
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Mail
 {
     public class UserEmailSettings
     {

@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Mailing.SendMail;
+namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 public interface IMailingService
 {

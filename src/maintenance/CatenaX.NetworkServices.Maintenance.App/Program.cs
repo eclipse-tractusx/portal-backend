@@ -20,8 +20,8 @@
 // See https://aka.ms/new-console-template for more information
 
 using System.Reflection;
-using CatenaX.NetworkServices.Maintenance.App;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities;
+using Org.CatenaX.Ng.Portal.Backend.Maintenance.App;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 

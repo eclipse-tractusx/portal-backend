@@ -20,7 +20,7 @@
 
 using System.Net;
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
 public class ServiceException : Exception

@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Framework.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 
 public class Pagination
 {

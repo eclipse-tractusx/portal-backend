@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Administration.Service.Custodian.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
 
 public class AuthResponse
 {

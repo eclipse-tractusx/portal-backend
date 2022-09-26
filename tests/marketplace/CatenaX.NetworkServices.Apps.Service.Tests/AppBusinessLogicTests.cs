@@ -20,21 +20,21 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CatenaX.NetworkServices.Mailing.SendMail;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Apps.Service.Tests
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests
 {
     public class AppBusinessLogicTests
     {

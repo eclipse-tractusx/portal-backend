@@ -23,10 +23,10 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Tests.Shared.IntegrationTests.EnpointSetup;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EnpointSetup;
 
-namespace CatenaX.NetworkServices.Notification.Service.Tests.EnpointSetup;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
 
 public class NotificationEndpoints
 {
