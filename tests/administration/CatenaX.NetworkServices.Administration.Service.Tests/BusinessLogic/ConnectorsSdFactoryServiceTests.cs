@@ -114,7 +114,7 @@ public class ConnectorsSdFactoryServiceTests
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, _companyUserId).ConfigureAwait(false);
+        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
@@ -132,7 +132,7 @@ public class ConnectorsSdFactoryServiceTests
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, _companyUserId).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);

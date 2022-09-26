@@ -41,3 +41,46 @@ public record ConnectorInputModel(
     [StringLength(2, MinimumLength = 2)] string Location,
     Guid Provider,
     Guid? Host);
+
+/// <summary>
+/// Input model defining all parameters for creating a connector in persistence layer.
+/// </summary>
+public record ManagedConnectorInputModel : ConnectorInputModel
+{
+    /// <summary>
+    /// Input model defining all parameters for creating a connector in persistence layer.
+    /// </summary>
+    /// <param name="name">Display name of the connector.</param>
+    /// <param name="connectorUrl"> URL of the connector..</param>
+    /// <param name="type">Connector type.</param>
+    /// <param name="status">Connector status.</param>
+    /// <param name="location">Connector's location country code.</param>
+    /// <param name="provider">Providing company's ID..</param>
+    /// <param name="host">Hosting company's ID.</param>
+    public ManagedConnectorInputModel(string name,
+        string connectorUrl,
+        ConnectorTypeId type,
+        ConnectorStatusId status,
+        string location,
+        Guid provider,
+        Guid host) 
+        : base(name, connectorUrl, type, status, location, provider, host)
+    {
+        this.Host = host;
+    }
+
+    public new Guid Host { get; }
+
+    public void Deconstruct([MaxLength(255)] out string name,
+        [MaxLength(255)] out string connectorUrl, out ConnectorTypeId type, out ConnectorStatusId status,
+        [StringLength(2, MinimumLength = 2)] out string location, out Guid provider, Guid host)
+    {
+        name = this.Name;
+        connectorUrl = this.ConnectorUrl;
+        type = this.Type;
+        status = this.Status;
+        location = this.Location;
+        provider = this.Provider;
+        host = this.Host;
+    }
+}

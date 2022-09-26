@@ -66,7 +66,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
-        if (result != default)
+        if (result == default)
         {
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
