@@ -21,13 +21,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Library\CatenaX.NetworkServices.Keycloak.Library.csproj" />
-    <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Factory\CatenaX.NetworkServices.Keycloak.Factory.csproj" />
-    <ProjectReference Include="..\CatenaX.NetworkServices.Provisioning.DBAccess\CatenaX.NetworkServices.Provisioning.DBAccess.csproj" />
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
-    <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.ErrorHandling\CatenaX.NetworkServices.Keycloak.ErrorHandling.csproj" />
-    <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
-    <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
+    <ProjectReference Include="..\..\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
+    <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
+    <ProjectReference Include="..\Provisioning.DBAccess\Provisioning.DBAccess.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
