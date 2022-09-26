@@ -208,7 +208,7 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null);
 
             // Assert
-            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>?>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
             Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
             result.Content.Should().HaveCount(5);
         }
