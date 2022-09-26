@@ -668,7 +668,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
-        var (companyUser, iamClientId, roles) = await CompanyIamUser(appId, userRoleInfo, adminUserId);
+        var (companyUser, iamClientId, roles) = await GetUserAndClientInformationAsync(appId, userRoleInfo, adminUserId).ConfigureAwait(false);
 
         var success = new List<UserRoleMessage.Message>();
         var warning = new List<UserRoleMessage.Message>();
@@ -691,7 +691,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             { iamClientId, unassignedRoleNames }
         };
 
-        var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false)).Single();
+        var (_, assignedRoleNames) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId!, clientRoleNames).ConfigureAwait(false)).Single();
 
         foreach (var roleWithId in userRoleWithIds)
         {
@@ -715,7 +715,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task UpdateUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
-        var (companyUser, iamClientId, roles) = await CompanyIamUser(appId, userRoleInfo, adminUserId);
+        var (companyUser, iamClientId, roles) = await GetUserAndClientInformationAsync(appId, userRoleInfo, adminUserId).ConfigureAwait(false);
 
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var rolesToAdd = await userRoleRepository.GetRolesToAdd(iamClientId, userRoleInfo.CompanyUserId, roles).ToListAsync().ConfigureAwait(false);
@@ -730,13 +730,13 @@ public class UserBusinessLogic : IUserBusinessLogic
             { iamClientId, rolesToDelete.Select(x => x.CompanyUserRoleText) }
         };
 
-        await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId, clientRoleNames).ConfigureAwait(false);
-        await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUser.TargetIamUserId, roleNamesToDelete).ConfigureAwait(false);
+        await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId!, clientRoleNames).ConfigureAwait(false);
+        await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUser.TargetIamUserId!, roleNamesToDelete).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task<(CompanyIamUser companyUser, string iamClientId, List<string> roles)> CompanyIamUser(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+    private async Task<(CompanyIamUser companyUser, string iamClientId, List<string> roles)> GetUserAndClientInformationAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
         var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
             .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)
@@ -749,7 +749,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
         {
-            throw new NotFoundException($"User not found");
+            throw new NotFoundException("User not found");
         }
 
         var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>()
