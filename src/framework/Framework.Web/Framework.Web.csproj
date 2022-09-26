@@ -40,11 +40,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Authentication\CatenaX.NetworkServices.Keycloak.Authentication.csproj" />
-      <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.ErrorHandling\CatenaX.NetworkServices.Keycloak.ErrorHandling.csproj" />
-      <ProjectReference Include="..\..\keycloak\CatenaX.NetworkServices.Keycloak.Factory\CatenaX.NetworkServices.Keycloak.Factory.csproj" />
-      <ProjectReference Include="..\CatenaX.NetworkServices.Framework.Cors\CatenaX.NetworkServices.Framework.Cors.csproj" />
-      <ProjectReference Include="..\CatenaX.NetworkServices.Framework.Swagger\CatenaX.NetworkServices.Framework.Swagger.csproj" />
+      <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
+      <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
+      <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
+      <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" />
+      <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
     </ItemGroup>
 
 </Project>
