@@ -45,8 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\registration\CatenaX.NetworkServices.Registration.Service\CatenaX.NetworkServices.Registration.Service.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\CatenaX.NetworkServices.Framework.ErrorHandling\CatenaX.NetworkServices.Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\..\src\registration\Registration.Service\Registration.Service.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
   </ItemGroup>
 
 </Project>
