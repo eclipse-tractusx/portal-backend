@@ -38,14 +38,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Web\CatenaX.NetworkServices.Framework.Web.csproj" />
-    <ProjectReference Include="..\..\mailing\CatenaX.NetworkServices.Mailing.SendMail\CatenaX.NetworkServices.Mailing.SendMail.csproj" />
-    <ProjectReference Include="..\..\notification\CatenaX.NetworkServices.Notification.Library\CatenaX.NetworkServices.Notification.Library.csproj" />
-    <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.Library\CatenaX.NetworkServices.Provisioning.Library.csproj" />
-    <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
-    <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.DBAccess\CatenaX.NetworkServices.Provisioning.DBAccess.csproj" />
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj" />
-    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.IO\CatenaX.NetworkServices.Framework.IO.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
+    <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
+    <ProjectReference Include="..\..\notification\Notification.Library\Notification.Library.csproj" />
+    <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+    <ProjectReference Include="..\..\provisioning\Provisioning.DBAccess\Provisioning.DBAccess.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
   </ItemGroup>
 
 <ItemGroup>
