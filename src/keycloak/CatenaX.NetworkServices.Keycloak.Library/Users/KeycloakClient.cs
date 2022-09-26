@@ -24,13 +24,13 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Common.Extensions;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Groups;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Users;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Extensions;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Groups;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Users;
 using Flurl.Http;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.OpenIDConfiguration;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Flurl.Http;
 
-namespace CatenaX.NetworkServices.Keycloak.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

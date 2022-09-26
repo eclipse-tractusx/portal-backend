@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic
 {
     public interface IPartnerNetworkBusinessLogic
     {

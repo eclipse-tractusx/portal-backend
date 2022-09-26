@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Mailing.Template;
+namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template;
 
 public class NoSuchTemplateException : Exception
 {

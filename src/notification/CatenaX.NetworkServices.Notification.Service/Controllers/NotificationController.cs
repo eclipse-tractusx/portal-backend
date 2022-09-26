@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Notification.Service.BusinessLogic;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Notification.Service.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
 
 /// <summary>
 ///     Controller providing actions for creating, displaying and updating notifications.

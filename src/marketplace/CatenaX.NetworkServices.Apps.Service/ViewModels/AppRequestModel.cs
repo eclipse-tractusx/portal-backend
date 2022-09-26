@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
 /// Request Model for App Creation.

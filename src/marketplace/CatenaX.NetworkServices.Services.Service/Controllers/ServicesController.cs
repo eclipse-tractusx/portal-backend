@@ -18,17 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Offers.Library.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Services.Service.BusinessLogic;
-using CatenaX.NetworkServices.Services.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Services.Service.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating services.

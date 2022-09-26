@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Administration.Service.Models
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models
 
 {
     public class UserIds

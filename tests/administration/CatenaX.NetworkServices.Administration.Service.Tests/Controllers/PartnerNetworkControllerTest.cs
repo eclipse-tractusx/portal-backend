@@ -22,13 +22,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
-using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Administration.Service.Controllers;
-using CatenaX.NetworkServices.Tests.Shared;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using FakeItEasy;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Administration.Service.Tests.Controllers
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
 {
     public class PartnerNetworkControllerTest
     {

@@ -20,24 +20,24 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Notification.Library;
-using CatenaX.NetworkServices.Offers.Library.Models;
-using CatenaX.NetworkServices.Offers.Library.Service;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Provisioning.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Offers.Library.Tests.Service;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Tests.Service;
 
 public class OfferServiceTests
 {

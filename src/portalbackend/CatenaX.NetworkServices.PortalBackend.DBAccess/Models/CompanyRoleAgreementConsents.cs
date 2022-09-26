@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
 {
     public class CompanyRoleAgreementConsents
     {

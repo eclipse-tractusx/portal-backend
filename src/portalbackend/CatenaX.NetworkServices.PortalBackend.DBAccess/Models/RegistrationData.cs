@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using System.Text.Json.Serialization;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
 {
     public class RegistrationData
     {

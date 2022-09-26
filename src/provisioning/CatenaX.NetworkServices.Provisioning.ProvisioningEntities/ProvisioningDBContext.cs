@@ -22,7 +22,7 @@ using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
-namespace CatenaX.NetworkServices.Provisioning.ProvisioningEntities
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public partial class ProvisioningDBContext : DbContext
     {

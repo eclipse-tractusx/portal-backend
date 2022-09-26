@@ -1,7 +1,7 @@
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Library.Models.ProtocolMappers;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {

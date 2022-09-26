@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
 
-namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 
 public record IdentityProviderMapperModel(string Id, string Name, IdentityProviderMapperType Type, IDictionary<string, object> Config);

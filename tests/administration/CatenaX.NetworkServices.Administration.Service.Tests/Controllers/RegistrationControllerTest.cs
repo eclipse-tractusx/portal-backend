@@ -20,14 +20,14 @@
 
 using System;
 using System.Threading.Tasks;
-using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Administration.Service.Controllers;
-using CatenaX.NetworkServices.Tests.Shared;
-using CatenaX.NetworkServices.Tests.Shared.Extensions;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Administration.Service.Tests.Controllers
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
 {
     public class RegistrationControllerTest
     {

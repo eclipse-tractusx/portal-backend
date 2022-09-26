@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Mailing.Template.Attributes
+namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Attributes
 {
     /// <summary>
     /// Attribute used for adding path metadata to a member.

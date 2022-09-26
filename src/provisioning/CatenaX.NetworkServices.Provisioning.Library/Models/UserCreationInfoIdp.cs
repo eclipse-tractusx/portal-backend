@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 
 public record UserCreationInfoIdp(
 

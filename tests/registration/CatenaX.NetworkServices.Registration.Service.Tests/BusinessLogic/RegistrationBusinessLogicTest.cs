@@ -19,20 +19,20 @@
  ********************************************************************************/
 
 using AutoFixture;
-using CatenaX.NetworkServices.Mailing.SendMail;
-using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
-using CatenaX.NetworkServices.Provisioning.Library;
-using CatenaX.NetworkServices.Registration.Service.BPN;
-using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.Model;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Registration.Service.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationBusinessLogicTest
 {

@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.Root;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Common;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Common;
 
 public class ConfigProperty
 {

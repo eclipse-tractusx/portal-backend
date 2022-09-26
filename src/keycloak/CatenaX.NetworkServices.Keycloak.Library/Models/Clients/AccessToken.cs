@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Common.Converters;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class AccessToken
 {

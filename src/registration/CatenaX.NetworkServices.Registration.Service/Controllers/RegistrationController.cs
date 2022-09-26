@@ -18,20 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.Provisioning.Library.Models;
-using CatenaX.NetworkServices.Registration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Registration.Service.Model;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Net;
-using CatenaX.NetworkServices.Registration.Service.BPN.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
 
-namespace CatenaX.NetworkServices.Registration.Service.Controllers
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
 {
     [ApiController]
     [Route("api/registration")]

@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationScopes;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationResources;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationResources;
 
 public class AuthorizationResource
 {

@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
 public class ConflictException : Exception

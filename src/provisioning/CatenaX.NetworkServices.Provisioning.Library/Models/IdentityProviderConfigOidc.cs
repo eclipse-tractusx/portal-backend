@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
 
-namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 
 public record IdentityProviderConfigOidc(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm);
 public record IdentityProviderEditableConfigOidc(string Alias, string DisplayName, string MetadataUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, string? Secret = null, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm = null);

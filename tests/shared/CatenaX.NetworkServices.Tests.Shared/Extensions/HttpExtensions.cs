@@ -20,7 +20,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Tests.Shared.Extensions;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 
 public static class HttpExtensions
 {

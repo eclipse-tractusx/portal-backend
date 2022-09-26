@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 public class AuditOperation
 {
     private AuditOperation()

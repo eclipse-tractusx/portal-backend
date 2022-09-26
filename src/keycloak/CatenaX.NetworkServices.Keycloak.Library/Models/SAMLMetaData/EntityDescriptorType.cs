@@ -26,7 +26,7 @@
 
 using System.Xml.Serialization;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.SAMLMetaData;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.SAMLMetaData;
 
 [XmlRoot(Namespace = "urn:oasis:names:tc:SAML:2.0:metadata",
     ElementName = "EntityDescriptor",

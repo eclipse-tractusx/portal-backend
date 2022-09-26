@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using System.Text;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Newtonsoft.Json.Serialization;
 

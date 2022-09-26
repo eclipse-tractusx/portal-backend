@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Root;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ActionToken
 {

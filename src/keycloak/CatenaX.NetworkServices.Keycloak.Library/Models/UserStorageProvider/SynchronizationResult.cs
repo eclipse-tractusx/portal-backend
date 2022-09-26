@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.UserStorageProvider;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.UserStorageProvider;
 
 public class SynchronizationResult
 {

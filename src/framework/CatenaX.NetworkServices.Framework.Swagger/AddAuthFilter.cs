@@ -24,7 +24,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
 
-namespace CatenaX.NetworkServices.Framework.Swagger;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Swagger;
 
 public class AddAuthFilter : IOperationFilter
 {

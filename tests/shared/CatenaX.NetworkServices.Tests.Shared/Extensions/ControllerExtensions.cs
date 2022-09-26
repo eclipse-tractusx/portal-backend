@@ -22,7 +22,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Tests.Shared.Extensions;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 
 /// <summary>
 /// Extension methods for the controller

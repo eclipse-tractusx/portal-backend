@@ -23,15 +23,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using CatenaX.NetworkServices.Notification.Service.Tests.EnpointSetup;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Tests.Shared.Extensions;
-using CatenaX.NetworkServices.Tests.Shared.IntegrationTests;
-using CatenaX.NetworkServices.Tests.Shared.TestSeeds;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 using FluentAssertions;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Notification.Service.Tests.IntegrationTests;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.IntegrationTests;
 
 public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<Program>>
 {

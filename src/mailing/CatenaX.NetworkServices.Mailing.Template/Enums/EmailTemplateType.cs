@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Mailing.Template.Attributes;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Attributes;
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Mailing.Template.Enums
+namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums
 {
     /// <summary>
     /// Base email template types for sending html emails.

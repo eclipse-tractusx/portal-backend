@@ -24,7 +24,7 @@ using Microsoft.Extensions.Options;
 using System.Json;
 using System.Security.Claims;
 
-namespace CatenaX.NetworkServices.Keycloak.Authentication
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication
 {
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {

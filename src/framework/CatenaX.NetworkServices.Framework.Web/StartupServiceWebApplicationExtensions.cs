@@ -18,17 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Cors;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.ErrorHandling;
-using CatenaX.NetworkServices.Keycloak.Factory;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Cors;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Factory;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace CatenaX.NetworkServices.Framework.Web;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 public static class StartupServiceWebApplicationExtensions
 {

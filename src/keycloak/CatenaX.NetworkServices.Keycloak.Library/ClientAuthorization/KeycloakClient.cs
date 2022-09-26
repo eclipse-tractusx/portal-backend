@@ -24,13 +24,13 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using AuthorizationResource = CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationResources.AuthorizationResource;
-using CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationPermissions;
-using CatenaX.NetworkServices.Keycloak.Library.Models.AuthorizationScopes;
-using CatenaX.NetworkServices.Keycloak.Library.Models.Clients;
+using AuthorizationResource = Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationResources.AuthorizationResource;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
 using Flurl.Http;
 
-namespace CatenaX.NetworkServices.Keycloak.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

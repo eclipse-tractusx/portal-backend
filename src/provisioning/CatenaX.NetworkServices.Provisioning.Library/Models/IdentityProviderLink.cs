@@ -18,6 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Provisioning.Library.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 
 public record IdentityProviderLink(string Alias, string UserId, string UserName);

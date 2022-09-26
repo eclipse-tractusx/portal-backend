@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Provisioning.Library.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Administration.Service.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
 public class ServiceAccountEditableDetails
 {

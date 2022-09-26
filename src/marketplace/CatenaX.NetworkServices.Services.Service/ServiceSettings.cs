@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Services.Service;
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
 
 /// <summary>
 /// Settings for the service service

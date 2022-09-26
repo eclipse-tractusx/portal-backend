@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Framework.ErrorHandling;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 public class ErrorResponse
 {

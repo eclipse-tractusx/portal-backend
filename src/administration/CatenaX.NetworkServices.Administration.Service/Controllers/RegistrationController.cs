@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Administration.Service.BusinessLogic;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Keycloak.Authentication;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Administration.Service.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 
 [ApiController]
 [Route("api/administration/registration")]

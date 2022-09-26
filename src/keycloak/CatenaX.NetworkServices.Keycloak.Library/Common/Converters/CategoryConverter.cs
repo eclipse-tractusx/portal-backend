@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Library.Models.Root;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Common.Converters;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
 
 public class CategoryConverter : JsonEnumConverter<Category>
 {

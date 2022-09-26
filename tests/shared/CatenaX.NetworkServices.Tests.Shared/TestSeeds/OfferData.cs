@@ -19,10 +19,10 @@
  ********************************************************************************/
 
 using System.Collections.Immutable;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.Tests.Shared.TestSeeds;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 
 public static class OfferData
 {

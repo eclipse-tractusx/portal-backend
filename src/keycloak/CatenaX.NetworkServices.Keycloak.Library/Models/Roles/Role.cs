@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Roles;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Roles;
 
 public class Role
 {

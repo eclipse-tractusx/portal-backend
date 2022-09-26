@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.IdentityProviders;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
 public class Config
 {

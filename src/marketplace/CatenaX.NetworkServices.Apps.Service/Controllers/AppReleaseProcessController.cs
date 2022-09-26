@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Apps.Service.BusinessLogic;
-using CatenaX.NetworkServices.Apps.Service.ViewModels;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
-using CatenaX.NetworkServices.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CatenaX.NetworkServices.Apps.Service.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for updating applications.

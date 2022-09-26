@@ -21,7 +21,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace CatenaX.NetworkServices.Administration.Service.Custodian;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 
 public static class CustodianServiceCollectionExtension
 {

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Mailing.Template;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.Template;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CatenaX.NetworkServices.Mailing.SendMail;
+namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 public static class MailingStartupServiceExtensions
 {

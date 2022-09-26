@@ -1,6 +1,6 @@
-﻿using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
+﻿using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Detail data for the offer subscription

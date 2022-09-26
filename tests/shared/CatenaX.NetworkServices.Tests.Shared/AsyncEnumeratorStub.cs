@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Tests.Shared;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 
 public class AsyncEnumeratorStub<T> : IAsyncEnumerator<T>
 {

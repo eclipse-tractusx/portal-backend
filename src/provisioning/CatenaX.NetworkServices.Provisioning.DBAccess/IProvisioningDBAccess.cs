@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities;
 
-namespace CatenaX.NetworkServices.Provisioning.DBAccess;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 
 public interface IProvisioningDBAccess
 {

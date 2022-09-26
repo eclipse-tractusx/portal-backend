@@ -21,7 +21,7 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Configuration;
 
-namespace CatenaX.NetworkServices.Framework.Cors;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Cors;
 
 /// <summary>
 /// Provides Extension methods for cors

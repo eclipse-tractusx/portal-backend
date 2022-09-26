@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
 /// Simple model to specify descriptions for a language.

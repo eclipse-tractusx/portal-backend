@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Provisioning.Mail
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Mail
 {
     public interface IUserEmail
     {

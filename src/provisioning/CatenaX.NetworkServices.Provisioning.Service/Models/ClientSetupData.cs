@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace CatenaX.NetworkServices.Provisioning.Service.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.Models;
 
 public class ClientSetupData
 {

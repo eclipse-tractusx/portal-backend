@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace CatenaX.NetworkServices.Framework.Swagger;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Swagger;
 
 public class BaseStatusCodeFilter : IOperationFilter
 {

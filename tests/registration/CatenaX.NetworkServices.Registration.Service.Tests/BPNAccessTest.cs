@@ -20,15 +20,15 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.Registration.Service.BPN;
-using CatenaX.NetworkServices.Registration.Service.BPN.Model;
-using CatenaX.NetworkServices.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using FakeItEasy;
 using System.Net;
 using System.Text.Json;
 using Xunit;
 
-namespace CatenaX.NetworkServices.Registration.Service.Tests
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
 {
     public class BPNAccessTest
     {

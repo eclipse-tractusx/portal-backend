@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace CatenaX.NetworkServices.Keycloak.Authentication
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication
 {
     public class ClaimRequestPathRequirement : IAuthorizationRequirement
     {

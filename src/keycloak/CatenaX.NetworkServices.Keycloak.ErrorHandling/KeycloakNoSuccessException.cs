@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace CatenaX.NetworkServices.Keycloak.ErrorHandling;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
 
 [Serializable]
 public class KeycloakNoSuccessException : Exception

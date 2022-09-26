@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Groups;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Groups;
 
 public class Group
 {

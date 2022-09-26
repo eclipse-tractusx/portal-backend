@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.RealmsAdmin;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class Attributes
 {

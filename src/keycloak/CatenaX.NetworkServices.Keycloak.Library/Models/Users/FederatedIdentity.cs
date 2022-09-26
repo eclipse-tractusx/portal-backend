@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace CatenaX.NetworkServices.Keycloak.Library.Models.Users;
+namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class FederatedIdentity
 {

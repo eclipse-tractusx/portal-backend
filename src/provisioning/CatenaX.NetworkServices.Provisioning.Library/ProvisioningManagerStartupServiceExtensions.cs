@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Keycloak.Factory;
-using CatenaX.NetworkServices.Provisioning.DBAccess;
-using CatenaX.NetworkServices.Provisioning.Library.Service;
-using CatenaX.NetworkServices.Provisioning.ProvisioningEntities;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Factory;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
-namespace CatenaX.NetworkServices.Provisioning.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public static class ProvisioningManagerStartupServiceExtensions
 {

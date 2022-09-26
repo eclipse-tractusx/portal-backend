@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Offers.Library.Models;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Services.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
 
-namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling service-related operations. Includes persistence layer access.

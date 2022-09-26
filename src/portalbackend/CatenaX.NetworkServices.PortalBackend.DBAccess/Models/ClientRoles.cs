@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 
-namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
 {
     public class ClientRoles
     {

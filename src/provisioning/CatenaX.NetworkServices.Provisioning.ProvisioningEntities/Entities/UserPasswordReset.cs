@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace CatenaX.NetworkServices.Provisioning.ProvisioningEntities
+namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public class UserPasswordReset
     {
