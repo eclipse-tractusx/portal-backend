@@ -82,15 +82,15 @@ public class UserBusinessLogic : IUserBusinessLogic
         _settings = settings.Value;
     }
 
-    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
+    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string createdByName)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdById, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdByName, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
+            throw new ArgumentOutOfRangeException($"user {createdByName} is not associated with any company");
         }
         var (companyId, companyName, businessPartnerNumber, idpAliase) = result;
         if (companyName == null)
@@ -100,12 +100,12 @@ public class UserBusinessLogic : IUserBusinessLogic
         var idpAlias = idpAliase.SingleOrDefault();
         if (idpAlias == null)
         {
-            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
+            throw new ArgumentOutOfRangeException($"user {createdByName} is not associated with any shared idp");
         }
 
         var clientId = _settings.Portal.KeyCloakClientID;
 
-        var roles = usersToCreate
+        var roles = userList
                 .SelectMany(user => user.Roles)
                 .Where(role => !String.IsNullOrWhiteSpace(role))
                 .Distinct();
@@ -130,8 +130,8 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var pwd = new Password();
 
-        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
-        foreach (UserCreationInfo user in usersToCreate)
+        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdByName).ConfigureAwait(false);
+        foreach (UserCreationInfo user in userList)
         {
             bool success = false;
             try
@@ -156,7 +156,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
                 var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
-                if (validRoles.Count() > 0)
+                if (validRoles.Any())
                 {
                     var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                     {
@@ -187,7 +187,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                     { "password", password },
                     { "companyname", companyName },
                     { "message", user.Message ?? "" },
-                    { "nameCreatedBy", createdById },
+                    { "nameCreatedBy", createdByName },
                     { "url", _settings.Portal.BasePortalAddress },
                     { "username", user.eMail },
                 };
@@ -429,7 +429,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     {
         if (businessPartnerNumbers.Any(businessPartnerNumber => businessPartnerNumber.Length > 20))
         {
-            throw new ArgumentException("businessPartnerNumbers must not exceed 20 characters");
+            throw new ControllerArgumentException("businessPartnerNumbers must not exceed 20 characters", nameof(businessPartnerNumbers));
         }
         var user = await _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(companyUserId, adminUserId).ConfigureAwait(false);
         if (user == null || user.UserEntityId == null)
@@ -567,13 +567,13 @@ public class UserBusinessLogic : IUserBusinessLogic
     }
 
     [Obsolete]
-    public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpatewithBpn)
+    public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpateWithBpn)
     {
-        if (usersToUdpatewithBpn == null)
+        if (usersToUdpateWithBpn == null)
         {
-            throw new ArgumentNullException("usersToUpdatewithBpn must not be null");
+            throw new ArgumentNullException(nameof(usersToUdpateWithBpn), "usersToUpdatewithBpn must not be null");
         }
-        foreach (UserUpdateBpn user in usersToUdpatewithBpn)
+        foreach (UserUpdateBpn user in usersToUdpateWithBpn)
         {
             try
             {
@@ -736,7 +736,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task<(CompanyIamUser? companyUser, string iamClientId, List<string> roles)> CompanyIamUser(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+    private async Task<(CompanyIamUser companyUser, string iamClientId, List<string> roles)> CompanyIamUser(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
         var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
             .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)

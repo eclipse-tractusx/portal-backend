@@ -39,9 +39,9 @@ public interface IUserBusinessLogic
     Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
     Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId);
     Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId);
-    Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUser);
+    Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId);
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId);
-    Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? userToUpdateWithBpn);
+    Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpateWithBpn);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId);
     Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
