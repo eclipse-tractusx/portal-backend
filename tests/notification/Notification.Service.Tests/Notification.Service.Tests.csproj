@@ -45,9 +45,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\notification\CatenaX.NetworkServices.Notification.Service\CatenaX.NetworkServices.Notification.Service.csproj" />
-      <ProjectReference Include="..\..\..\src\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
-      <ProjectReference Include="..\..\shared\CatenaX.NetworkServices.Tests.Shared\CatenaX.NetworkServices.Tests.Shared.csproj" />
+      <ProjectReference Include="..\..\..\src\notification\Notification.Service\Notification.Service.csproj" />
+      <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+      <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 
 </Project>
