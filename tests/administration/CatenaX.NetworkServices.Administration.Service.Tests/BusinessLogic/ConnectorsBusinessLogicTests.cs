@@ -220,11 +220,11 @@ public class ConnectorsBusinessLogicTests
             });
 
         A.CallTo(() => _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
-                    A<string>._, A<Guid>._))
+                    A<string>._))
             .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
                 _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
-                    A<string>._, A<Guid>._))
+                    A<string>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
     }
 
