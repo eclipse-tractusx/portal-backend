@@ -26,6 +26,8 @@ using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
+using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
 namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic;
 
@@ -90,33 +92,63 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, bool isManaged)
     {
-        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
+        var companyData = await ValidateCompanyDataAsync(connectorInputModel).ConfigureAwait(false);
 
-        if (!await _portalRepositories.GetInstance<ICountryRepository>()
-                .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
+        if (isManaged)
         {
-            throw new ControllerArgumentException($"Location {location} does not exist", nameof(location));
+            // TODO (PS): Check possibility for technical user
+            var (iamUserCompanyId, _) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+            if (iamUserCompanyId != connectorInputModel.Host)
+            {
+                throw new ControllerArgumentException(
+                    $"CompanyId {iamUserCompanyId} does not match the host company {connectorInputModel.Host}",
+                    nameof(connectorInputModel.Host));
+            }
+        }
+        
+        var createdConnector = await CreateAndRegisterConnectorAsync(connectorInputModel, accessToken, companyData).ConfigureAwait(false);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
+        {
+            Id = createdConnector.Id,
+            Status = createdConnector.StatusId,
+            Type = createdConnector.TypeId
+        };
+    }
+
+    private async Task<List<(Guid CompanyId, string? BusinessPartnerNumber)>> ValidateCompanyDataAsync(ConnectorInputModel connectorInputModel)
+    {
+        if (!await _portalRepositories.GetInstance<ICountryRepository>()
+                .CheckCountryExistsByAlpha2CodeAsync(connectorInputModel.Location.ToUpper()).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"Location {connectorInputModel.Location} does not exist", nameof(connectorInputModel.Location));
         }
 
-        var parameters = provider == host || !host.HasValue
-            ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(provider, true), 1)
-            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host.Value, false) }.AsEnumerable();
+        var parameters = connectorInputModel.Provider == connectorInputModel.Host || !connectorInputModel.Host.HasValue
+            ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(connectorInputModel.Provider, true), 1)
+            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (connectorInputModel.Provider, true), (connectorInputModel.Host.Value, false) }.AsEnumerable();
         var companyData = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetConnectorCreationCompanyDataAsync(parameters)
             .ToListAsync().ConfigureAwait(false);
 
-        if (companyData.All(data => data.CompanyId != provider))
+        if (companyData.All(data => data.CompanyId != connectorInputModel.Provider))
         {
-            throw new ControllerArgumentException($"Company {provider} does not exist", nameof(provider));
+            throw new ControllerArgumentException($"Company {connectorInputModel.Provider} does not exist", nameof(connectorInputModel.Provider));
         }
 
-        if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
+        if (connectorInputModel.Provider != connectorInputModel.Host && connectorInputModel.Host.HasValue && companyData.All(data => data.CompanyId != connectorInputModel.Host))
         {
-            throw new ControllerArgumentException($"Company {host} does not exist", nameof(host));
+            throw new ControllerArgumentException($"Company {connectorInputModel.Host} does not exist", nameof(connectorInputModel.Host));
         }
+
+        return companyData;
+    }
+
+    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, IEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> companyData)
+    {
+        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
 
         var providerBusinessPartnerNumber = companyData.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
 
@@ -125,7 +157,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new UnexpectedConditionException($"provider company {provider} has no businessPartnerNumber assigned");
         }
 
-        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name, location.ToUpper(), connectorUrl,
+        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name,
+            location.ToUpper(), connectorUrl,
             (connector) =>
             {
                 connector.ProviderId = provider;
@@ -134,17 +167,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.StatusId = status;
             });
 
-        var documentId = await _connectorsSdFactoryService.RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, Guid.NewGuid()).ConfigureAwait(false);
+        var documentId = await _connectorsSdFactoryService
+            .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber)
+            .ConfigureAwait(false);
         createdConnector.SelfDescriptionDocumentId = documentId;
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
-        {
-            Id = createdConnector.Id,
-            Status = createdConnector.StatusId,
-            Type = createdConnector.TypeId
-        };
+        return createdConnector;
     }
 
     /// <inheritdoc/>

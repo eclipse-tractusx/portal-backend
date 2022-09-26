@@ -46,8 +46,9 @@ public interface IConnectorsBusinessLogic
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
     /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
     /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="isManaged">If <c>true</c> an additional check that the iamUser company matches the host is proceeded.</param>
     /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId);
+    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, bool isManaged);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
