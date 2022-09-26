@@ -27,6 +27,8 @@ public interface IUserRolesRepository
 {
     CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId);
+    IAsyncEnumerable<(Guid CompanyUserRoleId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId);
+
     CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);
     IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
@@ -42,4 +44,7 @@ public interface IUserRolesRepository
     /// <param name="offerId">Id of the offer the roles are assigned to.</param>
     /// <returns>Returns a list of user role ids</returns>
     Task<List<string>> GetUserRolesForOfferIdAsync(Guid offerId);
+
+    IAsyncEnumerable<CompanyUserRoleDeletionData> GetAssignedRolesForDeletion(Guid companyUserId, IEnumerable<string> userRoles);
+    IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(string clientClientId, Guid companyUserId, IEnumerable<string> userRoles);
 }

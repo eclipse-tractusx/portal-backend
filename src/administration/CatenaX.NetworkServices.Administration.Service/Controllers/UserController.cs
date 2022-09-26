@@ -387,6 +387,28 @@ public class UserController : ControllerBase
         this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
 
     /// <summary>
+    /// Updates the roles for the user
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
+    /// <param name="userRoleInfo"></param>
+    /// <returns></returns>
+    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Roles got successfully updated user account.</response>
+    /// <response code="400">Invalid User roles for client</response>
+    /// <response code="404">User not found</response>
+    [HttpPut]
+    [Authorize(Roles = "modify_user_account")]
+    [Route("app/{appId}/roles")]
+    [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<OkResult> UpdateUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo)
+    {
+        await this.WithIamUserId(adminUserId => _logic.UpdateUserRoleAsync(appId, userRoleInfo, adminUserId)).ConfigureAwait(false);
+        return Ok();
+    }
+
+    /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.
     /// </summary>
     /// <param name="companyUserId" example="4f06431c-25ae-40ad-9cac-9dee8fe4754d">ID of the company user to be deleted.</param>
