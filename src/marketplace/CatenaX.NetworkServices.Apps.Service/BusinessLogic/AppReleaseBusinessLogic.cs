@@ -258,4 +258,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
         _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
+    
+    /// <inheritdoc/>
+    public async Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId)
+    {
+        var appDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetAppDetailsForStatusAsync(appId, userId).ConfigureAwait(false);
+        if (appDetail == null)
+        {
+            throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
+        }
+        return appDetail;
+    }
 }
