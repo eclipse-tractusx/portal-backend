@@ -32,10 +32,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj" />
-      <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Web\CatenaX.NetworkServices.Framework.Web.csproj" />
-      <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
-      <ProjectReference Include="..\CatenaX.NetworkServices.Offers.Library\CatenaX.NetworkServices.Offers.Library.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
+      <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+      <ProjectReference Include="..\Offers.Library\Offers.Library.csproj" />
     </ItemGroup>
 
     <ItemGroup>
