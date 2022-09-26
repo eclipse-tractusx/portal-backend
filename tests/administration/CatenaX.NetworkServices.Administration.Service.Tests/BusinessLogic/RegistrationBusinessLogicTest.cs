@@ -39,6 +39,8 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
+using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Tests.Shared;
 
 namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
 {
@@ -98,7 +100,8 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
                 NotificationTypeId.WELCOME_SERVICE_PROVIDER,
                 NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION
             };
-            
+            _settings.ApplicationsMaxPageSize = 15;
+
             A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
             A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
@@ -190,6 +193,27 @@ namespace CatenaX.NetworkServices.Administration.Service.Tests.BusinessLogic
             var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
             ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty (Parameter 'bpn')");
             ex.ParamName.Should().Be($"bpn");
+        }
+
+        [Fact]
+        public async Task GetCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
+        {
+            // Arrange
+            //var companyApp = _fixture.CreateMany<CompanyApplication>().AsQueryable();
+            var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
+            var companyAppStatus = _fixture.CreateMany<CompanyApplicationStatusId>();
+            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string>._, companyAppStatus))
+                .Returns(companyApplicationData.AsQueryable());
+
+            // Act
+            var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null);
+
+            // Assert
+            A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string>._, companyAppStatus)).MustHaveHappenedOnceExactly();
+            Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+            result.Content.Should().HaveCount(5);
+
+            
         }
 
         #region Setup
