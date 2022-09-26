@@ -24,7 +24,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>CatenaX.NetworkServices.Maintenance.App</AssemblyName>
+        <AssemblyName>Maintenance.App</AssemblyName>
         <UserSecretsId>032003D5-FBCF-48CE-AE7C-F8F5F43DCCC1</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerfileContext>..\..\..</DockerfileContext>
@@ -48,7 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.PortalEntities\CatenaX.NetworkServices.PortalBackend.PortalEntities.csproj" />
+      <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     </ItemGroup>
 
     <ItemGroup>
