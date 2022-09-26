@@ -32,7 +32,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Test.Controllers
+namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.Controllers
 {
     public class ServiceControllerTest
     {
