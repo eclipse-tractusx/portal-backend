@@ -161,4 +161,19 @@ public class AppReleaseProcessController : ControllerBase
     public Task<int> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
         this.WithIamUserId(iamUserId =>
             _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, iamUserId));
+    
+    /// <summary>
+    /// Return app detail with status
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/{appId}/appDetailStatus</remarks>
+    /// <response code="200">Return the Offer and status data</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpGet]
+    [Route("{appId}/appDetailStatus")]
+    [Authorize(Roles = "app_management")]
+    [ProducesResponseType(typeof(OfferProviderData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<OfferProviderData> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
 }

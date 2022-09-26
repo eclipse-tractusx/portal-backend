@@ -251,10 +251,12 @@ public class OfferRepository : IOfferRepository
                 offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
-
+    
+    /// <inheritdoc />
     public IQueryable<Offer> GetAllInReviewStatusAppsAsync() =>
         _context.Offers.Where(offer => offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.IN_REVIEW);
-
+    
+    /// <inheritdoc />
     public Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId) =>
         _context.Offers
             .AsNoTracking()
@@ -270,5 +272,32 @@ public class OfferRepository : IOfferRepository
             ))
             .SingleOrDefaultAsync();
 
-    
+    /// <inheritdoc />
+    public Task<OfferProviderData?> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
+        _context.Offers
+            .AsNoTracking()
+            .AsSplitQuery() 
+            .Where(a => a.Id == appId && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId))
+            .Select(a =>
+                new OfferProviderData(
+                    a.Name!,
+                    a.Provider,
+                    a.ThumbnailUrl!,
+                    a.ProviderCompany!.Name,
+                    a.UseCases.Select(uc => uc.Name),
+                    a.OfferDescriptions.Select(description => new AppDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                    a.ConsentAssignedOffers.Select(consentAssignedOffer => new OfferAgreement(
+                    consentAssignedOffer.Consent!.AgreementId,
+                    consentAssignedOffer.Consent.Agreement!.Name,
+                    consentAssignedOffer.Consent.ConsentStatusId)),
+                    a.SupportedLanguages.Select(l => l.ShortName),
+                    a.OfferLicenses
+                    .Select(license => license.Licensetext)
+                    .FirstOrDefault(),
+                    a.OfferDetailImages.Select(image => image.ImageUrl),
+                    a.MarketingUrl!,
+                    a.ContactEmail!,
+                    a.ContactNumber!
+                ))
+            .SingleOrDefaultAsync();
 }
