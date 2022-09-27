@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Auditing;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
@@ -33,20 +32,16 @@ public class AuditCompanyUserCplp1440DbAuditing : IAuditEntity
     /// <inheritdoc />
     public Guid AuditId { get; set; }
 
-    [Key]
     public Guid Id { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; set; }
 
-    [MaxLength(255)]
     public string? Email { get; set; }
 
-    [MaxLength(255)]
     public string? Firstname { get; set; }
 
     public byte[]? Lastlogin { get; set; }
 
-    [MaxLength(255)]
     public string? Lastname { get; set; }
 
     public Guid CompanyId { get; set; }

@@ -29,13 +29,6 @@ namespace CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
 /// </summary>
 public class AuditOfferSubscriptionCplp1440DbAuditing : IAuditEntity
 {
-    /// <summary>
-    /// Only used for the audit table
-    /// </summary>
-    public AuditOfferSubscriptionCplp1440DbAuditing()
-    {
-    }
-
     /// <inheritdoc />
     public Guid AuditId { get; set; }
 
@@ -45,12 +38,12 @@ public class AuditOfferSubscriptionCplp1440DbAuditing : IAuditEntity
     /// <summary>
     /// ID of the company subscribing an app.
     /// </summary>
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
 
     /// <summary>
     /// ID of the apps subscribed by a company.
     /// </summary>
-    public Guid OfferId { get; private set; }
+    public Guid OfferId { get; set; }
 
     /// <summary>
     /// ID of the app subscription status.
