@@ -21,14 +21,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <AssemblyName>Maintenance.App</AssemblyName>
-        <UserSecretsId>032003D5-FBCF-48CE-AE7C-F8F5F43DCCC1</UserSecretsId>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<DockerfileContext>..\..\..</DockerfileContext>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+      <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Maintenance.App</AssemblyName>
+      <TargetFramework>net6.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <AssemblyName>Maintenance.App</AssemblyName>
+      <UserSecretsId>032003D5-FBCF-48CE-AE7C-F8F5F43DCCC1</UserSecretsId>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+      <DockerfileContext>..\..\..</DockerfileContext>
+      <GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
