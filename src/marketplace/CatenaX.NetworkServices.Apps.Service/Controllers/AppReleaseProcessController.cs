@@ -166,11 +166,11 @@ public class AppReleaseProcessController : ControllerBase
     /// Return app detail with status
     /// </summary>
     /// <param name="appId"></param>
-    /// <remarks>Example: GET: /api/apps/appreleaseprocess/{appId}/appDetailStatus</remarks>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/{appId}/appStatus</remarks>
     /// <response code="200">Return the Offer and status data</response>
     /// <response code="404">App does not exist.</response>
     [HttpGet]
-    [Route("{appId}/appDetailStatus")]
+    [Route("{appId}/appStatus")]
     [Authorize(Roles = "app_management")]
     [ProducesResponseType(typeof(OfferProviderData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
