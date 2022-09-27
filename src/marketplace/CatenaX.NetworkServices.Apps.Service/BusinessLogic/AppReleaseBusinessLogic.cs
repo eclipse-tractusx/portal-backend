@@ -258,4 +258,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
         _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
+    
+    /// <inheritdoc/>
+    public Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
+        _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
 }
