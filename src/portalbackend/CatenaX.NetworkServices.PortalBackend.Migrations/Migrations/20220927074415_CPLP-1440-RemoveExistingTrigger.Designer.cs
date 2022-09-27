@@ -32,7 +32,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CatenaX.NetworkServices.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20220927094415_CPLP-1440-RemoveExistingTrigger")]
+    [Migration("20220927074415_CPLP-1440-RemoveExistingTrigger")]
     partial class CPLP1440RemoveExistingTrigger
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
