@@ -261,5 +261,5 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     
     /// <inheritdoc/>
     public Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
-        _offerService.GetOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
+        _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
 }

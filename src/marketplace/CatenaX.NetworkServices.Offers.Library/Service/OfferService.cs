@@ -275,7 +275,7 @@ public class OfferService : IOfferService
         return new OfferAutoSetupResponseData(serviceAccountId, serviceAccountData.AuthData.Secret);
     }
 
-    public async Task<OfferProviderData> GetOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
+    public async Task<OfferProviderData> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
     {
         var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, userId, offerTypeId).ConfigureAwait(false);
         if (offerDetail == default)

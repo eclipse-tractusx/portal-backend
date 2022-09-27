@@ -104,5 +104,5 @@ public interface IOfferService
     /// <returns>Returns the response data</returns>
     Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId);
 
-    Task<OfferProviderData> GetOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<OfferProviderData> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
