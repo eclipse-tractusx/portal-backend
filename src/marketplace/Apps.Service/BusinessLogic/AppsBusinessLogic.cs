@@ -82,31 +82,28 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName).ConfigureAwait(false);
-        var appDetailResponse = new AppDetailResponse(result.Title, result.LeadPictureUri, result.ProviderUri, result.Provider, result.LongDescription, result.Price);
-        var documentDict = new Dictionary<DocumentTypeId, List<DocumentData>>();
-        foreach(KeyValuePair<DocumentTypeId, List<DocumentData>> kvp in result.Document )
+            .GetOfferDetailsByIdAsync(appId, iamUserId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
+        if (result == null)
         {
-            if(!documentDict.ContainsKey(kvp.Key))
-            {
-                documentDict.Add(kvp.Key, new List<DocumentData>() { new DocumentData(kvp.Value[0].documentId, kvp.Value[0].documentName) });
-            }
-            else
-            {
-                documentDict[kvp.Key].Add(new DocumentData(kvp.Value[0].documentId, kvp.Value[0].documentName));
-            }
-            
+            throw new NotFoundException($"appId {appId} does not exist");
         }
-        appDetailResponse.Id = result.Id;
-        appDetailResponse.IsSubscribed = result.IsSubscribed;
-        appDetailResponse.Tags = result.Tags;
-        appDetailResponse.UseCases = result.UseCases;
-        appDetailResponse.DetailPictureUris = result.DetailPictureUris;
-        appDetailResponse.ContactEmail = result.ContactEmail;
-        appDetailResponse.ContactNumber = result.ContactNumber;
-        appDetailResponse.Languages = result.Languages;
-        appDetailResponse.Document = documentDict;
-        return appDetailResponse;
+        return new AppDetailResponse(
+            result.Id,
+            result.Title ?? Constants.ErrorString,
+            result.LeadPictureUri ?? Constants.ErrorString,
+            result.DetailPictureUris,
+            result.ProviderUri ?? Constants.ErrorString,
+            result.Provider,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.UseCases,
+            result.LongDescription ?? Constants.ErrorString,
+            result.Price ?? Constants.ErrorString,
+            result.Tags,
+            result.IsSubscribed,
+            result.Languages,
+            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
+        );
     }
 
     /// <inheritdoc/>
