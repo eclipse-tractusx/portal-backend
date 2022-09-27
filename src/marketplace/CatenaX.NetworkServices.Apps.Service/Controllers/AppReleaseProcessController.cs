@@ -101,11 +101,11 @@ public class AppReleaseProcessController : ControllerBase
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="appAssignedDesc"></param>
-    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/addappuserrole/{appId}</remarks>
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role</remarks>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
     [HttpPost]
-    [Route("addappuserrole/{appId}")]
+    [Route("{appId}/role")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
