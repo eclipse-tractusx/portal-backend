@@ -80,4 +80,12 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
+    
+    /// <summary>
+    /// Return Offer with Consent Status
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId);
 }
