@@ -57,20 +57,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/administration/CatenaX.NetworkServices.Administration.Service
+        run: dotnet restore src/administration/Administration.Service
 
       - name: Build and publish
         run: |
-          cd src/administration/CatenaX.NetworkServices.Administration.Service
+          cd src/administration/Administration.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-administration-service.zip
-          src/administration/CatenaX.NetworkServices.Administration.Service/.publish
+          src/administration/Administration.Service/.publish
           -x
-          src/administration/CatenaX.NetworkServices.Administration.Service/.publish/CatenaX.NetworkServices.Administration.Service
+          src/administration/Administration.Service/.publish/Administration.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -83,7 +83,7 @@ jobs:
           filepath: "portal-backend-administration-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Administration.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll'
+          include: 'Administration.Service.dll, Framework.DBAccess.dll'
 
   analyze-registration-service:
     runs-on: ubuntu-latest
@@ -102,20 +102,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/registration/CatenaX.NetworkServices.Registration.Service
+        run: dotnet restore src/registration/Registration.Service
 
       - name: Build and publish
         run: |
-          cd src/registration/CatenaX.NetworkServices.Registration.Service
+          cd src/registration/Registration.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-registration-service.zip
-          src/registration/CatenaX.NetworkServices.Registration.Service/.publish
+          src/registration/Registration.Service/.publish
           -x
-          src/registration/CatenaX.NetworkServices.Registration.Service/.publish/CatenaX.NetworkServices.Registration.Service
+          src/registration/Registration.Service/.publish/Registration.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -128,7 +128,7 @@ jobs:
           filepath: "portal-backend-registration-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Registration.Service.dll, CatenaX.NetworkServices.Framework.Models.dll'
+          include: 'Registration.Service.dll, Framework.Models.dll'
 
   analyze-provisioning-service:
     runs-on: ubuntu-latest
@@ -147,20 +147,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/provisioning/CatenaX.NetworkServices.Provisioning.Service
+        run: dotnet restore src/provisioning/Provisioning.Service
 
       - name: Build and publish
         run: |
-          cd src/provisioning/CatenaX.NetworkServices.Provisioning.Service
+          cd src/provisioning/Provisioning.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-provisioning-service.zip
-          src/provisioning/CatenaX.NetworkServices.Provisioning.Service/.publish
+          src/provisioning/Provisioning.Service/.publish
           -x
-          src/provisioning/CatenaX.NetworkServices.Provisioning.Service/.publish/CatenaX.NetworkServices.Provisioning.Service
+          src/provisioning/Provisioning.Service/.publish/Provisioning.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -173,7 +173,7 @@ jobs:
           filepath: "portal-backend-provisioning-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Provisioning.Service.dll'
+          include: 'Provisioning.Service.dll'
 
   analyze-marketplace-app-service:
     runs-on: ubuntu-latest
@@ -192,20 +192,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/marketplace/CatenaX.NetworkServices.Apps.Service
+        run: dotnet restore src/marketplace/Apps.Service
 
       - name: Build and publish
         run: |
-          cd src/marketplace/CatenaX.NetworkServices.Apps.Service
+          cd src/marketplace/Apps.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-marketplace-app.zip
-          src/marketplace/CatenaX.NetworkServices.Apps.Service/.publish
+          src/marketplace/Apps.Service/.publish
           -x
-          src/marketplace/CatenaX.NetworkServices.Apps.Service/.publish/CatenaX.NetworkServices.Apps.Service
+          src/marketplace/Apps.Service/.publish/Apps.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -218,7 +218,7 @@ jobs:
           filepath: "portal-backend-marketplace-app.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Apps.Service.dll'
+          include: 'Apps.Service.dll'
 
   analyze-portal-migrations:
     runs-on: ubuntu-latest
@@ -237,18 +237,18 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations
+        run: dotnet restore src/portalbackend/PortalBackend.Migrations
 
       - name: Build and publish
         run: |
-          cd src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations
+          cd src/portalbackend/PortalBackend.Migrations
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-portal-migrations.zip
-          src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations/.publish
+          src/portalbackend/PortalBackend.Migrations/.publish
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -261,7 +261,7 @@ jobs:
           filepath: "portal-backend-portal-migrations.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.PortalBackend.Migrations.dll'
+          include: 'PortalBackend.Migrations.dll'
 
   analyze-maintenance-service:
     runs-on: ubuntu-latest
@@ -280,18 +280,18 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/maintenance/CatenaX.NetworkServices.Maintenance.App
+        run: dotnet restore src/maintenance/Maintenance.App
 
       - name: Build and publish
         run: |
-          cd src/maintenance/CatenaX.NetworkServices.Maintenance.App
+          cd src/maintenance/Maintenance.App
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-maintenance-service.zip
-          src/maintenance/CatenaX.NetworkServices.Maintenance.App/.publish
+          src/maintenance/Maintenance.App/.publish
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -304,7 +304,7 @@ jobs:
           filepath: "portal-backend-maintenance-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Maintenance.App.dll'
+          include: 'Maintenance.App.dll'
 
   analyze-notification-service:
     runs-on: ubuntu-latest
@@ -323,20 +323,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/notification/CatenaX.NetworkServices.Notification.Service
+        run: dotnet restore src/notification/Notification.Service
 
       - name: Build and publish
         run: |
-          cd src/notification/CatenaX.NetworkServices.Notification.Service
+          cd src/notification/Notification.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-notification.zip
-          src/notification/CatenaX.NetworkServices.Notification.Service/.publish
+          src/notification/Notification.Service/.publish
           -x
-          src/notification/CatenaX.NetworkServices.Notification.Service/.publish/CatenaX.NetworkServices.Notification.Service
+          src/notification/Notification.Service/.publish/Notification.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -349,7 +349,7 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Notification.Service.dll, CatenaX.NetworkServices.Framework.DBAccess.dll, CatenaX.NetworkServices.Framework.Models.dll'
+          include: 'Notification.Service.dll, Framework.DBAccess.dll, Framework.Models.dll'
 
   analyze-services-service:
     runs-on: ubuntu-latest
@@ -368,20 +368,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/marketplace/CatenaX.NetworkServices.Services.Service
+        run: dotnet restore src/marketplace/Services.Service
 
       - name: Build and publish
         run: |
-          cd src/marketplace/CatenaX.NetworkServices.Services.Service
+          cd src/marketplace/Services.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-services.zip
-          src/marketplace/CatenaX.NetworkServices.Services.Service/.publish
+          src/marketplace/Services.Service/.publish
           -x
-          src/marketplace/CatenaX.NetworkServices.Services.Service/.publish/CatenaX.NetworkServices.Services.Service
+          src/marketplace/Services.Service/.publish/Services.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -394,4 +394,4 @@ jobs:
           filepath: "portal-backend-services.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'CatenaX.NetworkServices.Services.Service.dll'
+          include: 'Services.Service.dll'

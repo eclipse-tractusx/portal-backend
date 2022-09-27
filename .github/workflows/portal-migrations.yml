@@ -4,8 +4,8 @@ on:
   push:
     paths:
       # service and transitive paths
-      - 'src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations/**'
-      - 'src/portalbackend/CatenaX.NetworkServices.PortalBackend.PortalEntities/**'
+      - 'src/portalbackend/PortalBackend.Migrations/**'
+      - 'src/portalbackend/PortalBackend.PortalEntities/**'
       # workflow file
       - '.github/workflows/portal-migrations.yml'
       # dockerfile
