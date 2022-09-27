@@ -29,8 +29,8 @@ using FakeItEasy;
 using Xunit;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
-using CatenaX.NetworkServices.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using FluentAssertions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers

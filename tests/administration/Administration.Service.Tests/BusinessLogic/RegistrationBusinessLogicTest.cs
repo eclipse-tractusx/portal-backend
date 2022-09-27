@@ -39,8 +39,8 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
-using CatenaX.NetworkServices.Framework.Models;
-using CatenaX.NetworkServices.Tests.Shared;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic
 {
