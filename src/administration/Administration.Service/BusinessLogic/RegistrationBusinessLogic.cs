@@ -98,7 +98,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.Company!.Name,
                         application.Invitations.SelectMany(invitation =>
                             invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
-                                new DocumentDetails(document.DocumentHash)
+                                new DocumentDetails(document.Id)
                                 {
                                     DocumentTypeId = document.DocumentTypeId
                                 })))

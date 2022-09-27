@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
@@ -26,6 +27,11 @@ using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using Xunit;
+using AutoFixture;
+using AutoFixture.AutoFakeItEasy;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Framework.Models;
+using FluentAssertions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
 {
@@ -34,9 +40,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
         private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
         private readonly IRegistrationBusinessLogic _logic;
         private readonly RegistrationController _controller;
-
+        private readonly IFixture _fixture;
         public RegistrationControllerTest()
         {
+            _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+            _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             _logic = A.Fake<IRegistrationBusinessLogic>();
             this._controller = new RegistrationController(_logic);
             _controller.AddControllerContextWithClaim(IamUserId);
@@ -73,6 +83,23 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
             A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty)).MustHaveHappenedOnceExactly();
             Assert.IsType<bool>(result);
             Assert.False(result);
+        }
+
+        [Fact]
+        public async Task GetCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
+        {
+             //Arrange
+            var paginationResponse = new Pagination.Response<CompanyApplicationDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyApplicationDetails>(5));
+            A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null))
+                      .Returns(paginationResponse);
+
+            //Act
+            var result = await this._controller.GetApplicationDetailsAsync(0, 15,null).ConfigureAwait(false);
+
+            //Assert
+            A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null)).MustHaveHappenedOnceExactly();
+            Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+            result.Content.Should().HaveCount(5);
         }
     }
 }

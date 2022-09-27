@@ -177,4 +177,12 @@ public interface IOfferRepository
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
     IQueryable<Offer> GetAllInReviewStatusAppsAsync();
+    
+    /// <summary>
+    /// Retrieve Offer Detail with Status
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
