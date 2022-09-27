@@ -69,11 +69,12 @@ public interface IOfferRepository
     /// <summary>
     /// Gets the details of an app by its id
     /// </summary>
-    /// <param name="appId">Id of the application to get details for</param>
+    /// <param name="offerId">Id of the offer to get details for</param>
     /// <param name="iamUserId">OPTIONAL: iamUserId of the company the calling user belongs to</param>
-    /// <param name="languageShortName">OPTIONAL: language shortName</param>
+    /// <param name="languageShortName">language shortName</param>
+    /// <param name="defaultLanguageShortName">default language shortName</param>
     /// <returns>Returns the details of the application</returns>
-    Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName);
+    Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Adds an <see cref="OfferLicense"/> to the database

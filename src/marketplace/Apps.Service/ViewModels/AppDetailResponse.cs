@@ -19,89 +19,48 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
 /// View model of an application's detailed data.
 /// </summary>
-public record AppDetailResponse(string Title, string LeadPictureUri, string ProviderUri, string Provider, string LongDescription, string Price)
-{
-    /// <summary>
-    /// ID of the app.
-    /// </summary>
-    public Guid Id { get; set; }
+/// <param name="Id">ID of the app.</param>
+/// <param name="Title">Title or name of the app.</param>
+/// <param name="LeadPictureUri">Uri to app's lead picture.</param>
+/// <param name="DetailPictureUris">List of URIs to app's secondary pictures.</param>
+/// <param name="ProviderUri">Uri to provider's marketing presence.</param>
+/// <param name="Provider">Provider of the app.</param>
+/// <param name="ContactEmail">Email address of the app's primary contact.</param>
+/// <param name="ContactNumber">Phone number of the app's primary contact.</param>
+/// <param name="UseCases">Names of the app's use cases.</param>
+/// <param name="LongDescription">Long description of the app.</param>
+/// <param name="Price">Pricing information of the app.</param>
+/// <param name="Tags">Tags assigned to application.</param>
+/// <param name="IsSubscribed">Whether app has been purchased by the user's company.</param>
+/// <param name="Languages">Languages that the app is available in.</param>
+/// <param name="Documents">documents assigned to offer</param>
+public record AppDetailResponse(
+    Guid Id,
+    string Title,
+    string LeadPictureUri,
+    IEnumerable<string> DetailPictureUris,
+    string ProviderUri,
+    string Provider,
+    string? ContactEmail,
+    string? ContactNumber,
+    IEnumerable<string> UseCases,
+    string LongDescription,
+    string Price,
+    IEnumerable<string> Tags,
+    OfferSubscriptionStatusId? IsSubscribed,
+    IEnumerable<string> Languages,
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+);
 
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
-    public string Title { get; set; } = Title;
-
-    /// <summary>
-    /// Uri to app's lead picture.
-    /// </summary>
-    public string LeadPictureUri { get; set; } = LeadPictureUri;
-
-    /// <summary>
-    /// List of URIs to app's secondary pictures.
-    /// </summary>
-    public IEnumerable<string> DetailPictureUris { get; set; } = new List<string>();
-
-    /// <summary>
-    /// Uri to provider's marketing presence.
-    /// </summary>
-    public string ProviderUri { get; set; } = ProviderUri;
-
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    public string Provider { get; set; } = Provider;
-
-    /// <summary>
-    /// Email address of the app's primary contact.
-    /// </summary>
-    public string? ContactEmail { get; set; }
-
-    /// <summary>
-    /// Phone number of the app's primary contact.
-    /// </summary>
-    public string? ContactNumber { get; set; }
-
-    /// <summary>
-    /// Names of the app's use cases.
-    /// </summary>
-    public IEnumerable<string> UseCases { get; set; } = new List<string>();
-
-    /// <summary>
-    /// Long description of the app.
-    /// </summary>
-    public string LongDescription { get; set; } = LongDescription;
-
-    /// <summary>
-    /// Pricing information of the app.
-    /// </summary>
-    public string Price { get; set; } = Price;
-
-    /// <summary>
-    /// Tags assigned to application.
-    /// </summary>
-    public IEnumerable<string> Tags { get; set; } = new List<string>();
-
-    /// <summary>
-    /// Whether app has been purchased by the user's company.
-    /// </summary>
-    public OfferSubscriptionStatusId? IsSubscribed { get; set; }
-
-    /// <summary>
-    /// Languages that the app is available in.
-    /// </summary>
-    public IEnumerable<string> Languages { get; set; } = new List<string>();
-    
-    /// <summary>
-    /// Document assigned for offer 
-    /// </summary>
-    /// <returns></returns>
-    public IDictionary<DocumentTypeId, List<DocumentData>> Document { get; set; } = new Dictionary<DocumentTypeId, List<DocumentData>>();
-}
-
+/// <summary>
+/// Model for Document
+/// </summary>
+/// <param name="documentId"></param>
+/// <param name="documentName"></param>
+public record DocumentData(Guid documentId, string documentName);
