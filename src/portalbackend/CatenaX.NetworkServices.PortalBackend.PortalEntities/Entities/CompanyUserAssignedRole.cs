@@ -26,6 +26,15 @@ public class CompanyUserAssignedRole : IAuditable
 {
     protected CompanyUserAssignedRole() {}
 
+    /// <summary>
+    /// Please only use for update or removing the entity from the database
+    /// </summary>
+    /// <param name="id">Id of the <see cref="CompanyUserAssignedRole"/></param>
+    public CompanyUserAssignedRole(Guid id)
+    {
+        Id = id;
+    }
+
     public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
     {
         CompanyUserId = companyUserId;

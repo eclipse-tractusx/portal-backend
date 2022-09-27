@@ -402,9 +402,9 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<OkResult> UpdateUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo)
+    public async Task<OkResult> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo)
     {
-        await this.WithIamUserId(adminUserId => _logic.UpdateUserRoleAsync(appId, userRoleInfo, adminUserId)).ConfigureAwait(false);
+        await this.WithIamUserId(adminUserId => _logic.ModifyUserRoleAsync(appId, userRoleInfo, adminUserId)).ConfigureAwait(false);
         return Ok();
     }
 
