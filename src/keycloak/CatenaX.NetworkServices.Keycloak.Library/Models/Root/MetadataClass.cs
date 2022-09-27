@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ********************************************************************************/
- 
+
 namespace CatenaX.NetworkServices.Keycloak.Library.Models.Root;
 
 public class MetadataClass

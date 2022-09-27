@@ -28,7 +28,9 @@ public interface IProvisioningManager
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
     Task<string> GetNextServiceAccountClientIdAsync();
     Task SetupSharedIdpAsync(string idpName, string organisationName);
-    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile);
+    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
+    Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
+    Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string,IEnumerable<string>> clientRoleNames);
     Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
@@ -39,13 +41,14 @@ public interface IProvisioningManager
     Task UpdateCentralUserAsync(string userId, string firstName, string lastName, string email);
     Task DeleteSharedRealmUserAsync(string realm, string userId);
     Task DeleteCentralRealmUserAsync(string userId);
-    Task<string> SetupClientAsync(string redirectUrl);
+    Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames = null);
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
     Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
     Task DeleteCentralClientAsync(string internalClientId);
     Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId);
     Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
+    Task AddProtocolMapperAsync(string clientId);
     Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
     Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
@@ -60,4 +63,5 @@ public interface IProvisioningManager
     Task DeleteCentralIdentityProviderAsync(string alias);
     IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
     ValueTask DeleteSharedIdpRealmAsync(string alias);
+    IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias = null, string? organisationName = null, string? businessPartnerNumber = null);
 }

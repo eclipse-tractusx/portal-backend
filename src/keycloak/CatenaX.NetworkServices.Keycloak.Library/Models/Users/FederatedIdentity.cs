@@ -31,9 +31,9 @@ namespace CatenaX.NetworkServices.Keycloak.Library.Models.Users;
 public class FederatedIdentity
 {
     [JsonProperty("identityProvider")]
-    public string IdentityProvider { get; set; }
+    public string IdentityProvider { get; set; } = default!;
     [JsonProperty("userId")]
-    public string UserId { get; set; }
+    public string UserId { get; set; } = default!;
     [JsonProperty("userName")]
-    public string UserName { get; set; }
+    public string UserName { get; set; } = default!;
 }

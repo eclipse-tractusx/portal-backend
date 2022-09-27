@@ -1,3 +1,23 @@
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities;
@@ -21,6 +41,18 @@ public class UserRolesRepository : IUserRolesRepository
                 companyUserId,
                 userRoleId
             )).Entity;
+
+    public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId) =>
+        _dbContext.CompanyUsers
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser => companyUserIds.Contains(companyUser.Id) && companyUser.IamUser!.UserEntityId != null)
+            .Include(companyUser => companyUser.CompanyUserAssignedRoles)
+            .Include(companyUser => companyUser.IamUser)
+            .AsAsyncEnumerable();
+
+    public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
+        _dbContext.Remove(companyUserAssignedRole).Entity;
 
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
@@ -77,7 +109,14 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-     public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
+    public IAsyncEnumerable<(string Role,Guid Id)> GetUserRolesWithIdAsync(string keyCloakClientId) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
+            .Select(userRole => new ValueTuple<string,Guid>(userRole.UserRoleText, userRole.Id))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
@@ -94,4 +133,11 @@ public class UserRolesRepository : IUserRolesRepository
                    userRole.UserRoleDescriptions.SingleOrDefault(desc =>
                    desc.LanguageShortName == (languageShortName ?? Constants.DefaultLanguage))!.Description))
            .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<List<string>> GetUserRolesForOfferIdAsync(Guid offerId) => 
+        _dbContext.UserRoles
+            .Where(x => x.OfferId == offerId)
+            .Select(x => x.UserRoleText)
+            .ToListAsync();
 }

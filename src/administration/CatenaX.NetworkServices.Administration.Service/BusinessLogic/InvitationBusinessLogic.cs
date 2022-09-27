@@ -81,15 +81,19 @@ namespace CatenaX.NetworkServices.Administration.Service.BusinessLogic
             await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
 
             var password = new Password().Next();
-            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(idpName, new UserProfile(
-                    string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
-                    invitationData.email,
-                    invitationData.organisationName
-            ) {
-                FirstName = invitationData.firstName,
-                LastName = invitationData.lastName,
-                Password = password
-            }).ConfigureAwait(false);
+            var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
+                    idpName,
+                    new UserProfile(
+                        string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
+                        invitationData.firstName,
+                        invitationData.lastName,
+                        invitationData.email,
+                        password),
+                    _provisioningManager.GetStandardAttributes(
+                        alias: idpName,
+                        organisationName: invitationData.organisationName
+                    )
+                ).ConfigureAwait(false);
 
             var assignedClientRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, _settings.InvitedUserInitialRoles).ConfigureAwait(false);
             var unassignedClientRoles = _settings.InvitedUserInitialRoles

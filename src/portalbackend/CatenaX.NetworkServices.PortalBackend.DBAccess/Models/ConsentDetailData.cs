@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -30,4 +30,9 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="CompanyUserId">ID of the company that gave the consent</param>
 /// <param name="ConsentStatus">Consent Status</param>
 /// <param name="AgreementName">The agreement name</param>
-public record ConsentDetailData(Guid Id, string CompanyName, Guid CompanyUserId, ConsentStatusId ConsentStatus, string AgreementName);
+public record ConsentDetailData(
+    Guid Id,
+    string CompanyName,
+    Guid CompanyUserId,
+    ConsentStatusId ConsentStatus,
+    string AgreementName);

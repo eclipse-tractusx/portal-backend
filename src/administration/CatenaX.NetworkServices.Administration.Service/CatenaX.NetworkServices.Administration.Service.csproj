@@ -45,6 +45,7 @@
     <ProjectReference Include="..\..\portalbackend\CatenaX.NetworkServices.PortalBackend.DBAccess\CatenaX.NetworkServices.PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\provisioning\CatenaX.NetworkServices.Provisioning.DBAccess\CatenaX.NetworkServices.Provisioning.DBAccess.csproj" />
     <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.Models\CatenaX.NetworkServices.Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\CatenaX.NetworkServices.Framework.IO\CatenaX.NetworkServices.Framework.IO.csproj" />
   </ItemGroup>
 
 <ItemGroup>

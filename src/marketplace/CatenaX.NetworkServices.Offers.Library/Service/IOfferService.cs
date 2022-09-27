@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 
@@ -57,7 +58,7 @@ public interface IOfferService
     /// <param name="offerId">Id of the offer to get the agreements for</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreement(Guid offerId, OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementData> GetOfferAgreementsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer consent detail data
@@ -65,4 +66,41 @@ public interface IOfferService
     /// <param name="consentId">Id of the offer consent</param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Return Agreements for App_Contract Category
+    /// </summary>
+    /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
+    /// <returns></returns>
+    IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
+    /// <returns></returns>
+    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Create or Update consent to agreements associated with an offer
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="offerAgreementConsent"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
+    /// <returns></returns>
+    Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Auto setup the service.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="serviceAccountRoles">Roles that will be assigned to the service account</param>
+    /// <param name="companyAdminRoles">Roles that will be assigned to the company admin</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
+    /// <returns>Returns the response data</returns>
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId);
 }
