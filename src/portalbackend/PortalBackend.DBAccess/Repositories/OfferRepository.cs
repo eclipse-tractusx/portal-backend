@@ -90,33 +90,33 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId) =>
+    public Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId) =>
         _context.Offers.AsNoTracking()
-            .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
-            .Select(a => new OfferDetailsData(
-                a.Id,
-                a.Name,
-                a.ThumbnailUrl,
-                a.OfferDetailImages.Select(adi => adi.ImageUrl),
-                a.MarketingUrl,
-                a.Provider,
-                a.ContactEmail,
-                a.ContactNumber,
-                a.UseCases.Select(u => u.Name),
+            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new OfferDetailsData(
+                offer.Id,
+                offer.Name,
+                offer.ThumbnailUrl,
+                offer.OfferDetailImages.Select(adi => adi.ImageUrl),
+                offer.MarketingUrl,
+                offer.Provider,
+                offer.ContactEmail,
+                offer.ContactNumber,
+                offer.UseCases.Select(u => u.Name),
                 _context.Languages.Any(l => l.ShortName == languageShortName)
-                    ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
-                        ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionLong
+                    ? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
+                        ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionLong
                     : null,
-                a.OfferLicenses
+                offer.OfferLicenses
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
-                a.Tags.Select(t => t.Name),
-                a.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-                    .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == appId))
+                offer.Tags.Select(t => t.Name),
+                offer.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                    .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == offerId))
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
-                a.SupportedLanguages.Select(l => l.ShortName),
-                a.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))
+                offer.SupportedLanguages.Select(l => l.ShortName),
+                offer.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))
             ))
             .SingleOrDefaultAsync();
 
