@@ -24,6 +24,7 @@ using CatenaX.NetworkServices.Framework.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.PortalEntities.Enums;
 using CatenaX.NetworkServices.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatenaX.NetworkServices.Apps.Service.Controllers;
@@ -114,4 +115,50 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
         return NoContent();
     }
+    
+    /// <summary>
+    /// Return Agreement Data for App_Contract Category
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent</remarks>
+    /// <response code="200">Returns the Cpllection of agreement data</response>
+    [HttpGet]
+    [Route("consent")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<AgreementData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync() =>
+        _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
+    
+    /// <summary>
+    /// Return Offer Agreement Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent/{appId}</remarks>
+    /// <response code="200">Returns the Offer Agreement Consent data</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpGet]
+    [Route("consent/{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, iamUserId));
+
+    /// <summary>
+    /// Update or Insert Consent
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="offerAgreementConsents"></param>
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/consent/{appId}/OfferAgreementConsents</remarks>
+     /// <response code="200">Successfully submitted consent to agreements</response>
+    /// <response code="403">Either the user was not found or the user is not assignable to the given application.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPost]
+    [Authorize(Roles = "edit_apps")]
+    [Route("consent/{appId}/OfferAgreementConsents")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<int> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
+        this.WithIamUserId(iamUserId =>
+            _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, iamUserId));
 }

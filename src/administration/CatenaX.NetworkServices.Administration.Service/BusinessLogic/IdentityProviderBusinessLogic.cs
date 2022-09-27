@@ -20,6 +20,7 @@
 
 using CatenaX.NetworkServices.Administration.Service.Models;
 using CatenaX.NetworkServices.Framework.ErrorHandling;
+using CatenaX.NetworkServices.Framework.IO;
 using CatenaX.NetworkServices.Keycloak.ErrorHandling;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Repositories;
@@ -494,16 +495,16 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
-    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId)
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
         if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
             throw new UnsupportedMediaTypeException($"Only contentType {_settings.CsvSettings.ContentType} files are allowed.");
         }
-        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, iamUserId);
+        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, iamUserId, cancellationToken);
     }
 
-    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId)
+    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var (companyId, creatorId) = await userRepository.GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
@@ -514,7 +515,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var (sharedIdpAlias, existingAliase) = await GetOwnCompaniesAliasDataAsync(iamUserId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
-        var reader = new StreamReader(stream, _settings.CsvSettings.Encoding);
+        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), _settings.CsvSettings.Encoding);
 
         var numIdps = await ValidateHeadersReturningNumIdpsAsync(reader).ConfigureAwait(false);
 
@@ -530,7 +531,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             {
                 var (companyUserId, profile, identityProviderLinks) = ParseCSVLine(nextLine, numIdps, existingAliase);
                 var (userEntityId, existingProfile, links) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
-                var existingLinks = await links.ToListAsync().ConfigureAwait(false);
+                var existingLinks = await links.ToListAsync(cancellationToken).ConfigureAwait(false);
                 var updated = false;
 
                 foreach (var identityProviderLink in identityProviderLinks)

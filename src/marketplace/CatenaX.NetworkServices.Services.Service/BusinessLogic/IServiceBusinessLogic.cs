@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -19,7 +19,9 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.Models;
+using CatenaX.NetworkServices.Offers.Library.Models;
 using CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
+using CatenaX.NetworkServices.Services.Service.ViewModels;
 
 namespace CatenaX.NetworkServices.Services.Service.BusinessLogic;
 
@@ -57,7 +59,7 @@ public interface IServiceBusinessLogic
     /// <param name="lang">Shortcode of the language for the text translations</param>
     /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the service detail data</returns>
-    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
+    Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
 
     /// <summary>
     /// Gets the Subscription Details for the given Id
@@ -97,4 +99,12 @@ public interface IServiceBusinessLogic
     /// <param name="serviceAgreementConsentDatas">Service Agreement Consent Data</param>
     /// <param name="iamUserId">id of the iam user</param>
     Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas, string iamUserId);
+
+    /// <summary>
+    /// Auto setup the service.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task<OfferAutoSetupResponseData> AutoSetupService(OfferAutoSetupData data, string iamUserId);
 }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -61,7 +61,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null) =>
-        _portalRepositories.GetInstance<IOfferRepository>().GetAllActiveAppsAsync(languageShortName);
+        _portalRepositories.GetInstance<IOfferRepository>().GetAllActiveAppsAsync(languageShortName)
+            .Select(app => new AppData(
+                    app.Name ?? Constants.ErrorString,
+                    app.ShortDescription ?? Constants.ErrorString,
+                    app.VendorCompanyName ?? Constants.ErrorString,
+                    app.LicenseText ?? Constants.ErrorString,
+                    app.ThumbnailUrl ?? Constants.ErrorString
+                    )
+                {
+                    Id = app.Id,
+                    UseCases = app.UseCaseNames.Select(name => name).ToList()
+                });
 
     /// <inheritdoc/>
     public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) =>
@@ -129,7 +140,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         
         var (requesterId, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
+        var companyName = await GetOrCreateCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
         {
@@ -322,7 +333,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
     }
     
-    private async Task<string> GetCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)
+    private async Task<string> GetOrCreateCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)
     {
         var companyAssignedAppRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var companyAppSubscriptionData = await companyAssignedAppRepository
@@ -332,21 +343,21 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new ControllerArgumentException($"user {iamUserId} is not assigned with a company");
         }
 
-        var (companyId, companyAssignedApp, companyName, companyUserId) = companyAppSubscriptionData;
-        if (companyAssignedApp == null)
+        var (companyId, offerSubscription, companyName, companyUserId) = companyAppSubscriptionData;
+        if (offerSubscription == null)
         {
             companyAssignedAppRepository.CreateOfferSubscription(appId, companyId, OfferSubscriptionStatusId.PENDING,
                 requesterId, companyUserId);
         }
         else
         {
-            if (companyAssignedApp.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
+            if (offerSubscription.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
                 or OfferSubscriptionStatusId.PENDING)
             {
                 throw new ConflictException($"company {companyId} is already subscribed to {appId}");
             }
 
-            companyAssignedApp.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+            offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         }
 
         return companyName;
@@ -363,7 +374,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var companyName = await GetCompanyAppSubscriptionData(appId, iamUserId, requesterId);
 
         if(appDetails.name is null || appDetails.thumbnailUrl is null 
             || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
@@ -394,7 +404,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             {
                 nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
             }
-            throw new ConflictException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
+            throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
         }
         _portalRepositories.Attach(new Offer(appId), app =>
         {
@@ -405,7 +415,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var notificationContent = new
         {
             appId,
-            RequestorCompanyName = companyName
+            RequestorCompanyName = appDetails.companyName
         };
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);

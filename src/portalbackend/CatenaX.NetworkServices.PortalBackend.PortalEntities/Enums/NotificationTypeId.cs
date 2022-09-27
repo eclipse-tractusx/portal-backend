@@ -79,4 +79,9 @@ public enum NotificationTypeId : int
     /// App Release was requested
     /// </summary>
     APP_RELEASE_REQUEST = 11,
+    
+    /// <summary>
+    /// Technical user was created
+    /// </summary>
+    TECHNICAL_USER_CREATION = 12,
 }

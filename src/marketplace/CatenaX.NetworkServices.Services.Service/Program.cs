@@ -19,11 +19,12 @@
  ********************************************************************************/
 
 using CatenaX.NetworkServices.Framework.Web;
+using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.Offers.Library.Service;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
-using CatenaX.NetworkServices.PortalBackend.PortalEntities.AuditEntities;
+using CatenaX.NetworkServices.Provisioning.Library;
+using CatenaX.NetworkServices.Services.Service;
 using CatenaX.NetworkServices.Services.Service.BusinessLogic;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";
@@ -39,8 +40,10 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 }
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddPortalRepositories(builder.Configuration);
+    .AddPortalRepositories(builder.Configuration)
+    .AddProvisioningManager(builder.Configuration);
 
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .AddTransient<IOfferService, OfferService>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));

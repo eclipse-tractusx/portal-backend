@@ -24,6 +24,8 @@ using CatenaX.NetworkServices.Mailing.SendMail;
 using CatenaX.NetworkServices.Notification.Library;
 using CatenaX.NetworkServices.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
+using CatenaX.NetworkServices.Offers.Library.Service;
+using CatenaX.NetworkServices.Provisioning.Library;
 
 var VERSION = "v2";
 
@@ -39,7 +41,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddMailingAndTemplateManager(builder.Configuration)
-                .AddPortalRepositories(builder.Configuration);
+                .AddPortalRepositories(builder.Configuration)
+                .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
@@ -47,6 +50,7 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddTransient<IOfferService, OfferService>();
 
 
 builder.Build()
