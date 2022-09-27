@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "CatenaX.NetworkServices.Maintenance.App": {
+    "Maintenance.App": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"

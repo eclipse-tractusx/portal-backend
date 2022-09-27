@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "CatenaX.NetworkServices.Provisioning.Service": {
+    "Provisioning.Service": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/provisioning/swagger",

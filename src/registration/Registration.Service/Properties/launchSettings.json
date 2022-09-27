@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "CatenaX.NetworkServices.Registration.Service": {
+    "Registration.Service": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/registration/swagger",

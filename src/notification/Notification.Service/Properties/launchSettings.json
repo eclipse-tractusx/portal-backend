@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "CatenaX.NetworkServices.Notification.Service": {
+    "Notification.Service": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/notification/swagger",
