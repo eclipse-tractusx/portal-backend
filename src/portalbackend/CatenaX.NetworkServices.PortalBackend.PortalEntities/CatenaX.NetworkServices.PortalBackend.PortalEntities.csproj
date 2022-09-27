@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="6.0.0" />
-    <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="6.3.3" />
+    <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="6.3.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
