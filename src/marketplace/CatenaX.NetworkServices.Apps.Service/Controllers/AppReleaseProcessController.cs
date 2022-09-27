@@ -117,19 +117,19 @@ public class AppReleaseProcessController : ControllerBase
     }
     
     /// <summary>
-    /// Return Agreement Data for App_Contract Category
+    /// Return Agreement Data for offer_type_id App
     /// </summary>
-    /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent</remarks>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/agreementData</remarks>
     /// <response code="200">Returns the Cpllection of agreement data</response>
     [HttpGet]
-    [Route("consent")]
+    [Route("agreementData")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AgreementData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync() =>
         _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
     
     /// <summary>
-    /// Return Offer Agreement Consent
+    /// Gets the agreement consent status for the given app id
     /// </summary>
     /// <param name="appId"></param>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent/{appId}</remarks>
@@ -148,13 +148,13 @@ public class AppReleaseProcessController : ControllerBase
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="offerAgreementConsents"></param>
-    /// <remarks>Example: POST: /api/apps/appreleaseprocess/consent/{appId}/OfferAgreementConsents</remarks>
-     /// <response code="200">Successfully submitted consent to agreements</response>
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/consent/{appId}/agreementConsents</remarks>
+    /// <response code="200">Successfully submitted consent to agreements</response>
     /// <response code="403">Either the user was not found or the user is not assignable to the given application.</response>
     /// <response code="404">App does not exist.</response>
     [HttpPost]
     [Authorize(Roles = "edit_apps")]
-    [Route("consent/{appId}/OfferAgreementConsents")]
+    [Route("consent/{appId}/agreementConsents")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
