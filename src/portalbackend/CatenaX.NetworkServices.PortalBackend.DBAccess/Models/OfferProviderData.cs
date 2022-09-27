@@ -39,7 +39,7 @@ namespace CatenaX.NetworkServices.PortalBackend.DBAccess.Models;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<AppDescription> Descriptions, IEnumerable<OfferAgreement> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<OfferAgreement> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
 
 /// <summary>
 /// Model for Offer Description
@@ -48,7 +48,7 @@ public record OfferProviderData(string? Title, string Provider, string? LeadPict
 /// <param name="longDescription"></param>
 /// <param name="shortDescription"></param>
 /// <returns></returns>
-public record AppDescription(string languageCode, string longDescription, string shortDescription);
+public record OfferDescriptionData(string languageCode, string longDescription, string shortDescription);
 
 /// <summary>
 /// Model for Agreement and Consent Status

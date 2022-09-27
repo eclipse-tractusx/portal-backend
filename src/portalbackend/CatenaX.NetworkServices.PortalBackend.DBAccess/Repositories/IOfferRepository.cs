@@ -184,5 +184,5 @@ public interface IOfferRepository
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<OfferProviderData?> GetAppDetailsForStatusAsync(Guid appId, string userId);
+    Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
