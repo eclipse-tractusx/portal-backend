@@ -713,7 +713,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         return new UserRoleMessage(success, warning);
     }
 
-    public async Task UpdateUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
+    public async Task ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
         var (companyUser, iamClientId, roles) = await GetUserAndClientInformationAsync(appId, userRoleInfo, adminUserId).ConfigureAwait(false);
 
@@ -732,6 +732,11 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId!, clientRoleNames).ConfigureAwait(false);
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUser.TargetIamUserId!, roleNamesToDelete).ConfigureAwait(false);
+        foreach (var roleWithId in rolesToAdd)
+        {
+            userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
+        }
+        _portalRepositories.RemoveRange(rolesToDelete.Select(x => new CompanyUserAssignedRole(x.CompanyUserAssignedRoleId)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
