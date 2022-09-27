@@ -260,13 +260,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
     
     /// <inheritdoc/>
-    public async Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId)
-    {
-        var appDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetAppDetailsForStatusAsync(appId, userId).ConfigureAwait(false);
-        if (appDetail == null)
-        {
-            throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
-        }
-        return appDetail;
-    }
+    public Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
+        _offerService.GetOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
 }
