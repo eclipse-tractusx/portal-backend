@@ -25,75 +25,87 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// View model of an application's detailed data.
 /// </summary>
-public record AppDetailsData(string Title, string LeadPictureUri, string ProviderUri, string Provider, string LongDescription, string Price)
-{
+public record OfferDetailsData(
+
     /// <summary>
     /// ID of the app.
     /// </summary>
-    public Guid Id { get; set; }
+    Guid Id,
 
     /// <summary>
     /// Title or name of the app.
     /// </summary>
-    public string Title { get; set; } = Title;
+    string? Title,
 
     /// <summary>
     /// Uri to app's lead picture.
     /// </summary>
-    public string LeadPictureUri { get; set; } = LeadPictureUri;
+    string? LeadPictureUri,
 
     /// <summary>
     /// List of URIs to app's secondary pictures.
     /// </summary>
-    public IEnumerable<string> DetailPictureUris { get; set; } = new List<string>();
+    IEnumerable<string> DetailPictureUris,
 
     /// <summary>
     /// Uri to provider's marketing presence.
     /// </summary>
-    public string ProviderUri { get; set; } = ProviderUri;
+    string? ProviderUri,
 
     /// <summary>
     /// Provider of the app.
     /// </summary>
-    public string Provider { get; set; } = Provider;
+    string Provider,
 
     /// <summary>
     /// Email address of the app's primary contact.
     /// </summary>
-    public string? ContactEmail { get; set; }
+    string? ContactEmail,
 
     /// <summary>
     /// Phone number of the app's primary contact.
     /// </summary>
-    public string? ContactNumber { get; set; }
+    string? ContactNumber,
 
     /// <summary>
     /// Names of the app's use cases.
     /// </summary>
-    public IEnumerable<string> UseCases { get; set; } = new List<string>();
+    IEnumerable<string> UseCases,
 
     /// <summary>
     /// Long description of the app.
     /// </summary>
-    public string LongDescription { get; set; } = LongDescription;
+    string? LongDescription,
 
     /// <summary>
     /// Pricing information of the app.
     /// </summary>
-    public string Price { get; set; } = Price;
+    string? Price,
 
     /// <summary>
     /// Tags assigned to application.
     /// </summary>
-    public IEnumerable<string> Tags { get; set; } = new List<string>();
+    IEnumerable<string> Tags,
 
     /// <summary>
     /// Whether app has been purchased by the user's company.
     /// </summary>
-    public OfferSubscriptionStatusId? IsSubscribed { get; set; }
+    OfferSubscriptionStatusId? IsSubscribed,
 
     /// <summary>
     /// Languages that the app is available in.
     /// </summary>
-    public IEnumerable<string> Languages { get; set; } = new List<string>();
-}
+    IEnumerable<string> Languages,
+    /// <summary>
+    /// document assigned to offer
+    /// </summary>
+    IEnumerable<DocumentTypeData> Documents
+);
+
+/// <summary>
+/// Model for Document with Type
+/// </summary>
+/// <param name="documentTypeId"></param>
+/// <param name="documentId"></param>
+/// <param name="documentName"></param>
+public record DocumentTypeData(DocumentTypeId documentTypeId, Guid documentId, string documentName);

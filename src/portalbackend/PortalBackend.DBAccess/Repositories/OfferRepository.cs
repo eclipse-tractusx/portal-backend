@@ -90,57 +90,35 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public async Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName)
-    {
-       var app = await _context.Offers.AsNoTracking()
-            .Where(a => a.Id == appId)
-            .Select(a => new
-            {
-                a.Id,
-                Title = a.Name,
-                LeadPictureUri = a.ThumbnailUrl,
-                DetailPictureUris = a.OfferDetailImages.Select(adi => adi.ImageUrl),
-                ProviderUri = a.MarketingUrl,
-                a.Provider,
-                a.ContactEmail,
-                a.ContactNumber,
-                UseCases = a.UseCases.Select(u => u.Name),
-                LongDescription =
-                    _context.Languages.Any(l => l.ShortName == languageShortName)
-                    ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
-                        ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionLong
+    public Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId) =>
+        _context.Offers.AsNoTracking()
+            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new OfferDetailsData(
+                offer.Id,
+                offer.Name,
+                offer.ThumbnailUrl,
+                offer.OfferDetailImages.Select(adi => adi.ImageUrl),
+                offer.MarketingUrl,
+                offer.Provider,
+                offer.ContactEmail,
+                offer.ContactNumber,
+                offer.UseCases.Select(u => u.Name),
+                _context.Languages.Any(l => l.ShortName == languageShortName)
+                    ? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
+                        ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionLong
                     : null,
-                Price = a.OfferLicenses
+                offer.OfferLicenses
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
-                Tags = a.Tags.Select(t => t.Name),
-                IsPurchased = a.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-                    .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == appId))
+                offer.Tags.Select(t => t.Name),
+                offer.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                    .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == offerId))
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
-                Languages = a.SupportedLanguages.Select(l => l.ShortName)
-            })
-            .SingleAsync().ConfigureAwait(false);
-
-        return new AppDetailsData(
-            app.Title ?? Constants.ErrorString,
-            app.LeadPictureUri ?? Constants.ErrorString,
-            app.ProviderUri ?? Constants.ErrorString,
-            app.Provider,
-            app.LongDescription ?? Constants.InvalidLanguageError,
-            app.Price ?? Constants.ErrorString
-            )
-        {
-            Id = app.Id,
-            IsSubscribed = app.IsPurchased,
-            Tags = app.Tags,
-            UseCases = app.UseCases,
-            DetailPictureUris = app.DetailPictureUris,
-            ContactEmail = app.ContactEmail,
-            ContactNumber = app.ContactNumber,
-            Languages = app.Languages
-        };
-    }
+                offer.SupportedLanguages.Select(l => l.ShortName),
+                offer.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))
+            ))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public OfferLicense CreateOfferLicenses(string licenseText) =>

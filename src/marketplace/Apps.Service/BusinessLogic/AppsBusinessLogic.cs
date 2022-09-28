@@ -79,9 +79,32 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null) =>
-        _portalRepositories.GetInstance<IOfferRepository>()
-            .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName);
+    public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetOfferDetailsByIdAsync(appId, iamUserId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new NotFoundException($"appId {appId} does not exist");
+        }
+        return new AppDetailResponse(
+            result.Id,
+            result.Title ?? Constants.ErrorString,
+            result.LeadPictureUri ?? Constants.ErrorString,
+            result.DetailPictureUris,
+            result.ProviderUri ?? Constants.ErrorString,
+            result.Provider,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.UseCases,
+            result.LongDescription ?? Constants.ErrorString,
+            result.Price ?? Constants.ErrorString,
+            result.Tags,
+            result.IsSubscribed,
+            result.Languages,
+            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
+        );
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId) =>
