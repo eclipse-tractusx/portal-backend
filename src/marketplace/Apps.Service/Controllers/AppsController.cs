@@ -91,10 +91,10 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("{appId}", Name = nameof(GetAppDetailsByIdAsync))]
     [Authorize(Roles = "view_apps")]
-    [ProducesResponseType(typeof(AppDetailsData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<AppDetailsData> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
+    public Task<AppDetailResponse> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>

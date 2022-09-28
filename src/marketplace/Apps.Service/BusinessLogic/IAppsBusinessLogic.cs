@@ -50,7 +50,7 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">ID of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
     /// <param name="languageShortName">Optional two character language specifier for the localization of the app description. No description if not provided.</param>
     /// <returns>AppDetailsViewModel of the requested application.</returns>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null);
+    public Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null);
 
     /// <summary>
     /// Get IDs of all favourite apps of the user by ID.
