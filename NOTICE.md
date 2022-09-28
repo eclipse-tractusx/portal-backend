@@ -1,8 +1,8 @@
 # Notices
 
-This content is part of [CatenaX](https://catena-x.net).
+This content is produced and maintained by the Eclipse Tractus-X project.
 
-* Project home: https://github.com/catenax-ng
+* Project home: https://projects.eclipse.org/projects/automotive.tractusx
 
 ## Copyright
 
@@ -20,14 +20,11 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Source Code
 
-The project maintains the following source code repositories in the GitHub organization https://github.com/catenax-ng:
+The project maintains the following source code repositories in the GitHub organization https://github.com/eclipse-tractusx:
 
-* https://github.com/catenax-ng/product-portal-frontend
-* https://github.com/catenax-ng/product-portal-frontend-registration
-* https://github.com/catenax-ng/product-portal-backend
-* https://github.com/catenax-ng/product-portal-common-assets
-* https://github.com/catenax-ng/product-portal-cd
-* https://github.com/catenax-ng/product-portal-iam
+* https://github.com/eclipse-tractusx/portal-frontend-registration
+* https://github.com/eclipse-tractusx/portal-frontend
+* https://github.com/eclipse-tractusx/portal-backend
 
 
 ## Third-party Content
