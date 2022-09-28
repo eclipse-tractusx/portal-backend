@@ -121,4 +121,17 @@ public class ConnectorsController : ControllerBase
         await _businessLogic.DeleteConnectorAsync(connectorId);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retrieves company connector end point for the given bpn.
+    /// </summary>
+    /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
+    /// <remarks>Example: GET: /api/administration/connectors/discovery</remarks>
+    /// <response code="200">Returns connector end point along with bpn.</response>
+    [HttpGet]
+    [Route("discovery")]
+    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorCompanyData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ConnectorCompanyData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
+        _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
 }
