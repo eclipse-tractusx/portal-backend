@@ -30,7 +30,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Tests;
 
 public class GeneralHttpErrorHandlerTests
 {

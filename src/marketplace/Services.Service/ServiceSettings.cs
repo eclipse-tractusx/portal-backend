@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service;
 
 /// <summary>
 /// Settings for the service service

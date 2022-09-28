@@ -27,7 +27,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
 public abstract class JsonEnumConverter<TEnum> : JsonConverter
     where TEnum : struct, IConvertible

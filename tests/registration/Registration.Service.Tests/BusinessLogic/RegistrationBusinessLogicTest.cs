@@ -19,20 +19,20 @@
  ********************************************************************************/
 
 using AutoFixture;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationBusinessLogicTest
 {

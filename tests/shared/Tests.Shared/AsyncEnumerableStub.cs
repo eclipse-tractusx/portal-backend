@@ -20,7 +20,7 @@
 
 using System.Linq.Expressions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared
 {
     public class AsyncEnumerableStub<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
     {

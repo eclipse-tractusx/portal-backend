@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
 /// Model for requesting creation of an application.

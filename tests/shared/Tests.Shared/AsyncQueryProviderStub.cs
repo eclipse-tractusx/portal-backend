@@ -21,7 +21,7 @@
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public class AsyncQueryProviderStub<T> : IAsyncQueryProvider
 {

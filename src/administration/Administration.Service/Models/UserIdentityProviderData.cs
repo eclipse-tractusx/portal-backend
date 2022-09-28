@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record UserIdentityProviderData(Guid companyUserId, string? firstName, string? lastName, string? email, IEnumerable<UserIdentityProviderLinkData> identityProviders);
 

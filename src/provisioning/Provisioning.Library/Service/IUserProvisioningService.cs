@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 public interface IUserProvisioningService
 {

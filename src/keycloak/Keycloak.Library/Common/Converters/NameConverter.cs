@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
 public class NameConverter : JsonEnumConverter<Name>
 {

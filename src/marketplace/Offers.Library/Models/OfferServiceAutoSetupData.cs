@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 /// <summary>
 /// Data object to retrieve the needed data to auto setup an service

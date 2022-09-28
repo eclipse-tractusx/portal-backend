@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using AutoFixture;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationControllerTest
 {

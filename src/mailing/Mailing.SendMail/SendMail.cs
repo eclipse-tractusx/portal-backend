@@ -23,7 +23,7 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using MailKit.Net.Proxy;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail
+namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
 {
     public class SendMail : ISendMail
     {

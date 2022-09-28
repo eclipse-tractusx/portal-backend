@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
- namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Model for app data.

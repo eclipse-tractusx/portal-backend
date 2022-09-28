@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public class Pagination
 {

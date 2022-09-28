@@ -18,14 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Attributes;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Attributes;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Model;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template;
+namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 public class TemplateManager : ITemplateManager
 {

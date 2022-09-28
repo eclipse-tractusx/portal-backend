@@ -24,7 +24,7 @@ using Microsoft.Extensions.Options;
 using System.Json;
 using System.Security.Claims;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {

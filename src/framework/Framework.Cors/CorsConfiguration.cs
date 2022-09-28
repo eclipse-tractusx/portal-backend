@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Cors;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 
 /// <summary>
 /// Configuration for CORS

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Factory;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 public class KeycloakSettings
 {

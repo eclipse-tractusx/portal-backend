@@ -20,7 +20,7 @@
 
 using System.Net;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 [Serializable]
 public class ServiceException : Exception

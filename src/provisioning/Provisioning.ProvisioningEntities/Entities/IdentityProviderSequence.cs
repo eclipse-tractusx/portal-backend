@@ -20,7 +20,7 @@
 
 #nullable disable
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public partial class IdentityProviderSequence
     {

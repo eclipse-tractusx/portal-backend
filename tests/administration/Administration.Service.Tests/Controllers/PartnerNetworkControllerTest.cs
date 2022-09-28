@@ -22,13 +22,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using FakeItEasy;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers
 {
     public class PartnerNetworkControllerTest
     {

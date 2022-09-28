@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json.Serialization;
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 /// <summary>
 /// model to specify Message for Adding User Role

@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using System.Text.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {

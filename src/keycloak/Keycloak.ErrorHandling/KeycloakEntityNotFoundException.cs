@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 [Serializable]
 public class KeycloakEntityNotFoundException : Exception

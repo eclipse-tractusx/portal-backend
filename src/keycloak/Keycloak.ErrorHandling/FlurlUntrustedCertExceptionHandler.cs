@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 public static class FlurlUntrustedCertExceptionHandler
 {
