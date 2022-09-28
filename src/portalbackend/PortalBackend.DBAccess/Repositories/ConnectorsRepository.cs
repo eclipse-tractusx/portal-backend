@@ -84,4 +84,19 @@ public class ConnectorsRepository : IConnectorsRepository
             throw new NotFoundException("Connector with provided ID does not exist.");
         }
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<ConnectorCompanyData> GetConnectorEndPointDataAsync(IEnumerable<string> bpns)
+    =>
+        _context.Connectors
+            .AsNoTracking()
+            .Where(connector => connector.Provider!.Id == connector.ProviderId && bpns.Contains(connector.Provider!.BusinessPartnerNumber))
+            .GroupBy(connector => connector.Provider!.BusinessPartnerNumber)
+            .Select(connector => new ConnectorCompanyData
+            (
+                connector.Key,
+                connector.Select(x => x.ConnectorUrl)
+            ))
+            .AsAsyncEnumerable();
+    
 }

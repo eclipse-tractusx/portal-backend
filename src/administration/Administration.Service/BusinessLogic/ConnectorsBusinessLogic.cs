@@ -151,4 +151,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         await _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId).ConfigureAwait(false);
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<ConnectorCompanyData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>
+        _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorEndPointDataAsync(bpns);
+    
 }
