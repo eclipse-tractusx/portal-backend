@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Swagger;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 
 public static class SwaggerGenConfiguration
 {

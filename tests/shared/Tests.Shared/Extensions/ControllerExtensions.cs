@@ -22,7 +22,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 /// <summary>
 /// Extension methods for the controller

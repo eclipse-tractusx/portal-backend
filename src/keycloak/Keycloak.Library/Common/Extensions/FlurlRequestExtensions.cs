@@ -27,7 +27,7 @@
 using Flurl;
 using Flurl.Http;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 
 public static class FlurlRequestExtensions
 {

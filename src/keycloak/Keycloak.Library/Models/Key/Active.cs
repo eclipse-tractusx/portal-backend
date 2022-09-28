@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Key;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Key;
 
 public class Active
 {

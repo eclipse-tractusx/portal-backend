@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Repository for writing documents on persistence layer.

@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticatorConfig
 {

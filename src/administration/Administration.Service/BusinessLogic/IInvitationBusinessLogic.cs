@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
     public interface IInvitationBusinessLogic
     {

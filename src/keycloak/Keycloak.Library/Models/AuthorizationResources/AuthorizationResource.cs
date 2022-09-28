@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationResources;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationResources;
 
 public class AuthorizationResource
 {

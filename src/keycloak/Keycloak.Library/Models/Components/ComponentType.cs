@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Common;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Components;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 
 public class ComponentType
 {

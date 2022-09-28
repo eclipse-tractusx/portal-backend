@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
 /// <summary>
 /// View model of an application's detailed data specific for service.

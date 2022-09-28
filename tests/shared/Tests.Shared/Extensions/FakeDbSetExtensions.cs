@@ -21,7 +21,7 @@
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions
 {
     public static class FakeDbSetExtensions
     {

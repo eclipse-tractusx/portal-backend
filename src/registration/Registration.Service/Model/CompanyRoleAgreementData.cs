@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
 public record CompanyRoleAgreementData(
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> CompanyRoleData,

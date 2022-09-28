@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ClientScopes;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScopes;
 
 public class ClientScope
 {

@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 {
     public interface IRegistrationBusinessLogic
     {

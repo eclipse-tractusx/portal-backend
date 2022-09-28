@@ -24,19 +24,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class ConnectorsBusinessLogicTests
 {

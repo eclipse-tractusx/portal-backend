@@ -21,19 +21,19 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using Xunit;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using FluentAssertions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers
 {
     public class RegistrationControllerTest
     {

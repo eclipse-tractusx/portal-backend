@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     public partial class CPLP1409ExpandNotificationTypes : Migration
     {

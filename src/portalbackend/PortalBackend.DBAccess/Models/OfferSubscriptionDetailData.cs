@@ -1,6 +1,6 @@
-﻿using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+﻿using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Detail data for the offer subscription

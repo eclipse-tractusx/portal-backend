@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
     public class ClaimRequestPathRequirement : IAuthorizationRequirement
     {

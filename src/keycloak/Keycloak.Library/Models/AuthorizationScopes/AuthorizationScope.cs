@@ -26,7 +26,7 @@
 
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 
 public class AuthorizationScope
 {

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using System.Text;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public interface IIdentityProviderBusinessLogic
 {

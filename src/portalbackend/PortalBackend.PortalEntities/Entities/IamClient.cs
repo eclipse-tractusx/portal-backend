@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class IamClient
 {

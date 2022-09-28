@@ -1,7 +1,7 @@
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {

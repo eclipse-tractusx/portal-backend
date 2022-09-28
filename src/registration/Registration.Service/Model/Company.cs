@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model
 {
 
 	public class Company

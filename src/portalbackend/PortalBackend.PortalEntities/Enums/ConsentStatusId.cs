@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 public enum ConsentStatusId : int
 {

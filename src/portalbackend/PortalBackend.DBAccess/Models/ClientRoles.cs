@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
     public class ClientRoles
     {

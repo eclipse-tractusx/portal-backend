@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 using Microsoft.Extensions.Options;
 
@@ -27,7 +27,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 
 public class CustodianService : ICustodianService
 {

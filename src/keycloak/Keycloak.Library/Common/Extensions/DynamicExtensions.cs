@@ -24,7 +24,7 @@
  * SOFTWARE.
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 
 public static class DynamicExtensions
 {

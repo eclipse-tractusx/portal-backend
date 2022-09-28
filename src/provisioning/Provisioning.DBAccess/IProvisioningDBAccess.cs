@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 
 public interface IProvisioningDBAccess
 {

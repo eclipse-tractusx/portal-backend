@@ -21,7 +21,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 
 public static class CustodianServiceCollectionExtension
 {

@@ -19,20 +19,20 @@
  ********************************************************************************/
 
 using AutoFixture;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.Controllers
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers
 {
     public class ServiceControllerTest
     {

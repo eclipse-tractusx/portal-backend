@@ -20,7 +20,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 
 /// <summary>
 /// Extension methods for API controllers.

@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";

@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.BusinessLogic;
 
 using Microsoft.Extensions.FileProviders;
 

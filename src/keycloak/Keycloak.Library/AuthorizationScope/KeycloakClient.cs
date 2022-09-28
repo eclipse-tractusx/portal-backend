@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 using Flurl.Http;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

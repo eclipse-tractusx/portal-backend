@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model
 {
     public class UserInvitationData
     {

@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
 public class PortalDbContext : DbContext
 {

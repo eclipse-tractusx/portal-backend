@@ -24,7 +24,7 @@
  * SOFTWARE.
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Users;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class SessionClients
 {

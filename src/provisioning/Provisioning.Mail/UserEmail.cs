@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 using Microsoft.Extensions.Options;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Mail
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Mail
 {
     public class UserEmail : IUserEmail
     {

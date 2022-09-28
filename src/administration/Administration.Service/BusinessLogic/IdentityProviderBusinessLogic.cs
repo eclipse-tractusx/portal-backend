@@ -18,21 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
 using System.Text;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 {

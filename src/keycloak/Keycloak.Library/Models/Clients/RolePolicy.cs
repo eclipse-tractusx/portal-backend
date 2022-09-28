@@ -24,11 +24,11 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Policy
 {

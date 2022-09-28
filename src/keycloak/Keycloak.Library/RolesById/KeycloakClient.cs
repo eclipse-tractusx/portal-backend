@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Common;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Roles;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Flurl.Http;
 using Flurl.Http.Content;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {

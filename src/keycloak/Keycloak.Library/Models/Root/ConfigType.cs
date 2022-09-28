@@ -24,10 +24,10 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 [JsonConverter(typeof(ConfigTypeConverter))]
 public enum ConfigType

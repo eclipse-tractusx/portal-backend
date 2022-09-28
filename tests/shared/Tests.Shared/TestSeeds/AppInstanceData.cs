@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using System.Collections.Immutable;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 public static class AppInstanceData
 {

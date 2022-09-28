@@ -18,14 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
 /// <summary>
 /// Creates a new instance of <see cref="CompanyDataController"/>

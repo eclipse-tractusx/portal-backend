@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests
 {
     public class InMemoryDbContextFactory
     {

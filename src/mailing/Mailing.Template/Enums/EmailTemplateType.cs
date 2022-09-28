@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Attributes;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Attributes;
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums
+namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
 {
     /// <summary>
     /// Base email template types for sending html emails.

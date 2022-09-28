@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {

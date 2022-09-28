@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 /// <summary>
 /// App subscription relationship between companies and apps.

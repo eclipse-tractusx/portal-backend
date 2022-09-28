@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public class UserPasswordReset
     {

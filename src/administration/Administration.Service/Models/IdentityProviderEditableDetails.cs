@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record IdentityProviderEditableDetails(string displayName)
 {

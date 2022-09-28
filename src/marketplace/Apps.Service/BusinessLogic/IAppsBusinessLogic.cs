@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling app-related operations. Includes persistence layer access.

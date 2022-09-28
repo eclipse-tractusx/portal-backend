@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
 public class RegistrationSettings
 {

@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 /// <summary>
 /// Input model defining all parameters for creating a connector in persistence layer.
