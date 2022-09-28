@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling.Tests</AssemblyName>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Tests</AssemblyName>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>

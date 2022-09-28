@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Administration.Service</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Administration.Service</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

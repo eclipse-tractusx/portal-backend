@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Provisioning.Service</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
