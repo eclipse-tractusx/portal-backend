@@ -59,23 +59,24 @@ public class OfferSubscriptionsRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAutoSetupDataAsync(_existingSubscruptionId, IamUserId).ConfigureAwait(false);
+        var results = await sut.GetThirdPartyAutoSetupDataAsync(_existingSubscruptionId, IamUserId).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task GetAutoSetupDataAsync_WithNotExistingSubscription_ReturnsNull()
+    public async Task GetAutoSetupDataAsync_WithNotExistingSubscription_ReturnsDefault()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAutoSetupDataAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var results = await sut.GetThirdPartyAutoSetupDataAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
 
         // Assert
-        results.Should().BeNull();
+        results.Should().NotBeNull();
+        results.Should().Be(default);
     }
 
     [Fact]
@@ -85,10 +86,11 @@ public class OfferSubscriptionsRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAutoSetupDataAsync(_existingSubscruptionId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var results = await sut.GetThirdPartyAutoSetupDataAsync(_existingSubscruptionId, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
-        results.Should().BeNull();
+        results.Should().NotBeNull();
+        results.IsUsersCompany.Should().Be(false);
     }
 
     [Fact]
@@ -98,10 +100,11 @@ public class OfferSubscriptionsRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAutoSetupDataAsync(_existingSubscruptionId, InvalidUser).ConfigureAwait(false);
+        var results = await sut.GetThirdPartyAutoSetupDataAsync(_existingSubscruptionId, InvalidUser).ConfigureAwait(false);
 
         // Assert
-        results.Should().BeNull();
+        results.Should().NotBeNull();
+        results.IsUsersCompany.Should().Be(false);
     }
 
     #endregion
