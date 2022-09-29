@@ -18,38 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-
-public class HttpMessageHandlerMock : HttpMessageHandler
+public class ServiceProviderCompanyDetail
 {
-    private readonly HttpStatusCode _statusCode;
-    private readonly Exception? _ex;
-    private readonly HttpContent? _httpContent;
-
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null)
+    private ServiceProviderCompanyDetail()
     {
-        _statusCode = statusCode;
-        _httpContent = httpContent;
-        _ex = ex;
+        AutoSetupUrl = null!;
+    }
+    
+    public ServiceProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
+        : this()
+    {
+        Id = id;
+        CompanyId = companyId;
+        AutoSetupUrl = autoSetupUrl;
+        DateCreated = dateCreated;
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
-    {
-        if (_ex != null)
-        {
-            throw _ex;
-        }
+    public Guid Id { get; private set; }
 
-        var httpResponseMessage = new HttpResponseMessage(_statusCode);
-        if (_httpContent != null)
-        {
-            httpResponseMessage.Content = _httpContent;
-        }
+    public DateTimeOffset DateCreated { get; private set; }
 
-        return Task.FromResult(httpResponseMessage);
-    }
+    public string AutoSetupUrl { get; set; }
+
+    public Guid CompanyId { get; set; }
+
+    // Navigation properties
+    public virtual Company? Company { get; private set; }
 }
