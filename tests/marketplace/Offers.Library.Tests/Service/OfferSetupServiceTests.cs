@@ -99,8 +99,25 @@ public class OfferSetupServiceTests
         async Task Action() => await sut.AutoSetupOffer(Guid.NewGuid(), _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+    }
+
+    [Fact]
+    public async Task AutoSetupOffer_WithNotAssociatedUserId_ThrowsArgumentException()
+    {
+        // Arrange
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock);
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        _fixture.Inject(_httpClientFactory);
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<OfferSetupService>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, "not existing userid", "https://www.superservice.com").ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
     }
 
     [Fact]
