@@ -47,12 +47,13 @@ public class OfferRepository : IOfferRepository
         _context.Offers.AnyAsync(x => x.Id == appId && x.OfferTypeId == OfferTypeId.APP);
 
     ///<inheritdoc/>
-    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId) =>
-        _context.Offers.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
+    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId) =>
+        _context.Offers.AsNoTracking().Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId).Select(c => new OfferProviderDetailsData(
             c.Name,
             c.Provider,
             c.ContactEmail,
-            c.SalesManagerId
+            c.SalesManagerId,
+            c.ProviderCompany!.ServiceProviderCompanyDetail!.AutoSetupUrl
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>

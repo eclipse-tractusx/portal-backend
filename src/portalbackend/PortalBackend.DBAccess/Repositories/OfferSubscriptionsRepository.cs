@@ -150,4 +150,21 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.Company.BusinessPartnerNumber!
             ))
             .SingleOrDefaultAsync();
+    
+    /// <inheritdoc />
+    public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new ValueTuple<OfferThirdPartyAutoSetupData,bool>(
+                new OfferThirdPartyAutoSetupData(
+                    new OfferThirdPartyAutoSetupCustomerData(
+                        x.Company!.Name,
+                        x.Company!.Address!.CountryAlpha2Code,
+                        x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email),
+                    new OfferThirdPartyAutoSetupPropertyData(
+                        x.Company!.BusinessPartnerNumber,
+                        offerSubscriptionId,
+                        x.OfferId)),
+                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
 }

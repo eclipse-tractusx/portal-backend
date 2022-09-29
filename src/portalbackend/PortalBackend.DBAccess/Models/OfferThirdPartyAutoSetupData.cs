@@ -18,38 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
+using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class HttpMessageHandlerMock : HttpMessageHandler
-{
-    private readonly HttpStatusCode _statusCode;
-    private readonly Exception? _ex;
-    private readonly HttpContent? _httpContent;
+public record OfferThirdPartyAutoSetupData(
+    [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer, 
+    [property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
 
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null)
-    {
-        _statusCode = statusCode;
-        _httpContent = httpContent;
-        _ex = ex;
-    }
+public record OfferThirdPartyAutoSetupCustomerData(
+    [property: JsonPropertyName("organizationName")] string OrganizationName, 
+    [property: JsonPropertyName("country")] string Country, 
+    [property: JsonPropertyName("email")] string? Email);
 
-    protected override Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
-    {
-        if (_ex != null)
-        {
-            throw _ex;
-        }
-
-        var httpResponseMessage = new HttpResponseMessage(_statusCode);
-        if (_httpContent != null)
-        {
-            httpResponseMessage.Content = _httpContent;
-        }
-
-        return Task.FromResult(httpResponseMessage);
-    }
-}
+public record OfferThirdPartyAutoSetupPropertyData(
+    [property: JsonPropertyName("bpnNumber")] string? BpnNumber, 
+    [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId, 
+    [property: JsonPropertyName("serviceId")] Guid ServiceId);
