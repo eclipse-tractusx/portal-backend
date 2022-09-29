@@ -55,10 +55,10 @@ public class ServiceProviderController : ControllerBase
     [HttpPost]
     [Route("{companyId:guid}")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(OkResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> CreateServiceProviderCompanyDetail([FromQuery] Guid companyId, [FromBody] ServiceProviderDetailData data)
+    public async Task<CreatedAtRouteResult> CreateServiceProviderCompanyDetail([FromRoute] Guid companyId, [FromBody] ServiceProviderDetailData data)
     {
         var id = await this.WithIamUserId(createdByName => _logic.CreateServiceProviderCompanyDetailsAsync(companyId, data, createdByName)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetServiceProviderCompanyDetail), new { serviceProviderDetailDataId = id }, id);
