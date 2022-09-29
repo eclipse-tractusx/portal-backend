@@ -227,7 +227,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<OfferAutoSetupResponseData> AutoSetupService(OfferAutoSetupData data, string iamUserId) =>
+    public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
         _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
