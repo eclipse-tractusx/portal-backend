@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -19,31 +19,57 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
 /// <summary>
-/// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
+/// Audit entity for App subscription relationship between companies and apps.
 /// </summary>
-public class AuditCompanyUserAssignedRoleCplp1440DbAuditing : IAuditEntity
+public class AuditOfferSubscription20220929 : IAuditEntity
 {
     /// <inheritdoc />
     public Guid AuditId { get; set; }
 
+    /// <inheritdoc />
     public Guid Id { get; set; }
+
+    /// <summary>
+    /// ID of the company subscribing an app.
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
+    /// ID of the apps subscribed by a company.
+    /// </summary>
+    public Guid OfferId { get; set; }
+
+    /// <summary>
+    /// ID of the app subscription status.
+    /// </summary>
+    public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
+
+    /// <summary>
+    /// Display Name for the company app combination
+    /// </summary>
+    public string? DisplayName { get; set; }
     
-    public Guid CompanyUserId { get; set; }
-    
-    public Guid UserRoleId { get; set; }
+    /// <summary>
+    /// Additional description for clarification
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Id of the app requester 
+    /// </summary>
+    public Guid RequesterId { get; set; }
     
     /// <inheritdoc />
     public Guid? LastEditorId { get; set; }
-    
-    /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
-    
+
     /// <inheritdoc />
     public DateTimeOffset DateLastChanged { get; set; }
+
+    /// <inheritdoc />
+    public AuditOperationId AuditOperationId { get; set; }
 }

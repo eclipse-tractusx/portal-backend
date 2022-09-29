@@ -48,6 +48,11 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
+    
+    public virtual DbSet<AuditOfferSubscription20220929> AuditOfferSubscription20220929 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20222909> AuditCompanyApplication20220929 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUser20220929> AuditCompanyUser20220929 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole20220929> AuditCompanyUserAssignedRole20220929 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -67,6 +72,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
     public virtual DbSet<ConnectorType> ConnectorTypes { get; set; } = default!;
+    public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
@@ -100,12 +106,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
-    public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
-    
-    public virtual DbSet<AuditOfferSubscriptionCplp1440DbAuditing> AuditOfferSubscriptionCplp1440DbAuditing { get; set; } = default!;
-    public virtual DbSet<AuditCompanyApplicationCplp1440DbAuditing> AuditCompanyApplicationCplp1440DbAuditing { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserCplp1440DbAuditing> AuditCompanyUserCplp1440DbAuditing { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserAssignedRoleCplp1440DbAuditing> AuditCompanyUserAssignedRoleCplp1440DbAuditing { get; set; } = default!;
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -249,7 +249,7 @@ public class PortalDbContext : DbContext
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
                         j.AfterInsert(trigger => trigger
                             .Action(action => action
-                                .Insert(newValue => new AuditOfferSubscriptionCplp1440DbAuditing
+                                .Insert(newValue => new AuditOfferSubscription20220929
                                 {
                                     Id = new Guid(),
                                     AuditId = newValue.Id,
@@ -265,7 +265,7 @@ public class PortalDbContext : DbContext
                                 })))
                         .AfterUpdate(trigger => trigger
                             .Action(action => action
-                                .Insert((oldEntity, newEntity) => new AuditOfferSubscriptionCplp1440DbAuditing
+                                .Insert((oldEntity, newEntity) => new AuditOfferSubscription20220929
                                 {
                                     Id = new Guid(),
                                     AuditId = oldEntity.Id,
@@ -281,7 +281,7 @@ public class PortalDbContext : DbContext
                                 })))
                         .AfterDelete(trigger => trigger
                             .Action(action => action
-                                .Insert(deletedEntity => new AuditOfferSubscriptionCplp1440DbAuditing
+                                .Insert(deletedEntity => new AuditOfferSubscription20220929
                                 {
                                     Id = new Guid(),
                                     AuditId = deletedEntity.Id,
@@ -531,7 +531,7 @@ public class PortalDbContext : DbContext
 
             entity.AfterInsert(trigger => trigger
                 .Action(action => action
-                    .Insert(newValue => new AuditCompanyApplicationCplp1440DbAuditing
+                    .Insert(newValue => new AuditCompanyApplication20222909
                     {
                         Id = new Guid(),
                         AuditId = newValue.Id,
@@ -544,7 +544,7 @@ public class PortalDbContext : DbContext
                     })));
             entity.AfterUpdate(trigger => trigger
                 .Action(action => action
-                    .Insert((oldEntity, newEntity) => new AuditCompanyApplicationCplp1440DbAuditing
+                    .Insert((oldEntity, newEntity) => new AuditCompanyApplication20222909
                     {
                         Id = new Guid(),
                         AuditId = oldEntity.Id,
@@ -557,7 +557,7 @@ public class PortalDbContext : DbContext
                     })));
             entity.AfterDelete(trigger => trigger
                 .Action(action => action
-                    .Insert(deletedEntity => new AuditCompanyApplicationCplp1440DbAuditing
+                    .Insert(deletedEntity => new AuditCompanyApplication20222909
                     {
                         Id = new Guid(),
                         AuditId = deletedEntity.Id,
@@ -687,7 +687,7 @@ public class PortalDbContext : DbContext
                             
                             j.AfterInsert(trigger => trigger
                                 .Action(action => action
-                                    .Insert(newValue => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
+                                    .Insert(newValue => new AuditCompanyUserAssignedRole20220929
                                     {
                                         Id = new Guid(),
                                         AuditId = newValue.Id,
@@ -699,7 +699,7 @@ public class PortalDbContext : DbContext
                                     })));
                             j.AfterUpdate(trigger => trigger
                                 .Action(action => action
-                                    .Insert((oldEntity, newEntity) => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
+                                    .Insert((oldEntity, newEntity) => new AuditCompanyUserAssignedRole20220929
                                     {
                                         Id = new Guid(),
                                         AuditId = oldEntity.Id,
@@ -711,7 +711,7 @@ public class PortalDbContext : DbContext
                                     })));
                             j.AfterDelete(trigger => trigger
                                 .Action(action => action
-                                    .Insert(deletedEntity => new AuditCompanyUserAssignedRoleCplp1440DbAuditing
+                                    .Insert(deletedEntity => new AuditCompanyUserAssignedRole20220929
                                     {
                                         Id = new Guid(),
                                         AuditId = deletedEntity.Id,
@@ -731,7 +731,7 @@ public class PortalDbContext : DbContext
             
             entity.AfterInsert(trigger => trigger
                 .Action(action => action
-                    .Insert(newValue => new AuditCompanyUserCplp1440DbAuditing
+                    .Insert(newValue => new AuditCompanyUser20220929
                     {
                         Id = new Guid(),
                         AuditId = newValue.Id,
@@ -748,7 +748,7 @@ public class PortalDbContext : DbContext
                     })));
             entity.AfterUpdate(trigger => trigger
                 .Action(action => action
-                    .Insert((oldEntity, newEntity) => new AuditCompanyUserCplp1440DbAuditing
+                    .Insert((oldEntity, newEntity) => new AuditCompanyUser20220929
                     {
                         Id = new Guid(),
                         AuditId = oldEntity.Id,
@@ -765,7 +765,7 @@ public class PortalDbContext : DbContext
                     })));
             entity.AfterDelete(trigger => trigger
                 .Action(action => action
-                    .Insert(deletedEntity => new AuditCompanyUserCplp1440DbAuditing
+                    .Insert(deletedEntity => new AuditCompanyUser20220929
                     {
                         Id = new Guid(),
                         AuditId = deletedEntity.Id,
