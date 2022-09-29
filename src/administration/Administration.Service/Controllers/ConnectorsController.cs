@@ -123,15 +123,15 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves company connector end point for the given bpn.
+    /// Retrieves company connector end point for the input bpn.
     /// </summary>
     /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
-    /// <remarks>Example: GET: /api/administration/connectors/discovery</remarks>
+    /// <remarks>Example: POST: /api/administration/connectors/discovery</remarks>
     /// <response code="200">Returns connector end point along with bpn.</response>
-    [HttpGet]
+    [HttpPost]
     [Route("discovery")]
     [Authorize(Roles = "view_connectors")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorCompanyData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<ConnectorCompanyData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
 }

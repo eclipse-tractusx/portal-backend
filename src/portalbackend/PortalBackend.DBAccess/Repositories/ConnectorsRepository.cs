@@ -90,12 +90,11 @@ public class ConnectorsRepository : IConnectorsRepository
     =>
         _context.Connectors
             .AsNoTracking()
-            .Where(connector => connector.Provider!.Id == connector.ProviderId && bpns.Contains(connector.Provider!.BusinessPartnerNumber))
-            .GroupBy(connector => connector.Provider!.BusinessPartnerNumber)
+            .Where(connector => bpns.Contains(connector.Provider!.BusinessPartnerNumber))
             .Select(connector => new ConnectorCompanyData
             (
-                connector.Key,
-                connector.Select(x => x.ConnectorUrl)
+                connector.Provider!.BusinessPartnerNumber,
+                connector.ConnectorUrl
             ))
             .AsAsyncEnumerable();
     
