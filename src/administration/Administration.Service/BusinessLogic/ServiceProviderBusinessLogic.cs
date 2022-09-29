@@ -73,7 +73,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company", nameof(iamUserId));
+            throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
         }
         if (!result.IsServiceProviderCompany)
         {

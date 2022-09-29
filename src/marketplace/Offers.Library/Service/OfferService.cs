@@ -280,7 +280,7 @@ public class OfferService : IOfferService
     {
         var results = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUserId, data.SalesManager)
-            .ToListAsync();
+            .ToListAsync().ConfigureAwait(false);
 
         if (!results.Any(x => x.IsIamUser))
             throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));

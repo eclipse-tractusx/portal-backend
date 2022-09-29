@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
@@ -41,6 +40,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSetupService _offerSetupService;
     private readonly IOfferService _offerService;
+    private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -49,16 +49,19 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
     /// <param name="offerService">Access to the offer service</param>
+    /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceBusinessLogic(
-        IPortalRepositories portalRepositories, 
-        IOfferSetupService offerSetupService, 
-        IOfferService offerService, 
+        IPortalRepositories portalRepositories,
+        IOfferSetupService offerSetupService,
+        IOfferService offerService,
+        IOfferSubscriptionService offerSubscriptionService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
         _offerService = offerService;
+        _offerSubscriptionService = offerSubscriptionService;
         _settings = settings.Value;
     }
 
@@ -92,60 +95,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId)
-    {
-        var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
-        if (serviceDetails == null)
-        {
-            throw new NotFoundException($"Service {serviceId} does not exist");
-        }
-
-        var (companyId, companyUserId, companyName, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(iamUserId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
-        }
-        
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
-        }
-
-        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
-        var autoSetupResult = string.Empty;
-        if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
-        {
-            try
-            {
-                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                autoSetupResult = e.Message;
-            }
-        }
-
-        if (serviceDetails.SalesManagerId.HasValue)
-        {
-            var notificationContent = new
-            {
-                serviceDetails.AppName,
-                RequestorCompanyName = companyName,
-                UserEmail = requesterEmail,
-                AutoSetupExecuted = !string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl),
-                AutoSetupError = autoSetupResult
-            };
-            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(serviceDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
-                notification =>
-                {
-                    notification.CreatorUserId = companyUserId;
-                    notification.Content = JsonSerializer.Serialize(notificationContent);
-                });
-        }
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return offerSubscription.Id;
-    }
+    public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId) =>
+        _offerSubscriptionService.AddServiceSubscription(serviceId, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
