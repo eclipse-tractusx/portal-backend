@@ -46,7 +46,6 @@ public class ServiceBusinessLogicTests
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
     private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
-    private readonly Guid _newOfferSubscriptionId = new("5305d56b-4544-40cc-a02e-912cc19998fa"); 
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
@@ -199,7 +198,7 @@ public class ServiceBusinessLogicTests
         var data = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetServiceAgreement(_existingServiceId).ToListAsync().ConfigureAwait(false);
@@ -252,7 +251,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => consentId);
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
@@ -269,7 +268,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<ServiceAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<ServiceAgreementConsentData>
@@ -293,7 +292,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .ReturnsLazily(() => data);
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetServiceConsentDetailDataAsync(_validConsentId).ConfigureAwait(false);
@@ -311,7 +310,7 @@ public class ServiceBusinessLogicTests
         var invalidConsentId = Guid.NewGuid();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .Throws(() => new NotFoundException("Test"));
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
