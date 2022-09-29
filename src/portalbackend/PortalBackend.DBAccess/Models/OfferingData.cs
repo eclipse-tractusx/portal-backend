@@ -31,20 +31,20 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ContactEmail">contact email address</param>
 /// <param name="SalesManager">the sales manager of the service</param>
 /// <param name="Descriptions">the service descriptions</param>
-public record ServiceOfferingData(
+public record OfferingData(
     string Title,
     string Price,
     string? ThumbnailUrl,
     string? ContactEmail,
     Guid SalesManager,
-    IEnumerable<ServiceDescription> Descriptions);
+    IEnumerable<OfferingDescription> Descriptions);
 
 /// <summary>
 /// Description of a service
 /// </summary>
 /// <param name="LanguageCode">the language code (2-chars)</param>
 /// <param name="Description">the service description</param>
-public record ServiceDescription(string LanguageCode, string Description);
+public record OfferingDescription(string LanguageCode, string Description);
 
 /// <summary>
 /// Data object for the service agreement consent

@@ -18,30 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore.Migrations;
+using System.Text.Json.Serialization;
 
-#nullable disable
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
-{
-    public partial class CPLP1409ExpandNotificationTypes : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.InsertData(
-                schema: "portal",
-                table: "notification_type",
-                columns: new[] { "id", "label" },
-                values: new object[] { 12, "TECHNICAL_USER_CREATION" });
-        }
+public record OfferThirdPartyAutoSetupData(
+    [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer, 
+    [property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "notification_type",
-                keyColumn: "id",
-                keyValue: 12);
-        }
-    }
-}
+public record OfferThirdPartyAutoSetupCustomerData(
+    [property: JsonPropertyName("organizationName")] string OrganizationName, 
+    [property: JsonPropertyName("country")] string Country, 
+    [property: JsonPropertyName("email")] string? Email);
+
+public record OfferThirdPartyAutoSetupPropertyData(
+    [property: JsonPropertyName("bpnNumber")] string? BpnNumber, 
+    [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId, 
+    [property: JsonPropertyName("serviceId")] Guid ServiceId);
