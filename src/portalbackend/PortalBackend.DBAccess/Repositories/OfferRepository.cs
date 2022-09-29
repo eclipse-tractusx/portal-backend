@@ -58,7 +58,7 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc/>
     public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
         _context.OfferSubscriptions.AsNoTracking()
-            .Where(appClient => appClient.Id == appId && appClient.CompanyId == companyId)
+            .Where(subscription => subscription.OfferId == appId && subscription.CompanyId == companyId)
             .Select(x => x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
             .SingleOrDefaultAsync();
     
