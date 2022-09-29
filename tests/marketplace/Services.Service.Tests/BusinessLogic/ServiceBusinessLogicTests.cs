@@ -32,6 +32,7 @@ using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.BusinessLogic;
@@ -41,6 +42,7 @@ public class ServiceBusinessLogicTests
     private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly string _notAssignedCompanyIdUser = "395f955b-f11b-4a74-ab51-92a526c1973c";
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+    private readonly Guid _existingServiceWithFailingAutoSetupId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
     private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
@@ -85,8 +87,17 @@ public class ServiceBusinessLogicTests
 
         SetupRepositories(companyUser, iamUser);
         SetupServices(iamUser);
+
+        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>()
+        {
+            {"Test", new[] {"Technical User"}}
+        };
         
-        _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15 }));
+        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>()
+        {
+            {"CatenaX", new[] {"Company Admin"}}
+        };
+        _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15, ServiceAccountRoles = serviceAccountRoles, CompanyAdminRoles = companyAdminRoles}));
         _fixture.Inject(_offerSetupService);
     }
 
@@ -114,7 +125,6 @@ public class ServiceBusinessLogicTests
             {
                 OfferTypeId = OfferTypeId.SERVICE 
             });
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -148,7 +158,6 @@ public class ServiceBusinessLogicTests
                 OfferTypeId = OfferTypeId.SERVICE 
             });
         
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -167,7 +176,6 @@ public class ServiceBusinessLogicTests
     public async Task CreateServiceOffering_WithWrongIamUser_ThrowsException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -182,7 +190,6 @@ public class ServiceBusinessLogicTests
     public async Task CreateServiceOffering_WithInvalidLanguage_ThrowsException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -201,7 +208,6 @@ public class ServiceBusinessLogicTests
     public async Task CreateServiceOffering_WithoutCompanyUser_ThrowsException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -220,7 +226,6 @@ public class ServiceBusinessLogicTests
     public async Task GetAllActiveServicesAsync_WithDefaultRequest_GetsExpectedEntries()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -236,7 +241,6 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         const int expectedCount = 3;
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -281,7 +285,6 @@ public class ServiceBusinessLogicTests
                 setOptionalParameter?.Invoke(notification);
                 notifications.Add(notification);
             });
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -293,11 +296,38 @@ public class ServiceBusinessLogicTests
     }
     
     [Fact]
+    public async Task AddServiceSubscription_WithFailingAutoSetup_ReturnsExpectedResult()
+    {
+        // Arrange
+        var notificationId = Guid.NewGuid();
+        var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>(); 
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
+            .Invokes(x =>
+            {
+                var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
+                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
+                var isRead = x.Arguments.Get<bool>("isRead");
+                var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
+
+                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameter?.Invoke(notification);
+                notifications.Add(notification);
+            });
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        await sut.AddServiceSubscription(_existingServiceWithFailingAutoSetupId, _iamUser.UserEntityId);
+
+        // Assert
+        notifications.Should().ContainSingle();
+        notifications.First().Content.Should().Contain("Error occured");
+    }
+
+    [Fact]
     public async Task AddServiceSubscription_WithNotExistingId_ThrowsException()
     {
         // Arrange
         var notExistingServiceId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -312,7 +342,6 @@ public class ServiceBusinessLogicTests
     public async Task AddServiceSubscription_NotAssignedCompany_ThrowsException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -327,7 +356,6 @@ public class ServiceBusinessLogicTests
     public async Task AddServiceSubscription_NotAssignedCompanyUser_ThrowsException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -346,7 +374,6 @@ public class ServiceBusinessLogicTests
     public async Task GetServiceDetailsAsync_WithExistingServiceAndLanguageCode_ReturnsServiceDetailData()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -361,7 +388,6 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var notExistingServiceId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -401,7 +427,6 @@ public class ServiceBusinessLogicTests
     public async Task GetSubscriptionDetails_WithValidId_ReturnsSubscriptionDetailData()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -416,7 +441,6 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var notExistingId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
@@ -509,6 +533,28 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Auto setup service
+
+    [Fact]
+    public async Task AutoSetupService_ReturnsExcepted()
+    {
+        // Arrange
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => new OfferAutoSetupResponseData( Guid.NewGuid(), "abcSecret"));
+        var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var result = await sut.AutoSetupServiceAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    #endregion
+    
+
     #region Setup
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
@@ -547,7 +593,9 @@ public class ServiceBusinessLogicTests
         
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com"));
-        A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
+        A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
+        A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId || x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
         
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
@@ -620,14 +668,15 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+        _fixture.Inject(_portalRepositories);
     }
 
     private void SetupServices(IamUser iamUser)
     {
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>.That.Matches(x => x == _newOfferSubscriptionId), A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>._))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.testurl.com")))
             .ReturnsLazily(() => Task.CompletedTask);
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>.That.Not.Matches(x => x == _newOfferSubscriptionId), A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.fail.com")))
+            .ThrowsAsync(() => new ServiceException("Error occured"));
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
