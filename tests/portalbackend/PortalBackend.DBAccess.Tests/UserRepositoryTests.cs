@@ -48,10 +48,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetOwnCompanAndCompanyUseryId
+    #region GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync
 
     [Fact]
-    public async Task GetOwnCompanAndCompanyUseryId_WithValidIamUser_ReturnsExpectedResult()
+    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
@@ -66,13 +66,44 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
-    public async Task GetOwnCompanAndCompanyUseryId_WithNotExistingIamUser_ReturnsDefault()
+    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithNotExistingIamUser_ReturnsDefault()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        (result == default).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region GetOwnCompanAndCompanyUseryId
+
+    [Fact]
+    public async Task GetOwnCompanAndCompanyUseryId_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanAndCompanyUseryId(ValidIamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
+    }
+
+    [Fact]
+    public async Task GetOwnCompanAndCompanyUseryId_WithNotExistingIamUser_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanAndCompanyUseryId(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         (result == default).Should().BeTrue();

@@ -85,7 +85,26 @@ public class OfferSetupServiceTests
     }
 
     [Fact]
-    public async Task AutoSetupOffer_WithNonSuccessfullyClientCall_ReturnsFalse()
+    public async Task AutoSetupOffer_WithNotExistingServiceId_ThrowsArgumentException()
+    {
+        // Arrange
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock);
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        _fixture.Inject(_httpClientFactory);
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<OfferSetupService>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupOffer(Guid.NewGuid(), _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Action);
+        ex.ParamName.Should().Be("iamUserId");
+    }
+
+    [Fact]
+    public async Task AutoSetupOffer_WithNonSuccessfullyClientCall_ThrowsServiceException()
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
@@ -101,6 +120,44 @@ public class OfferSetupServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
         ex.Message.Should().Be("Request failed");
+    }
+
+    [Fact]
+    public async Task AutoSetupOffer_WithDnsError_ReturnsServiceException()
+    {
+        // Arrange
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new HttpRequestException ("DNS Error"));
+        var httpClient = new HttpClient(httpMessageHandlerMock);
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        _fixture.Inject(_httpClientFactory);
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<OfferSetupService>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Action);
+        ex.Message.Should().Be("The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.");
+    }
+
+    [Fact]
+    public async Task AutoSetupOffer_WithTimeout_ReturnsServiceException()
+    {
+        // Arrange
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new TaskCanceledException("Timed out"));
+        var httpClient = new HttpClient(httpMessageHandlerMock);
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        _fixture.Inject(_httpClientFactory);
+        _fixture.Inject(_portalRepositories);
+        var sut = _fixture.Create<OfferSetupService>();
+
+        // Act
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Action);
+        ex.Message.Should().Be("The request failed due to timeout.");
     }
 
     #endregion

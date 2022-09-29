@@ -106,5 +106,5 @@ public interface IServiceBusinessLogic
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupService(OfferAutoSetupData data, string iamUserId);
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId);
 }
