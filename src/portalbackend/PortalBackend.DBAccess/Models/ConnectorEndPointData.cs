@@ -26,4 +26,12 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Bpn"></param>
 /// <param name="ConnectorEndpoint"></param>
 /// <returns></returns>
-public record ConnectorCompanyData(string? Bpn, IEnumerable<string> ConnectorEndpoint);
+public record ConnectorCompanyData(string? Bpn, string ConnectorEndpoint);
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="Bpn"></param>
+/// <param name="ConnectorEndpoint"></param>
+/// <returns></returns>
+public record ConnectorEndPointData(string? Bpn, IEnumerable<string> ConnectorEndpoint);

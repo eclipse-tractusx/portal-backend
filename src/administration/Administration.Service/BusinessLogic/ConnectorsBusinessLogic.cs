@@ -153,7 +153,15 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ConnectorCompanyData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>
-        _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorEndPointDataAsync(bpns);
+    public async IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns)
+    {
+        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorEndPointDataAsync(bpns).ToListAsync().ConfigureAwait(false);
+        var  connectorCompanyData = result.GroupBy(t => t.Bpn!).Select(group => new ConnectorEndPointData(group.Key, group.Select(x=>x.ConnectorEndpoint)));
+        foreach(var item in connectorCompanyData)
+        {
+            yield return  item;
+        }
+    }
+        
     
 }
