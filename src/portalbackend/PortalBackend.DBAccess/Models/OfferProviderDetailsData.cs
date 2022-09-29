@@ -27,4 +27,5 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ProviderName">Name of the provider</param>
 /// <param name="ProviderContactEmail">Contact email of the provider</param>
 /// <param name="SalesManagerId">Id of the sales manager for the app</param>
-public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid? SalesManagerId);
+/// <param name="AutoSetupUrl">Url for the autosetup</param>
+public record OfferProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid? SalesManagerId, string? AutoSetupUrl);

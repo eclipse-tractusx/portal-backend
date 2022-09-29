@@ -18,38 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+public record ServiceProviderDetailData(string Url);
 
-public class HttpMessageHandlerMock : HttpMessageHandler
-{
-    private readonly HttpStatusCode _statusCode;
-    private readonly Exception? _ex;
-    private readonly HttpContent? _httpContent;
-
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null)
-    {
-        _statusCode = statusCode;
-        _httpContent = httpContent;
-        _ex = ex;
-    }
-
-    protected override Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
-    {
-        if (_ex != null)
-        {
-            throw _ex;
-        }
-
-        var httpResponseMessage = new HttpResponseMessage(_statusCode);
-        if (_httpContent != null)
-        {
-            httpResponseMessage.Content = _httpContent;
-        }
-
-        return Task.FromResult(httpResponseMessage);
-    }
-}
+public record ServiceProviderDetailReturnData(Guid Id, Guid CompanyId, string Url);
