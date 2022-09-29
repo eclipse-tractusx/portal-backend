@@ -127,10 +127,13 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<Guid> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRole) =>
-        _context.IamUsers
-            .Where(x => x.UserEntityId == iamUserId && x.CompanyUser!.Company!.CompanyAssignedRoles.Any(car => car.CompanyRoleId == companyRole))
-            .Select(x => x.CompanyUser!.CompanyId)
+    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId) =>
+        _context.Companies.AsNoTracking()
+            .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(company => new ValueTuple<Guid,bool>(
+                company.Id,
+                company.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)
+            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -138,11 +141,13 @@ public class CompanyRepository : ICompanyRepository
         _context.ServiceProviderCompanyDetails.Add(new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public Task<ServiceProviderDetailReturnData?> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, string iamUserId) =>
+    public Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId) =>
         _context.ServiceProviderCompanyDetails
             .Where(x => 
-                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId) &&
                 x.Id == serviceProviderDetailDataId)
-            .Select(x => new ServiceProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl))
+            .Select(x => new ValueTuple<ServiceProviderDetailReturnData,bool,bool>(
+                new ServiceProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
+                x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
+                x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 }

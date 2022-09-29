@@ -44,14 +44,22 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     public async Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetServiceProviderCompanyDetailAsync(serviceProviderDetailDataId, iamUserId)
+            .GetServiceProviderCompanyDetailAsync(serviceProviderDetailDataId, CompanyRoleId.SERVICE_PROVIDER, iamUserId)
             .ConfigureAwait(false);
-        if (result is null)
+        if (result == default)
         {
-            throw new ControllerArgumentException($"User {iamUserId} is not allowed to request the service provider detail data.", nameof(iamUserId));
+            throw new NotFoundException($"serviceProviderDetail {serviceProviderDetailDataId} does not exist");
+        }
+        if (!result.IsCompanyUser)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not allowed to request the service provider detail data.");
+        }
+        if (!result.IsServiceProviderCompany)
+        {
+            throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
         }
 
-        return result;
+        return result.ServiceProviderDetailReturnData;
     }
 
     /// <inheritdoc />
@@ -62,13 +70,17 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        var companyId = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
+        if (result == default)
         {
             throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company", nameof(iamUserId));
         }
+        if (!result.IsServiceProviderCompany)
+        {
+            throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+        }
 
-        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(companyId, data.Url);
+        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(result.CompanyId, data.Url);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return companyDetails.Id;
     }

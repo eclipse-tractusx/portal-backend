@@ -20,6 +20,7 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -86,37 +87,42 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
         
         // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(_validDetailId);
+        result.Should().NotBe(default);
+        result.ServiceProviderDetailReturnData.Should().NotBeNull();
+        result.ServiceProviderDetailReturnData.Id.Should().Be(_validDetailId);
+        result.IsServiceProviderCompany.Should().BeTrue();
+        result.IsCompanyUser.Should().BeTrue();
     }
 
     [Fact]
-    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingDetails_ReturnsNull()
+    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingDetails_ReturnsDefault()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetServiceProviderCompanyDetailAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetServiceProviderCompanyDetailAsync(Guid.NewGuid(), CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().Be(default);
     }
 
     [Fact]
-    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingUser_ReturnsNull()
+    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingUser_ReturnsIsCompanyUserFalse()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().NotBe(default);
+        result.IsServiceProviderCompany.Should().BeTrue();
+        result.IsCompanyUser.Should().BeFalse();
     }
 
     #endregion
@@ -133,7 +139,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetCompanyIdMatchingRoleAndIamUser("3d8142f1-860b-48aa-8c2b-1ccb18699f66", CompanyRoleId.SERVICE_PROVIDER);
 
         // Assert
-        results.Should().NotBe(Guid.Empty);
+        results.Should().NotBe(default);
+        results.CompanyId.Should().NotBe(Guid.Empty);
+        results.IsServiceProviderCompany.Should().BeTrue();
     }
     
     [Fact]
@@ -146,7 +154,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetCompanyIdMatchingRoleAndIamUser("4b8f156e-5dfc-4a58-9384-1efb195c1c34", CompanyRoleId.SERVICE_PROVIDER);
 
         // Assert
-        results.Should().Be(Guid.Empty);
+        results.Should().NotBe(default);
+        results.CompanyId.Should().NotBe(Guid.Empty);
+        results.IsServiceProviderCompany.Should().BeFalse();
     }
 
     #endregion
