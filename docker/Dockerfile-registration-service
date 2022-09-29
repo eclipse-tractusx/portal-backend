@@ -3,11 +3,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
-WORKDIR /src/registration/CatenaX.NetworkServices.Registration.Service
-RUN dotnet build "CatenaX.NetworkServices.Registration.Service.csproj" -c Release -o /app/build
+WORKDIR /src/registration/Registration.Service
+RUN dotnet build "Registration.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "CatenaX.NetworkServices.Registration.Service.csproj" -c Release -o /app/publish
+RUN dotnet publish "Registration.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
@@ -16,4 +16,4 @@ ENV ASPNETCORE_URLS http://+:8080
 EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
-ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Registration.Service.dll"]
+ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Registration.Service.dll"]

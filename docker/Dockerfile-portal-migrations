@@ -6,12 +6,12 @@ WORKDIR /
 RUN dotnet tool install dotnet-ef -g
 ENV PATH $PATH:/root/.dotnet/tools
 COPY /src/portalbackend /src/portalbackend
-WORKDIR /src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations
+WORKDIR /src/portalbackend/PortalBackend.Migrations
 RUN dotnet-ef migrations bundle -r linux-x64
 
 FROM base AS final
 WORKDIR /migrations
-COPY --from=build /src/portalbackend/CatenaX.NetworkServices.PortalBackend.Migrations/efbundle .
+COPY --from=build /src/portalbackend/PortalBackend.Migrations/efbundle .
 ENV ASPNETCORE_URLS http://+:8080
 EXPOSE 8080
 RUN chown -R 1000:3000 /migrations
