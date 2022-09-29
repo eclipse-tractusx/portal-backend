@@ -46,6 +46,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid _invalidCompanyId = Guid.NewGuid();
     private static readonly Guid _invalidHostId = Guid.NewGuid();
     private static readonly string _iamUserId = Guid.NewGuid().ToString();
+    private static readonly string _technicalUserId = Guid.NewGuid().ToString();
     private static readonly string _accessToken = "validToken";
     private static readonly List<Connector> _connectors = new();
     private readonly ICountryRepository _countryRepository;
@@ -92,7 +93,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
             _validCompanyId);
         
@@ -107,7 +108,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "invalid", _validCompanyId,
             _validCompanyId);
         
@@ -123,7 +124,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalidCompany_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _invalidCompanyId,
             _invalidCompanyId);
         
@@ -139,7 +140,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithCompanyWithoutBpn_ThrowsUnexpectedConditionException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _companyWithoutBpnId,
             _companyWithoutBpnId);
         
@@ -155,7 +156,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalid_ThrowsUnexpectedConditionException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
             _invalidHostId);
         
@@ -175,7 +176,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
             _validCompanyId);
         
@@ -187,10 +188,25 @@ public class ConnectorsBusinessLogicTests
     }
     
     [Fact]
+    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
+    {
+        // Arrange
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
+            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
+            _validCompanyId);
+        
+        // Act
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _technicalUserId, true).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task CreateManagedConnectorAsync_WithDifferentCompanyIdThanUsersCompanyId_ThrowsException()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
             _validHostId);
         
@@ -261,8 +277,15 @@ public class ConnectorsBusinessLogicTests
                 _connectors.Add(connector);
             });
 
-        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryId(A<string>.That.Matches(x => x == _iamUserId)))
-            .ReturnsLazily(() => new ValueTuple<Guid, Guid>(_validCompanyId, Guid.NewGuid()));
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Matches(x => x == _iamUserId)))
+            .ReturnsLazily(() => _validCompanyId);
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Not.Matches(x => x == _iamUserId)))
+            .ReturnsLazily(() => Guid.Empty);
+
+        A.CallTo(() => _userRepository.GetTechnicalUserCompany(A<string>.That.Matches(x => x == _technicalUserId)))
+            .ReturnsLazily(() => _validCompanyId);
+        A.CallTo(() => _userRepository.GetTechnicalUserCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
+            .ReturnsLazily(() => Guid.Empty);
 
         A.CallTo(() => _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
                     A<string>._))

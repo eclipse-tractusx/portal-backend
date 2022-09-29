@@ -98,8 +98,16 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (isManaged)
         {
-            // TODO (PS): Check possibility for technical user
-            var (iamUserCompanyId, _) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+            // First check if iamUser is normal user
+            var iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyId(iamUserId).ConfigureAwait(false);
+            // if not check for technical user
+            if (iamUserCompanyId == Guid.Empty)
+            {
+                iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>()
+                    .GetTechnicalUserCompany(iamUserId)
+                    .ConfigureAwait(false);
+            }
+
             if (iamUserCompanyId != connectorInputModel.Host)
             {
                 throw new ControllerArgumentException(

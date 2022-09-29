@@ -128,7 +128,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        var (companyId, companyUserId) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+        var (companyId, companyUserId) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAndCompanyUserId(iamUserId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
