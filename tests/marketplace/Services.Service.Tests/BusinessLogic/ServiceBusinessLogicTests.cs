@@ -154,117 +154,6 @@ public class ServiceBusinessLogicTests
 
     #region Add Service Subscription
 
-    [Fact]
-    public async Task AddServiceSubscription_WithExistingId_CreatesServiceSubscription()
-    {
-        // Arrange 
-        var companyAssignedApps = new List<OfferSubscription>();
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
-            .Invokes(x =>
-            {
-                var appId = x.Arguments.Get<Guid>("offerId");
-                var companyId = x.Arguments.Get<Guid>("companyId");
-                var appSubscriptionStatusId = x.Arguments.Get<OfferSubscriptionStatusId>("offerSubscriptionStatusId");
-                var requesterId = x.Arguments.Get<Guid>("requesterId");
-                var creatorId = x.Arguments.Get<Guid>("creatorId");
-
-                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, appId, companyId, appSubscriptionStatusId, requesterId, creatorId);
-                companyAssignedApps.Add(companyAssignedApp);
-            });
-        var notificationId = Guid.NewGuid();
-        var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>(); 
-        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
-            .Invokes(x =>
-            {
-                var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
-                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
-                var isRead = x.Arguments.Get<bool>("isRead");
-                var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
-
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameter?.Invoke(notification);
-                notifications.Add(notification);
-            });
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId);
-
-        // Assert
-        companyAssignedApps.Should().HaveCount(1);
-        notifications.Should().HaveCount(1);
-    }
-    
-    [Fact]
-    public async Task AddServiceSubscription_WithFailingAutoSetup_ReturnsExpectedResult()
-    {
-        // Arrange
-        var notificationId = Guid.NewGuid();
-        var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>(); 
-        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
-            .Invokes(x =>
-            {
-                var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
-                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
-                var isRead = x.Arguments.Get<bool>("isRead");
-                var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
-
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameter?.Invoke(notification);
-                notifications.Add(notification);
-            });
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        await sut.AddServiceSubscription(_existingServiceWithFailingAutoSetupId, _iamUser.UserEntityId);
-
-        // Assert
-        notifications.Should().ContainSingle();
-        notifications.First().Content.Should().Contain("Error occured");
-    }
-
-    [Fact]
-    public async Task AddServiceSubscription_WithNotExistingId_ThrowsException()
-    {
-        // Arrange
-        var notExistingServiceId = Guid.NewGuid();
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.AddServiceSubscription(notExistingServiceId, _iamUser.UserEntityId);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Service {notExistingServiceId} does not exist");
-    }
-    
-    [Fact]
-    public async Task AddServiceSubscription_NotAssignedCompany_ThrowsException()
-    {
-        // Arrange
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, _notAssignedCompanyIdUser);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
-    }
-
-    [Fact]
-    public async Task AddServiceSubscription_NotAssignedCompanyUser_ThrowsException()
-    {
-        // Arrange
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, Guid.NewGuid().ToString());
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
-    }
 
     #endregion
 
@@ -310,7 +199,7 @@ public class ServiceBusinessLogicTests
         var data = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetServiceAgreement(_existingServiceId).ToListAsync().ConfigureAwait(false);
@@ -363,7 +252,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => consentId);
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
@@ -380,7 +269,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<ServiceAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<ServiceAgreementConsentData>
@@ -404,7 +293,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .ReturnsLazily(() => data);
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetServiceConsentDetailDataAsync(_validConsentId).ConfigureAwait(false);
@@ -422,7 +311,7 @@ public class ServiceBusinessLogicTests
         var invalidConsentId = Guid.NewGuid();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .Throws(() => new NotFoundException("Test"));
-        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, Options.Create(new ServiceSettings()));
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferSetupService>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
         async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId).ConfigureAwait(false);
