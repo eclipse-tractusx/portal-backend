@@ -47,6 +47,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
+    
+    public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -66,12 +70,11 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
     public virtual DbSet<ConnectorType> ConnectorTypes { get; set; } = default!;
-    public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
-    public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
     public virtual DbSet<Consent> Consents { get; set; } = default!;
-    public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
+    public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
     public virtual DbSet<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; set; } = default!;
+    public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
@@ -87,7 +90,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
-    public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<Offer> Offers { get; set; } = default!;
     public virtual DbSet<OfferAssignedDocument> OfferAssignedDocuments { get; set; } = default!;
     public virtual DbSet<OfferAssignedLicense> OfferAssignedLicenses { get; set; } = default!;
@@ -99,10 +101,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
-    public virtual DbSet<ConsentAssignedOffer> ConsentAssignedOffers { get; set; } = default!;
-    public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
+    public virtual DbSet<ServiceProviderCompanyDetail> ServiceProviderCompanyDetails { get; set; } = default!;
+    public virtual DbSet<UseCase> UseCases { get; set; } = default!;
+    public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
+    public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -193,6 +195,7 @@ public class PortalDbContext : DbContext
                     .Cast<AgreementCategoryId>()
                     .Select(e => new AgreementCategory(e))
             );
+        
         modelBuilder.Entity<ConsentAssignedOffer>(entity =>
         {
             entity.HasKey(e => new { e.ConsentId, e.OfferId });
@@ -207,6 +210,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+        
         modelBuilder.Entity<Offer>(entity =>
         {
             entity.HasOne(d => d.ProviderCompany)
@@ -467,6 +471,13 @@ public class PortalDbContext : DbContext
                         j.HasKey(e => new { e.CompanyId, e.IdentityProviderId });
                     }
                 );
+        });
+
+        modelBuilder.Entity<ServiceProviderCompanyDetail>(entity =>
+        {
+            entity.HasOne(e => e.Company)
+                .WithOne(e => e.ServiceProviderCompanyDetail)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<CompanyApplication>()
