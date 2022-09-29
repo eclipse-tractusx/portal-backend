@@ -25,16 +25,23 @@ namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 public class HttpMessageHandlerMock : HttpMessageHandler
 {
     private readonly HttpStatusCode _statusCode;
+    private readonly Exception? _ex;
 
-    public HttpMessageHandlerMock(HttpStatusCode statusCode)
+    public HttpMessageHandlerMock(HttpStatusCode statusCode, Exception? ex = null)
     {
         _statusCode = statusCode;
+        _ex = ex;
     }
     
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        return Task.FromResult(new HttpResponseMessage(_statusCode));
+        if (_ex is null)
+        {
+            return Task.FromResult(new HttpResponseMessage(_statusCode));
+        }
+
+        throw _ex;
     }
 }

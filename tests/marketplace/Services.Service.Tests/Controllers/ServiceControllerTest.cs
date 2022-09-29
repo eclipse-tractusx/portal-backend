@@ -199,14 +199,14 @@ public class ServiceControllerTest
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(Guid.NewGuid(), "abcPW");
-        A.CallTo(() => _logic.AutoSetupService(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
             .Returns(responseData);
 
         //Act
         var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AutoSetupService(data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AutoSetupServiceAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
