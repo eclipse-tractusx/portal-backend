@@ -40,16 +40,24 @@ public class OfferSetupService : IOfferSetupService
     public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
     {
         using var httpClient = _httpClientFactory.CreateClient();
-        var offerAutoSetupData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
-        if (offerAutoSetupData == null)
+        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetThirdPartyAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
-            throw new ArgumentException($"IamUser {iamUserId} is not assigned to company", nameof(iamUserId));
+            throw new NotFoundException($"serviceSubscription {serviceSubscriptionId} does not exist");
+        }
+        var (autoSetupData, isUsersCompany) = result;
+        if (!isUsersCompany)
+        {
+            throw new ForbiddenException($"IamUser {iamUserId} company is not associated with serviceSubscription");
+        }
+        if (autoSetupData.OfferThirdPartyAutoSetupProperties.BpnNumber == null)
+        {
+            throw new ConflictException($"company {autoSetupData.OfferThirdPartyAutoSetupCustomer.OrganizationName} has no BusinessPartnerNumber assigned");
         }
 
         try
         {
-            var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, offerAutoSetupData)
-                .ConfigureAwait(false);
+            var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)
                 return;
