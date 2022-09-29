@@ -57,7 +57,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryId(ValidIamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(ValidIamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -72,7 +72,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryId(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         (result == default).Should().BeTrue();

@@ -23,6 +23,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -75,10 +76,12 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        var result = await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
-        result.Should().BeTrue();
+        A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
+            A<Guid>.That.Matches(x => x == _existingServiceId),
+            A<string>.That.Matches(x => x == _iamUser.UserEntityId))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -93,10 +96,11 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        var result = await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
-        result.Should().BeFalse();
+        var ex = await Assert.ThrowsAsync<ServiceException>(Action);
+        ex.Message.Should().Be("Request failed");
     }
 
     #endregion
@@ -107,7 +111,7 @@ public class OfferSetupServiceTests
     {
         A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
-            .ReturnsLazily(() => new OfferThirdPartyAutoSetupData(new CustomerData("Test Provider", "de", "tony@stark.com"), new PropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId)));
+            .ReturnsLazily(() => new OfferThirdPartyAutoSetupData(new OfferThirdPartyAutoSetupCustomerData("Test Provider", "de", "tony@stark.com"), new OfferThirdPartyAutoSetupPropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId)));
         A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
             .ReturnsLazily(() => (OfferThirdPartyAutoSetupData?)null);

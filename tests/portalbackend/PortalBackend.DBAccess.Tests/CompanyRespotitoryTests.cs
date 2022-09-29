@@ -38,8 +38,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
-
+    private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+    private readonly Guid _validDetailId = new("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122");
     
     public CompanyRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -76,6 +77,50 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
+    #region Create ServiceProviderCompanyDetail
+
+    [Fact]
+    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, IamUserId).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(_validDetailId);
+    }
+
+    [Fact]
+    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingDetails_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceProviderCompanyDetailAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingUser_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
     #region Check Company is ServiceProvider and exists for IamUser
 
     [Fact]

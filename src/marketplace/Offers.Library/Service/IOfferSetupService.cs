@@ -25,5 +25,5 @@ namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 /// </summary>
 public interface IOfferSetupService
 { 
-    Task<bool> AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl);
+    Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl);
 }

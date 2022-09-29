@@ -140,7 +140,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProviderDetailsAsync(_offerId).ConfigureAwait(false);
+        var result = await sut.GetOfferProviderDetailsAsync(_offerId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -153,7 +153,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();

@@ -27,6 +27,24 @@ public class ServiceProviderController : ControllerBase
     /// <summary>
     /// Adds detail data to the service provider
     /// </summary>
+    /// <param name="serviceProviderDetailDataId" example="ccf3cd17-c4bc-4cec-a041-2da709b787b0">Id of the service provider detail data</param>
+    /// <returns></returns>
+    /// <remarks>Example: POST: api/administration/serviceprovider/ccf3cd17-c4bc-4cec-a041-2da709b787b0</remarks>
+    /// <response code="200">The service provider details.</response>
+    /// <response code="400">The given data are incorrect.</response>
+    /// <response code="404">Service Provider was not found.</response>
+    [HttpPost]
+    [Route("", Name = nameof(GetServiceProviderCompanyDetail))]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(ServiceProviderDetailReturnData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetail([FromQuery] Guid serviceProviderDetailDataId) =>
+        this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, iamUserId));
+
+    /// <summary>
+    /// Adds detail data to the service provider
+    /// </summary>
     /// <param name="companyId" example="ccf3cd17-c4bc-4cec-a041-2da709b787b0">Id of the service provider</param>
     /// <param name="data">Data to be added to the service provider</param>
     /// <returns></returns>
@@ -40,10 +58,9 @@ public class ServiceProviderController : ControllerBase
     [ProducesResponseType(typeof(OkResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<OkResult> CreateServiceProviderCompanyDetail([FromQuery] Guid companyId, [FromBody] ServiceProviderDetailData data)
+    public async Task<CreatedAtRouteResult> CreateServiceProviderCompanyDetail([FromQuery] Guid companyId, [FromBody] ServiceProviderDetailData data)
     {
-        await this.WithIamUserId(createdByName =>
-            _logic.CreateServiceProviderCompanyDetails(companyId, data, createdByName)).ConfigureAwait(false);
-        return Ok();
+        var id = await this.WithIamUserId(createdByName => _logic.CreateServiceProviderCompanyDetailsAsync(companyId, data, createdByName)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetServiceProviderCompanyDetail), new { serviceProviderDetailDataId = id }, id);
     }
 }
