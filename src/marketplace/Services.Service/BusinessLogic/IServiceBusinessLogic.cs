@@ -42,7 +42,7 @@ public interface IServiceBusinessLogic
     /// <param name="data">The data to create the service offering</param>
     /// <param name="iamUserId">the iamUser id</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOffering(ServiceOfferingData data, string iamUserId);
+    Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId);
 
     /// <summary>
     /// Adds a subscription to the given service

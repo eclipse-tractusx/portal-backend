@@ -55,15 +55,15 @@ public class ServiceControllerTest
     {
         //Arrange
         var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-        var serviceOfferingData = _fixture.Create<ServiceOfferingData>();
-        A.CallTo(() => _logic.CreateServiceOffering(A<ServiceOfferingData>._, IamUserId))
+        var serviceOfferingData = _fixture.Create<OfferingData>();
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<OfferingData>._, IamUserId))
             .Returns(id);
 
         //Act
         var result = await this._controller.CreateServiceOffering(serviceOfferingData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceOffering(serviceOfferingData, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(serviceOfferingData, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(id);
     }

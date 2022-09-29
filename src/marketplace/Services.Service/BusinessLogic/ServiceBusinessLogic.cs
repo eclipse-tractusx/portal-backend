@@ -88,42 +88,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateServiceOffering(ServiceOfferingData data, string iamUserId)
-    {
-        var results = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUserId, data.SalesManager)
-            .ToListAsync();
-
-        if (!results.Any(x => x.IsIamUser))
-            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
-
-        if (string.IsNullOrWhiteSpace(results.Single(x => x.IsIamUser).CompanyShortName))
-            throw new ControllerArgumentException($"No matching company found for user {iamUserId}", nameof(iamUserId));
-
-        if (results.All(x => x.CompanyUserId != data.SalesManager))
-            throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
-
-        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
-
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var service = offerRepository.CreateOffer(string.Empty, OfferTypeId.SERVICE, service =>
-        {
-            service.ContactEmail = data.ContactEmail;
-            service.Name = data.Title;
-            service.SalesManagerId = data.SalesManager;
-            service.ThumbnailUrl = data.ThumbnailUrl;
-            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
-            service.OfferStatusId = OfferStatusId.CREATED;
-            service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
-        });
-        var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
-        offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
-        offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
-            new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, string.Empty, d.Description)));
-
-        await _portalRepositories.SaveAsync();
-        return service.Id;
-    }
+    public Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId) =>
+        _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId)
@@ -229,22 +195,4 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
         _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
-
-    private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
-    {
-        if (languageCodes.Any())
-        {
-            var foundLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>()
-                .GetLanguageCodesUntrackedAsync(languageCodes)
-                .ToListAsync()
-                .ConfigureAwait(false);
-            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes).ToList();
-            if (notFoundLanguageCodes.Any())
-            {
-                throw new ControllerArgumentException(
-                    $"Language code(s) {string.Join(",", notFoundLanguageCodes)} do(es) not exist",
-                    nameof(languageCodes));
-            }
-        }
-    }
 }

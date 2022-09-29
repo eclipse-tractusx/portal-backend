@@ -51,14 +51,14 @@ public class ServiceProviderControllerTest
         //Arrange
         var id = Guid.NewGuid();
         var data = new ServiceProviderDetailData("https://this-is-a-test.de");  
-        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(CompanyId, data, IamUserId))
+        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(data, IamUserId))
             .ReturnsLazily(() => id);
 
         //Act
-        var result = await this._controller.CreateServiceProviderCompanyDetail(CompanyId, data).ConfigureAwait(false);
+        var result = await this._controller.CreateServiceProviderCompanyDetail(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(CompanyId, data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(id);
     }
