@@ -134,6 +134,17 @@ public class UserRepository : IUserRepository
                 companyUser.Email))
             .SingleOrDefaultAsync();
 
+    public IAsyncEnumerable<string> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId) =>
+        _dbContext.CompanyUsers
+            .AsNoTracking()
+            .Where(companyUser =>
+                companyUser.CompanyId == companyId &&
+                (companyUser.Email == email ||
+                 companyUser.Firstname == firstName ||
+                 companyUser.Lastname == lastName ))
+            .Select(companyUser => companyUser.IamUser!.UserEntityId)
+            .AsAsyncEnumerable();
+
     public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
@@ -147,17 +158,6 @@ public class UserRepository : IUserRepository
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => new ValueTuple<Guid, Guid, string, string?>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId, iamUser.CompanyUser!.Company!.Name, iamUser.CompanyUser!.Email))
             .SingleOrDefaultAsync();
-
-    public IAsyncEnumerable<string> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId) =>
-        _dbContext.CompanyUsers
-            .AsNoTracking()
-            .Where(companyUser =>
-                companyUser.CompanyId == companyId &&
-                (companyUser.Email == email ||
-                 companyUser.Firstname == firstName ||
-                 companyUser.Lastname == lastName ))
-            .Select(companyUser => companyUser.IamUser!.UserEntityId)
-            .AsAsyncEnumerable();
 
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>
         _dbContext.IamUsers
