@@ -39,9 +39,10 @@ public interface IOfferRepository
     /// <summary>
     /// Retrieves app provider company details by app id.
     /// </summary>
-    /// <param name="appId">ID of the app.</param>
+    /// <param name="offerId">ID of the app.</param>
+    /// <param name="offerTypeId">Id of the offer type.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId);
+    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Get Client Name by App Id
@@ -171,6 +172,7 @@ public interface IOfferRepository
     /// <param name="serviceId">the service to get from the persistence storage</param>
     /// <param name="languageShortName">the language short code for the descriptions</param>
     /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the ServiceDetailData or null</returns>
     Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId);
 
