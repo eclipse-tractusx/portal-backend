@@ -38,8 +38,7 @@ public interface IServiceProviderBusinessLogic
     /// <summary>
     /// Creates service provider company details
     /// </summary>
-    /// <param name="companyId">Id of the service provider company</param>
     /// <param name="data">Detail data for the service provider</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceProviderCompanyDetailsAsync(Guid companyId, ServiceProviderDetailData data, string iamUserId);
+    Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
 }

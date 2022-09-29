@@ -54,7 +54,6 @@ public class ServiceBusinessLogicTests
     private readonly IConsentRepository _consentRepository;
     private readonly IOfferRepository _offerRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
-    private readonly ILanguageRepository _languageRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
@@ -77,7 +76,6 @@ public class ServiceBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _languageRepository = A.Fake<ILanguageRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
@@ -108,114 +106,16 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var serviceId = Guid.NewGuid();
-
-        var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes(x =>
-            {
-                var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<OfferTypeId>("offerType");
-                var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
-
-                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
-                action?.Invoke(app);
-                apps.Add(app);
-            })
-            .Returns(new Offer(serviceId)
-            {
-                OfferTypeId = OfferTypeId.SERVICE 
-            });
+        var offerService = A.Fake<IOfferService>();
+        _fixture.Inject(offerService);
+        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<OfferingData>._, A<string>._, A<OfferTypeId>._)).ReturnsLazily(() => serviceId);
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
-        var result = await sut.CreateServiceOffering(new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>()), _iamUser.UserEntityId);
+        var result = await sut.CreateServiceOfferingAsync(new OfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<OfferingDescription>()), _iamUser.UserEntityId);
 
         // Assert
         result.Should().Be(serviceId);
-        apps.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task CreateServiceOffering_WithValidDataAndDescription_ReturnsCorrectDetails()
-    {
-        // Arrange
-        var serviceId = Guid.NewGuid();
-
-        var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes(x =>
-            {
-                var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<OfferTypeId>("offerType");
-                var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
-
-                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
-                action?.Invoke(app);
-                apps.Add(app);
-            })
-            .Returns(new Offer(serviceId)
-            {
-                OfferTypeId = OfferTypeId.SERVICE 
-            });
-        
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var serviceOfferingData = new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>
-        {
-            new ("en", "That's a description with a valid language code")
-        });
-        var result = await sut.CreateServiceOffering(serviceOfferingData, _iamUser.UserEntityId);
-
-        // Assert
-        result.Should().Be(serviceId);
-        apps.Should().HaveCount(1);
-    }
-    
-    [Fact]
-    public async Task CreateServiceOffering_WithWrongIamUser_ThrowsException()
-    {
-        // Arrange
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.CreateServiceOffering(new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>()), Guid.NewGuid().ToString());
-        
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
-    }
-
-    [Fact]
-    public async Task CreateServiceOffering_WithInvalidLanguage_ThrowsException()
-    {
-        // Arrange
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var serviceOfferingData = new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", _companyUser.Id, new List<ServiceDescription>
-        {
-            new ("gg", "That's a description with incorrect language short code")
-        });
-        async Task Action() => await sut.CreateServiceOffering(serviceOfferingData, _iamUser.UserEntityId);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("languageCodes");
-    }
-
-    [Fact]
-    public async Task CreateServiceOffering_WithoutCompanyUser_ThrowsException()
-    {
-        // Arrange
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        async Task Action() => await sut.CreateServiceOffering(new ServiceOfferingData("Newest Service", "42", "img/thumbnail.png", "mail@test.de", Guid.NewGuid(), new List<ServiceDescription>()), _iamUser.UserEntityId);
-        
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("SalesManager");
     }
 
     #endregion
@@ -553,7 +453,6 @@ public class ServiceBusinessLogicTests
     }
 
     #endregion
-    
 
     #region Setup
 
@@ -564,15 +463,6 @@ public class ServiceBusinessLogicTests
             .With(x => x.Id, _existingServiceId)
             .Create();
         
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, companyUser.Id))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId), new (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUser.UserEntityId, A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), companyUser.Id))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>().ToAsyncEnumerable());
-
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(iamUser.UserEntityId))
             .ReturnsLazily(() => (_companyUser.Id, _companyUser.CompanyId, "The Company", "test@mail.de"));
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_notAssignedCompanyIdUser))
@@ -597,11 +487,6 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId || x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
-        
-        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
-            .Returns(new List<string> { "en" }.ToAsyncEnumerable());
-        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "gg"))))
-            .Returns(new List<string>().ToAsyncEnumerable());
         
         A.CallTo(() => _offerRepository.CheckServiceExistsById(_existingServiceId))
             .Returns(true);
@@ -664,7 +549,6 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);

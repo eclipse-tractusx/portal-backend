@@ -77,9 +77,9 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
+    public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] OfferingData data)
     {
-        var id = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOffering(data, iamUserId)).ConfigureAwait(false);
+        var id = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOfferingAsync(data, iamUserId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetServiceDetails), new { serviceId = id }, id);
     }
     
