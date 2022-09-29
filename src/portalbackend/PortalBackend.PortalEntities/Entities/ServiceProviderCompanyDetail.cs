@@ -18,30 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore.Migrations;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-#nullable disable
-
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
+public class ServiceProviderCompanyDetail
 {
-    public partial class CPLP1409ExpandNotificationTypes : Migration
+    private ServiceProviderCompanyDetail()
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.InsertData(
-                schema: "portal",
-                table: "notification_type",
-                columns: new[] { "id", "label" },
-                values: new object[] { 12, "TECHNICAL_USER_CREATION" });
-        }
-
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "notification_type",
-                keyColumn: "id",
-                keyValue: 12);
-        }
+        AutoSetupUrl = null!;
     }
+    
+    public ServiceProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
+        : this()
+    {
+        Id = id;
+        CompanyId = companyId;
+        AutoSetupUrl = autoSetupUrl;
+        DateCreated = dateCreated;
+    }
+
+    public Guid Id { get; private set; }
+
+    public DateTimeOffset DateCreated { get; private set; }
+
+    public string AutoSetupUrl { get; set; }
+
+    public Guid CompanyId { get; set; }
+
+    // Navigation properties
+    public virtual Company? Company { get; private set; }
 }
