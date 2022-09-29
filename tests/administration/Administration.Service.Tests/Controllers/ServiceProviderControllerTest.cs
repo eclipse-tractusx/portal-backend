@@ -21,6 +21,7 @@
 using System;
 using System.Threading.Tasks;
 using FakeItEasy;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
@@ -45,18 +46,39 @@ public class ServiceProviderControllerTest
     }
 
     [Fact]
-    public async Task ExecuteCompanyUserCreation_WithValidData_ReturnsOk()
+    public async Task CreateServiceProviderCompanyDetail_WithValidData_ReturnsOk()
     {
         //Arrange
+        var id = Guid.NewGuid();
         var data = new ServiceProviderDetailData("https://this-is-a-test.de");  
-        A.CallTo(() => _logic.CreateServiceProviderCompanyDetails(CompanyId, data, IamUserId))
-            .Returns(Task.CompletedTask);
+        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(CompanyId, data, IamUserId))
+            .ReturnsLazily(() => id);
 
         //Act
         var result = await this._controller.CreateServiceProviderCompanyDetail(CompanyId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceProviderCompanyDetails(CompanyId, data, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<OkResult>(result);
+        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(CompanyId, data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CreatedAtRouteResult>(result);
+        result.Value.Should().Be(id);
+    }
+    
+    [Fact]
+    public async Task GetServiceProviderCompanyDetail_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var id = Guid.NewGuid();
+        var data = new ServiceProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");  
+        A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(id, IamUserId))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetServiceProviderCompanyDetail(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<ServiceProviderDetailReturnData>(result);
+        result.Id.Should().Be(id);
+        result.CompanyId.Should().Be(CompanyId);
     }
 }

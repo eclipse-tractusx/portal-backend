@@ -41,7 +41,21 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task CreateServiceProviderCompanyDetails(Guid companyId, ServiceProviderDetailData data, string iamUserId)
+    public async Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .GetServiceProviderCompanyDetailAsync(serviceProviderDetailDataId, iamUserId)
+            .ConfigureAwait(false);
+        if (result is null)
+        {
+            throw new ControllerArgumentException($"User {iamUserId} is not allowed to request the service provider detail data.", nameof(iamUserId));
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<Guid> CreateServiceProviderCompanyDetailsAsync(Guid companyId, ServiceProviderDetailData data, string iamUserId)
     {
         if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
         {
@@ -53,7 +67,8 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ControllerArgumentException($"IAmUser {iamUserId} is not assigned to company {companyId}", nameof(iamUserId));
         }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(companyId, data.Url);
+        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(companyId, data.Url);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return companyDetails.Id;
     }
 }

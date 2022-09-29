@@ -39,9 +39,10 @@ public interface IOfferRepository
     /// <summary>
     /// Retrieves app provider company details by app id.
     /// </summary>
-    /// <param name="appId">ID of the app.</param>
+    /// <param name="offerId">ID of the app.</param>
+    /// <param name="offerTypeId">Id of the offer type.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid appId);
+    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Get Client Name by App Id

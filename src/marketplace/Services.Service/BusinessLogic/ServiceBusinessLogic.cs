@@ -128,13 +128,13 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId)
     {
-        var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId).ConfigureAwait(false);
+        var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (serviceDetails == null)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        var (companyId, companyUserId, companyName, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryId(iamUserId).ConfigureAwait(false);
+        var (companyId, companyUserId, companyName, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(iamUserId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
@@ -146,10 +146,17 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         }
 
         var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
-        bool? autoSetupResult = null;
+        var autoSetupResult = string.Empty;
         if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
         {
-            autoSetupResult = await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+            try
+            {
+                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                autoSetupResult = e.Message;
+            }
         }
 
         if (serviceDetails.SalesManagerId.HasValue)
@@ -159,7 +166,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 serviceDetails.AppName,
                 RequestorCompanyName = companyName,
                 UserEmail = requesterEmail,
-                autoSetupResult
+                AutoSetupExecuted = !string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl),
+                AutoSetupError = autoSetupResult
             };
             _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(serviceDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
                 notification =>

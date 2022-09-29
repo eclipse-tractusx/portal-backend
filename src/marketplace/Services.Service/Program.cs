@@ -41,7 +41,8 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration);
+    .AddProvisioningManager(builder.Configuration)
+    .AddHttpClient();
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()

@@ -136,4 +136,13 @@ public class CompanyRepository : ICompanyRepository
     /// <inheritdoc />
     public ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl) =>
         _context.ServiceProviderCompanyDetails.Add(new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
+
+    /// <inheritdoc />
+    public Task<ServiceProviderDetailReturnData?> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, string iamUserId) =>
+        _context.ServiceProviderCompanyDetails
+            .Where(x => 
+                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId) &&
+                x.Id == serviceProviderDetailDataId)
+            .Select(x => new ServiceProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl))
+            .SingleOrDefaultAsync();
 }

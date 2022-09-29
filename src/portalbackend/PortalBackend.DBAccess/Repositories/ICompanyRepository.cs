@@ -73,4 +73,12 @@ public interface ICompanyRepository
     /// <param name="dataUrl">Url for the service provider</param>
     /// <returns>Returns the newly created entity</returns>
     ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl);
+
+    /// <summary>
+    /// Gets the service provider company details data
+    /// </summary>
+    /// <param name="serviceProviderDetailDataId">Id of the details</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details data</returns>
+    Task<ServiceProviderDetailReturnData?> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, string iamUserId);
 }

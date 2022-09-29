@@ -21,3 +21,5 @@
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record ServiceProviderDetailData(string Url);
+
+public record ServiceProviderDetailReturnData(Guid Id, Guid CompanyId, string Url);

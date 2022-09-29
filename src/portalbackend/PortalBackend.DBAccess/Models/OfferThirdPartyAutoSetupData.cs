@@ -23,15 +23,15 @@ using System.Text.Json.Serialization;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record OfferThirdPartyAutoSetupData(
-    [property: JsonPropertyName("customer")] CustomerData Customer, 
-    [property: JsonPropertyName("properties")] PropertyData Properties);
+    [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer, 
+    [property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
 
-public record CustomerData(
+public record OfferThirdPartyAutoSetupCustomerData(
     [property: JsonPropertyName("organizationName")] string OrganizationName, 
     [property: JsonPropertyName("country")] string Country, 
     [property: JsonPropertyName("email")] string? Email);
 
-public record PropertyData(
+public record OfferThirdPartyAutoSetupPropertyData(
     [property: JsonPropertyName("bpnNumber")] string BpnNumber, 
     [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId, 
     [property: JsonPropertyName("serviceId")] Guid ServiceId);

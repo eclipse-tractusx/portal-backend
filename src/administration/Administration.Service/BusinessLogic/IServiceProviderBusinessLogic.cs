@@ -28,10 +28,18 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 public interface IServiceProviderBusinessLogic
 {
     /// <summary>
+    /// Gets the service provider company details
+    /// </summary>
+    /// <param name="serviceProviderDetailDataId">Id of the service provider details</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>The detail data</returns>
+    Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId);
+
+    /// <summary>
     /// Creates service provider company details
     /// </summary>
     /// <param name="companyId">Id of the service provider company</param>
     /// <param name="data">Detail data for the service provider</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task CreateServiceProviderCompanyDetails(Guid companyId, ServiceProviderDetailData data, string iamUserId);
+    Task<Guid> CreateServiceProviderCompanyDetailsAsync(Guid companyId, ServiceProviderDetailData data, string iamUserId);
 }

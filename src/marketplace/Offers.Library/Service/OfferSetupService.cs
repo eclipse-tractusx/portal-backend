@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Net.Http.Json;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -36,17 +37,40 @@ public class OfferSetupService : IOfferSetupService
     }
     
     /// <inheritdoc />
-    public async Task<bool> AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
+    public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
     {
         using var httpClient = _httpClientFactory.CreateClient();
         var offerAutoSetupData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
         if (offerAutoSetupData == null)
         {
-            return false;
+            throw new ArgumentException($"IamUser {iamUserId} is not assigned to company", nameof(iamUserId));
         }
 
-        var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, offerAutoSetupData).ConfigureAwait(false);
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, offerAutoSetupData)
+                .ConfigureAwait(false);
 
-        return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+                return;
+
+            throw new ServiceException(response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode}", response.StatusCode);
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new ServiceException("The requestUri must be an absolute URI or BaseAddress must be set.", e);
+        }
+        catch (HttpRequestException e)
+        {
+            throw new ServiceException("The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.", e);
+        }
+        catch (TaskCanceledException e)
+        {
+            throw new ServiceException("The request failed due to timeout.", e);
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException("Request failed", e);
+        }
     }
 }
