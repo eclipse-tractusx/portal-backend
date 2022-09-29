@@ -63,7 +63,7 @@ public interface ICompanyRepository
     /// <param name="iamUserId">IAm User Id</param>
     /// <param name="companyRole">The company Role</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<Guid> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRole);
+    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId);
 
     /// <summary>
     /// Creates service provider company details
@@ -79,5 +79,5 @@ public interface ICompanyRepository
     /// <param name="serviceProviderDetailDataId">Id of the details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
-    Task<ServiceProviderDetailReturnData?> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, string iamUserId);
+    Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
 }
