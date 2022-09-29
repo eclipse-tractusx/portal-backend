@@ -86,5 +86,5 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerSubscriptionId">Id of the offer subscription</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the OfferAutoSetupData</returns>
-    Task<OfferThirdPartyAutoSetupData?> GetAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId);
+    Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId);
 }

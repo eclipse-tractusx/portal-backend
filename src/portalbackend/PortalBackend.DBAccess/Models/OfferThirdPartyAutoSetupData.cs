@@ -32,6 +32,6 @@ public record OfferThirdPartyAutoSetupCustomerData(
     [property: JsonPropertyName("email")] string? Email);
 
 public record OfferThirdPartyAutoSetupPropertyData(
-    [property: JsonPropertyName("bpnNumber")] string BpnNumber, 
+    [property: JsonPropertyName("bpnNumber")] string? BpnNumber, 
     [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId, 
     [property: JsonPropertyName("serviceId")] Guid ServiceId);

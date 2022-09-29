@@ -79,7 +79,7 @@ public class OfferSetupServiceTests
         await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
+        A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
             A<Guid>.That.Matches(x => x == _existingServiceId),
             A<string>.That.Matches(x => x == _iamUser.UserEntityId))).MustHaveHappenedOnceExactly();
     }
@@ -109,12 +109,16 @@ public class OfferSetupServiceTests
 
     private void SetupRepositories()
     {
-        A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
+        A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
-            .ReturnsLazily(() => new OfferThirdPartyAutoSetupData(new OfferThirdPartyAutoSetupCustomerData("Test Provider", "de", "tony@stark.com"), new OfferThirdPartyAutoSetupPropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId)));
-        A.CallTo(() => _offerSubscriptionsRepository.GetAutoSetupDataAsync(
+            .ReturnsLazily(() => new ValueTuple<OfferThirdPartyAutoSetupData,bool>(
+                new OfferThirdPartyAutoSetupData(
+                    new OfferThirdPartyAutoSetupCustomerData("Test Provider", "de", "tony@stark.com"),
+                    new OfferThirdPartyAutoSetupPropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId))
+                ,true));
+        A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
-            .ReturnsLazily(() => (OfferThirdPartyAutoSetupData?)null);
+            .ReturnsLazily(() => ((OfferThirdPartyAutoSetupData,bool))default);
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
     }
