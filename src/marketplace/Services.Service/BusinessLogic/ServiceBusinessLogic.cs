@@ -38,7 +38,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IOfferSetupService _offerSetupService;
     private readonly IOfferService _offerService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly ServiceSettings _settings;
@@ -47,19 +46,16 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
-    /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
     /// <param name="offerService">Access to the offer service</param>
     /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
-        IOfferSetupService offerSetupService,
         IOfferService offerService,
         IOfferSubscriptionService offerSubscriptionService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
-        _offerSetupService = offerSetupService;
         _offerService = offerService;
         _offerSubscriptionService = offerSubscriptionService;
         _settings = settings.Value;
