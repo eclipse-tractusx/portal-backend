@@ -23,7 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyUserAssignedRoleCplp1440DbAuditing))]
+[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20220929))]
 public class CompanyUserAssignedRole : IAuditable
 {
     protected CompanyUserAssignedRole() {}

@@ -27,7 +27,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntiti
 /// <summary>
 /// Audit entity for <see cref="CompanyUser"/> only needed for configuration purposes
 /// </summary>
-public class AuditCompanyUserCplp1440DbAuditing : IAuditEntity
+public class AuditCompanyUser20220929 : IAuditEntity
 {
     /// <inheritdoc />
     public Guid AuditId { get; set; }
