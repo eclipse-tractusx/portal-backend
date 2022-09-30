@@ -79,6 +79,8 @@ builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactorySe
                 .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
+builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
+
 builder.Services.AddDbContext<ProvisioningDBContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
