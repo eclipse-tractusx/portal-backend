@@ -130,8 +130,30 @@ public class ConnectorsController : ControllerBase
     /// <response code="200">Returns connector end point along with bpn.</response>
     [HttpPost]
     [Route("discovery")]
-    [Authorize(Roles = "view_connectors")]
+//    [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
+
+    [HttpPost]
+    [Route("discovery1")]
+//    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync1([FromBody] IEnumerable<string> bpns) =>
+        _businessLogic.GetCompanyConnectorEndPointAsync1(bpns);
+
+    [HttpPost]
+    [Route("discovery2")]
+//    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync2([FromBody] IEnumerable<string> bpns) =>
+        _businessLogic.GetCompanyConnectorEndPointAsync2(bpns);
+
+    [HttpPost]
+    [Route("discovery3")]
+//    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync3([FromBody] IEnumerable<string> bpns) =>
+        _businessLogic.GetCompanyConnectorEndPointAsync3(bpns);
+
 }
