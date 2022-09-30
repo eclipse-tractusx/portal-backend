@@ -70,17 +70,4 @@ public record ManagedConnectorInputModel : ConnectorInputModel
     }
 
     public new Guid Host { get; }
-
-    public void Deconstruct([MaxLength(255)] out string name,
-        [MaxLength(255)] out string connectorUrl, out ConnectorTypeId type, out ConnectorStatusId status,
-        [StringLength(2, MinimumLength = 2)] out string location, out Guid provider, Guid host)
-    {
-        name = this.Name;
-        connectorUrl = this.ConnectorUrl;
-        type = this.Type;
-        status = this.Status;
-        location = this.Location;
-        provider = this.Provider;
-        host = this.Host;
-    }
 }
