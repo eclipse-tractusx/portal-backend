@@ -47,18 +47,19 @@ public class OfferRepository : IOfferRepository
         _context.Offers.AnyAsync(x => x.Id == appId && x.OfferTypeId == OfferTypeId.APP);
 
     ///<inheritdoc/>
-    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId) =>
-        _context.Offers.AsNoTracking().Where(a => a.Id == appId).Select(c => new AppProviderDetailsData(
+    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId) =>
+        _context.Offers.AsNoTracking().Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId).Select(c => new OfferProviderDetailsData(
             c.Name,
             c.Provider,
             c.ContactEmail,
-            c.SalesManagerId
+            c.SalesManagerId,
+            c.ProviderCompany!.ServiceProviderCompanyDetail!.AutoSetupUrl
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
     public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
         _context.OfferSubscriptions.AsNoTracking()
-            .Where(appClient => appClient.Id == appId && appClient.CompanyId == companyId)
+            .Where(subscription => subscription.OfferId == appId && subscription.CompanyId == companyId)
             .Select(x => x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
             .SingleOrDefaultAsync();
     
