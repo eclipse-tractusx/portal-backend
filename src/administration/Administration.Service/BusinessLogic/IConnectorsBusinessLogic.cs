@@ -60,4 +60,7 @@ public interface IConnectorsBusinessLogic
     /// <param name="bpns"></param>
     /// <returns></returns>
     IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns);
+    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync1(IEnumerable<string> bpns);
+    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync2(IEnumerable<string> bpns);
+    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync3(IEnumerable<string> bpns);
 }

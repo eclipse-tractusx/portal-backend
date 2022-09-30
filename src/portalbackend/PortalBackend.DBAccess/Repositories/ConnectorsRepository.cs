@@ -97,5 +97,36 @@ public class ConnectorsRepository : IConnectorsRepository
                 connector.ConnectorUrl
             ))
             .AsAsyncEnumerable();
-    
+
+    public IAsyncEnumerable<ConnectorCompanyData> GetConnectorEndPointDataAsync1(IEnumerable<string> bpns) =>
+        _context.Connectors
+            .AsNoTracking()
+            .Where(connector => bpns.Contains(connector.Provider!.BusinessPartnerNumber))
+            .OrderBy(connector => connector.ProviderId)
+            .Select(connector => new ConnectorCompanyData
+            (
+                connector.Provider!.BusinessPartnerNumber,
+                connector.ConnectorUrl
+            ))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<ConnectorEndPointData> GetConnectorEndPointDataAsync2(IEnumerable<string> bpns) =>
+        _context.Connectors
+            .AsNoTracking()
+            .Where(connector => bpns.Contains(connector.Provider!.BusinessPartnerNumber))
+            .Select(connector => connector.Provider!)
+			.Distinct()
+            .Select(company => new ConnectorEndPointData(
+                company.BusinessPartnerNumber,
+                company.ProvidedConnectors.Select(connector => connector.ConnectorUrl)))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<ConnectorEndPointData> GetConnectorEndPointDataAsync3(IEnumerable<string> bpns) =>
+        _context.Companies
+            .AsNoTracking()
+            .Where(company => bpns.Contains(company.BusinessPartnerNumber) && company.ProvidedConnectors.Any())
+            .Select(company => new ConnectorEndPointData(
+                company.BusinessPartnerNumber,
+                company.ProvidedConnectors.Select(connector => connector.ConnectorUrl)))
+            .AsAsyncEnumerable();
 }
