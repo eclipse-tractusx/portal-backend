@@ -44,7 +44,7 @@ public static class AsyncGroupByExtensions
 
     public static IAsyncEnumerable<IGrouping<TKey,T>> PreSortedGroupBy<T,TKey>(this IAsyncEnumerable<T> Data, Func<T,TKey> KeySelector) => Data.PreSortedGroupBy(KeySelector, x => x);
 
-    private class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
+    sealed class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
     {
         public TKey Key { get; }
 
