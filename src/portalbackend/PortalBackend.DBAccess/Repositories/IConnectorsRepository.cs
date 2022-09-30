@@ -58,5 +58,5 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="bpns"></param>
     /// <returns></returns>
-    IAsyncEnumerable<ConnectorCompanyData> GetConnectorEndPointDataAsync(IEnumerable<string> bpns);
+    IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns);
 }

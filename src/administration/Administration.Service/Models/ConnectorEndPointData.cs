@@ -18,15 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-
-/// <summary>
-/// Model for Connector End Point
-/// </summary>
-/// <param name="Bpn"></param>
-/// <param name="ConnectorEndpoint"></param>
-/// <returns></returns>
-public record ConnectorCompanyData(string? Bpn, string ConnectorEndpoint);
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
 /// <summary>
 /// 
@@ -34,4 +26,4 @@ public record ConnectorCompanyData(string? Bpn, string ConnectorEndpoint);
 /// <param name="Bpn"></param>
 /// <param name="ConnectorEndpoint"></param>
 /// <returns></returns>
-public record ConnectorEndPointData(string? Bpn, IEnumerable<string> ConnectorEndpoint);
+public record ConnectorEndPointData(string Bpn, IEnumerable<string> ConnectorEndpoint);

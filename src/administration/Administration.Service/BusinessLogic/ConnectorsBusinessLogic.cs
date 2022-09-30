@@ -157,7 +157,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>
         _portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorEndPointDataAsync(bpns)
-            .PreSortedGroupBy(data => data.Bpn)
+            .PreSortedGroupBy(data => data.BusinessPartnerNumber)
             .Select(group =>
                 new ConnectorEndPointData(
                     group.Key,

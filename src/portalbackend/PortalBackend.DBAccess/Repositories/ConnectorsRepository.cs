@@ -86,14 +86,14 @@ public class ConnectorsRepository : IConnectorsRepository
     }
     
     /// <inheritdoc/>
-    public IAsyncEnumerable<ConnectorCompanyData> GetConnectorEndPointDataAsync(IEnumerable<string> bpns) =>
+    public IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns) =>
         _context.Connectors
             .AsNoTracking()
             .Where(connector => bpns.Contains(connector.Provider!.BusinessPartnerNumber))
             .OrderBy(connector => connector.ProviderId)
-            .Select(connector => new ConnectorCompanyData
+            .Select(connector => new ValueTuple<string,string>
             (
-                connector.Provider!.BusinessPartnerNumber,
+                connector.Provider!.BusinessPartnerNumber!,
                 connector.ConnectorUrl
             ))
             .AsAsyncEnumerable();      
