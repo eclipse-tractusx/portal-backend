@@ -26,10 +26,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntiti
 /// <summary>
 /// Audit entity for App subscription relationship between companies and apps.
 /// </summary>
-public class AuditOfferSubscription20220929 : IAuditEntity
+public class AuditOfferSubscription20220929 : IAuditEntityV1
 {
     /// <inheritdoc />
-    public Guid AuditId { get; set; }
+    public Guid AuditV1Id { get; set; }
 
     /// <inheritdoc />
     public Guid Id { get; set; }
@@ -65,11 +65,11 @@ public class AuditOfferSubscription20220929 : IAuditEntity
     public Guid RequesterId { get; set; }
     
     /// <inheritdoc />
-    public Guid? LastEditorId { get; set; }
+    public Guid? AuditV1LastEditorId { get; set; }
 
     /// <inheritdoc />
-    public DateTimeOffset DateLastChanged { get; set; }
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 
     /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
+    public AuditOperationId AuditV1OperationId { get; set; }
 }

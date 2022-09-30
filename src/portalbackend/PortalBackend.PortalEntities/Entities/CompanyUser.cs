@@ -26,7 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditCompanyUser20220929))]
-public class CompanyUser : IAuditable
+public class CompanyUser : IAuditableV1
 {
     /// <summary>
     /// Only needed for ef and the audit entity
@@ -76,7 +76,7 @@ public class CompanyUser : IAuditable
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     // Navigation properties

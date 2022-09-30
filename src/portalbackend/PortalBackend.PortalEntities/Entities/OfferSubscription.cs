@@ -29,7 +29,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 /// App subscription relationship between companies and apps.
 /// </summary>
 [AuditEntityV1(typeof(AuditOfferSubscription20220929))]
-public class OfferSubscription : IAuditable
+public class OfferSubscription : IAuditableV1
 {
     /// <summary>
     /// Only used for the audit table
@@ -103,7 +103,7 @@ public class OfferSubscription : IAuditable
     /// </summary>
     public Guid RequesterId { get; set; }
     
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     // Navigation properties
