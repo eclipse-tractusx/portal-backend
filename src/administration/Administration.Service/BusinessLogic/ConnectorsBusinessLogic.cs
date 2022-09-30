@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Async;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -153,15 +154,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns)
-    {
-        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorEndPointDataAsync(bpns).ToListAsync().ConfigureAwait(false);
-        var  connectorCompanyData = result.GroupBy(t => t.Bpn!).Select(group => new ConnectorEndPointData(group.Key, group.Select(x=>x.ConnectorEndpoint)));
-        foreach(var item in connectorCompanyData)
-        {
-            yield return  item;
-        }
-    }
-        
-    
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>
+        _portalRepositories.GetInstance<IConnectorsRepository>()
+            .GetConnectorEndPointDataAsync(bpns)
+            .PreSortedGroupBy(data => data.Bpn)
+            .Select(group =>
+                new ConnectorEndPointData(
+                    group.Key,
+                    group.Select(x => x.ConnectorEndpoint)));
 }

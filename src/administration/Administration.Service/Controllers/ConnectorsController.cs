@@ -134,4 +134,5 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
+
 }
