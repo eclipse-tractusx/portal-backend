@@ -39,8 +39,6 @@ public interface IOfferSubscriptionsRepository
     /// <param name="creatorId">id of the creator</param>
     OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
-    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
-
     /// <summary>
     ///
     /// </summary>

@@ -367,4 +367,32 @@ public class UserRepository : IUserRepository
                 x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
+<<<<<<< Updated upstream:src/portalbackend/CatenaX.NetworkServices.PortalBackend.DBAccess/Repositories/UserRepository.cs
+=======
+
+    /// <inheritdoc />
+    public Task<Guid> GetTechnicalUserCompany(string iamUserId) =>
+        _dbContext.IamServiceAccounts
+            .Where(x => x.UserEntityId == iamUserId)
+            .Select(x => x.CompanyServiceAccount!.CompanyId)
+            .SingleOrDefaultAsync();
+    
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
+        Guid appId,
+        string iamUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        string? roleName = null) 
+    {
+        char[] escapeChar = { '%', '_', '[', ']', '^' };
+        return _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) && companyUser.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser => firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName.Trim(escapeChar)}%")
+                && lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName!.Trim(escapeChar)}%")
+                && email == null || EF.Functions.ILike(companyUser.Email!, $"%{email!.Trim(escapeChar)}%")
+                && roleName == null || companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName!.Trim(escapeChar)}%")));
+    }
+>>>>>>> Stashed changes:src/portalbackend/PortalBackend.DBAccess/Repositories/UserRepository.cs
 }

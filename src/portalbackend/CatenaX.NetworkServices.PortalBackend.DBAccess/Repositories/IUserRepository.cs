@@ -108,4 +108,16 @@ public interface IUserRepository
     /// <param name="userRoleIds">User role ids</param>
     /// <returns>Returns a list of the company user ids</returns>
     IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
+<<<<<<< Updated upstream:src/portalbackend/CatenaX.NetworkServices.PortalBackend.DBAccess/Repositories/IUserRepository.cs
+=======
+
+    /// <summary>
+    /// Gets a company Id for the given technical user
+    /// </summary>
+    /// <param name="iamUserId">Id of the technical user</param>
+    /// <returns>The Id of the company</returns>
+    Task<Guid> GetTechnicalUserCompany(string iamUserId);
+    
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
+>>>>>>> Stashed changes:src/portalbackend/PortalBackend.DBAccess/Repositories/IUserRepository.cs
 }
