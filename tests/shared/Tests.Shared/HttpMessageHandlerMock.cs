@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,13 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Net;
 
-/// <summary>
-/// Data Object for the AppProvider Details
-/// </summary>
-/// <param name="AppName">Name of the app</param>
-/// <param name="ProviderName">Name of the provider</param>
-/// <param name="ProviderContactEmail">Contact email of the provider</param>
-/// <param name="SalesManagerId">Id of the sales manager for the app</param>
-public record AppProviderDetailsData(string? AppName, string ProviderName, string? ProviderContactEmail, Guid? SalesManagerId);
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+
+public class HttpMessageHandlerMock : HttpMessageHandler
+{
+    private readonly HttpStatusCode _statusCode;
+    private readonly Exception? _ex;
+
+    public HttpMessageHandlerMock(HttpStatusCode statusCode, Exception? ex = null)
+    {
+        _statusCode = statusCode;
+        _ex = ex;
+    }
+    
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        if (_ex is null)
+        {
+            return Task.FromResult(new HttpResponseMessage(_statusCode));
+        }
+
+        throw _ex;
+    }
+}
