@@ -31,7 +31,7 @@ public static class AsyncGroupByExtensions
         {
             var key = KeySelector(enumerator.Current);
             TKey nextKey = default!;
-            for(;;)
+            while(true)
             {
                 var values = new LinkedList<TElement>();
                 do
