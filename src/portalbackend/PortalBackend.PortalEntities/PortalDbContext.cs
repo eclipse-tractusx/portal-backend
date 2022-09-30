@@ -26,6 +26,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 
+/// <summary>
+/// Db Context
+/// </summary>
+/// <remarks>
+/// The Trigger Framework requires new Guid() to convert it to gen_random_uuid(),
+/// for the Id field we'll use a randomly set UUID to satisfy SonarCloud.
+/// </remarks>
 public class PortalDbContext : DbContext
 {
     protected PortalDbContext()
@@ -252,7 +259,7 @@ public class PortalDbContext : DbContext
                             .Action(action => action
                                 .Insert(newValue => new AuditOfferSubscription20220929
                                 {
-                                    Id = new Guid(),
+                                    Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                                     AuditId = newValue.Id,
                                     AuditOperationId = AuditOperationId.INSERT,
                                     CompanyId = newValue.CompanyId,
@@ -268,7 +275,7 @@ public class PortalDbContext : DbContext
                             .Action(action => action
                                 .Insert((oldEntity, newEntity) => new AuditOfferSubscription20220929
                                 {
-                                    Id = new Guid(),
+                                    Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                                     AuditId = oldEntity.Id,
                                     AuditOperationId = AuditOperationId.UPDATE,
                                     CompanyId = oldEntity.CompanyId,
@@ -284,7 +291,7 @@ public class PortalDbContext : DbContext
                             .Action(action => action
                                 .Insert(deletedEntity => new AuditOfferSubscription20220929
                                 {
-                                    Id = new Guid(),
+                                    Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                                     AuditId = deletedEntity.Id,
                                     AuditOperationId = AuditOperationId.DELETE,
                                     CompanyId = deletedEntity.CompanyId,
@@ -541,7 +548,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert(newValue => new AuditCompanyApplication20222909
                     {
-                        Id = new Guid(),
+                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                         AuditId = newValue.Id,
                         AuditOperationId = AuditOperationId.INSERT,
                         ApplicationStatusId = newValue.ApplicationStatusId,
@@ -554,7 +561,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert((oldEntity, newEntity) => new AuditCompanyApplication20222909
                     {
-                        Id = new Guid(),
+                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                         AuditId = oldEntity.Id,
                         AuditOperationId = AuditOperationId.UPDATE,
                         ApplicationStatusId = oldEntity.ApplicationStatusId,
@@ -567,7 +574,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert(deletedEntity => new AuditCompanyApplication20222909
                     {
-                        Id = new Guid(),
+                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                         AuditId = deletedEntity.Id,
                         AuditOperationId = AuditOperationId.DELETE,
                         ApplicationStatusId = deletedEntity.ApplicationStatusId,
@@ -697,7 +704,7 @@ public class PortalDbContext : DbContext
                                 .Action(action => action
                                     .Insert(newValue => new AuditCompanyUserAssignedRole20220929
                                     {
-                                        Id = new Guid(),
+                                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                                         AuditId = newValue.Id,
                                         AuditOperationId = AuditOperationId.INSERT,
                                         UserRoleId = newValue.UserRoleId,
@@ -709,7 +716,7 @@ public class PortalDbContext : DbContext
                                 .Action(action => action
                                     .Insert((oldEntity, newEntity) => new AuditCompanyUserAssignedRole20220929
                                     {
-                                        Id = new Guid(),
+                                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                                         AuditId = oldEntity.Id,
                                         AuditOperationId = AuditOperationId.UPDATE,
                                         UserRoleId = oldEntity.UserRoleId,
@@ -721,7 +728,7 @@ public class PortalDbContext : DbContext
                                 .Action(action => action
                                     .Insert(deletedEntity => new AuditCompanyUserAssignedRole20220929
                                     {
-                                        Id = new Guid(),
+                                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                                         AuditId = deletedEntity.Id,
                                         AuditOperationId = AuditOperationId.DELETE,
                                         UserRoleId = deletedEntity.UserRoleId,
@@ -741,7 +748,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert(newValue => new AuditCompanyUser20220929
                     {
-                        Id = new Guid(),
+                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                         AuditId = newValue.Id,
                         AuditOperationId = AuditOperationId.INSERT,
                         CompanyId = newValue.CompanyId,
@@ -758,7 +765,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert((oldEntity, newEntity) => new AuditCompanyUser20220929
                     {
-                        Id = new Guid(),
+                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                         AuditId = oldEntity.Id,
                         AuditOperationId = AuditOperationId.UPDATE,
                         CompanyId = oldEntity.CompanyId,
@@ -775,7 +782,7 @@ public class PortalDbContext : DbContext
                 .Action(action => action
                     .Insert(deletedEntity => new AuditCompanyUser20220929
                     {
-                        Id = new Guid(),
+                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
                         AuditId = deletedEntity.Id,
                         AuditOperationId = AuditOperationId.DELETE,
                         CompanyId = deletedEntity.CompanyId,
