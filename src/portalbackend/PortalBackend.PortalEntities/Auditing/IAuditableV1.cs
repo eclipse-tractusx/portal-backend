@@ -18,17 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
 /// Marker interface to define that a entity is auditable
 /// </summary>
-public interface IAuditable
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+public interface IAuditableV1
 {
-    /// <summary>
-    /// Reference to the <see cref="CompanyUser"/> that changed the entity
-    /// </summary>
-    Guid? LastEditorId { get; set; }
 }

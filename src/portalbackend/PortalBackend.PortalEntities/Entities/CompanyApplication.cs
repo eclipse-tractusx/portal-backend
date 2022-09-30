@@ -25,7 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditCompanyApplication20222909))]
-public class CompanyApplication : IAuditable
+public class CompanyApplication : IAuditableV1
 {
     protected CompanyApplication()
     {
@@ -49,7 +49,7 @@ public class CompanyApplication : IAuditable
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
     public Guid CompanyId { get; private set; }
 
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     // Navigation properties
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }

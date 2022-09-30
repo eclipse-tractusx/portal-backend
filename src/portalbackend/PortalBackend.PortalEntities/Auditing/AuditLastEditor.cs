@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,29 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Laraue.EfCoreTriggers.Common.TriggerBuilders;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Newtonsoft.Json.Serialization;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20220929))]
-public class CompanyUserAssignedRole : IAuditableV1
+/// <summary>
+/// Attribute to mark the last editor id in the base class
+/// </summary>
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Property)]
+public class AuditLastEditorV1Attribute : Attribute
 {
-    protected CompanyUserAssignedRole() {}
-
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
-    {
-        CompanyUserId = companyUserId;
-        UserRoleId = userRoleId;
-    }
-    
-    public Guid Id { get; set; }
-    public Guid CompanyUserId { get; private set; }
-    public Guid UserRoleId { get; private set; }
-
-    [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
 }

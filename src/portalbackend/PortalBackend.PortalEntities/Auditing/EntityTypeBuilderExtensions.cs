@@ -30,7 +30,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntiti
 public static class EntityTypeBuilderExtensions
 {
     public static string GetSql<TEntity>(this EntityTypeBuilder<TEntity> entity, TriggerEvent triggerEvent)
-        where TEntity : class, IAuditable
+        where TEntity : class, IAuditableV1
     {
         var auditAttr = (AuditEntityV1Attribute?) Attribute.GetCustomAttribute(entity.Metadata.ClrType, typeof(AuditEntityV1Attribute));
         if (auditAttr is null)
