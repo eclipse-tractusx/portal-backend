@@ -55,4 +55,11 @@ public interface IConnectorsBusinessLogic
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
     Task DeleteConnectorAsync(Guid connectorId);
+    
+    /// <summary>
+    /// Retrieve connector end point along with bpns
+    /// </summary>
+    /// <param name="bpns"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns);
 }
