@@ -249,7 +249,7 @@ public class OfferService : IOfferService
                 description, 
                 IamClientAuthMethod.SECRET, 
                 serviceAccountUserRoles.Select(x => x.UserRoleId), 
-                offerDetails.CompanyId, 
+                offerDetails.CompanyId,
                 Enumerable.Repeat(offerDetails.Bpn, 1))
             .ConfigureAwait(false);
 
