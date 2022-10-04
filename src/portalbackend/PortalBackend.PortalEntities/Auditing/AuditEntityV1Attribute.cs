@@ -39,61 +39,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 [AttributeUsage(AttributeTargets.Class)]
 public class AuditEntityV1Attribute : Attribute
 {
-    private readonly Type _auditEntityType;
-    private const string _prefix = "NEW.";
-
     public AuditEntityV1Attribute(Type auditEntityType)
     {
         if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
         {
             throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
         }
-
-        _auditEntityType = auditEntityType;
-    }
-    
-    public string GetAuditSql<TEntity>(EntityTypeBuilder<TEntity> entity, TriggerEvent triggerEvent)
-        where TEntity : class
-    {
-        var snakeCaseStrategy = new SnakeCaseNamingStrategy();
-        var auditTableName = snakeCaseStrategy.GetPropertyName(_auditEntityType.Name, false);
-        var lastEditorProperties = typeof(TEntity).GetProperties().Where(x => x.CustomAttributes.Any(x => x.AttributeType == typeof(AuditLastEditorV1Attribute)));
-        if (!lastEditorProperties.Any() || lastEditorProperties.Count() > 1)
-        {
-            throw new ConfigurationException("There must be exactly one AuditLastEditorV1 Attribute is allowed per class");
-        }
-
-        var propertiesToExcludeNames = lastEditorProperties.Select(x => x.Name)
-            .Concat(typeof(IAuditEntityV1).GetProperties().Select(x => x.Name))
-            .ToArray();
-        var tableName = entity.Metadata.GetTableName() ?? snakeCaseStrategy.GetPropertyName(entity.Metadata.Name, false);
-        var lastEditorIdColumnName = GetLastEditorIdColumnName(entity, lastEditorProperties.Single(), tableName, snakeCaseStrategy);
-        var baseEntityProperties = entity.Metadata.GetProperties().Where(x => !propertiesToExcludeNames.Contains(x.Name)).Select(x => x.GetColumnName(StoreObjectIdentifier.Table(tableName, entity.Metadata.GetSchema()))).ToList();
-        var properties = string.Join(",", baseEntityProperties);
-        var propertiesWithPrefix = string.Join(",", baseEntityProperties.Select(x => $"{_prefix}{x}"));
-
-        return $"INSERT INTO portal.{auditTableName} ( " +
-               $"{snakeCaseStrategy.GetPropertyName(nameof(IAuditEntityV1.AuditV1Id), false).ToLower()}, " +
-               $"{string.Join(",", properties)}, " +
-               $"{lastEditorIdColumnName}, " +
-               $"{snakeCaseStrategy.GetPropertyName(nameof(IAuditEntityV1.AuditV1DateLastChanged), false)}, " +
-               $"{snakeCaseStrategy.GetPropertyName(nameof(IAuditEntityV1.AuditV1OperationId), false)} ) " +
-               "SELECT " +
-               "gen_random_uuid(), " +
-               $"{string.Join(",", propertiesWithPrefix)}, " +
-               $"{_prefix}{entity.GetColumnName(nameof(IAuditEntityV1.AuditV1LastEditorId), tableName)}, " +
-               "CURRENT_DATE, " +
-               $"{(int)triggerEvent.GetOperationForTriggerEvent()} ;";
-    }
-
-    private static string? GetLastEditorIdColumnName<TEntity>(EntityTypeBuilder<TEntity> entity,
-        MemberInfo lastEditorProperty,
-        string tableName, 
-        NamingStrategy snakeCaseStrategy) where TEntity : class
-    {
-        var lastEditorIdColumnName = entity.Metadata.GetProperties()
-            .Single(x => x.Name == lastEditorProperty.Name)
-            .GetColumnName(StoreObjectIdentifier.Table(tableName, entity.Metadata.GetSchema()));
-        return lastEditorIdColumnName ?? snakeCaseStrategy.GetPropertyName(lastEditorProperty.Name, false).ToLower();
     }
 }
