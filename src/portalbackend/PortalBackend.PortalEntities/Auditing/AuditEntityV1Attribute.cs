@@ -18,15 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Reflection;
-using Laraue.EfCoreTriggers.Common.TriggerBuilders;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Newtonsoft.Json.Serialization;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
@@ -39,11 +30,19 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 [AttributeUsage(AttributeTargets.Class)]
 public class AuditEntityV1Attribute : Attribute
 {
+    private readonly Type _auditEntityType;
+
     public AuditEntityV1Attribute(Type auditEntityType)
     {
         if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
         {
             throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
         }
+        _auditEntityType = auditEntityType;
+    }
+
+    public virtual Type AuditEntityType
+    {
+        get { return _auditEntityType; }
     }
 }

@@ -20,6 +20,7 @@
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
@@ -29,6 +30,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntiti
 public class AuditOfferSubscription20220929 : IAuditEntityV1
 {
     /// <inheritdoc />
+    [Key]
     public Guid AuditV1Id { get; set; }
 
     /// <inheritdoc />
@@ -63,6 +65,8 @@ public class AuditOfferSubscription20220929 : IAuditEntityV1
     /// Id of the app requester 
     /// </summary>
     public Guid RequesterId { get; set; }
+
+    public Guid? LastEditorId { get; set; }
     
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }

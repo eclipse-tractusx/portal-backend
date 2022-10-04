@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Laraue.EfCoreTriggers.Common.Extensions;
@@ -255,54 +256,7 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
-                        j.AfterInsert(trigger => trigger
-                            .Action(action => action
-                                .Insert(newValue => new AuditOfferSubscription20220929
-                                {
-                                    Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                                    AuditV1Id = newValue.Id,
-                                    AuditV1OperationId = AuditOperationId.INSERT,
-                                    CompanyId = newValue.CompanyId,
-                                    OfferId = newValue.OfferId, 
-                                    OfferSubscriptionStatusId = newValue.OfferSubscriptionStatusId,
-                                    DisplayName = newValue.DisplayName,
-                                    Description = newValue.Description,
-                                    RequesterId = newValue.RequesterId,
-                                    AuditV1LastEditorId = newValue.LastEditorId,
-                                    AuditV1DateLastChanged = new DateTimeOffset()
-                                })))
-                        .AfterUpdate(trigger => trigger
-                            .Action(action => action
-                                .Insert((oldEntity, newEntity) => new AuditOfferSubscription20220929
-                                {
-                                    Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                                    AuditV1Id = oldEntity.Id,
-                                    AuditV1OperationId = AuditOperationId.UPDATE,
-                                    CompanyId = oldEntity.CompanyId,
-                                    OfferId = oldEntity.OfferId,
-                                    OfferSubscriptionStatusId = oldEntity.OfferSubscriptionStatusId,
-                                    DisplayName = oldEntity.DisplayName,
-                                    Description = oldEntity.Description,
-                                    RequesterId = oldEntity.RequesterId,
-                                    AuditV1LastEditorId = oldEntity.LastEditorId,
-                                    AuditV1DateLastChanged = new DateTimeOffset()
-                                })))
-                        .AfterDelete(trigger => trigger
-                            .Action(action => action
-                                .Insert(deletedEntity => new AuditOfferSubscription20220929
-                                {
-                                    Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                                    AuditV1Id = deletedEntity.Id,
-                                    AuditV1OperationId = AuditOperationId.DELETE,
-                                    CompanyId = deletedEntity.CompanyId,
-                                    OfferId = deletedEntity.OfferId,
-                                    OfferSubscriptionStatusId = deletedEntity.OfferSubscriptionStatusId,
-                                    DisplayName = deletedEntity.DisplayName,
-                                    Description = deletedEntity.Description,
-                                    RequesterId = deletedEntity.RequesterId,
-                                    AuditV1LastEditorId = deletedEntity.LastEditorId,
-                                    AuditV1DateLastChanged = new DateTimeOffset()
-                                })));
+                        j.HasAuditV1Triggers<OfferSubscription,AuditOfferSubscription20220929>();
                     }
                 );
 
@@ -544,45 +498,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.AfterInsert(trigger => trigger
-                .Action(action => action
-                    .Insert(newValue => new AuditCompanyApplication20222909
-                    {
-                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                        AuditV1Id = newValue.Id,
-                        AuditV1OperationId = AuditOperationId.INSERT,
-                        ApplicationStatusId = newValue.ApplicationStatusId,
-                        DateCreated = newValue.DateCreated,
-                        CompanyId = newValue.CompanyId,
-                        AuditV1LastEditorId = newValue.LastEditorId,
-                        AuditV1DateLastChanged = new DateTimeOffset()
-                    })));
-            entity.AfterUpdate(trigger => trigger
-                .Action(action => action
-                    .Insert((oldEntity, newEntity) => new AuditCompanyApplication20222909
-                    {
-                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                        AuditV1Id = oldEntity.Id,
-                        AuditV1OperationId = AuditOperationId.UPDATE,
-                        ApplicationStatusId = oldEntity.ApplicationStatusId,
-                        DateCreated = oldEntity.DateCreated,
-                        CompanyId = oldEntity.CompanyId,
-                        AuditV1LastEditorId = oldEntity.LastEditorId,
-                        AuditV1DateLastChanged = new DateTimeOffset()
-                    })));
-            entity.AfterDelete(trigger => trigger
-                .Action(action => action
-                    .Insert(deletedEntity => new AuditCompanyApplication20222909
-                    {
-                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                        AuditV1Id = deletedEntity.Id,
-                        AuditV1OperationId = AuditOperationId.DELETE,
-                        ApplicationStatusId = deletedEntity.ApplicationStatusId,
-                        DateCreated = deletedEntity.DateCreated,
-                        CompanyId = deletedEntity.CompanyId,
-                        AuditV1LastEditorId = deletedEntity.LastEditorId,
-                        AuditV1DateLastChanged = new DateTimeOffset()
-                    })));
+            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20222909>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -699,43 +615,7 @@ public class PortalDbContext : DbContext
                         j =>
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId });
-                            
-                            j.AfterInsert(trigger => trigger
-                                .Action(action => action
-                                    .Insert(newValue => new AuditCompanyUserAssignedRole20220929
-                                    {
-                                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                                        AuditV1Id = newValue.Id,
-                                        AuditV1OperationId = AuditOperationId.INSERT,
-                                        UserRoleId = newValue.UserRoleId,
-                                        CompanyUserId = newValue.CompanyUserId,
-                                        AuditV1LastEditorId = newValue.LastEditorId,
-                                        AuditV1DateLastChanged = new DateTimeOffset()
-                                    })));
-                            j.AfterUpdate(trigger => trigger
-                                .Action(action => action
-                                    .Insert((oldEntity, newEntity) => new AuditCompanyUserAssignedRole20220929
-                                    {
-                                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                                        AuditV1Id = oldEntity.Id,
-                                        AuditV1OperationId = AuditOperationId.UPDATE,
-                                        UserRoleId = oldEntity.UserRoleId,
-                                        CompanyUserId = oldEntity.CompanyUserId,
-                                        AuditV1LastEditorId = oldEntity.LastEditorId,
-                                        AuditV1DateLastChanged = new DateTimeOffset()
-                                    })));
-                            j.AfterDelete(trigger => trigger
-                                .Action(action => action
-                                    .Insert(deletedEntity => new AuditCompanyUserAssignedRole20220929
-                                    {
-                                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                                        AuditV1Id = deletedEntity.Id,
-                                        AuditV1OperationId = AuditOperationId.DELETE,
-                                        UserRoleId = deletedEntity.UserRoleId,
-                                        CompanyUserId = deletedEntity.CompanyUserId,
-                                        AuditV1LastEditorId = deletedEntity.LastEditorId,
-                                        AuditV1DateLastChanged = new DateTimeOffset()
-                                    })));
+                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole20220929>();
                         });
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)
@@ -744,57 +624,7 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
             
-            entity.AfterInsert(trigger => trigger
-                .Action(action => action
-                    .Insert(newValue => new AuditCompanyUser20220929
-                    {
-                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                        AuditV1Id = newValue.Id,
-                        AuditV1OperationId = AuditOperationId.INSERT,
-                        CompanyId = newValue.CompanyId,
-                        CompanyUserStatusId = newValue.CompanyUserStatusId,
-                        DateCreated = newValue.DateCreated,
-                        Email = newValue.Email,
-                        Firstname = newValue.Firstname,
-                        Lastlogin = newValue.Lastlogin,
-                        Lastname = newValue.Lastname,
-                        AuditV1LastEditorId = newValue.LastEditorId,
-                        AuditV1DateLastChanged = new DateTimeOffset()
-                    })));
-            entity.AfterUpdate(trigger => trigger
-                .Action(action => action
-                    .Insert((oldEntity, newEntity) => new AuditCompanyUser20220929
-                    {
-                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                        AuditV1Id = oldEntity.Id,
-                        AuditV1OperationId = AuditOperationId.UPDATE,
-                        CompanyId = oldEntity.CompanyId,
-                        CompanyUserStatusId = oldEntity.CompanyUserStatusId,
-                        DateCreated = oldEntity.DateCreated,
-                        Email = oldEntity.Email,
-                        Firstname = oldEntity.Firstname,
-                        Lastlogin = oldEntity.Lastlogin,
-                        Lastname = oldEntity.Lastname,
-                        AuditV1LastEditorId = oldEntity.LastEditorId,
-                        AuditV1DateLastChanged = new DateTimeOffset()
-                    })));
-            entity.AfterDelete(trigger => trigger
-                .Action(action => action
-                    .Insert(deletedEntity => new AuditCompanyUser20220929
-                    {
-                        Id = new Guid("28601d9d-44df-4dfc-9995-1ffb08a690f0"),
-                        AuditV1Id = deletedEntity.Id,
-                        AuditV1OperationId = AuditOperationId.DELETE,
-                        CompanyId = deletedEntity.CompanyId,
-                        CompanyUserStatusId = deletedEntity.CompanyUserStatusId,
-                        DateCreated = deletedEntity.DateCreated,
-                        Email = deletedEntity.Email,
-                        Firstname = deletedEntity.Firstname,
-                        Lastlogin = deletedEntity.Lastlogin,
-                        Lastname = deletedEntity.Lastname,
-                        AuditV1LastEditorId = deletedEntity.LastEditorId,
-                        AuditV1DateLastChanged = new DateTimeOffset()
-                    })));
+            entity.HasAuditV1Triggers<CompanyUser,AuditCompanyUser20220929>();
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
