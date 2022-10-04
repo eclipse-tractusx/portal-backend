@@ -37,7 +37,7 @@ public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descr
 public record AppUserRoleDescription(string languageCode, string description);
 
 /// <summary>
-/// Model for Role Response
+/// Model for Role Data
 /// </summary>
 /// <param name="roleId"></param>
 /// <param name="roleName"></param>
