@@ -121,7 +121,7 @@ public class UserRepository : IUserRepository
                 && companyUserId.HasValue ? companyUser.Id == companyUserId!.Value : true
                 && firstName != null ? companyUser.Firstname == firstName : true
                 && lastName != null ? companyUser.Lastname == lastName : true
-                && email != null ? companyUser.Email == email : true);
+                && email != null ? EF.Functions.ILike(companyUser.Email!, $"%{email}%") : true);
 
     public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
