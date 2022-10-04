@@ -200,7 +200,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
-    public Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
+    public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
     {
         if (appId == Guid.Empty)
         {
@@ -215,7 +215,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return InsertAppUserRoleAsync(appId, appAssignedDesc, userId);
     }
 
-    private async Task InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
+    private async Task<IEnumerable<AppRoleData>> InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId)
     {
         var appReleaseRepository = _portalRepositories.GetInstance<IAppReleaseRepository>();
 
@@ -223,16 +223,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
         }
-
+        var roelData = new List<AppRoleData>();
         foreach (var indexItem in appAssignedDesc)
         {
             var appRole = appReleaseRepository.CreateAppUserRole(appId, indexItem.role);
+            roelData.Add(new AppRoleData(appRole.Id, indexItem.role));
             foreach (var item in indexItem.descriptions)
             {
                 appReleaseRepository.CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
             }
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return roelData.AsEnumerable();
     }
     
     /// <inheritdoc/>

@@ -56,7 +56,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="appAssignedDesc"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
+    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
     
     /// <summary>
     /// Return Agreements for App_Contract Category

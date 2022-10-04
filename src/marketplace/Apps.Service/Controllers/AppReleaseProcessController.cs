@@ -107,14 +107,12 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPost]
     [Route("{appId}/role")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)
-    {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
-        return NoContent();
-    }
+    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
+         await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
+    
     
     /// <summary>
     /// Return Agreement Data for offer_type_id App
