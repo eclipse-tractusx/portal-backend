@@ -27,7 +27,7 @@ public interface IUserRolesRepository
 {
     CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId);
-    IAsyncEnumerable<(Guid CompanyUserRoleId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId);
+    IAsyncEnumerable<(Guid CompanyUserId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId);
 
     CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);
     IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds);

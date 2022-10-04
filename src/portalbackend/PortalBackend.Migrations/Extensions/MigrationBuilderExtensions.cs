@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Reflection;
 using System.Text;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -37,19 +38,20 @@ public static class MigrationBuilderExtensions
         var snakeCaseStrategy = new SnakeCaseNamingStrategy();
         var sb = new StringBuilder();
         var properties = typeof(TEntity).GetProperties()
-            .Where(x => !x.GetAccessors().Any(a => a.IsVirtual) && x.Name != nameof(IAuditEntity.DateLastChanged))
+            .Where(x => !x.GetAccessors().Any(a => a.IsVirtual) && x.Name != nameof(IAuditEntity.DateLastChanged) && x.Name != nameof(IAuditEntity.Id))
             .Select(x => snakeCaseStrategy.GetPropertyName(x.Name, false))
             .ToList();
         var auditTableName = $"{snakeCaseStrategy.GetPropertyName(typeof(TEntity).Name, false)}s";
         var tableName = auditTableName.Replace("audit_", string.Empty);
+        var hasIdColumn = typeof(TEntity).GetProperties().Any(x => x.Name != nameof(IAuditEntity.Id));
         sb.AppendLine($"CREATE OR REPLACE FUNCTION portal.process_{tableName}_audit() RETURNS TRIGGER AS ${auditTableName}$");
         sb.AppendLine("BEGIN");
         sb.AppendLine("IF (TG_OP = 'DELETE') THEN");
-        sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.DELETE, version));
+        sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.DELETE, version, hasIdColumn));
         sb.AppendLine("ELSIF (TG_OP = 'UPDATE') THEN");
-        sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.UPDATE, version));
+        sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.UPDATE, version, hasIdColumn));
         sb.AppendLine($"ELSIF (TG_OP = 'INSERT') THEN");
-        sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.INSERT, version));
+        sb.AppendLine(GenerateInsertStatement(properties, snakeCaseStrategy, auditTableName, AuditOperationId.INSERT, version, hasIdColumn));
         sb.AppendLine("END IF;");
         sb.AppendLine("RETURN NULL;");
         sb.AppendLine("END;");
@@ -71,12 +73,12 @@ public static class MigrationBuilderExtensions
         migrationBuilder.Sql($"DROP TRIGGER {auditTableName} ON {tableName};");
     }
 
-    private static string GenerateInsertStatement(
-        IReadOnlyCollection<string> properties,
+    private static string GenerateInsertStatement(IReadOnlyCollection<string> properties,
         NamingStrategy namingStrategy,
-        string auditTableName, 
+        string auditTableName,
         AuditOperationId operation,
-        string version)
+        string version,
+        bool hasIdColumn)
     {
         var prefix = operation switch
         {
@@ -86,16 +88,18 @@ public static class MigrationBuilderExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
         };
 
+        var idInsertColumn = hasIdColumn ? $"{prefix}.{nameof(IAuditEntity.Id).ToLower()}, " : string.Empty;
+        var idColumn = hasIdColumn ? $"{namingStrategy.GetPropertyName(nameof(IAuditEntity.AuditId), false).ToLower()}, " : string.Empty;
         return $"INSERT INTO portal.{auditTableName}_{version} ( " +
-               $"{nameof(IAuditable.Id).ToLower()}, " +
-               $"{namingStrategy.GetPropertyName(nameof(IAuditEntity.AuditId), false).ToLower()}, " +
+               $"{nameof(IAuditEntity.Id).ToLower()}, " +
+               $"{idColumn}" +
                $"{string.Join(",", properties)}, " +
                $"{namingStrategy.GetPropertyName(nameof(IAuditable.LastEditorId), false)}, " +
                $"{namingStrategy.GetPropertyName(nameof(IAuditEntity.DateLastChanged), false)}, " +
                $"{namingStrategy.GetPropertyName(nameof(IAuditEntity.AuditOperationId), false)} ) " +
                "SELECT " +
                "gen_random_uuid(), " +
-               $"{prefix}.{nameof(IAuditable.Id).ToLower()}, " +
+               $"{idInsertColumn}" +
                $"{string.Join(",", properties.Select(x => $"{prefix}.{x}"))}, " +
                $"{prefix}.{namingStrategy.GetPropertyName(nameof(IAuditable.LastEditorId), false)}, " +
                "CURRENT_DATE, " +

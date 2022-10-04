@@ -51,12 +51,12 @@ public class UserRolesRepository : IUserRolesRepository
             .Include(companyUser => companyUser.IamUser)
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid CompanyUserRoleId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId) =>
+    public IAsyncEnumerable<(Guid CompanyUserId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId) =>
         _dbContext.CompanyUserAssignedRoles
             .Where(cuar => 
                 roleNames.Any(x => x == cuar.UserRole!.UserRoleText) &&
                 cuar.CompanyUser!.IamUser!.UserEntityId == iamUserId)
-            .Select(cuar => new ValueTuple<Guid, Guid>(cuar.Id, cuar.UserRole!.Id))
+            .Select(cuar => new ValueTuple<Guid, Guid>(cuar.CompanyUserId, cuar.UserRoleId))
             .AsAsyncEnumerable();
     
     public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
@@ -93,10 +93,9 @@ public class UserRolesRepository : IUserRolesRepository
             .AsNoTracking()
             .Where(x => x.CompanyUserId == companyUserId && userRoles.All(ur => ur != x.UserRole!.UserRoleText))
             .Select(x => new CompanyUserRoleDeletionData(
-                    x.Id,
+                    x.CompanyUserId,
                     x.UserRoleId,
-                    x.UserRole!.UserRoleText,
-                    x.CompanyUserId))
+                    x.UserRole!.UserRoleText))
             .ToAsyncEnumerable();
     
     public IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(string clientClientId, Guid companyUserId, IEnumerable<string> userRoles) =>

@@ -242,7 +242,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<string>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && !x.Contains("Company Admin"))))
             .ReturnsLazily(() => new List<UserRoleWithId>().ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Supplier"))))
-            .ReturnsLazily(() => new List<CompanyUserRoleDeletionData> { new(Guid.NewGuid(), _buyerRoleId, "Supplier", _companyUser.Id) }.ToAsyncEnumerable());
+            .ReturnsLazily(() => new List<CompanyUserRoleDeletionData> { new(_companyUser.Id, _buyerRoleId, "Supplier") }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Supplier"))))
             .ReturnsLazily(() => new List<CompanyUserRoleDeletionData>().ToAsyncEnumerable());
 
