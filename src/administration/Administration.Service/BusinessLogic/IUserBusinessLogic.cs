@@ -46,14 +46,6 @@ public interface IUserBusinessLogic
     Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync( Guid appId,string iamUserId, int page, int size, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 
     /// <summary>
-    /// Add Role to User
-    /// </summary>
-    /// <param name="appId">app Id</param>
-    /// <param name="userRoleInfo">User and Role Information like CompanyUser Id and Role Name</param>
-    /// <param name="adminUserId">Admin User Id</param>
-    /// <returns>messages</returns>
-    Task<UserRoleMessage> AddUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
-    /// <summary>
     /// Update Role to User
     /// </summary>
     /// <param name="appId">app Id</param>

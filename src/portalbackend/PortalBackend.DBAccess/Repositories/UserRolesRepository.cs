@@ -101,7 +101,10 @@ public class UserRolesRepository : IUserRolesRepository
     public IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(string clientClientId, Guid companyUserId, IEnumerable<string> userRoles) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientClientId) && userRoles.Contains(userRole.UserRoleText) && !userRole.CompanyUsers.Any(cu => cu.Id == companyUserId && cu.CompanyUserAssignedRoles.All(x => x.UserRoleId != userRole.Id)))
+            .Where(userRole =>
+                userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientClientId) &&
+                userRoles.Contains(userRole.UserRoleText) &&
+                !userRole.CompanyUsers.SingleOrDefault(x => x.Id == companyUserId)!.CompanyUserAssignedRoles.Any(x => userRoles.Contains(x.UserRole!.UserRoleText)))
             .Select(userRole => new UserRoleWithId(
                 userRole.UserRoleText,
                 userRole.Id
