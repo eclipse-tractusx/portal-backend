@@ -26,8 +26,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 [AuditEntityV1(typeof(AuditCompanyUserAssignedRole20220929))]
 public class CompanyUserAssignedRole : IAuditableV1
 {
-    protected CompanyUserAssignedRole() {}
-
     public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
     {
         CompanyUserId = companyUserId;

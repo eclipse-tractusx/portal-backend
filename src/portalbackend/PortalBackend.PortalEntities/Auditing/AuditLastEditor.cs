@@ -18,13 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.Common.TriggerBuilders;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Newtonsoft.Json.Serialization;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
