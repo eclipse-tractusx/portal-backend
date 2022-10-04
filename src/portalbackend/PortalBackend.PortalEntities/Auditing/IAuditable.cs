@@ -28,11 +28,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 public interface IAuditable
 {
     /// <summary>
-    /// Unique identifier of the entity
-    /// </summary>
-    Guid Id { get; set; }
-    
-    /// <summary>
     /// Reference to the <see cref="CompanyUser"/> that changed the entity
     /// </summary>
     Guid? LastEditorId { get; set; }

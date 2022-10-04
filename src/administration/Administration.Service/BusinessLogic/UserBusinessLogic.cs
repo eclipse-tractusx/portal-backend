@@ -736,7 +736,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
         }
-        _portalRepositories.RemoveRange(rolesToDelete.Select(x => new CompanyUserAssignedRole(x.CompanyUserAssignedRoleId)));
+        _portalRepositories.RemoveRange(rolesToDelete.Select(x => new CompanyUserAssignedRole(x.CompanyUserId, x.CompanyUserRoleId)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

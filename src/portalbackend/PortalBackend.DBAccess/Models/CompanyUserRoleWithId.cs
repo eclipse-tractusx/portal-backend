@@ -22,4 +22,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record UserRoleWithId(string CompanyUserRoleText, Guid CompanyUserRoleId);
 
-public record CompanyUserRoleDeletionData(Guid CompanyUserAssignedRoleId, Guid CompanyUserRoleId, string CompanyUserRoleText, Guid CompanyUserId);
+public record CompanyUserRoleDeletionData(Guid CompanyUserId, Guid CompanyUserRoleId, string CompanyUserRoleText);

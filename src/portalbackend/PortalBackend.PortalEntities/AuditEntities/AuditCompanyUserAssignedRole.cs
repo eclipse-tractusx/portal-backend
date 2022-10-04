@@ -32,6 +32,9 @@ public class AuditCompanyUserAssignedRole : CompanyUserAssignedRole, IAuditEntit
     public Guid AuditId { get; set; }
 
     /// <inheritdoc />
+    public Guid Id { get; set; }
+
+    /// <inheritdoc />
     public AuditOperationId AuditOperationId { get; set; }
     
     /// <inheritdoc />
