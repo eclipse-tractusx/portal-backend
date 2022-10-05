@@ -19,13 +19,14 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
 /// <summary>
-/// Audit entity for App subscription relationship between companies and apps.
+/// Audit entity for <see cref="OfferSubscription"/> relationship between companies and apps.
 /// </summary>
 public class AuditOfferSubscription20221005 : IAuditEntityV1
 {
