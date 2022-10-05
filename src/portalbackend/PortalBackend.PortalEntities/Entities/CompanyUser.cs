@@ -20,11 +20,13 @@
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUser : IAuditable
+[AuditEntityV1(typeof(AuditCompanyUser20221005))]
+public class CompanyUser : IAuditableV1
 {
     /// <summary>
     /// Only needed for ef and the audit entity
@@ -74,7 +76,7 @@ public class CompanyUser : IAuditable
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     // Navigation properties

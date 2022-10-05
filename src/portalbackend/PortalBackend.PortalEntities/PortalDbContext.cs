@@ -19,12 +19,21 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 
+/// <summary>
+/// Db Context
+/// </summary>
+/// <remarks>
+/// The Trigger Framework requires new Guid() to convert it to gen_random_uuid(),
+/// for the Id field we'll use a randomly set UUID to satisfy SonarCloud.
+/// </remarks>
 public class PortalDbContext : DbContext
 {
     protected PortalDbContext()
@@ -48,9 +57,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     
-    public virtual DbSet<AuditCompanyApplication> AuditCompanyApplications { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUser> AuditCompanyUsers { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserAssignedRole> AuditCompanyUserAssignedRoles { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20221005 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -195,7 +205,7 @@ public class PortalDbContext : DbContext
                     .Cast<AgreementCategoryId>()
                     .Select(e => new AgreementCategory(e))
             );
-        
+
         modelBuilder.Entity<ConsentAssignedOffer>(entity =>
         {
             entity.HasKey(e => new { e.ConsentId, e.OfferId });
@@ -210,7 +220,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<Offer>(entity =>
         {
             entity.HasOne(d => d.ProviderCompany)
@@ -246,6 +256,7 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
+                        j.HasAuditV1Triggers<OfferSubscription,AuditOfferSubscription20221005>();
                     }
                 );
 
@@ -480,20 +491,14 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<CompanyApplication>()
-            .HasOne(d => d.Company)
+        modelBuilder.Entity<CompanyApplication>(entity =>
+        {
+            entity.HasOne(d => d.Company)
                 .WithMany(p => p!.CompanyApplications)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-        
-        modelBuilder.Entity<AuditCompanyApplication>(x =>
-        {
-            x.HasBaseType((Type?)null);
 
-            x.Ignore(x => x.ApplicationStatus);
-            x.Ignore(x => x.Company);
-            x.Ignore(x => x.Invitations);
-            x.ToTable("audit_company_applications_cplp_1255_audit_company_applications");
+            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20221005>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -610,6 +615,7 @@ public class PortalDbContext : DbContext
                         j =>
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId });
+                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole20221005>();
                         });
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)
@@ -617,38 +623,8 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
-
-            entity.ToTable("company_users");
-        });
-        
-        modelBuilder.Entity<AuditCompanyUser>(entity =>
-        {
-            entity.HasBaseType((Type?)null);
-
-            entity.Ignore(x => x.Company);
-            entity.Ignore(x => x.IamUser);
-            entity.Ignore(x => x.Consents);
-            entity.Ignore(x => x.Documents);
-            entity.Ignore(x => x.Invitations);
-            entity.Ignore(x => x.Offers);
-            entity.Ignore(x => x.SalesManagerOfOffers);
-            entity.Ignore(x => x.UserRoles);
-            entity.Ignore(x => x.CompanyUserAssignedRoles);
-            entity.Ignore(x => x.CompanyUserAssignedBusinessPartners);
-            entity.Ignore(x => x.Notifications);
-            entity.Ignore(x => x.CreatedNotifications);
-
-            entity.ToTable("audit_company_users_cplp_1254_db_audit");
-        });
-
-        modelBuilder.Entity<AuditCompanyUserAssignedRole>(x =>
-        {
-            x.HasBaseType((Type?)null);
-
-            x.Ignore(x => x.CompanyUser);
-            x.Ignore(x => x.UserRole);
-
-            x.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications");
+            
+            entity.HasAuditV1Triggers<CompanyUser,AuditCompanyUser20221005>();
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()

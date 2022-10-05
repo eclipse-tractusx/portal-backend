@@ -18,22 +18,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
 /// <summary>
-/// Marker interface to define that a entity is auditable
+/// Audit entity for <see cref="CompanyApplication"/> only needed for configuration purposes
 /// </summary>
-public interface IAuditable
+public class AuditCompanyApplication20221005 : IAuditEntityV1
 {
-    /// <summary>
-    /// Unique identifier of the entity
-    /// </summary>
-    Guid Id { get; set; }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
+
+    public Guid Id { get; set; }
+
+    public DateTimeOffset DateCreated { get; set; }
+
+    public CompanyApplicationStatusId ApplicationStatusId { get; set; }
     
-    /// <summary>
-    /// Reference to the <see cref="CompanyUser"/> that changed the entity
-    /// </summary>
-    Guid? LastEditorId { get; set; }
+    public Guid CompanyId { get; set; }
+    
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    public Guid? LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

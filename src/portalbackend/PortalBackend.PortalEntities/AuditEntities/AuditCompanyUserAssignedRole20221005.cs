@@ -18,41 +18,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-[AuditEntityV1(typeof(AuditCompanyApplication20221005))]
-public class CompanyApplication : IAuditableV1
+/// <summary>
+/// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
+/// </summary>
+public class AuditCompanyUserAssignedRole20221005 : IAuditEntityV1
 {
-    protected CompanyApplication()
-    {
-        Invitations = new HashSet<Invitation>();
-    }
-
-    public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        ApplicationStatusId = applicationStatusId;
-        DateCreated = dateCreated;
-    }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; set; }
+    
+    public Guid CompanyUserId { get; set; }
+    
+    public Guid UserRoleId { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public DateTimeOffset? DateLastChanged { get; set; }
-
-    public CompanyApplicationStatusId ApplicationStatusId { get; set; }
-    public Guid CompanyId { get; private set; }
-
-    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
-    public virtual Company? Company { get;  set; }
-    public virtual ICollection<Invitation> Invitations { get; private set; }
+    
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }
