@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,17 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
-/// Marker interface to define that a entity is auditable
+/// Attribute to Provide the needed methods to setup an audit trigger
 /// </summary>
-public interface IAuditable
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Class)]
+public class AuditEntityV1Attribute : Attribute
 {
-    /// <summary>
-    /// Reference to the <see cref="CompanyUser"/> that changed the entity
-    /// </summary>
-    Guid? LastEditorId { get; set; }
+    public AuditEntityV1Attribute(Type auditEntityType)
+    {
+        if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
+        {
+            throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
+        }
+
+        AuditEntityType = auditEntityType;
+    }
+
+    public virtual Type AuditEntityType { get; }
 }
