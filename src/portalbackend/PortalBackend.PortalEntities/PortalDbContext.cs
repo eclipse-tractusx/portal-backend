@@ -61,6 +61,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole202210052> AuditCompanyUserAssignedRole202210052 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -615,7 +616,7 @@ public class PortalDbContext : DbContext
                         j =>
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId });
-                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole20221005>();
+                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole202210052>();
                         });
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)
