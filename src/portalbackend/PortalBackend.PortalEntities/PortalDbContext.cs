@@ -57,10 +57,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     
-    public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20220929 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyApplication20220510> AuditCompanyApplication20220929 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20220929 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20220929 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20221005 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -498,7 +498,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20220510>();
+            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20221005>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
