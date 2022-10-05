@@ -1,4 +1,24 @@
-﻿using System;
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -9,6 +29,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_users ON portal.company_users;");
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_user_assigned_roles ON portal.company_user_assigned_roles;");
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_applications ON portal.company_applications; ");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_users_audit(); DROP FUNCTION IF EXISTS portal.process_company_user_assigned_roles_audit();");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_user_assigned_roles_audit(); DROP FUNCTION IF EXISTS portal.process_company_users_audit();");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_applications_audit(); DROP FUNCTION IF EXISTS portal.process_company_applications_audit();");
+
             migrationBuilder.DropTable(
                 name: "audit_company_applications_cplp_1255_audit_company_applications",
                 schema: "portal");
@@ -132,13 +159,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20221005 (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.offer_id, \r\n  NEW.offer_subscription_status_id, \r\n  NEW.display_name, \r\n  NEW.description, \r\n  NEW.requester_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION AFTER INSERT\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION();");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20221005 (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.offer_id, \r\n  NEW.offer_subscription_status_id, \r\n  NEW.display_name, \r\n  NEW.description, \r\n  NEW.requester_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION AFTER UPDATE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION();");
-            
-            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_users ON portal.company_users;");
-            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_user_assigned_roles ON portal.company_user_assigned_roles;");
-            migrationBuilder.Sql("DROP TRIGGER IF EXISTS audit_company_applications ON portal.company_applications; ");
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_users_audit(); DROP FUNCTION IF EXISTS portal.process_company_user_assigned_roles_audit();");
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_user_assigned_roles_audit(); DROP FUNCTION IF EXISTS portal.process_company_users_audit();");
-            migrationBuilder.Sql("DROP FUNCTION IF EXISTS portal.process_audit_company_applications_audit(); DROP FUNCTION IF EXISTS portal.process_company_applications_audit();");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -255,6 +275,57 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "audit_company_users_cplp_1254_db_audit",
                 column: "company_user_status_id");
+
+            migrationBuilder.Sql(
+                "CREATE OR REPLACE FUNCTION portal.process_company_users_audit() RETURNS TRIGGER AS $audit_company_users$ " +
+                "BEGIN " +
+                "IF (TG_OP = 'DELETE') THEN " +
+                "INSERT INTO portal.audit_company_users_cplp_1254_db_audit ( id, audit_id, date_created,email,firstname,lastlogin,lastname,company_id,company_user_status_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), OLD.id, OLD.date_created,OLD.email,OLD.firstname,OLD.lastlogin,OLD.lastname,OLD.company_id,OLD.company_user_status_id, OLD.last_editor_id, CURRENT_DATE, 3 ; " +
+                "ELSIF (TG_OP = 'UPDATE') THEN " +
+                "INSERT INTO portal.audit_company_users_cplp_1254_db_audit ( id, audit_id, date_created,email,firstname,lastlogin,lastname,company_id,company_user_status_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.date_created,NEW.email,NEW.firstname,NEW.lastlogin,NEW.lastname,NEW.company_id,NEW.company_user_status_id, NEW.last_editor_id, CURRENT_DATE, 2 ; " +
+                "ELSIF (TG_OP = 'INSERT') THEN " +
+                "INSERT INTO portal.audit_company_users_cplp_1254_db_audit ( id, audit_id, date_created,email,firstname,lastlogin,lastname,company_id,company_user_status_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.date_created,NEW.email,NEW.firstname,NEW.lastlogin,NEW.lastname,NEW.company_id,NEW.company_user_status_id, NEW.last_editor_id, CURRENT_DATE, 1 ; " +
+                "END IF; " +
+                "RETURN NULL; " +
+                "END; " +
+                "$audit_company_users$ LANGUAGE plpgsql; " +
+                "CREATE OR REPLACE TRIGGER audit_company_users " +
+                "AFTER INSERT OR UPDATE OR DELETE ON portal.company_users " +
+                "FOR EACH ROW EXECUTE FUNCTION portal.process_company_users_audit();");
+
+            migrationBuilder.Sql(
+                "CREATE OR REPLACE FUNCTION portal.process_company_user_assigned_roles_audit() RETURNS TRIGGER AS $audit_company_user_assigned_roles$ " +
+                "BEGIN " +
+                "IF (TG_OP = 'DELETE') THEN " +
+                "INSERT INTO portal.audit_company_user_assigned_roles_cplp_1255_audit_company_applications ( id, audit_id, company_user_id,user_role_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), OLD.id, OLD.company_user_id,OLD.user_role_id, OLD.last_editor_id, CURRENT_DATE, 3 ; " +
+                "ELSIF (TG_OP = 'UPDATE') THEN " +
+                "INSERT INTO portal.audit_company_user_assigned_roles_cplp_1255_audit_company_applications ( id, audit_id, company_user_id,user_role_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.company_user_id,NEW.user_role_id, NEW.last_editor_id, CURRENT_DATE, 2 ; " +
+                "ELSIF (TG_OP = 'INSERT') THEN " +
+                "INSERT INTO portal.audit_company_user_assigned_roles_cplp_1255_audit_company_applications ( id, audit_id, company_user_id,user_role_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.company_user_id,NEW.user_role_id, NEW.last_editor_id, CURRENT_DATE, 1 ; " +
+                "END IF; " +
+                "RETURN NULL; " +
+                "END; " +
+                "$audit_company_user_assigned_roles$ LANGUAGE plpgsql; " +
+                "CREATE OR REPLACE TRIGGER audit_company_user_assigned_roles " +
+                "AFTER INSERT OR UPDATE OR DELETE ON portal.company_user_assigned_roles " +
+                "FOR EACH ROW EXECUTE FUNCTION portal.process_company_user_assigned_roles_audit();");
+
+            migrationBuilder.Sql(
+                "CREATE OR REPLACE FUNCTION portal.process_company_applications_audit() RETURNS TRIGGER AS $audit_company_applications$ " +
+                "BEGIN "+
+                "IF (TG_OP = 'DELETE') THEN "+
+                "INSERT INTO portal.audit_company_applications_cplp_1255_audit_company_applications ( id, audit_id, date_created,application_status_id,company_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), OLD.id, OLD.date_created,OLD.application_status_id,OLD.company_id, OLD.last_editor_id, CURRENT_DATE, 3 ; "+
+                "ELSIF (TG_OP = 'UPDATE') THEN "+
+                "INSERT INTO portal.audit_company_applications_cplp_1255_audit_company_applications ( id, audit_id, date_created,application_status_id,company_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.date_created,NEW.application_status_id,NEW.company_id, NEW.last_editor_id, CURRENT_DATE, 2 ; "+
+                "ELSIF (TG_OP = 'INSERT') THEN "+
+                "INSERT INTO portal.audit_company_applications_cplp_1255_audit_company_applications ( id, audit_id, date_created,application_status_id,company_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.date_created,NEW.application_status_id,NEW.company_id, NEW.last_editor_id, CURRENT_DATE, 1 ; "+
+                "END IF; "+
+                "RETURN NULL; "+
+                "END; "+
+                "$audit_company_applications$ LANGUAGE plpgsql; "+
+                "CREATE OR REPLACE TRIGGER audit_company_applications "+
+                "AFTER INSERT OR UPDATE OR DELETE ON portal.company_applications "+
+                "FOR EACH ROW EXECUTE FUNCTION portal.process_company_applications_audit(); ");
         }
     }
 }

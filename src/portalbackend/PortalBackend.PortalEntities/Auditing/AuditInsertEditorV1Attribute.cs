@@ -21,7 +21,9 @@
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
-/// Attribute to mark the last editor id in the base class
+/// Attribute to mark the creators id in the base class.
+/// The usage is optional. If not set <see cref="AuditLastEditorV1Attribute"/>
+/// is being used to determine the creators id.
 /// </summary>
 /// <remarks>
 /// The implementation of this Attribute must not be changed.
