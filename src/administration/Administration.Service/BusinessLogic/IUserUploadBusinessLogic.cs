@@ -18,13 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-public interface IUserProvisioningService
+public interface IUserUploadBusinessLogic
 {
-    IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos);
-    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
-    Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId);
+    ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }

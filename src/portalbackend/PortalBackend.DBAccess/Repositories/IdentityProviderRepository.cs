@@ -184,4 +184,23 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED
             ))
             .SingleOrDefaultAsync();
+
+    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias)> GetCompanyNameSharedIdpAliasUntrackedAsync(string iamUserId) =>
+        _context.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => new {
+                Company = iamUser!.CompanyUser!.Company,
+                CompanyUser = iamUser.CompanyUser,
+                IdentityProvider = iamUser!.CompanyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+            })
+            .Select(s => new ValueTuple<Guid,string?,string?,Guid,string?>(
+                s.Company!.Id,
+                s.Company.Name,
+                s.Company!.BusinessPartnerNumber,
+                s.CompanyUser!.Id,
+                s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias
+            ))
+            .SingleOrDefaultAsync();
+
 }

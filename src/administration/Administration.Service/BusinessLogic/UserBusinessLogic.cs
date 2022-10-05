@@ -21,7 +21,6 @@
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -35,7 +34,6 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using PasswordGenerator;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -224,131 +222,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw result.Error;
         }
         return result.CompanyUserId;
-    }
-
-    public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        if (!document.ContentType.Equals("text/csv", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new UnsupportedMediaTypeException($"Only contentType text/csv files are allowed.");
-        }
-        return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
-    }
-
-    private async ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
-
-        using var stream = document.OpenReadStream();
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
-
-        int numCreated = 0;
-        var errors = new List<String>();
-        int numLines = 0;
-
-        try
-        {
-            await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
-
-            await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                companyNameIdpAliasData,
-                _settings.Portal.KeyCloakClientID,
-                ParseUploadOwnIdpUsersCSVLines(reader, companyNameIdpAliasData.IsShardIdp)))
-            {
-                numLines++;
-                if (result.Error != null)
-                {
-                    errors.Add($"line: {numLines}, message: {result.Error.Message}");
-                }
-                else
-                {
-                    numCreated++;
-                }
-            }
-        }
-        catch(TaskCanceledException tce)
-        {
-            errors.Add($"line: {numLines}, message: {tce.Message}");
-        }
-        return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
-    }
-
-    private static async ValueTask ValidateUploadOwnIdpUsersHeadersAsync(StreamReader reader)
-    {
-        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        if (firstLine == null)
-        {
-            throw new ControllerArgumentException("uploaded file contains no lines");
-        }
-
-        var headers = firstLine.Split(",").GetEnumerator();
-        foreach (var csvHeader in new [] { "FirstName", "LastName", "Email", "ProviderUserName", "ProviderUserId", "Roles" })
-        {
-            if (!headers.MoveNext())
-            {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
-            }
-            if ((string)headers.Current != csvHeader)
-            {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
-            }
-        }
-    }
-
-    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
-    {
-        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-
-        while (nextLine != null)
-        {
-            var (firstName, lastName, email, providerUserName, providerUserId, roles) = ParseUploadOwnIdpUsersCSVLine(nextLine, isSharedIdp);
-            yield return new UserCreationInfoIdp(firstName, lastName, email, roles, providerUserName, providerUserId);
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        }
-    }
-
-    private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
-    {
-        var items = line.Split(",").AsEnumerable().GetEnumerator();
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for FirstName type string expected");
-        }
-        var firstName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for LastName type string expected");
-        }
-        var lastName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for Email type string expected");
-        }
-        var email = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for ProviderUserName type string expected");
-        }
-        var providerUserName = items.Current;
-        if(!items.MoveNext() || (!isSharedIdp && string.IsNullOrWhiteSpace(items.Current)))
-        {
-            throw new ControllerArgumentException($"value for ProviderUserId type string expected");
-        }
-        var providerUserId = items.Current;
-        var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
-        return (firstName, lastName, email, providerUserName, providerUserId, roles);
-    }
-
-    private static IEnumerable<string> ParseUploadOwnIdpUsersRoles(IEnumerator<string> items)
-    {
-        while (items.MoveNext())
-        {
-            if(string.IsNullOrWhiteSpace(items.Current))
-            {
-                throw new ControllerArgumentException($"value for Role type string expected");
-            }
-            yield return items.Current;
-        }
     }
 
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
