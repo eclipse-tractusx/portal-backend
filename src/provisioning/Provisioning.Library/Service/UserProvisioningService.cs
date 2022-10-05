@@ -140,6 +140,27 @@ public class UserProvisioningService : IUserProvisioningService
         return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, result.IsSharedIdp);
     }
 
+    public async Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameSharedIdpAliasUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+        }
+
+        if (result.IdpAlias == null)
+        {
+            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any shared idp");
+        }
+
+        if (result.CompanyName == null)
+        {
+            throw new ConflictException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+        }
+
+        return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, true);
+    }
+
     private async Task ValidateDuplicateUsersAsync(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
     {
         await foreach (var userEntityId in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))

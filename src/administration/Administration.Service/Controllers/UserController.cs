@@ -39,16 +39,19 @@ public class UserController : ControllerBase
 
     private readonly ILogger<UserController> _logger;
     private readonly IUserBusinessLogic _logic;
+    private readonly IUserUploadBusinessLogic _uploadLogic;
 
     /// <summary>
     /// Creates a new instance of <see cref="UserController"/>
     /// </summary>
     /// <param name="logger">The logger</param>
     /// <param name="logic">The User Business Logic</param>
-    public UserController(ILogger<UserController> logger, IUserBusinessLogic logic)
+    /// <param name="uploadLogic">The User Upload Business Logic</param>
+    public UserController(ILogger<UserController> logger, IUserBusinessLogic logic, IUserUploadBusinessLogic uploadLogic)
     {
         _logger = logger;
         _logic = logic;
+        _uploadLogic = uploadLogic;
     }
 
     /// <summary>
@@ -66,6 +69,31 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
         this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
+
+    /// <summary>
+    /// Create new users for the companies shared identityprovider by upload of csv-file
+    /// </summary>
+    /// <param name="document">The file including the users</param>
+    /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
+    /// <returns>Returns a status of the document processing</returns>
+    /// <remarks>
+    /// Example: POST: api/administration/user/owncompany/usersfile
+    /// </remarks>
+    /// <response code="200">Returns a file of users.</response>
+    /// <response code="400">user is not associated with a company.</response>
+    /// <response code="415">Content type didn't match the expected value.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
+    [HttpPost]
+    [Authorize(Roles = "add_user_account")]
+    [Consumes("multipart/form-data")]
+    [Route("owncompany/usersfile")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(typeof(IdentityProviderUserCreationStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+    public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanySharedIdpUsersFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+        this.WithIamUserId(iamUserId => _uploadLogic.UploadOwnCompanySharedIdpUsersAsync(document, iamUserId, cancellationToken));
 
     /// <summary>
     /// Create a new user for a specific identityprovider
@@ -118,7 +146,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromRoute] Guid identityProviderId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            this.WithIamUserId(iamUserId => _logic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, iamUserId, cancellationToken));
+            this.WithIamUserId(iamUserId => _uploadLogic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, iamUserId, cancellationToken));
 
     /// <summary>
     /// Get Company User Data

@@ -54,6 +54,7 @@ builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>
                 .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
 
 builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
+                .AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
                 .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
