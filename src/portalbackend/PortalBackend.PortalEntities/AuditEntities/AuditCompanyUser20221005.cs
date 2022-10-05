@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -21,19 +21,44 @@
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
 /// <summary>
-/// Audit entity for <see cref="CompanyApplication"/> only needed for configuration purposes
+/// Audit entity for <see cref="CompanyUser"/> only needed for configuration purposes
 /// </summary>
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-public class AuditCompanyApplication : CompanyApplication, IAuditEntity
+public class AuditCompanyUser20221005 : IAuditEntityV1
 {
-/// <inheritdoc />
-    public Guid AuditId { get; set; }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
+
+    public Guid Id { get; set; }
+
+    public DateTimeOffset DateCreated { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? Firstname { get; set; }
+
+    public byte[]? Lastlogin { get; set; }
+
+    public string? Lastname { get; set; }
+
+    public Guid CompanyId { get; set; }
+
+    public CompanyUserStatusId CompanyUserStatusId { get; set; }
+
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    public Guid? LastEditorId { get; set; }
 
     /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
+    public Guid? AuditV1LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
     
     /// <inheritdoc />
-    public new DateTimeOffset DateLastChanged { get; set; }
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

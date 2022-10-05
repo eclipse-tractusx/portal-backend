@@ -21,22 +21,31 @@
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
- /// <summary>
- /// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
- /// </summary>
-public class AuditCompanyUserAssignedRole : CompanyUserAssignedRole, IAuditEntity
+
+/// <summary>
+/// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
+/// </summary>
+public class AuditCompanyUserAssignedRole20221005 : IAuditEntityV1
 {
     /// <inheritdoc />
-    public Guid AuditId { get; set; }
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
-    /// <inheritdoc />
-    public Guid Id { get; set; }
+    public Guid CompanyUserId { get; set; }
+    
+    public Guid UserRoleId { get; set; }
 
-    /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
+    public Guid? LastEditorId { get; set; }
     
     /// <inheritdoc />
-    public DateTimeOffset DateLastChanged { get; set; }
+    public Guid? AuditV1LastEditorId { get; set; }
+    
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

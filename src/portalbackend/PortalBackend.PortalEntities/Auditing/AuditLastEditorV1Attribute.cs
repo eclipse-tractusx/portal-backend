@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,23 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
-/// Audit entity for App subscription relationship between companies and apps.
+/// Attribute to mark the last editor id in the base class
 /// </summary>
-public class AuditOfferSubscription : OfferSubscription, IAuditEntity
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Property)]
+public class AuditLastEditorV1Attribute : Attribute
 {
-    /// <inheritdoc />
-    public Guid AuditId { get; set; }
-
-    /// <inheritdoc />
-    public DateTimeOffset DateLastChanged { get; set; }
-
-    /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
 }

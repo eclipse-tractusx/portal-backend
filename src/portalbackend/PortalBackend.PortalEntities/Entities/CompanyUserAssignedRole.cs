@@ -18,14 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUserAssignedRole : IAuditable
+[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20221005))]
+public class CompanyUserAssignedRole : IAuditableV1
 {
-    protected CompanyUserAssignedRole() {}
-
     public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
     {
         CompanyUserId = companyUserId;
@@ -34,8 +34,8 @@ public class CompanyUserAssignedRole : IAuditable
     
     public Guid CompanyUserId { get; private set; }
     public Guid UserRoleId { get; private set; }
-    
-    /// <inheritdoc />
+
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; private set; }
