@@ -21,24 +21,13 @@
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
-/// Attribute to Provide the needed methods to setup an audit trigger
+/// Attribute to mark the last editor id in the base class
 /// </summary>
 /// <remarks>
 /// The implementation of this Attribute must not be changed.
 /// When changes are needed create a V2 of it.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class)]
-public class AuditEntityV1Attribute : Attribute
+[AttributeUsage(AttributeTargets.Property)]
+public class AuditInsertEditorV1Attribute : Attribute
 {
-    public AuditEntityV1Attribute(Type auditEntityType)
-    {
-        if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
-        {
-            throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
-        }
-
-        AuditEntityType = auditEntityType;
-    }
-
-    public virtual Type AuditEntityType { get; }
 }

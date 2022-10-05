@@ -28,7 +28,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-[AuditEntityV1(typeof(AuditOfferSubscription20220929))]
+[AuditEntityV1(typeof(AuditOfferSubscription20221005))]
 public class OfferSubscription : IAuditableV1
 {
     /// <summary>

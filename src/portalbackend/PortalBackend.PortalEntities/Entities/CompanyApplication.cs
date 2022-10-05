@@ -24,7 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyApplication20222909))]
+[AuditEntityV1(typeof(AuditCompanyApplication20220510))]
 public class CompanyApplication : IAuditableV1
 {
     protected CompanyApplication()
