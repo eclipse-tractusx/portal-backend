@@ -36,6 +36,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
+            
             modelBuilder
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
@@ -44,7 +45,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplication20222909", b =>
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplication", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -55,21 +56,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("application_status_id");
 
-                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_v1date_last_changed");
-
-                    b.Property<Guid>("AuditV1Id")
+                    b.Property<Guid>("AuditId")
                         .HasColumnType("uuid")
-                        .HasColumnName("audit_v1id");
+                        .HasColumnName("audit_id");
 
-                    b.Property<Guid?>("AuditV1LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1last_editor_id");
-
-                    b.Property<int>("AuditV1OperationId")
+                    b.Property<int>("AuditOperationId")
                         .HasColumnType("integer")
-                        .HasColumnName("audit_v1operation_id");
+                        .HasColumnName("audit_operation_id");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
@@ -79,34 +72,34 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
-                    b.HasKey("Id")
-                        .HasName("pk_audit_company_application20220929");
+                    b.Property<DateTimeOffset>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
 
-                    b.ToTable("audit_company_application20220929", "portal");
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_company_applications_cplp_1255_audit_company_applicat");
+
+                    b.ToTable("audit_company_applications_cplp_1255_audit_company_applications", "portal");
                 });
 
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser20220929", b =>
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_v1date_last_changed");
-
-                    b.Property<Guid>("AuditV1Id")
+                    b.Property<Guid>("AuditId")
                         .HasColumnType("uuid")
-                        .HasColumnName("audit_v1id");
+                        .HasColumnName("audit_id");
 
-                    b.Property<Guid?>("AuditV1LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1last_editor_id");
-
-                    b.Property<int>("AuditV1OperationId")
+                    b.Property<int>("AuditOperationId")
                         .HasColumnType("integer")
-                        .HasColumnName("audit_v1operation_id");
+                        .HasColumnName("audit_operation_id");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
@@ -120,116 +113,74 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
 
+                    b.Property<DateTimeOffset>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
                     b.Property<string>("Email")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("Firstname")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("firstname");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
 
                     b.Property<byte[]>("Lastlogin")
                         .HasColumnType("bytea")
                         .HasColumnName("lastlogin");
 
                     b.Property<string>("Lastname")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("lastname");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_company_user20220929");
+                        .HasName("pk_audit_company_users_cplp_1254_db_audit");
 
-                    b.ToTable("audit_company_user20220929", "portal");
+                    b.ToTable("audit_company_users_cplp_1254_db_audit", "portal");
                 });
 
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUserAssignedRole20220929", b =>
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUserAssignedRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_v1date_last_changed");
-
-                    b.Property<Guid>("AuditV1Id")
+                    b.Property<Guid>("AuditId")
                         .HasColumnType("uuid")
-                        .HasColumnName("audit_v1id");
+                        .HasColumnName("audit_id");
 
-                    b.Property<Guid?>("AuditV1LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1last_editor_id");
-
-                    b.Property<int>("AuditV1OperationId")
+                    b.Property<int>("AuditOperationId")
                         .HasColumnType("integer")
-                        .HasColumnName("audit_v1operation_id");
+                        .HasColumnName("audit_operation_id");
 
                     b.Property<Guid>("CompanyUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_user_id");
+
+                    b.Property<DateTimeOffset>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
 
                     b.Property<Guid>("UserRoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_role_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_audit_company_user_assigned_role20220929");
+                        .HasName("pk_audit_company_user_assigned_roles_cplp_1255_audit_company_a");
 
-                    b.ToTable("audit_company_user_assigned_role20220929", "portal");
-                });
-
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditOfferSubscription20220929", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_v1date_last_changed");
-
-                    b.Property<Guid>("AuditV1Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1id");
-
-                    b.Property<Guid?>("AuditV1LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1last_editor_id");
-
-                    b.Property<int>("AuditV1OperationId")
-                        .HasColumnType("integer")
-                        .HasColumnName("audit_v1operation_id");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("text")
-                        .HasColumnName("display_name");
-
-                    b.Property<Guid>("OfferId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
-                    b.Property<int>("OfferSubscriptionStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("offer_subscription_status_id");
-
-                    b.Property<Guid>("RequesterId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("requester_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_audit_offer_subscription20220929");
-
-                    b.ToTable("audit_offer_subscription20220929", "portal");
+                    b.ToTable("audit_company_user_assigned_roles_cplp_1255_audit_company_applications", "portal");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -687,11 +638,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_applications_company_id");
 
                     b.ToTable("company_applications", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"application_status_id\", \"date_created\", \"company_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  3, \r\n  OLD.application_status_id, \r\n  OLD.date_created, \r\n  OLD.company_id, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION AFTER DELETE\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"application_status_id\", \"date_created\", \"company_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  NEW.id, \r\n  1, \r\n  NEW.application_status_id, \r\n  NEW.date_created, \r\n  NEW.company_id, \r\n  NEW.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION AFTER INSERT\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_COMPANYAPPLICATION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"application_status_id\", \"date_created\", \"company_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  2, \r\n  OLD.application_status_id, \r\n  OLD.date_created, \r\n  OLD.company_id, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION AFTER UPDATE\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYAPPLICATION();");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
@@ -1095,11 +1041,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_users_company_user_status_id");
 
                     b.ToTable("company_users", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_COMPANYUSER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYUSER() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYUSER$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"company_id\", \"company_user_status_id\", \"date_created\", \"email\", \"firstname\", \"lastlogin\", \"lastname\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  3, \r\n  OLD.company_id, \r\n  OLD.company_user_status_id, \r\n  OLD.date_created, \r\n  OLD.email, \r\n  OLD.firstname, \r\n  OLD.lastlogin, \r\n  OLD.lastname, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYUSER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYUSER AFTER DELETE\r\nON portal.company_users\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_COMPANYUSER();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYUSER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYUSER() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYUSER$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"company_id\", \"company_user_status_id\", \"date_created\", \"email\", \"firstname\", \"lastlogin\", \"lastname\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  NEW.id, \r\n  1, \r\n  NEW.company_id, \r\n  NEW.company_user_status_id, \r\n  NEW.date_created, \r\n  NEW.email, \r\n  NEW.firstname, \r\n  NEW.lastlogin, \r\n  NEW.lastname, \r\n  NEW.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYUSER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYUSER AFTER INSERT\r\nON portal.company_users\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_COMPANYUSER();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYUSER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYUSER() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYUSER$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"company_id\", \"company_user_status_id\", \"date_created\", \"email\", \"firstname\", \"lastlogin\", \"lastname\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  2, \r\n  OLD.company_id, \r\n  OLD.company_user_status_id, \r\n  OLD.date_created, \r\n  OLD.email, \r\n  OLD.firstname, \r\n  OLD.lastlogin, \r\n  OLD.lastname, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYUSER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYUSER AFTER UPDATE\r\nON portal.company_users\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYUSER();");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
@@ -1163,11 +1104,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_company_user_assigned_roles_user_role_id");
 
                     b.ToTable("company_user_assigned_roles", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"user_role_id\", \"company_user_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  3, \r\n  OLD.user_role_id, \r\n  OLD.company_user_id, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE AFTER DELETE\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"user_role_id\", \"company_user_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  NEW.id, \r\n  1, \r\n  NEW.user_role_id, \r\n  NEW.company_user_id, \r\n  NEW.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE AFTER INSERT\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_COMPANYUSERASSIGNEDROLE();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"user_role_id\", \"company_user_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  2, \r\n  OLD.user_role_id, \r\n  OLD.company_user_id, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE AFTER UPDATE\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE();");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
@@ -4106,11 +4042,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_offer_subscriptions_offer_subscription_status_id");
 
                     b.ToTable("offer_subscriptions", "portal");
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  3, \r\n  OLD.company_id, \r\n  OLD.offer_id, \r\n  OLD.offer_subscription_status_id, \r\n  OLD.display_name, \r\n  OLD.description, \r\n  OLD.requester_id, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION AFTER DELETE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  NEW.id, \r\n  1, \r\n  NEW.company_id, \r\n  NEW.offer_id, \r\n  NEW.offer_subscription_status_id, \r\n  NEW.display_name, \r\n  NEW.description, \r\n  NEW.requester_id, \r\n  NEW.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION AFTER INSERT\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_OFFERSUBSCRIPTION();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20220929 (\"id\", \"audit_v1id\", \"audit_v1operation_id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"audit_v1last_editor_id\", \"audit_v1date_last_changed\") SELECT gen_random_uuid(), \r\n  OLD.id, \r\n  2, \r\n  OLD.company_id, \r\n  OLD.offer_id, \r\n  OLD.offer_subscription_status_id, \r\n  OLD.display_name, \r\n  OLD.description, \r\n  OLD.requester_id, \r\n  OLD.last_editor_id, \r\n  CURRENT_DATE;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION AFTER UPDATE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION();");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>
@@ -4367,6 +4298,18 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasDatabaseName("ix_user_role_descriptions_language_short_name");
 
                     b.ToTable("user_role_descriptions", "portal");
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser", b =>
+                {
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserStatus", "CompanyUserStatus")
+                        .WithMany()
+                        .HasForeignKey("CompanyUserStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_audit_company_users_cplp_1254_db_audit_company_user_statuse");
+
+                    b.Navigation("CompanyUserStatus");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>

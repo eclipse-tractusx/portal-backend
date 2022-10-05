@@ -25,7 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyUser20220929))]
+[AuditEntityV1(typeof(AuditCompanyUser20221005))]
 public class CompanyUser : IAuditableV1
 {
     /// <summary>

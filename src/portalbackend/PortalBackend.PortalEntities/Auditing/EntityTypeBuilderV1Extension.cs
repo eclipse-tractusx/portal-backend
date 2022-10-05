@@ -65,11 +65,12 @@ public static class EntityTypeBuilderV1Extension
             throw new ConfigurationException($"{typeof(TAuditEntity).Name}.{AuditPropertyV1Names.AuditV1Id} must be marked as primary key by attribute {typeof(KeyAttribute).Name}");
         }
 
+        var insertEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(AuditInsertEditorV1Attribute)));
         var lastEditorProperty = sourceProperties.SingleOrDefault(p => p.CustomAttributes.Any(a => a.AttributeType == typeof(AuditLastEditorV1Attribute)));
 
         return builder.AfterInsert(trigger => trigger
                             .Action(action => action
-                                .Insert(CreateNewAuditEntityExpression<TEntity,TAuditEntity>(sourceProperties, lastEditorProperty))))
+                                .Insert(CreateNewAuditEntityExpression<TEntity,TAuditEntity>(sourceProperties, insertEditorProperty ?? lastEditorProperty))))
                         .AfterUpdate(trigger => trigger
                             .Action(action => action
                                 .Insert(CreateUpdateAuditEntityExpression<TEntity,TAuditEntity>(sourceProperties, lastEditorProperty))))
@@ -83,7 +84,7 @@ public static class EntityTypeBuilderV1Extension
         var newValue = Expression.Parameter(typeof(TEntity), "newEntity");
 
         return Expression.Lambda<Func<TEntity,TAuditEntity>>(
-            CreateNewAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.INSERT, newValue, lastEditorProperty),
+            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.INSERT, newValue, lastEditorProperty),
             newValue);
     }
 
@@ -93,7 +94,7 @@ public static class EntityTypeBuilderV1Extension
         var newEntity = Expression.Parameter(typeof(TEntity), "newEntity");
 
         return Expression.Lambda<Func<TEntity,TEntity,TAuditEntity>>(
-            CreateNewAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.UPDATE, newEntity, lastEditorProperty),
+            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.UPDATE, newEntity, lastEditorProperty),
             oldEntity,
             newEntity);
     }
@@ -103,11 +104,11 @@ public static class EntityTypeBuilderV1Extension
         var deletedEntity = Expression.Parameter(typeof(TEntity), "deletedEntity");
 
         return Expression.Lambda<Func<TEntity,TAuditEntity>>(
-            CreateNewAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.DELETE, deletedEntity, lastEditorProperty),
+            CreateAuditEntityExpression<TAuditEntity>(sourceProperties, AuditOperationId.DELETE, deletedEntity, lastEditorProperty),
             deletedEntity);
     }
 
-    private static MemberInitExpression CreateNewAuditEntityExpression<TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, AuditOperationId auditOperationId, ParameterExpression entity, PropertyInfo? lastEditorProperty)
+    private static MemberInitExpression CreateAuditEntityExpression<TAuditEntity>(IEnumerable<PropertyInfo> sourceProperties, AuditOperationId auditOperationId, ParameterExpression entity, PropertyInfo? lastEditorProperty)
     {
         var memberBindings = sourceProperties.Select(p => CreateMemberAssignment(typeof(TAuditEntity).GetMember(p.Name)[0], Expression.Property(entity, p)))
             .Append(CreateMemberAssignment(typeof(TAuditEntity).GetMember(AuditPropertyV1Names.AuditV1Id.ToString())[0], Expression.New(typeof(Guid))))

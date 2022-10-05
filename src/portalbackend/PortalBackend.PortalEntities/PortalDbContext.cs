@@ -57,10 +57,10 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     
-    public virtual DbSet<AuditOfferSubscription20220929> AuditOfferSubscription20220929 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyApplication20222909> AuditCompanyApplication20220929 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUser20220929> AuditCompanyUser20220929 { get; set; } = default!;
-    public virtual DbSet<AuditCompanyUserAssignedRole20220929> AuditCompanyUserAssignedRole20220929 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20220929 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20220510> AuditCompanyApplication20220929 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20220929 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20220929 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -256,7 +256,7 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
-                        j.HasAuditV1Triggers<OfferSubscription,AuditOfferSubscription20220929>();
+                        j.HasAuditV1Triggers<OfferSubscription,AuditOfferSubscription20221005>();
                     }
                 );
 
@@ -498,7 +498,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20222909>();
+            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20220510>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -615,7 +615,7 @@ public class PortalDbContext : DbContext
                         j =>
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId });
-                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole20220929>();
+                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole20221005>();
                         });
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)
@@ -624,7 +624,7 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
             
-            entity.HasAuditV1Triggers<CompanyUser,AuditCompanyUser20220929>();
+            entity.HasAuditV1Triggers<CompanyUser,AuditCompanyUser20221005>();
         });
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
