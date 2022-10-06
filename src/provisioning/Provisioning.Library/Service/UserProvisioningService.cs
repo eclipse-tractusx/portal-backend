@@ -26,7 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using PasswordGenerator;
-
+using System.Runtime.CompilerServices;
 namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 
 public class UserProvisioningService : IUserProvisioningService
@@ -45,7 +45,11 @@ public class UserProvisioningService : IUserProvisioningService
         _portalRepositories = portalRepositories;
     }
 
-    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos)
+    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(
+        CompanyNameIdpAliasData companyNameIdpAliasData,
+        string clientId,
+        IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -70,6 +74,8 @@ public class UserProvisioningService : IUserProvisioningService
             try
             {
                 await ValidateDuplicateUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 companyUser = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
@@ -106,6 +112,10 @@ public class UserProvisioningService : IUserProvisioningService
             }
             catch (Exception e)
             {
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
                 error = e;
             }
             if(companyUser == null && error == null)

@@ -71,7 +71,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         _settings.Portal.KeyCloakClientID,
-                        lines)
+                        lines,
+                        cancellationToken)
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
@@ -119,7 +120,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         _settings.Portal.KeyCloakClientID,
-                        lines)
+                        lines,
+                        cancellationToken)
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 

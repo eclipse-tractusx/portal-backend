@@ -114,9 +114,9 @@ public static class CsvParser
                 }
             }
         }
-        catch(TaskCanceledException tce)
+        catch(OperationCanceledException oce)
         {
-            errors.Add((numLines, tce));
+            errors.Add((numLines, oce));
         }
         return new (numProcessed, numLines, errors);
     }
