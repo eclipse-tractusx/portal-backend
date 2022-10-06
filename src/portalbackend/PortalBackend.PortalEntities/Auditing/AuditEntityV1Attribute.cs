@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,22 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
- /// <summary>
- /// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
- /// </summary>
-public class AuditCompanyUserAssignedRole : CompanyUserAssignedRole, IAuditEntity
+/// <summary>
+/// Attribute to Provide the needed methods to setup an audit trigger
+/// </summary>
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Class)]
+public class AuditEntityV1Attribute : Attribute
 {
-    /// <inheritdoc />
-    public Guid AuditId { get; set; }
+    public AuditEntityV1Attribute(Type auditEntityType)
+    {
+        if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
+        {
+            throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
+        }
 
-    /// <inheritdoc />
-    public AuditOperationId AuditOperationId { get; set; }
-    
-    /// <inheritdoc />
-    public DateTimeOffset DateLastChanged { get; set; }
+        AuditEntityType = auditEntityType;
+    }
+
+    public virtual Type AuditEntityType { get; }
 }

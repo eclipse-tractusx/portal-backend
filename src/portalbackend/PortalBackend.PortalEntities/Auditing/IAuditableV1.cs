@@ -18,20 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.Common.Extensions;
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-
-public static class PortalRepositoriesStartupServiceExtensions
+/// <summary>
+/// Marker interface to define that a entity is auditable
+/// </summary>
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+public interface IAuditableV1
 {
-    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddTransient<IPortalRepositories, PortalRepositories>()
-            .AddDbContext<PortalDbContext>(o => o
-                .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                .UsePostgreSqlTriggers());
 }
