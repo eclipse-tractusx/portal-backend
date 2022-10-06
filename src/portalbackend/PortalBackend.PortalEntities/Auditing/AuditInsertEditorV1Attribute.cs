@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,27 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 /// <summary>
-/// Marker interface to define that the entity is an audit entity
+/// Attribute to mark the creators id in the base class.
+/// The usage is optional. If not set <see cref="AuditLastEditorV1Attribute"/>
+/// is being used to determine the creators id.
 /// </summary>
-public interface IAuditEntity : IAuditable
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Property)]
+public class AuditInsertEditorV1Attribute : Attribute
 {
-    /// <summary>
-    /// Id of the audited entity
-    /// </summary>
-    Guid AuditId { get; set; }
-
-    /// <summary>
-    /// Date Time of the last change of the entity
-    /// </summary>
-    DateTimeOffset DateLastChanged { get; set; }
-
-    /// <summary>
-    /// Id of the audit operation
-    /// </summary>
-    AuditOperationId AuditOperationId { get; set; }
 }
