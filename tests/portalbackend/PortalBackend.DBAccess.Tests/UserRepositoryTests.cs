@@ -21,11 +21,10 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -92,7 +91,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyAndCompanyUserId(ValidIamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanAndCompanyUseryId(ValidIamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -106,7 +105,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyAndCompanyUserId(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanAndCompanyUseryId(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         (result == default).Should().BeTrue();

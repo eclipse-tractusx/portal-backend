@@ -4,7 +4,7 @@ on:
   push:
     paths:
       # service and transitive paths
-      - 'src/marketplace/CatenaX.NetworkServices.Apps.Service/**'
+      - 'src/marketplace/Apps.Service/**'
       - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
