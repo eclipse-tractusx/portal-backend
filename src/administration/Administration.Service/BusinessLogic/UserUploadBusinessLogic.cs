@@ -113,7 +113,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         {
             if(string.IsNullOrWhiteSpace(items.Current))
             {
-                throw new ControllerArgumentException($"value for Role type string expected");
+                throw new ControllerArgumentException($"value for Role type string expected", "document");
             }
             yield return items.Current;
         }
@@ -134,11 +134,11 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         {
             if (!headers.MoveNext())
             {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
+                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''", "document");
             }
             if ((string)headers.Current != csvHeader)
             {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
+                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'", "document");
             }
         }
     }
@@ -197,7 +197,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
         if (firstLine == null)
         {
-            throw new ControllerArgumentException("uploaded file contains no lines");
+            throw new ControllerArgumentException("uploaded file contains no lines", "document");
         }
         validateFirstLine(firstLine);
     }
@@ -206,7 +206,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         if(!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {itemName} type string expected");
+            throw new ControllerArgumentException($"value for {itemName} type string expected", "document");
         }
         return items.Current;
     }
@@ -215,7 +215,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {itemName} type string expected");
+            throw new ControllerArgumentException($"value for {itemName} type string expected", "document");
         }
         return items.Current;
     }
