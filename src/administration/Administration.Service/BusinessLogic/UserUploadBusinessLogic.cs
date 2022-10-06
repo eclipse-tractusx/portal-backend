@@ -21,7 +21,6 @@
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Microsoft.Extensions.Options;
@@ -143,7 +142,12 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         }
     }
 
-    private async ValueTask<IdentityProviderUserCreationStats> UploadIdpUsersInternalAsync(IFormFile document, Func<Task<CompanyNameIdpAliasData>> getCompanyNameIdpAliasDataAsync, Action<string> validateFirstLine, Func<string,bool,UserCreationInfoIdp> parseUserCreationInfo, CancellationToken cancellationToken)
+    private async ValueTask<IdentityProviderUserCreationStats> UploadIdpUsersInternalAsync(
+        IFormFile document,
+        Func<Task<CompanyNameIdpAliasData>> getCompanyNameIdpAliasDataAsync,
+        Action<string> validateFirstLine,
+        Func<string,bool,UserCreationInfoIdp> parseUserCreationInfo,
+        CancellationToken cancellationToken)
     {
         var companyNameIdpAliasData = await getCompanyNameIdpAliasDataAsync().ConfigureAwait(false);
 
@@ -181,7 +185,10 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
     }
 
-    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadIdpUsersCSVLines(StreamReader reader, Func<string,bool,UserCreationInfoIdp> parseUserCreationInfo, bool isSharedIdp)
+    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadIdpUsersCSVLines(
+        StreamReader reader,
+        Func<string,bool,UserCreationInfoIdp> parseUserCreationInfo,
+        bool isSharedIdp)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
 
