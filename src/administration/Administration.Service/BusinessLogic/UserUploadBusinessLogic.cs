@@ -68,31 +68,13 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.FirstName} type string expected");
-        }
-        var firstName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.LastName} type string expected");
-        }
-        var lastName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.Email} type string expected");
-        }
-        var email = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.ProviderUserName} type string expected");
-        }
-        var providerUserName = items.Current;
-        if(!items.MoveNext() || (!isSharedIdp && string.IsNullOrWhiteSpace(items.Current)))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.ProviderUserId} type string expected");
-        }
-        var providerUserId = items.Current;
+        var firstName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
+        var lastName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
+        var email = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
+        var providerUserName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserName);
+        var providerUserId = isSharedIdp
+            ? NextStringItemIsNotNull(items,CsvHeaders.ProviderUserId)
+            : NextStringItemIsNotNullOrWhiteSpace(items,CsvHeaders.ProviderUserId);
         var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
         return (firstName, lastName, email, providerUserName, providerUserId, roles);
     }
@@ -118,21 +100,9 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private static (string FirstName, string LastName, string Email, IEnumerable<string> Roles) ParseUploadSharedIdpUsersCSVLine(string line)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.FirstName} type string expected");
-        }
-        var firstName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.LastName} type string expected");
-        }
-        var lastName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {CsvHeaders.Email} type string expected");
-        }
-        var email = items.Current;
+        var firstName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
+        var lastName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
+        var email = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
         var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
         return (firstName, lastName, email, roles);
     }
@@ -230,6 +200,24 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             throw new ControllerArgumentException("uploaded file contains no lines");
         }
         validateFirstLine(firstLine);
+    }
+
+    private static string NextStringItemIsNotNull(IEnumerator<string> items, object itemName)
+    {
+        if(!items.MoveNext())
+        {
+            throw new ControllerArgumentException($"value for {itemName} type string expected");
+        }
+        return items.Current;
+    }
+
+    private static string NextStringItemIsNotNullOrWhiteSpace(IEnumerator<string> items, object itemName)
+    {
+        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
+        {
+            throw new ControllerArgumentException($"value for {itemName} type string expected");
+        }
+        return items.Current;
     }
 
     private enum CsvHeaders
