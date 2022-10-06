@@ -535,7 +535,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return new IdentityProviderUpdateStats(numProcessed, numUnchanged, numErrors, numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
     }
 
-    private async IAsyncEnumerable<(bool,Exception?)> ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> userProfileLinkDatas, IUserRepository userRepository, Guid companyId, string? sharedIdpAlias, Guid creatorId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<(bool,Exception?)> ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(
+        IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> userProfileLinkDatas,
+        IUserRepository userRepository,
+        Guid companyId,
+        string? sharedIdpAlias,
+        Guid creatorId,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach(var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas)
         {
@@ -544,8 +550,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             try
             {
                 var (userEntityId, existingProfile, links) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
-                var existingLinks = await links.ToListAsync(cancellationToken).ConfigureAwait(false);
+                var existingLinks = await links.ToListAsync().ConfigureAwait(false);
                 var updated = false;
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 foreach (var identityProviderLink in identityProviderLinks)
                 {
@@ -561,6 +569,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             }
             catch(Exception e)
             {
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
                 error = e;
             }
             yield return (success, error);
