@@ -19,12 +19,10 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Microsoft.Extensions.Options;
-using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -46,185 +44,90 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         _settings = settings.Value;
     }
 
-    public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
-        ValidateContentTypeTextCSV(document);
+        CsvParser.ValidateContentTypeTextCSV(document.ContentType);
+        return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
+    }
 
-        return UploadIdpUsersInternalAsync(
-            document,
-            () => _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId),
+    private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    {
+        using var stream = document.OpenReadStream();
+
+        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync<CompanyNameIdpAliasData,UserCreationInfoIdp>(
+            stream,
+            await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false),
             line => {
                 var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
-                ValidateUploadCSVHeaders(line, csvHeaders);
+                CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            (line,isSharedIdp) => {
-                var parsed = ParseUploadOwnIdpUsersCSVLine(line, isSharedIdp);
+            (line, companyNameIdpAliasData) => {
+                var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsShardIdp);
                 return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.Email, "");
             },
-            cancellationToken);
+            (lines, companyNameIdpAliasData) =>
+                _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+                    companyNameIdpAliasData,
+                    _settings.Portal.KeyCloakClientID,
+                    lines).Select(x => x.Error),
+            cancellationToken).ConfigureAwait(false);
+
+        return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
     }
 
     private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
-        var firstName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
-        var lastName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
-        var email = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
-        var providerUserName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserName);
+        var firstName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
+        var lastName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
+        var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
+        var providerUserName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserName);
         var providerUserId = isSharedIdp
-            ? NextStringItemIsNotNull(items,CsvHeaders.ProviderUserId)
-            : NextStringItemIsNotNullOrWhiteSpace(items,CsvHeaders.ProviderUserId);
-        var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
+            ? CsvParser.NextStringItemIsNotNull(items,CsvHeaders.ProviderUserId)
+            : CsvParser.NextStringItemIsNotNullOrWhiteSpace(items,CsvHeaders.ProviderUserId);
+        var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
         return (firstName, lastName, email, providerUserName, providerUserId, roles);
     }
 
-    public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
-        ValidateContentTypeTextCSV(document);
+        CsvParser.ValidateContentTypeTextCSV(document.ContentType);
+        return UploadOwnCompanySharedIdpUsersInternalAsync(document, iamUserId, cancellationToken);
+    }
 
-        return UploadIdpUsersInternalAsync(
-            document,
-            () => _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId),
+    private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    {
+        using var stream = document.OpenReadStream();
+
+        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync<CompanyNameIdpAliasData,UserCreationInfoIdp>(
+            stream,
+            await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false),
             line => {
                 var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
-                ValidateUploadCSVHeaders(line, csvHeaders);
+                CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            (line,_) => {
+            (line, companyNameIdpAliasData) => {
                 var parsed = ParseUploadSharedIdpUsersCSVLine(line);
                 return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.Email, "");
             },
-            cancellationToken);
+            (lines, companyNameIdpAliasData) =>
+                _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+                    companyNameIdpAliasData,
+                    _settings.Portal.KeyCloakClientID,
+                    lines).Select(x => x.Error),
+            cancellationToken).ConfigureAwait(false);
+
+        return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
     }
 
     private static (string FirstName, string LastName, string Email, IEnumerable<string> Roles) ParseUploadSharedIdpUsersCSVLine(string line)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
-        var firstName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
-        var lastName = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
-        var email = NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
-        var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
+        var firstName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
+        var lastName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
+        var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
+        var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
         return (firstName, lastName, email, roles);
-    }
-
-    private static IEnumerable<string> ParseUploadOwnIdpUsersRoles(IEnumerator<string> items)
-    {
-        while (items.MoveNext())
-        {
-            if(string.IsNullOrWhiteSpace(items.Current))
-            {
-                throw new ControllerArgumentException($"value for Role type string expected", "document");
-            }
-            yield return items.Current;
-        }
-    }
-
-    private static void ValidateContentTypeTextCSV(IFormFile document)
-    {
-        if (!document.ContentType.Equals("text/csv", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new UnsupportedMediaTypeException($"Only contentType text/csv files are allowed.");
-        }
-    }
-
-    private static void ValidateUploadCSVHeaders(string firstLine, IEnumerable<string> csvHeaders)
-    {
-        var headers = firstLine.Split(",").GetEnumerator();
-        foreach (var csvHeader in csvHeaders)
-        {
-            if (!headers.MoveNext())
-            {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''", "document");
-            }
-            if ((string)headers.Current != csvHeader)
-            {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'", "document");
-            }
-        }
-    }
-
-    private async ValueTask<IdentityProviderUserCreationStats> UploadIdpUsersInternalAsync(
-        IFormFile document,
-        Func<Task<CompanyNameIdpAliasData>> getCompanyNameIdpAliasDataAsync,
-        Action<string> validateFirstLine,
-        Func<string,bool,UserCreationInfoIdp> parseUserCreationInfo,
-        CancellationToken cancellationToken)
-    {
-        var companyNameIdpAliasData = await getCompanyNameIdpAliasDataAsync().ConfigureAwait(false);
-
-        using var stream = document.OpenReadStream();
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
-
-        int numCreated = 0;
-        var errors = new List<String>();
-        int numLines = 0;
-
-        try
-        {
-            await ValidateFirstLineAsync(reader, validateFirstLine).ConfigureAwait(false);
-
-            await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                companyNameIdpAliasData,
-                _settings.Portal.KeyCloakClientID,
-                ParseUploadIdpUsersCSVLines(reader, parseUserCreationInfo, companyNameIdpAliasData.IsShardIdp)))
-            {
-                numLines++;
-                if (result.Error != null)
-                {
-                    errors.Add($"line: {numLines}, message: {result.Error.Message}");
-                }
-                else
-                {
-                    numCreated++;
-                }
-            }
-        }
-        catch(TaskCanceledException tce)
-        {
-            errors.Add($"line: {numLines}, message: {tce.Message}");
-        }
-        return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
-    }
-
-    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadIdpUsersCSVLines(
-        StreamReader reader,
-        Func<string,bool,UserCreationInfoIdp> parseUserCreationInfo,
-        bool isSharedIdp)
-    {
-        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-
-        while (nextLine != null)
-        {
-            yield return parseUserCreationInfo(nextLine, isSharedIdp);
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        }
-    }
-
-    private static async ValueTask ValidateFirstLineAsync(StreamReader reader, Action<string> validateFirstLine)
-    {
-        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        if (firstLine == null)
-        {
-            throw new ControllerArgumentException("uploaded file contains no lines", "document");
-        }
-        validateFirstLine(firstLine);
-    }
-
-    private static string NextStringItemIsNotNull(IEnumerator<string> items, object itemName)
-    {
-        if(!items.MoveNext())
-        {
-            throw new ControllerArgumentException($"value for {itemName} type string expected", "document");
-        }
-        return items.Current;
-    }
-
-    private static string NextStringItemIsNotNullOrWhiteSpace(IEnumerator<string> items, object itemName)
-    {
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for {itemName} type string expected", "document");
-        }
-        return items.Current;
     }
 
     private enum CsvHeaders

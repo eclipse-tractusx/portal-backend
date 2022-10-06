@@ -19,6 +19,9 @@
 -->
 
 <Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+  </ItemGroup>
   <PropertyGroup>
     <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Framework.IO</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
