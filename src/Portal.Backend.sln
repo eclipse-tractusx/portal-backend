@@ -106,6 +106,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{323C198D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Async", "framework\Framework.Async\Framework.Async.csproj", "{A1862697-AB25-4D79-B601-02733A3490B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.BaseDependencies", "framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj", "{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -608,6 +610,18 @@ Global
 		{A1862697-AB25-4D79-B601-02733A3490B2}.Release|x64.Build.0 = Release|Any CPU
 		{A1862697-AB25-4D79-B601-02733A3490B2}.Release|x86.ActiveCfg = Release|Any CPU
 		{A1862697-AB25-4D79-B601-02733A3490B2}.Release|x86.Build.0 = Release|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Debug|x64.Build.0 = Debug|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Debug|x86.Build.0 = Debug|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Release|x64.ActiveCfg = Release|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Release|x64.Build.0 = Release|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Release|x86.ActiveCfg = Release|Any CPU
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -657,5 +671,6 @@ Global
 		{E42243C5-023E-4288-9045-A446E07B990F} = {AE4A5C54-72F3-4B55-BB86-09DFA3AA3D7B}
 		{FBEA925C-EE3C-4D81-A492-0B2D386C161E} = {AB9C5AA2-DD5D-4A38-97C0-674A995C0AE0}
 		{A1862697-AB25-4D79-B601-02733A3490B2} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
+		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 	EndGlobalSection
 EndGlobal
