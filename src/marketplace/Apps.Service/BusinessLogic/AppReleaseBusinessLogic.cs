@@ -223,18 +223,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new NotFoundException($"Cannot identify companyId or appId : User CompanyId is not associated with the same company as AppCompanyId");
         }
-        var roelData = new List<AppRoleData>();
+        var roleData = new List<AppRoleData>();
         foreach (var indexItem in appAssignedDesc)
         {
             var appRole = appReleaseRepository.CreateAppUserRole(appId, indexItem.role);
-            roelData.Add(new AppRoleData(appRole.Id, indexItem.role));
+            roleData.Add(new AppRoleData(appRole.Id, indexItem.role));
             foreach (var item in indexItem.descriptions)
             {
                 appReleaseRepository.CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
             }
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return roelData.AsEnumerable();
+        return roleData;
     }
     
     /// <inheritdoc/>

@@ -104,10 +104,11 @@ public class AppReleaseProcessController : ControllerBase
     /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role</remarks>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="201">Return the created role Id and role name.</response>
     [HttpPost]
     [Route("{appId}/role")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
