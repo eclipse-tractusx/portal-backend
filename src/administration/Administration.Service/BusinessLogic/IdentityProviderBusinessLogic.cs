@@ -30,6 +30,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
@@ -515,21 +516,33 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         var (sharedIdpAlias, existingAliase) = await GetOwnCompaniesAliasDataAsync(iamUserId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), _settings.CsvSettings.Encoding);
 
-        var numIdps = await ValidateHeadersReturningNumIdpsAsync(reader).ConfigureAwait(false);
+        int numIdps = default;
 
-        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        int numUpdates = 0;
-        int numUnchanged = 0;
-        var errors = new List<String>();
-        int numLines = 0;
-        while (nextLine != null)
+        var (numProcessed, numLines, errors) = await CsvParser.ProcessCsvAsync(
+            stream,
+            line => {
+                numIdps = ParseCSVFirstLineReturningNumIdps(line);
+            },
+            line => ParseCSVLine(line, numIdps, existingAliase),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, companyId, sharedIdpAlias, creatorId, cancellationToken),
+            cancellationToken
+        ).ConfigureAwait(false);
+
+        var numErrors = errors.Count();
+        var numUnchanged = numLines-numProcessed-numErrors;
+
+        return new IdentityProviderUpdateStats(numProcessed, numUnchanged, numErrors, numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+    }
+
+    private async IAsyncEnumerable<(bool,Exception?)> ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> userProfileLinkDatas, IUserRepository userRepository, Guid companyId, string? sharedIdpAlias, Guid creatorId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach(var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas)
         {
-            numLines++;
+            Exception? error = null;
+            var success = false;
             try
             {
-                var (companyUserId, profile, identityProviderLinks) = ParseCSVLine(nextLine, numIdps, existingAliase);
                 var (userEntityId, existingProfile, links) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
                 var existingLinks = await links.ToListAsync(cancellationToken).ConfigureAwait(false);
                 var updated = false;
@@ -544,33 +557,14 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     await UpdateUserProfileAsync(userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias, creatorId).ConfigureAwait(false);
                     updated = true;
                 }
-                if (updated)
-                {
-                    numUpdates++;
-                }
-                else
-                {
-                    numUnchanged++;
-                }
+                success = updated;
             }
             catch(Exception e)
             {
-                errors.Add($"line: {numLines}, message: {e.Message}");
+                error = e;
             }
-
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+            yield return (success, error);
         }
-        return new IdentityProviderUpdateStats(numUpdates, numUnchanged, errors.Count, numLines, errors);
-    }
-
-    private async ValueTask<int> ValidateHeadersReturningNumIdpsAsync(StreamReader reader)
-    {
-        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        if (firstLine == null)
-        {
-            throw new ControllerArgumentException("uploaded file contains no lines");
-        }
-        return ParseCSVFirstLineReturningNumIdps(firstLine);
     }
 
     private async ValueTask<(string? SharedIdpAlias, IEnumerable<string> ValidAliase)> GetOwnCompaniesAliasDataAsync(string iamUserId)
@@ -601,23 +595,22 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     {
         var (alias, userId, userName) = identityProviderLink;
 
-        if (existingLinks.Contains(identityProviderLink))
+        var existingLink = existingLinks.SingleOrDefault(link => link.Alias == alias);
+
+        if ((existingLink == null && string.IsNullOrWhiteSpace(userName) && string.IsNullOrWhiteSpace(userId)) ||
+            (existingLink != null && existingLink.UserName == userName && existingLink.UserId == userId))
         {
             return false;
         }
+
         if (alias == sharedIdpAlias)
         {
-            throw new ControllerArgumentException($"unexpected update of shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{identityProviderLink.UserId}', providerUserName: '{identityProviderLink.UserName}'");
+            throw new ControllerArgumentException($"unexpected update of shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{userId}', providerUserName: '{userName}'");
         }
-        var updated = false;
-        if (existingLinks.Any(link => link.Alias == alias))
+
+        if (existingLink != null)
         {
             await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias).ConfigureAwait(false);
-            updated = true;
-        }
-        if (string.IsNullOrWhiteSpace(userId) && string.IsNullOrWhiteSpace(userName))
-        {
-            return updated;
         }
         await _provisioningManager.AddProviderUserLinkToCentralUserAsync(userEntityId, identityProviderLink).ConfigureAwait(false);
         return true;
@@ -827,52 +820,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId)
                 );
             }
-        }
-    }
-
-    private sealed class AsyncEnumerableStringStream : Stream
-    {
-        public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()
-        {
-            _enumerator = data.GetAsyncEnumerator();
-            _stream = new MemoryStream();
-            _writer = new StreamWriter(_stream, encoding);
-        }
-
-        private readonly IAsyncEnumerator<string> _enumerator;
-        private readonly MemoryStream _stream;
-        private readonly TextWriter _writer;
-
-        public override bool CanRead => true;
-        public override bool CanSeek => false;
-        public override bool CanTimeout => false;
-        public override bool CanWrite => false;
-        public override long Length => throw new NotSupportedException();
-        public override long Position
-        {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
-        }
-        public override long Seek (long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
-        public override void Flush() => throw new NotSupportedException();
-        public override int Read(byte [] buffer, int offset, int count) => throw new NotSupportedException();
-        public override void Write(byte [] buffer, int offset, int count) => throw new NotSupportedException();
-        public override void SetLength(long value) => throw new NotSupportedException();
-
-        public override async ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            var written = _stream.Read(buffer.Span);
-            while (buffer.Length - written > 0 && await _enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
-            {
-                _stream.Position = 0;
-                _stream.SetLength(0);
-                _writer.WriteLine(_enumerator.Current);
-                _writer.Flush();
-                _stream.Position = 0;
-
-                written += _stream.Read(buffer.Span.Slice(written));
-            }
-            return written;
         }
     }
 
