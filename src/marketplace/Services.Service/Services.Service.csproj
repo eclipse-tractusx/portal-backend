@@ -41,10 +41,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.4" />
-    </ItemGroup>
-
-    <ItemGroup>
         <SonarQubeSetting Include="sonar.coverage.exclusions">
             <Value>Program.cs</Value>
         </SonarQubeSetting>
