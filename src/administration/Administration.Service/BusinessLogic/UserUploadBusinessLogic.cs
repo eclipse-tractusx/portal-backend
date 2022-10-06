@@ -32,7 +32,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IPortalRepositories _portalRepositories;
     private readonly UserSettings _settings;
 
     /// <summary>
@@ -40,14 +39,11 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     /// </summary>
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="settings">Settings</param>
-    /// <param name="portalRepositories">Portal Repositories</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
-        IPortalRepositories portalRepositories,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
-        _portalRepositories = portalRepositories;
         _settings = settings.Value;
     }
 
@@ -59,7 +55,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             document,
             () => _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId),
             line => {
-                var csvHeaders = new [] { CSVHeaders.FirstName, CSVHeaders.LastName, CSVHeaders.Email, CSVHeaders.ProviderUserName, CSVHeaders.ProviderUserId, CSVHeaders.Roles }.Select(h => h.ToString());
+                var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
                 ValidateUploadCSVHeaders(line, csvHeaders);
             },
             (line,isSharedIdp) => {
@@ -74,27 +70,27 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         var items = line.Split(",").AsEnumerable().GetEnumerator();
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.FirstName} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.FirstName} type string expected");
         }
         var firstName = items.Current;
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.LastName} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.LastName} type string expected");
         }
         var lastName = items.Current;
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.Email} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.Email} type string expected");
         }
         var email = items.Current;
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.ProviderUserName} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.ProviderUserName} type string expected");
         }
         var providerUserName = items.Current;
         if(!items.MoveNext() || (!isSharedIdp && string.IsNullOrWhiteSpace(items.Current)))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.ProviderUserId} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.ProviderUserId} type string expected");
         }
         var providerUserId = items.Current;
         var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
@@ -109,7 +105,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             document,
             () => _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId),
             line => {
-                var csvHeaders = new [] { CSVHeaders.FirstName, CSVHeaders.LastName, CSVHeaders.Email, CSVHeaders.Roles }.Select(h => h.ToString());
+                var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
                 ValidateUploadCSVHeaders(line, csvHeaders);
             },
             (line,_) => {
@@ -124,17 +120,17 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         var items = line.Split(",").AsEnumerable().GetEnumerator();
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.FirstName} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.FirstName} type string expected");
         }
         var firstName = items.Current;
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.LastName} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.LastName} type string expected");
         }
         var lastName = items.Current;
         if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
         {
-            throw new ControllerArgumentException($"value for {CSVHeaders.Email} type string expected");
+            throw new ControllerArgumentException($"value for {CsvHeaders.Email} type string expected");
         }
         var email = items.Current;
         var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
@@ -153,7 +149,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         }
     }
 
-    private void ValidateContentTypeTextCSV(IFormFile document)
+    private static void ValidateContentTypeTextCSV(IFormFile document)
     {
         if (!document.ContentType.Equals("text/csv", StringComparison.OrdinalIgnoreCase))
         {
@@ -236,7 +232,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         validateFirstLine(firstLine);
     }
 
-    private enum CSVHeaders
+    private enum CsvHeaders
     {
         FirstName,
         LastName,
