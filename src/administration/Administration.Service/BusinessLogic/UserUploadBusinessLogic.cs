@@ -54,7 +54,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync<CompanyNameIdpAliasData,UserCreationInfoIdp>(
+        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
             await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false),
             line => {
@@ -63,13 +63,15 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             },
             (line, companyNameIdpAliasData) => {
                 var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsShardIdp);
-                return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.Email, "");
+                return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.ProviderUserName, parsed.ProviderUserId);
             },
             (lines, companyNameIdpAliasData) =>
-                _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                    companyNameIdpAliasData,
-                    _settings.Portal.KeyCloakClientID,
-                    lines).Select(x => x.Error),
+                _userProvisioningService
+                    .CreateOwnCompanyIdpUsersAsync(
+                        companyNameIdpAliasData,
+                        _settings.Portal.KeyCloakClientID,
+                        lines)
+                    .Select(x => x.Error),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
@@ -99,7 +101,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync<CompanyNameIdpAliasData,UserCreationInfoIdp>(
+        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
             await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false),
             line => {
@@ -111,10 +113,12 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.Email, "");
             },
             (lines, companyNameIdpAliasData) =>
-                _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                    companyNameIdpAliasData,
-                    _settings.Portal.KeyCloakClientID,
-                    lines).Select(x => x.Error),
+                _userProvisioningService
+                    .CreateOwnCompanyIdpUsersAsync(
+                        companyNameIdpAliasData,
+                        _settings.Portal.KeyCloakClientID,
+                        lines)
+                    .Select(x => x.Error),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));

@@ -81,7 +81,7 @@ public static class CsvParser
         }
     }
 
-    public static async ValueTask<(int Processed, int Lines, IEnumerable<(int Line, Exception Error)> Errors)> ProcessCsvAsync<TContext,TLineType>(
+    public static async ValueTask<(int Processed, int Lines, IEnumerable<(int Line, Exception Error)> Errors)> ProcessCsvAsync<TLineType,TContext>(
         Stream stream,
         TContext context,
         Action<string> validateFirstLine,
