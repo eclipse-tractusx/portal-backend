@@ -81,12 +81,11 @@ public static class CsvParser
         }
     }
 
-    public static async ValueTask<(int Processed, int Lines, IEnumerable<(int Line, Exception Error)> Errors)> ProcessCsvAsync<TLineType,TContext>(
+    public static async ValueTask<(int Processed, int Lines, IEnumerable<(int Line, Exception Error)> Errors)> ProcessCsvAsync<TLineType>(
         Stream stream,
-        TContext context,
         Action<string> validateFirstLine,
-        Func<string,TContext,TLineType> parseLine,
-        Func<IAsyncEnumerable<TLineType>,TContext,IAsyncEnumerable<Exception?>> processLine,
+        Func<string,TLineType> parseLine,
+        Func<IAsyncEnumerable<TLineType>,IAsyncEnumerable<Exception?>> processLine,
         CancellationToken cancellationToken)
     {
         var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
@@ -99,7 +98,7 @@ public static class CsvParser
         {
             await ValidateFirstLineAsync(reader, validateFirstLine).ConfigureAwait(false);
 
-            await foreach (var error in processLine(ParseCsvLinesAsync(reader, parseLine, context), context))
+            await foreach (var error in processLine(ParseCsvLinesAsync(reader, parseLine)))
             {
                 numLines++;
                 if (error != null)
@@ -119,16 +118,15 @@ public static class CsvParser
         return new (numProcessed, numLines, errors);
     }
 
-    private static async IAsyncEnumerable<TLineType> ParseCsvLinesAsync<TLineType,TContext>(
+    private static async IAsyncEnumerable<TLineType> ParseCsvLinesAsync<TLineType>(
         StreamReader reader,
-        Func<string,TContext,TLineType> parseLine,
-        TContext context)
+        Func<string,TLineType> parseLine)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
 
         while (nextLine != null)
         {
-            yield return parseLine(nextLine, context);
+            yield return parseLine(nextLine);
             nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         }
     }

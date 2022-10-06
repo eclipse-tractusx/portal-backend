@@ -54,18 +54,19 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
+        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
-            await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false),
             line => {
                 var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            (line, companyNameIdpAliasData) => {
+            line => {
                 var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsShardIdp);
                 return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.ProviderUserName, parsed.ProviderUserId);
             },
-            (lines, companyNameIdpAliasData) =>
+            lines =>
                 _userProvisioningService
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
@@ -101,18 +102,19 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
+        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
+
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
-            await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false),
             line => {
                 var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            (line, companyNameIdpAliasData) => {
+            line => {
                 var parsed = ParseUploadSharedIdpUsersCSVLine(line);
                 return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.Email, "");
             },
-            (lines, companyNameIdpAliasData) =>
+            lines =>
                 _userProvisioningService
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
