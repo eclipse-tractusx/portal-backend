@@ -23,7 +23,7 @@ using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 
-public class CsvParser
+public static class CsvParser
 {
     private static readonly string DefaultDocumentParameterName = "document";
 
