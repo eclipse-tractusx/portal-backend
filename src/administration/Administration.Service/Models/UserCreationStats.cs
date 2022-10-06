@@ -20,4 +20,4 @@
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public record IdentityProviderUpdateStats(int Updated, int Unchanged, int Error, int Total, IEnumerable<string> Errors);
+public record UserCreationStats(int Created, int Error, int Total, IEnumerable<string> Errors);

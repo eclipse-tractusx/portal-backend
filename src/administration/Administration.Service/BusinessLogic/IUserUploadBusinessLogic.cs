@@ -24,6 +24,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 public interface IUserUploadBusinessLogic
 {
-    ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
-    ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }

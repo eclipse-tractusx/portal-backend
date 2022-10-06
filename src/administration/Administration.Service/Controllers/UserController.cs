@@ -88,11 +88,11 @@ public class UserController : ControllerBase
     [Consumes("multipart/form-data")]
     [Route("owncompany/usersfile")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(typeof(IdentityProviderUserCreationStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserCreationStats), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanySharedIdpUsersFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
         this.WithIamUserId(iamUserId => _uploadLogic.UploadOwnCompanySharedIdpUsersAsync(document, iamUserId, cancellationToken));
 
     /// <summary>
@@ -141,11 +141,11 @@ public class UserController : ControllerBase
     [Consumes("multipart/form-data")]
     [Route("owncompany/identityprovider/{identityProviderId}/usersfile")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(typeof(IdentityProviderUserCreationStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserCreationStats), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-        public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromRoute] Guid identityProviderId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+        public ValueTask<UserCreationStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromRoute] Guid identityProviderId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
             this.WithIamUserId(iamUserId => _uploadLogic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, iamUserId, cancellationToken));
 
     /// <summary>
