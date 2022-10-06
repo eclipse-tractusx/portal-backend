@@ -3,12 +3,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
-COPY keycloak/ keycloak/
-WORKDIR /src/notification/CatenaX.NetworkServices.Notification.Service
-RUN dotnet build "CatenaX.NetworkServices.Notification.Service.csproj" -c Release -o /app/build
+WORKDIR /src/notification/Notification.Service
+RUN dotnet build "Notification.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "CatenaX.NetworkServices.Notification.Service.csproj" -c Release -o /app/publish
+RUN dotnet publish "Notification.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
@@ -17,4 +16,4 @@ ENV ASPNETCORE_URLS http://+:8080
 EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
-ENTRYPOINT ["dotnet", "CatenaX.NetworkServices.Notification.Service.dll"]
+ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Notification.Service.dll"]
