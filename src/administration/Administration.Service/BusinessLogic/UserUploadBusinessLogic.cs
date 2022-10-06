@@ -72,7 +72,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                         companyNameIdpAliasData,
                         _settings.Portal.KeyCloakClientID,
                         lines)
-                    .Select(x => x.Error),
+                    .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
@@ -120,7 +120,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                         companyNameIdpAliasData,
                         _settings.Portal.KeyCloakClientID,
                         lines)
-                    .Select(x => x.Error),
+                    .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
