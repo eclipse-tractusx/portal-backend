@@ -24,6 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
@@ -38,6 +39,7 @@ public class RegistrationBusinessLogicTest
 {
     private readonly IFixture _fixture;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IUserProvisioningService _userProvisioningService;
     private readonly IInvitationRepository _invitationRepository;
     private readonly RegistrationBusinessLogic _logic;
 
@@ -47,6 +49,7 @@ public class RegistrationBusinessLogicTest
         var mailingService = A.Fake<IMailingService>();
         var bpnAccess = A.Fake<IBPNAccess>();
         _provisioningManager = A.Fake<IProvisioningManager>();
+        _userProvisioningService = A.Fake<IUserProvisioningService>();
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
         var portalRepositories = A.Fake<IPortalRepositories>();
         _invitationRepository = A.Fake<IInvitationRepository>();
@@ -54,7 +57,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => portalRepositories.GetInstance<IInvitationRepository>())
             .Returns(_invitationRepository);
-        this._logic = new RegistrationBusinessLogic(settings, mailingService, bpnAccess, _provisioningManager, logger, portalRepositories);
+        this._logic = new RegistrationBusinessLogic(settings, mailingService, bpnAccess, _provisioningManager, _userProvisioningService, logger, portalRepositories);
     }
 
     [Fact]
