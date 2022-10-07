@@ -233,18 +233,18 @@ public class UserBusinessLogicTests
             .ReturnsLazily(() => IamClientId);
         A.CallTo(() => _offerRepository.GetAppAssignedClientIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId), A<Guid>._))
             .ReturnsLazily(() => (string?)null);
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<string>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Buyer") && x.Contains("Company Admin"))))
+        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Buyer") && x.Contains("Company Admin")), A<Guid>._))
             .ReturnsLazily(() => new List<UserRoleWithId> { new("Buyer", _buyerRoleId), new("Company Admin", _adminRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<string>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Buyer") && !x.Contains("Company Admin"))))
+        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Buyer") && !x.Contains("Company Admin")), A<Guid>._))
             .ReturnsLazily(() => new List<UserRoleWithId> { new("Buyer", _buyerRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<string>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && x.Contains("Company Admin"))))
+        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && x.Contains("Company Admin")), A<Guid>._))
             .ReturnsLazily(() => new List<UserRoleWithId> { new("Company Admin", _adminRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<string>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && !x.Contains("Company Admin"))))
+        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && !x.Contains("Company Admin")), A<Guid>._))
             .ReturnsLazily(() => new List<UserRoleWithId>().ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Supplier"))))
-            .ReturnsLazily(() => new List<CompanyUserRoleDeletionData> { new(_companyUser.Id, _buyerRoleId, "Supplier") }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Supplier"))))
-            .ReturnsLazily(() => new List<CompanyUserRoleDeletionData>().ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Supplier")), A<Guid>._))
+            .ReturnsLazily(() => new List<UserRoleWithId> { new("Supplier", _buyerRoleId) }.ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Supplier")), A<Guid>._))
+            .ReturnsLazily(() => new List<UserRoleWithId>().ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.CreateCompanyUserAssignedRole(A<Guid>._, A<Guid>._))
             .Invokes(x =>
