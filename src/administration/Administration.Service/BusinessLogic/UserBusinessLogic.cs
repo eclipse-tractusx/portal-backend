@@ -102,37 +102,37 @@ public class UserBusinessLogic : IUserBusinessLogic
         await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).ConfigureAwait(false))
         {
             var (email, message) = emailData[userName];
-            Exception? mailError = null;
 
-            if (error == null)
+            if (error != null)
             {
-                var inviteTemplateName = string.IsNullOrWhiteSpace(message)
-                    ? "PortalTemplate"
-                    : "PortalTemplateWithMessage";
-
-                var mailParameters = new Dictionary<string, string>
-                {
-                    { "password", password ?? "" },
-                    { "companyname", companyNameIdpAliasData.CompanyName },
-                    { "message", message ?? "" },
-                    { "nameCreatedBy", createdById },
-                    { "url", _settings.Portal.BasePortalAddress },
-                    { "username", userName },
-                };
-
-                try
-                {
-                    await _mailingService.SendMails(email, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
-                }
-                catch(Exception e)
-                {
-                    mailError = e;
-                }
-
-                yield return email;
+                _logger.LogError(error, $"Error while creating user {userName} ({email})");
+                continue;
             }
 
-            _logger.LogError(mailError == null ? error : mailError, $"Error while creating user {userName ?? email}");
+            var inviteTemplateName = string.IsNullOrWhiteSpace(message)
+                ? "PortalTemplate"
+                : "PortalTemplateWithMessage";
+
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "password", password ?? "" },
+                { "companyname", companyNameIdpAliasData.CompanyName },
+                { "message", message ?? "" },
+                { "nameCreatedBy", createdById },
+                { "url", _settings.Portal.BasePortalAddress },
+                { "username", userName },
+            };
+
+            try
+            {
+                await _mailingService.SendMails(email, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, $"Error sending email to {email} after creating user {userName}");
+            }
+
+            yield return email;
         }
     }
 
@@ -146,7 +146,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         var (companyId, companyName, businessPartnerNumber, companyUserId, idpAliase) = result;
         if (companyName == null)
         {
-            throw new Exception($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+            throw new UnexpectedConditionException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
         }
         if (!idpAliase.Any())
         {

@@ -123,7 +123,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             ""
         )}.ToAsyncEnumerable();
 
-        var (companyUserId, userName, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {
