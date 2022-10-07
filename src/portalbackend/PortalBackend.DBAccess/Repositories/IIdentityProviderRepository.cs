@@ -31,7 +31,7 @@ public interface IIdentityProviderRepository
     IdentityProvider CreateIdentityProvider(IdentityProviderCategoryId identityProviderCategory);
     IamIdentityProvider CreateIamIdentityProvider(IdentityProvider identityProvider, string idpAlias);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
-    Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId);
+    Task<(string? SharedIdpAlias, Guid CompanyUserId)> GetSharedIdentityProviderIamAliasDataUntrackedAsync(string iamUserId);
     Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId);
     Task<(string Alias, IdentityProviderCategoryId IamIdentityProviderCategory, bool IsOwnCompany)> GetOwnCompanyIdentityProviderAliasUntrackedAsync(Guid identityProviderId, string iamUserId);
     Task<(bool IsSameCompany, string Alias, IdentityProviderCategoryId IdentityProviderCategory, IEnumerable<string> Aliase)> GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(Guid identityProviderId, string iamUserId);

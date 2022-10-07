@@ -297,21 +297,14 @@ public class UserRepository : IUserRepository
                     ))))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserWithIdpData?> GetUserWithIdpAsync(string iamUserId) =>
+    public Task<CompanyUserWithIdpData?> GetUserWithShardIdpDataAsync(string iamUserId) =>
         _dbContext.CompanyUsers
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId
-                                  && companyUser!.Company!.IdentityProviders
-                                      .Any(identityProvider =>
-                                          identityProvider.IdentityProviderCategoryId ==
-                                          IdentityProviderCategoryId.KEYCLOAK_SHARED))
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
             .Include(companyUser => companyUser.CompanyUserAssignedRoles)
             .Include(companyUser => companyUser.IamUser)
             .Select(companyUser => new CompanyUserWithIdpData(
                 companyUser,
-                companyUser.Company!.IdentityProviders.Where(identityProvider =>
-                        identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault()!
+                companyUser.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias
             ))
             .SingleOrDefaultAsync();
 

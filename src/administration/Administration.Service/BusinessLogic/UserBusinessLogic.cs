@@ -329,34 +329,35 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
     {
-        var userData = await _userRepository.GetUserWithIdpAsync(iamUserId).ConfigureAwait(false);
-        if (userData == null)
+        var userIdpData = await _userRepository.GetUserWithShardIdpDataAsync(iamUserId).ConfigureAwait(false);
+        if (userIdpData == null)
         {
-            throw new NotFoundException($"iamUser {iamUserId} is not a shared idp user");
+            throw new ConflictException($"iamUser {iamUserId} is not associated to any companyUser");
         }
-        if (userData.CompanyUser.Id != companyUserId)
+        if (userIdpData.CompanyUser.Id != companyUserId)
         {
             throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
         }
-        await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false);
+        await DeleteUserInternalAsync(userIdpData.CompanyUser, userIdpData.IamIdpAlias, userIdpData.CompanyUser.CompanyId).ConfigureAwait(false);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
+    public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId)
     {
-        var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
-        if (iamIdpAlias == null)
+        var iamIdpAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(iamUserId);
+        if (iamIdpAliasData == default)
         {
-            throw new NotFoundException($"iamUser {adminUserId} is not a shared idp user");
+            throw new ConflictException($"iamUser {iamUserId} is not assigned to any companyUser");
         }
+        var (iamIdpAlias, adminUserId) = iamIdpAliasData;
 
         await foreach (var companyUser in _portalRepositories.GetInstance<IUserRolesRepository>().GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
         {
             var success = false;
             try
             {
-                await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false);
+                await DeleteUserInternalAsync(companyUser, iamIdpAlias, adminUserId).ConfigureAwait(false);
                 success = true;
             }
             catch (Exception e)
@@ -371,15 +372,17 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
+    private async Task DeleteUserInternalAsync(CompanyUser companyUser, string? iamIdpAlias, Guid administratorId)
     {
-        var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
-        if (userIdShared == null)
+        if (iamIdpAlias != null)
         {
-            throw new UnexpectedConditionException($"user {companyUser.IamUser!.UserEntityId} not found in central idp");
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            if (userIdShared != null)
+            {
+                await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
+            }
         }
-        await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
-        await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false); //TODO doesn't handle the case where user is both shared and own idp user
+        await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
@@ -388,6 +391,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
         _portalRepositories.GetInstance<IUserRepository>().RemoveIamUser(companyUser.IamUser);
         companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
+        companyUser.LastEditorId = administratorId;
     }
 
     [Obsolete]
