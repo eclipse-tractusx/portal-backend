@@ -550,7 +550,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             try
             {
                 var (userEntityId, existingProfile, links) = await GetExistingUserAndLinkDataAsync(userRepository, companyUserId, companyId).ConfigureAwait(false);
-                var existingLinks = await links.ToListAsync().ConfigureAwait(false);
+                var existingLinks = await links.ToListAsync(cancellationToken).ConfigureAwait(false);
                 var updated = false;
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -571,7 +571,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             {
                 if (e is OperationCanceledException)
                 {
-                    throw e;
+                    throw;
                 }
                 error = e;
             }
