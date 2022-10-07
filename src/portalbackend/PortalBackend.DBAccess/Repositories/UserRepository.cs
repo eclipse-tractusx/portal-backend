@@ -103,9 +103,6 @@ public class UserRepository : IUserRepository
                 iamUserId,
                 companyUserId)).Entity;
 
-    public IamUser CreateIamUser(CompanyUser companyUser, string iamUserId) =>
-        CreateIamUser(companyUser.Id, iamUserId);
-
     public IamUser RemoveIamUser(IamUser iamUser) =>
         _dbContext.Remove(iamUser).Entity;
 

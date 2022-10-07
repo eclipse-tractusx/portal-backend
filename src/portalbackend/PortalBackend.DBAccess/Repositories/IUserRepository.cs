@@ -33,7 +33,6 @@ public interface IUserRepository
     Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
     IamUser CreateIamUser(Guid companyUserId, string iamUserId);
-    IamUser CreateIamUser(CompanyUser companyUser, string iamUserId);
     IamUser RemoveIamUser(IamUser iamUser);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
     Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
