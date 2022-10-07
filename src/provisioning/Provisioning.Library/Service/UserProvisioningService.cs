@@ -60,7 +60,8 @@ public class UserProvisioningService : IUserProvisioningService
             .GetUserRolesWithIdAsync(clientId)
             .ToDictionaryAsync(
                 roleWithId => roleWithId.Role,
-                roleWithId => roleWithId.Id
+                roleWithId => roleWithId.Id,
+                cancellationToken
             )
             .ConfigureAwait(false);
 
@@ -114,7 +115,7 @@ public class UserProvisioningService : IUserProvisioningService
             {
                 if (e is OperationCanceledException)
                 {
-                    throw e;
+                    throw;
                 }
                 error = e;
             }
