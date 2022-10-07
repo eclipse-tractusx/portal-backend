@@ -65,13 +65,14 @@ public class UserProvisioningService : IUserProvisioningService
             )
             .ConfigureAwait(false);
 
-        var password = isSharedIdp ? new Password() : null;
+        var passwordProvider = new OptionalPasswordProvider(isSharedIdp);
 
         await foreach(var user in userCreationInfos)
         {
             IamUser? iamUser = null;
             Exception? error = null;
-            string? nextPassword = isSharedIdp ? password!.Next() : null;
+
+            var nextPassword = passwordProvider.NextOptionalPassword();
 
             try
             {
@@ -81,16 +82,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var providerUserId = isSharedIdp
-                    ? await _provisioningManager.CreateSharedRealmUserAsync(
-                        alias,
-                        new UserProfile(
-                            user.UserName,
-                            user.FirstName,
-                            user.LastName,
-                            user.Email,
-                            nextPassword)).ConfigureAwait(false)
-                    : user.UserId;
+                var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
 
                 var centralUserId = await _provisioningManager.CreateCentralUserAsync(
                     new UserProfile(
@@ -108,11 +100,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
 
-                iamUser = userRepository.CreateIamUser(
-                    existingCompanyUserId == Guid.Empty
-                        ? userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId).Id
-                        : existingCompanyUserId,
-                    centralUserId);
+                iamUser = CreateOptionalCompanyUserAndIamUser(userRepository, user, centralUserId, companyId, creatorId, existingCompanyUserId);
 
                 await AssignRolesToNewUserAsync(userRolesRepository, user.Roles, iamUser, clientId, userRoleIds).ConfigureAwait(false);
             }
@@ -133,6 +121,39 @@ public class UserProvisioningService : IUserProvisioningService
 
             yield return new (iamUser?.CompanyUserId ?? Guid.Empty, user.UserName, nextPassword, error);
         }
+    }
+
+    private class OptionalPasswordProvider
+    {
+        readonly Password? password;
+        
+        public OptionalPasswordProvider(bool createOptionalPasswords)
+        {
+            password = createOptionalPasswords ? new Password() : null;
+        }
+
+        public string? NextOptionalPassword() => password?.Next();
+    }
+
+    private Task<string> CreateSharedIdpUserOrReturnUserId(UserCreationInfoIdp user, string alias, string? password, bool isSharedIdp) =>
+        isSharedIdp
+            ? _provisioningManager.CreateSharedRealmUserAsync(
+                alias,
+                new UserProfile(
+                    user.UserName,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    password))
+            : Task.FromResult(user.UserId);
+
+    private IamUser CreateOptionalCompanyUserAndIamUser(IUserRepository userRepository, UserCreationInfoIdp user, string centralUserId, Guid companyId, Guid creatorId, Guid existingCompanyUserId)
+    {
+        var companyUserId = existingCompanyUserId == Guid.Empty
+            ? userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId).Id
+            : existingCompanyUserId;
+
+        return userRepository.CreateIamUser(companyUserId, centralUserId);
     }
 
     public async Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)

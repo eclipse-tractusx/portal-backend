@@ -250,11 +250,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException($"shared idp for CompanyApplication {applicationId} not found");
         }
 
-        var clientId = _settings.KeyCloakClientID;
-
         var companyNameIdpAliasData = new CompanyNameIdpAliasData(
-            applicationData.CompanyId,
-            applicationData.CompanyName,
+            companyId,
+            companyName,
             null,
             creatorId,
             idpAlias,
@@ -270,7 +268,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ""
         )}.ToAsyncEnumerable();
 
-        var (companyUserId, userName, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, _settings.KeyCloakClientID, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, _settings.KeyCloakClientID, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {
@@ -290,7 +288,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password },
-            { "companyname", applicationData.CompanyName },
+            { "companyname", companyName },
             { "message", userCreationInfo.Message ?? "" },
             { "nameCreatedBy", iamUserId },
             { "url", _settings.BasePortalAddress },
