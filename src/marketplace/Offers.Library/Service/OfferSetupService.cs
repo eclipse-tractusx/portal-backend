@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -37,9 +38,10 @@ public class OfferSetupService : IOfferSetupService
     }
     
     /// <inheritdoc />
-    public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
+    public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl)
     {
         using var httpClient = _httpClientFactory.CreateClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetThirdPartyAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
