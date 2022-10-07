@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 
@@ -57,10 +58,3 @@ public record AppDetailResponse(
     IEnumerable<string> Languages,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
 );
-
-/// <summary>
-/// Model for Document
-/// </summary>
-/// <param name="documentId"></param>
-/// <param name="documentName"></param>
-public record DocumentData(Guid documentId, string documentName);

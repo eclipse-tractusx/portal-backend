@@ -26,6 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 
@@ -172,8 +173,8 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("{appId}/appStatus")]
     [Authorize(Roles = "app_management")]
-    [ProducesResponseType(typeof(OfferProviderData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<OfferProviderData> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
+    public Task<OfferProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
 }

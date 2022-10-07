@@ -276,7 +276,8 @@ public class OfferRepository : IOfferRepository
                     a.OfferDetailImages.Select(image => image.ImageUrl),
                     a.MarketingUrl,
                     a.ContactEmail,
-                    a.ContactNumber),
+                    a.ContactNumber,
+                    a.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))),
                 a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
