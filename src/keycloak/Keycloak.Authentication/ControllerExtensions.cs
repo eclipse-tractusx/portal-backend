@@ -37,26 +37,49 @@ public static class ControllerExtensions
     /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
     public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
     {
-        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
-        if (string.IsNullOrWhiteSpace(sub))
-        {
-            throw new ArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
-        }
+        var sub = GetIamUserId(controller);
         return idConsumingFunction(sub);
     }
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
     {
+        var bearer = GetBearerToken(controller);
+        return tokenConsumingFunction(bearer);
+    }
+    
+    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
+    {
+        var bearerToken = GetBearerToken(controller);
+        var iamUserId = GetIamUserId(controller);
+        return tokenConsumingFunction((iamUserId, bearerToken));
+    }
+
+    private static string GetIamUserId(ControllerBase controller)
+    {
+        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
+        if (string.IsNullOrWhiteSpace(sub))
+        {
+            throw new ArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
+        }
+
+        return sub;
+    }
+
+    private static string GetBearerToken(ControllerBase controller)
+    {
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
         if (authorization == null || !authorization.StartsWith("Bearer "))
         {
-            throw new ArgumentException("Request does not contain a Bearer-token in authorization-header", nameof(authorization));
+            throw new ArgumentException("Request does not contain a Bearer-token in authorization-header",
+                nameof(authorization));
         }
+
         var bearer = authorization.Substring("Bearer ".Length);
         if (string.IsNullOrWhiteSpace(bearer))
         {
             throw new ArgumentException("Bearer-token in authorization-header must not be empty", nameof(authorization));
         }
-        return tokenConsumingFunction(bearer);
+
+        return bearer;
     }
 }

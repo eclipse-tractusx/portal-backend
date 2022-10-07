@@ -329,7 +329,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferAutoSetupResponseData( Guid.NewGuid(), "abcSecret"));
+            .ReturnsLazily(() => new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), "abcSecret"), new ClientInfoData(Guid.NewGuid().ToString())));
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
@@ -445,9 +445,9 @@ public class ServiceBusinessLogicTests
 
     private void SetupServices(IamUser iamUser)
     {
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.testurl.com")))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.testurl.com")))
             .ReturnsLazily(() => Task.CompletedTask);
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.fail.com")))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.fail.com")))
             .ThrowsAsync(() => new ServiceException("Error occured"));
     }
 
