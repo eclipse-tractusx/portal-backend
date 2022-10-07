@@ -105,7 +105,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
             if (error != null)
             {
-                _logger.LogError(error, $"Error while creating user {userName} ({email})");
+                _logger.LogError(error, "Error while creating user {UserName} ({Email})", userName, email);
                 continue;
             }
 
@@ -129,7 +129,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             catch(Exception e)
             {
-                _logger.LogError(e, $"Error sending email to {email} after creating user {userName}");
+                _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", email, userName);
             }
 
             yield return email;

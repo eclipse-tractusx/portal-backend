@@ -123,7 +123,7 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
-    private class OptionalPasswordProvider
+    private sealed class OptionalPasswordProvider
     {
         readonly Password? password;
         
@@ -147,7 +147,7 @@ public class UserProvisioningService : IUserProvisioningService
                     password))
             : Task.FromResult(user.UserId);
 
-    private IamUser CreateOptionalCompanyUserAndIamUser(IUserRepository userRepository, UserCreationInfoIdp user, string centralUserId, Guid companyId, Guid creatorId, Guid existingCompanyUserId)
+    private static IamUser CreateOptionalCompanyUserAndIamUser(IUserRepository userRepository, UserCreationInfoIdp user, string centralUserId, Guid companyId, Guid creatorId, Guid existingCompanyUserId)
     {
         var companyUserId = existingCompanyUserId == Guid.Empty
             ? userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId).Id
