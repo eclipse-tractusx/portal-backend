@@ -43,14 +43,17 @@ public class ApplicationRepository : IApplicationRepository
                 companyApplicationStatusId,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+    public Invitation CreateInvitation(Guid applicationId, Guid companyUserId) =>
         _dbContext.Invitations.Add(
             new Invitation(
                 Guid.NewGuid(),
                 applicationId,
-                user.Id,
+                companyUserId,
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
+
+    public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+        CreateInvitation(applicationId, user.Id);
 
     public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications

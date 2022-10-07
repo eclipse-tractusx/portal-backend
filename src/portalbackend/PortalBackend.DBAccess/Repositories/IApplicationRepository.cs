@@ -27,6 +27,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 public interface IApplicationRepository
 {
     CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId);
+    Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
     Invitation CreateInvitation(Guid applicationId, CompanyUser user);
     Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
     Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId);
