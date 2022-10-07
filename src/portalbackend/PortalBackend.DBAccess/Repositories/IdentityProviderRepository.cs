@@ -62,13 +62,13 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 idpAlias,
                 identityProvider.Id)).Entity;
 
-    public Task<string?> GetSharedIdentityProviderIamAliasUntrackedAsync(string iamUserId) =>
-        _context.IamUsers
-            .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.IdentityProviders
-                .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias))
+    public Task<(string? SharedIdpAlias, Guid CompanyUserId)> GetSharedIdentityProviderIamAliasDataUntrackedAsync(string iamUserId) =>
+        _context.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .Select(companyUser => new ValueTuple<string?,Guid>(
+                companyUser.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias,
+                companyUser.Id
+            ))
             .SingleOrDefaultAsync();
 
     public Task<IdpUser?> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, string adminUserId) =>
