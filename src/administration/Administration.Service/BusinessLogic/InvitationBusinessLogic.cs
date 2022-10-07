@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
@@ -27,7 +28,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using Microsoft.Extensions.Options;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -66,7 +66,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _logger = logger;
     }
 
-    public async Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
+    public Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
     {
         if (string.IsNullOrWhiteSpace(invitationData.email))
         {
@@ -76,34 +76,37 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         {
             throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
         }
+        return ExecuteInvitationInternalAsync(invitationData, iamUserId);
+    }
 
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, string iamUserId)
+    {
 
-        var userRoleIds = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
-        if (userRoleIds.Count < _settings.InvitedUserInitialRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (creatorId == Guid.Empty)
         {
-            throw new UnexpectedConditionException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ",_settings.InvitedUserInitialRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{String.Join(", ",clientRoles.Value)}]"))}");
+            throw new ConflictException($"iamUserId {iamUserId} is not associated with a companyUser");
         }
 
         var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-
         await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
 
         var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
-        var application = applicationRepository.CreateCompanyApplication(company, CompanyApplicationStatusId.CREATED);
-        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
 
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED);
         identityProvider.Companies.Add(company);
         identityProviderRepository.CreateIamIdentityProvider(identityProvider, idpName);
 
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
         var companyNameIdpAliasData = new CompanyNameIdpAliasData(
             company.Id,
             company.Name,
-            company.BusinessPartnerNumber,
+            null,
             creatorId,
             idpName,
             true
@@ -122,14 +125,14 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
         var (companyUserId, userName, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
-        applicationRepository.CreateInvitation(application.Id, companyUserId);
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
         if (error != null)
         {
             throw error;
         }
+
+        applicationRepository.CreateInvitation(application.Id, companyUserId);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParameters = new Dictionary<string, string>
         {
