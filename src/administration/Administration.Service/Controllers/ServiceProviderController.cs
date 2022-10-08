@@ -57,7 +57,7 @@ public class ServiceProviderController : ControllerBase
     [HttpPost]
     [Route("owncompany")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
