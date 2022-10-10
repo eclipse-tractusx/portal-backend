@@ -194,7 +194,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         }
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, x =>
+        {
+            x.CompanyUserId = companyUserId;
+            x.DocumentTypeId = documentTypeId;
+        });
         _portalRepositories.GetInstance<IAppReleaseRepository>().CreateOfferAssignedDocument(appId, doc.Id);
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

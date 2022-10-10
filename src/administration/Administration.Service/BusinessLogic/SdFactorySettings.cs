@@ -23,22 +23,32 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 /// <summary>
 /// Settings used in business logic concerning connectors.
 /// </summary>
-public class ConnectorsSettings
+public class SdFactorySettings
 {
+    public SdFactorySettings() 
+    {
+        SdFactoryUrl = string.Empty;
+    }
+
+    public SdFactorySettings(string sdFactoryUrl)
+    {
+        SdFactoryUrl = sdFactoryUrl;
+    }
+
     /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
+    /// SD Factory endpoint for registering connectors.
     /// </summary>
-    public int MaxPageSize { get; set; }
+    public string SdFactoryUrl { get; set; }
 }
 
-public static class ConnectorsSettingsExtensions
+public static class SdFactorySettingsExtensions
 {
-    public static IServiceCollection ConfigureConnectorsSettings(
+    public static IServiceCollection ConfigureSdFactorySettings(
         this IServiceCollection services,
         IConfigurationSection section
         )
     {
-        services.AddOptions<ConnectorsSettings>()
+        services.AddOptions<SdFactorySettings>()
             .Bind(section)
             .ValidateOnStart();
         return services;

@@ -18,29 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Service to handle communication with the connectors sd factory
 /// </summary>
-public class ConnectorsSettings
+public interface ISdFactoryService
 {
     /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
+    /// Registers the Connector at the connectorsSdFactory
     /// </summary>
-    public int MaxPageSize { get; set; }
-}
+    /// <param name="connectorInputModel">the connector input model</param>
+    /// <param name="accessToken">the access token</param>
+    /// <param name="bpn">the bpn</param>
+    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+    Task RegisterConnector(ConnectorInputModel connectorInputModel, string accessToken, string bpn);
 
-public static class ConnectorsSettingsExtensions
-{
-    public static IServiceCollection ConfigureConnectorsSettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
-    {
-        services.AddOptions<ConnectorsSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        return services;
-    }
+    Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, string issuer);
 }
