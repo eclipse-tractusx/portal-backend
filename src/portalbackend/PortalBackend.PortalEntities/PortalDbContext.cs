@@ -445,6 +445,11 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
+            entity.HasOne(p => p.SelfDescriptionDocument)
+                .WithMany(d => d.Companies)
+                .HasForeignKey(d => d.SelfDescriptionDocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasMany(p => p.UseCases)
                 .WithMany(p => p.Companies)
                 .UsingEntity<CompanyAssignedUseCase>(

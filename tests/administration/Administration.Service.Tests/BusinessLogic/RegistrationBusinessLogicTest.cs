@@ -47,6 +47,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLog
 public class RegistrationBusinessLogicTest
 {
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
+    private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private static readonly Guid CompanyUserId1 = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
     private static readonly Guid CompanyUserId2 = new("857b93b1-8fcb-4141-81b0-ae81950d489f");
@@ -71,6 +72,7 @@ public class RegistrationBusinessLogicTest
     private readonly RegistrationSettings _settings;
     private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
     private readonly INotificationService _notificationService;
+    private readonly ISdFactoryService _sdFactory;
 
     public RegistrationBusinessLogicTest()
     {
@@ -91,7 +93,8 @@ public class RegistrationBusinessLogicTest
         var mailingService = A.Fake<IMailingService>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _notificationService = A.Fake<INotificationService>();
-
+        _sdFactory = A.Fake<ISdFactoryService>();
+        
         _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
         {
             NotificationTypeId.WELCOME,
@@ -111,7 +114,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory);
     }
 
     [Fact]
@@ -131,7 +134,7 @@ public class RegistrationBusinessLogicTest
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
 
         //Act
-        var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
+        var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
@@ -153,7 +156,7 @@ public class RegistrationBusinessLogicTest
     public async Task ApprovePartnerRequest_WithDefaultApplicationId_ThrowsArgumentNullException()
     {
         //Act
-        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, Guid.Empty);
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty);
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentNullException>(Action);
         ex.ParamName.Should().Be("applicationId");
@@ -168,7 +171,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => (CompanyApplication?)null);
 
         //Act
-        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, applicationId);
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, applicationId);
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().Be($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -188,7 +191,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => companyApplication);
 
         //Act
-        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, applicationId);
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, applicationId);
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty (Parameter 'bpn')");

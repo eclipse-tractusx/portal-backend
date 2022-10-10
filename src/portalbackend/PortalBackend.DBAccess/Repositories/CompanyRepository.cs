@@ -150,4 +150,8 @@ public class CompanyRepository : ICompanyRepository
                 x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
                 x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<string?> GetBpnForCompanyNameAsync(string companyName) =>
+        _context.Companies.Where(x => x.Name == companyName).Select(x => x.BusinessPartnerNumber).SingleOrDefaultAsync();
 }
