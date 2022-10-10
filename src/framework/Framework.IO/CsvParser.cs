@@ -85,7 +85,7 @@ public static class CsvParser
         Stream stream,
         Action<string>? validateHeaderLine,
         Func<string,TLineType> parseLine,
-        Func<IAsyncEnumerable<TLineType>,IAsyncEnumerable<(bool Processed, Exception? Error)>> processLine,
+        Func<IAsyncEnumerable<TLineType>,IAsyncEnumerable<(bool Processed, Exception? Error)>> processLines,
         CancellationToken cancellationToken)
     {
         var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
@@ -94,14 +94,14 @@ public static class CsvParser
         var errors = new List<(int Line, Exception Error)>();
         int numLines = 0;
 
+        if (validateHeaderLine != null)
+        {
+            await ValidateFirstLineAsync(reader, validateHeaderLine).ConfigureAwait(false);
+        }
+
         try
         {
-            if (validateHeaderLine != null)
-            {
-                await ValidateFirstLineAsync(reader, validateHeaderLine).ConfigureAwait(false);
-            }
-
-            await foreach (var (processed,error) in processLine(ParseCsvLinesAsync(reader, parseLine)))
+            await foreach (var (processed,error) in processLines(ParseCsvLinesAsync(reader, parseLine, error => { numLines++; errors.Add((numLines, error)); })))
             {
                 numLines++;
                 if (error != null)
@@ -114,22 +114,35 @@ public static class CsvParser
                 }
             }
         }
-        catch(OperationCanceledException oce)
+        catch(Exception e)
         {
-            errors.Add((numLines, oce));
+            errors.Add((numLines, e));
         }
         return new (numProcessed, numLines, errors);
     }
 
     private static async IAsyncEnumerable<TLineType> ParseCsvLinesAsync<TLineType>(
         StreamReader reader,
-        Func<string,TLineType> parseLine)
+        Func<string,TLineType> parseLine,
+        Action<Exception> onError,
+        string? documentParameterName = null)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
 
         while (nextLine != null)
         {
-            yield return parseLine(nextLine);
+            TLineType? result = default;
+            try
+            {
+                result = parseLine(nextLine);
+            }
+            catch(Exception e)
+            {
+                onError(e);
+                nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+                continue;
+            }
+            yield return result!; 
             nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
         }
     }
