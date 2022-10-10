@@ -58,6 +58,7 @@ public class ServiceBusinessLogicTests
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly IOfferSubscriptionService _offerSubscriptionService;
 
     public ServiceBusinessLogicTests()
     {
@@ -80,10 +81,11 @@ public class ServiceBusinessLogicTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
 
         _offerSetupService = A.Fake<IOfferSetupService>();
+        _offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         
 
-        SetupRepositories(companyUser, iamUser);
-        SetupServices(iamUser);
+        SetupRepositories();
+        SetupServices();
 
         var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>()
         {
@@ -152,6 +154,23 @@ public class ServiceBusinessLogicTests
     #endregion
 
     #region Add Service Subscription
+
+    
+    [Fact]
+    public async Task AddServiceSubscription_ReturnsCorrectId()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionService.AddServiceSubscription(A<Guid>._, A<string>._, A<string>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => offerSubscriptionId);
+        var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferService>(), _offerSubscriptionService, Options.Create(new ServiceSettings()));
+
+        // Act
+        var result = await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId, "THISISAACCESSTOKEN");
+
+        // Assert
+        result.Should().Be(offerSubscriptionId);
+    }
 
 
     #endregion
@@ -329,7 +348,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferAutoSetupResponseData( Guid.NewGuid(), "abcSecret"));
+            .ReturnsLazily(() => new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), "abcSecret"), new ClientInfoData(Guid.NewGuid().ToString())));
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
@@ -344,18 +363,18 @@ public class ServiceBusinessLogicTests
 
     #region Setup
 
-    private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
+    private void SetupRepositories()
     {
         var serviceDetailData = new AsyncEnumerableStub<ValueTuple<Guid, string?, string, string?, string?, string?>>(_fixture.CreateMany<ValueTuple<Guid, string?, string, string?, string?, string?>>(5));
         var serviceDetail = _fixture.Build<OfferDetailData>()
             .With(x => x.Id, _existingServiceId)
             .Create();
         
-        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(iamUser.UserEntityId))
+        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_iamUser.UserEntityId))
             .ReturnsLazily(() => (_companyUser.Id, _companyUser.CompanyId, "The Company", "test@mail.de"));
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_notAssignedCompanyIdUser))
             .ReturnsLazily(() => (_companyUser.Id, Guid.Empty, "The Company", "test@mail.de"));
-        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
+        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
             .ReturnsLazily(() => (Guid.Empty, _companyUser.CompanyId, "The Company", "test@mail.de"));
         
         A.CallTo(() => _offerRepository.GetActiveServices())
@@ -396,24 +415,24 @@ public class ServiceBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
                 A<Guid>.That.Matches(x => x == _validSubscriptionId),
-                A<string>.That.Matches(x => x == iamUser.UserEntityId),
+                A<string>.That.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() =>
                 new SubscriptionDetailData(_existingServiceId, "Super Service", OfferSubscriptionStatusId.ACTIVE));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
                 A<Guid>.That.Not.Matches(x => x == _validSubscriptionId),
-                A<string>.That.Matches(x => x == iamUser.UserEntityId),
+                A<string>.That.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => (SubscriptionDetailData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId), A<OfferTypeId>._))
+                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<OfferTypeId>._))
             .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscription?, Guid>(_companyUser.CompanyId, offerSubscription, _companyUser.Id));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == iamUser.UserEntityId),
+                A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscription?, Guid>(_companyUser.CompanyId, (OfferSubscription?)null, _companyUser.Id));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Not.Matches(x => x == iamUser.UserEntityId),
+                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
 
@@ -443,11 +462,11 @@ public class ServiceBusinessLogicTests
         _fixture.Inject(_portalRepositories);
     }
 
-    private void SetupServices(IamUser iamUser)
+    private void SetupServices()
     {
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.testurl.com")))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.testurl.com")))
             .ReturnsLazily(() => Task.CompletedTask);
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.fail.com")))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.fail.com")))
             .ThrowsAsync(() => new ServiceException("Error occured"));
     }
 
