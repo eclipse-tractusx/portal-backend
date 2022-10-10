@@ -124,8 +124,7 @@ public static class CsvParser
     private static async IAsyncEnumerable<TLineType> ParseCsvLinesAsync<TLineType>(
         StreamReader reader,
         Func<string,TLineType> parseLine,
-        Action<Exception> onError,
-        string? documentParameterName = null)
+        Action<Exception> onError)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
 
