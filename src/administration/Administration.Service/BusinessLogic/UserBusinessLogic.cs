@@ -155,7 +155,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
                 var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
-                var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
+                var validRoles = user.Roles.Where(role => !string.IsNullOrWhiteSpace(role));
                 if (validRoles.Any())
                 {
                     var clientRoleNames = new Dictionary<string, IEnumerable<string>>
