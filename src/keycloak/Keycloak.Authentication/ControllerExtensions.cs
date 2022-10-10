@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Mvc;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 
@@ -59,7 +60,7 @@ public static class ControllerExtensions
         var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
         if (string.IsNullOrWhiteSpace(sub))
         {
-            throw new ArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
+            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
         }
 
         return sub;
@@ -70,14 +71,14 @@ public static class ControllerExtensions
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
         if (authorization == null || !authorization.StartsWith("Bearer "))
         {
-            throw new ArgumentException("Request does not contain a Bearer-token in authorization-header",
+            throw new ControllerArgumentException("Request does not contain a Bearer-token in authorization-header",
                 nameof(authorization));
         }
 
         var bearer = authorization.Substring("Bearer ".Length);
         if (string.IsNullOrWhiteSpace(bearer))
         {
-            throw new ArgumentException("Bearer-token in authorization-header must not be empty", nameof(authorization));
+            throw new ControllerArgumentException("Bearer-token in authorization-header must not be empty", nameof(bearer));
         }
 
         return bearer;
