@@ -207,7 +207,7 @@ public class CsvParserTest
         return data;
     }
 
-    private async IAsyncEnumerable<(bool Processed, Exception? Error)> FakeReadLinesSuccess(IAsyncEnumerable<FakeLineType> lines)
+    private static async IAsyncEnumerable<(bool Processed, Exception? Error)> FakeReadLinesSuccess(IAsyncEnumerable<FakeLineType> lines)
     {
         await foreach(var line in lines)
         {
