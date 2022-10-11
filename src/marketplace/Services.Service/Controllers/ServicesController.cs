@@ -93,7 +93,7 @@ public class ServicesController : ControllerBase
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/subscribe")]
-    //[Authorize(Roles = "subscribe_service")]
+    [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

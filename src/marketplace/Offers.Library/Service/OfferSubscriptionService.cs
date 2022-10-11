@@ -79,7 +79,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             }
             catch (Exception e)
             {
-                _logger.LogInformation(e.Message);
+                _logger.LogInformation("Error occure while executing AutoSetupOffer: {ErrorMessage}", e.Message);
                 autoSetupResult = e.Message;
             }
         }
