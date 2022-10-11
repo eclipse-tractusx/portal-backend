@@ -20,18 +20,19 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using FakeItEasy;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Xunit;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Microsoft.Extensions.Options;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests;
 
@@ -42,6 +43,7 @@ public class AppReleaseBusinessLogicTest
     private readonly IOfferService _offerService;
     private readonly IOfferRepository _offerRepository;
     private readonly IAppReleaseRepository _appReleaseRepository;
+    private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly AppReleaseBusinessLogic _logic;
     private readonly IOptions<AppsSettings> _options;
@@ -56,9 +58,12 @@ public class AppReleaseBusinessLogicTest
         _offerService = A.Fake<IOfferService>();
         _offerRepository = A.Fake<IOfferRepository>();
         _appReleaseRepository = A.Fake<IAppReleaseRepository>();
+        _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _options = A.Fake<IOptions<AppsSettings>>();
         A.CallTo(() => _portalRepositories.GetInstance<IAppReleaseRepository>()).Returns(_appReleaseRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
          _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
     }
 
@@ -67,7 +72,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         Guid appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
-        Guid userId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+        string iamUserId = new Guid("7eab8e16-8298-4b41-953b-515745423658").ToString();
         var appUserRoleDescription = new List<AppUserRoleDescription>();
         appUserRoleDescription.Add(new AppUserRoleDescription("en","this is test1"));
         appUserRoleDescription.Add(new AppUserRoleDescription("de","this is test2"));
@@ -76,24 +81,23 @@ public class AppReleaseBusinessLogicTest
         appUserRoles.Add(new AppUserRole("IT Admin",appUserRoleDescription));
        
         
-        A.CallTo(() => _appReleaseRepository.IsProviderCompanyUserAsync(appId,userId.ToString())).ReturnsLazily(() => true);
+        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP))).Returns((true,true));
 
         // Act
-        var result = await _logic.AddAppUserRoleAsync(appId, appUserRoles, userId.ToString()).ConfigureAwait(false);
+        var result = await _logic.AddAppUserRoleAsync(appId, appUserRoles, iamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _appReleaseRepository.IsProviderCompanyUserAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>._, A<string>._, A<OfferTypeId>._)).MustHaveHappened();
         foreach(var appRole in appUserRoles)
         {
-            A.CallTo(() => _appReleaseRepository.CreateAppUserRole(A<Guid>._, A<string>._)).MustHaveHappened();
+            A.CallTo(() => _userRolesRepository.CreateAppUserRole(A<Guid>._, A<string>._)).MustHaveHappened();
             foreach(var item in appRole.descriptions)
             {
-                A.CallTo(() => _appReleaseRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>._, A<string>._)).MustHaveHappened();
+                A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>._, A<string>._)).MustHaveHappened();
             }
         }
         
         Assert.NotNull(result);
         Assert.IsType<List<AppRoleData>>(result);
-        
     }
 }
