@@ -39,7 +39,8 @@ public record OfferAutoSetupResponseData(TechnicalUserInfoData TechnicalUserInfo
 /// </summary>
 /// <param name="TechnicalUserId">Id of the created technical user</param>
 /// <param name="TechnicalUserSecret">User secret for the created user</param>
-public record TechnicalUserInfoData(Guid TechnicalUserId, string? TechnicalUserSecret);
+/// <param name="TechnicalClientId">User secret for the created user</param>
+public record TechnicalUserInfoData(Guid TechnicalUserId, string? TechnicalUserSecret, string? TechnicalClientId);
 
 /// <summary>
 /// Client infos

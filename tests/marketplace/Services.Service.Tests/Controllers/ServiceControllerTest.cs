@@ -200,7 +200,7 @@ public class ServiceControllerTest
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(Guid.NewGuid(), "abcPW"),
+            new TechnicalUserInfoData(Guid.NewGuid(), "abcPW", "sa1"),
             new ClientInfoData(Guid.NewGuid().ToString())
         );
         A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
