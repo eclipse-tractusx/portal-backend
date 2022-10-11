@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -33,15 +33,12 @@ namespace Org.CatenaX.Ng.Portal.Backend.App.Service.Tests.Controllers;
 public class AppsControllerTests
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
     private readonly string _accessToken = "THISISTHEACCESSTOKEN";
-    private readonly IFixture _fixture;
     private readonly IAppsBusinessLogic _logic;
     private readonly AppsController _controller;
 
     public AppsControllerTests()
     {
-        _fixture = new Fixture();
         _logic = A.Fake<IAppsBusinessLogic>();
         this._controller = new AppsController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(IamUserId, _accessToken);
