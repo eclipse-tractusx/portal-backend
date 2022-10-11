@@ -114,8 +114,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
          await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
-    
-    
+
     /// <summary>
     /// Return Agreement Data for offer_type_id App
     /// </summary>

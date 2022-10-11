@@ -112,7 +112,7 @@ public class UserRepository : IUserRepository
         string? userEntityId = null,
         string? firstName = null,
         string? lastName = null,
-        string? email = null) 
+        string? email = null)
         {
         char[] escapeChar = { '%', '_', '[', ']', '^' };
         return _dbContext.CompanyUsers.AsNoTracking()
