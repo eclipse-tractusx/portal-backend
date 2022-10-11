@@ -28,6 +28,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -260,6 +261,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
     
     /// <inheritdoc/>
-    public Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
+    public Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
         _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
 }
