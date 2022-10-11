@@ -34,6 +34,7 @@ public interface IConnectorsSdFactoryService
     /// <param name="connectorInputModel">the connector input model</param>
     /// <param name="accessToken">the access token</param>
     /// <param name="bpn">the bpn</param>
+    /// <param name="issuerBpn">the issuer bpn</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn);
+    Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, string issuerBpn);
 }

@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
+using FluentAssertions.Common;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -75,9 +76,11 @@ public class ConnectorsBusinessLogicTests
         _connectorsSdFactoryService = A.Fake<IConnectorsSdFactoryService>();
         _options = A.Fake<IOptions<ConnectorsSettings>>();
         _settings = A.Fake<ConnectorsSettings>();
-        _settings = new ConnectorsSettings("http://this-is-a-url.com")
+        _settings = new ConnectorsSettings
         {
             MaxPageSize = 15,
+            SdFactoryUrl = "http://this-is-a-url.com",
+            SdFactoryIssuerCompany = "Catena-X"
         };
 
         SetupRepositoryMethods();
@@ -104,6 +107,23 @@ public class ConnectorsBusinessLogicTests
         result.Should().NotBeNull();
     }
     
+    [Fact]
+    public async Task CreateConnectorAsync_WithoutIssuerNameSet_ThrowsCOnfigurationException()
+    {
+        // Arrange
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
+            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
+            _validCompanyId);
+        _settings.SdFactoryIssuerCompany = string.Empty;
+        
+        // Act
+        async Task Action() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Action);
+        ex.Message.Should().Be($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
+    }
+
     [Fact]
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
@@ -263,6 +283,11 @@ public class ConnectorsBusinessLogicTests
                 new(_validCompanyId, "VALID")
             }.ToAsyncEnumerable());
 
+        A.CallTo(() => _companyRepository.GetBpnForCompanyNameAsync(A<string>.That.Matches(x => x == "Catena-X")))
+            .ReturnsLazily(() => "BPNL00000003CRHK");
+        A.CallTo(() => _companyRepository.GetBpnForCompanyNameAsync(A<string>.That.Not.Matches(x => x == "Catena-X")))
+            .ReturnsLazily(() => (string?)null);
+        
         A.CallTo(() =>
                 _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes(x =>
@@ -288,11 +313,11 @@ public class ConnectorsBusinessLogicTests
             .ReturnsLazily(() => Guid.Empty);
 
         A.CallTo(() => _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
-                    A<string>._))
+                    A<string>._, A<string>._))
             .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
                 _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
-                    A<string>._))
+                    A<string>._, A<string>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
         
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);

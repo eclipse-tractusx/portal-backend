@@ -176,8 +176,14 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.StatusId = status;
             });
 
+        var issuerBpn = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnForCompanyNameAsync(_settings.SdFactoryIssuerCompany).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(issuerBpn))
+        {
+            throw new ConfigurationException($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
+        }
+
         var documentId = await _connectorsSdFactoryService
-            .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber)
+            .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, issuerBpn)
             .ConfigureAwait(false);
         createdConnector.SelfDescriptionDocumentId = documentId;
 

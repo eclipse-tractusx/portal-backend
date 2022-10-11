@@ -110,10 +110,11 @@ public class ConnectorsSdFactoryServiceTests
         var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
+        var issuerBpn = "CATENAXTESTBPN12";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn).ConfigureAwait(false);
+        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, issuerBpn).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
@@ -128,10 +129,11 @@ public class ConnectorsSdFactoryServiceTests
         var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
+        var issuerBpn = "CATENAXTESTBPN12";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, issuerBpn).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
