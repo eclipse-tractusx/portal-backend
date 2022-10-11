@@ -144,7 +144,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetupOffer_WithDnsError_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new HttpRequestException ("DNS Error"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException ("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
@@ -163,7 +163,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetupOffer_WithTimeout_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new TaskCanceledException("Timed out"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new TaskCanceledException("Timed out"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);

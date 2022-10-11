@@ -54,7 +54,7 @@ public class SdFactoryService : ISdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task RegisterConnector(ConnectorInputModel connectorInputModel, string accessToken, string bpn)
+    public async Task RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

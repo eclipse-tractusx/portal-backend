@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
@@ -25,20 +27,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 /// </summary>
 public class SdFactorySettings
 {
-    public SdFactorySettings() 
-    {
-        SdFactoryUrl = string.Empty;
-    }
-
-    public SdFactorySettings(string sdFactoryUrl)
-    {
-        SdFactoryUrl = sdFactoryUrl;
-    }
-
     /// <summary>
     /// SD Factory endpoint for registering connectors.
     /// </summary>
-    public string SdFactoryUrl { get; set; }
+    [Required]
+    public string SdFactoryUrl { get; set; } = null!;
 }
 
 public static class SdFactorySettingsExtensions

@@ -219,11 +219,11 @@ public class ConnectorsBusinessLogicTests
             });
 
         A.CallTo(() =>
-                _sdFactoryService.RegisterConnector(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
+                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
                     A<string>._))
             .ReturnsLazily(() => Task.CompletedTask);
         A.CallTo(() =>
-                _sdFactoryService.RegisterConnector(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
+                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
                     A<string>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
     }
