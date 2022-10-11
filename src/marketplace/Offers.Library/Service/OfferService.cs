@@ -243,7 +243,7 @@ public class OfferService : IOfferService
             .ToListAsync()
             .ConfigureAwait(false);
         var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
-        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+        var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
                 clientId,
                 description,
@@ -273,7 +273,7 @@ public class OfferService : IOfferService
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
         return new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret),
+            new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId),
             new ClientInfoData(clientId));
     }
 
