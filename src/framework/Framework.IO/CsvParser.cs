@@ -31,7 +31,7 @@ public static class CsvParser
     {
         if (!contentType.Equals("text/csv", StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnsupportedMediaTypeException($"Only contentType text/csv files are allowed.");
+            throw new UnsupportedMediaTypeException("Only contentType text/csv files are allowed.");
         }
     }
 
@@ -48,6 +48,10 @@ public static class CsvParser
             {
                 throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'", documentParameterName ?? DefaultDocumentParameterName);
             }
+        }
+        if (headers.MoveNext())
+        {
+            throw new ControllerArgumentException($"unexpected header '{headers.Current}'", documentParameterName ?? DefaultDocumentParameterName);
         }
     }
 
@@ -103,19 +107,20 @@ public static class CsvParser
         {
             await foreach (var (processed,error) in processLines(ParseCsvLinesAsync(reader, parseLine, error => { numLines++; errors.Add((numLines, error)); })))
             {
-                numLines++;
                 if (error != null)
                 {
-                    errors.Add((numLines, error));
+                    errors.Add((numLines+1, error));
                 }
                 if (processed)
                 {
                     numProcessed++;
                 }
+                numLines++;
             }
         }
         catch(Exception e)
         {
+            numLines++;
             errors.Add((numLines, e));
         }
         return new (numProcessed, numLines, errors);

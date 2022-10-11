@@ -48,6 +48,134 @@ public class CsvParserTest
         SetupFakes();
     }
 
+    #region Validation
+
+    [Fact]
+    public void ValidateContentTypeTextCSVSuccess()
+    {
+        CsvParser.ValidateContentTypeTextCSV("text/csv");
+    }
+
+    [Fact]
+    public void ValidateContentTypeTextCSVThrows()
+    {
+        var exception = Assert.Throws<UnsupportedMediaTypeException>(() => CsvParser.ValidateContentTypeTextCSV("other"));
+        exception.Message.Should().Be("Only contentType text/csv files are allowed.");
+    }
+
+    [Fact]
+    public void ValidateCsvHeadersSuccess()
+    {
+        CsvParser.ValidateCsvHeaders("first,second,third", new [] { "first", "second", "third"});
+    }
+
+    [Fact]
+    public void ValidateCsvHeadersInvalidHeaderThrows()
+    {
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.ValidateCsvHeaders("first,other,third", new [] { "first", "second", "third"}));
+        exception.Message.Should().Be($"invalid format: expected 'second', got 'other' (Parameter 'document')");
+    }
+
+    [Fact]
+    public void ValidateCsvHeadersLessHeadersThrows()
+    {
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.ValidateCsvHeaders("first,second", new [] { "first", "second", "third"}));
+        exception.Message.Should().Be($"invalid format: expected 'third', got '' (Parameter 'document')");
+    }
+
+    [Fact]
+    public void ValidateCsvHeadersMoreHeadersThrows()
+    {
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.ValidateCsvHeaders("first,second,third,forth", new [] { "first", "second", "third"}));
+        exception.Message.Should().Be($"unexpected header 'forth' (Parameter 'document')");
+    }
+
+    [Fact]
+    public void NextStringItemIsNotNullSuccess()
+    {
+        var items = A.Fake<IEnumerator<string>>();
+        A.CallTo(() => items.MoveNext()).Returns(true);
+        A.CallTo(() => items.Current).Returns("item");
+        var result = CsvParser.NextStringItemIsNotNull(items, "itemName");
+        result.Should().Be("item");
+    }
+
+    [Fact]
+    public void NextStringItemIsNotNullNoItemThrows()
+    {
+        var items = A.Fake<IEnumerator<string>>();
+        A.CallTo(() => items.MoveNext()).Returns(false);
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.NextStringItemIsNotNull(items, "itemName"));
+        exception.Message.Should().Be("value for itemName type string expected (Parameter 'document')");
+    }
+
+    [Fact]
+    public void NextStringItemIsNotNullOrWhiteSpaceSuccess()
+    {
+        var items = A.Fake<IEnumerator<string>>();
+        A.CallTo(() => items.MoveNext()).Returns(true);
+        A.CallTo(() => items.Current).Returns("item");
+        var result = CsvParser.NextStringItemIsNotNull(items, "itemName");
+        result.Should().Be("item");
+    }
+
+    [Fact]
+    public void NextStringItemIsNotNullOrWhiteSpaceNoItemThrows()
+    {
+        var items = A.Fake<IEnumerator<string>>();
+        A.CallTo(() => items.MoveNext()).Returns(false);
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, "itemName"));
+        exception.Message.Should().Be("value for itemName type string expected (Parameter 'document')");
+    }
+
+    [Fact]
+    public void NextStringItemIsNotNullOrWhiteSpaceEmptyItemThrows()
+    {
+        var items = A.Fake<IEnumerator<string>>();
+        A.CallTo(() => items.MoveNext()).Returns(true);
+        A.CallTo(() => items.Current).Returns(string.Empty);
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, "itemName"));
+        exception.Message.Should().Be("value for itemName type string expected (Parameter 'document')");
+    }
+
+    [Fact]
+    public void NextStringItemIsNotNullOrWhiteSpaceWhitespaceItemThrows()
+    {
+        var items = A.Fake<IEnumerator<string>>();
+        A.CallTo(() => items.MoveNext()).Returns(true);
+        A.CallTo(() => items.Current).Returns("   ");
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, "itemName"));
+        exception.Message.Should().Be("value for itemName type string expected (Parameter 'document')");
+    }
+
+    [Fact]
+    public void TrailingStringItemsNotNullOrWhiteSpaceSuccess()
+    {
+        var items = new List<string> { "item1", "item2", "item3" }.GetEnumerator() as IEnumerator<string>;
+        var result = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, "itemName").ToList();
+        result.Should().BeEquivalentTo(new [] {"item1", "item2", "item3"});
+    }
+
+    [Fact]
+    public void TrailingStringItemsNotNullOrWhiteSpaceEmptyItemThrows()
+    {
+        var items = new List<string> { "item1", "", "item3" }.GetEnumerator() as IEnumerator<string>;
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, "itemName").ToList());
+        exception.Message.Should().Be("value for itemName type string expected (Parameter 'document')");
+    }
+
+    [Fact]
+    public void TrailingStringItemsNotNullOrWhiteSpaceWhiteSpaceItemThrows()
+    {
+        var items = new List<string> { "item1", "   ", "item3" }.GetEnumerator() as IEnumerator<string>;
+        var exception = Assert.Throws<ControllerArgumentException>(() => CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, "itemName").ToList());
+        exception.Message.Should().Be("value for itemName type string expected (Parameter 'document')");
+    }
+
+    #endregion
+
+    #region ProcessCsvAsync
+
     [Fact]
     public async Task TestProcessCsvAsyncEmptyFileThrows()
     {
@@ -165,14 +293,7 @@ public class CsvParserTest
     {
         using var data = SetupStream("header line\nfirst line\nsecond line\nthird line\nforth line\n");
 
-        var processLineResults = new [] {
-            (Processed: true, Error: (Exception?)null),
-            (Processed: true, Error: (Exception?)null),
-            (Processed: false, Error: new ArgumentException("error processing")),
-            (Processed: true, Error: (Exception?)null)
-        }.ToAsyncEnumerable();
-
-        A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).Returns(processLineResults);
+        A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).ReturnsLazily<IAsyncEnumerable<(bool Processed, Exception? Error)>,IAsyncEnumerable<FakeLineType>>(lines => ProcessLinesError(lines));
 
         var result = await CsvParser.ProcessCsvAsync(
             _stream,
@@ -187,9 +308,35 @@ public class CsvParserTest
         result.Errors.Count().Should().Be(1);
         var error = result.Errors.First();
         error.Line.Should().Be(3);
-        error.Error.Should().BeOfType(typeof(ArgumentException));
+        error.Error.Should().BeOfType(typeof(ControllerArgumentException));
         error.Error.Message.Should().Be("error processing");
     }
+
+    [Fact]
+    public async Task TestProcessCsvAsyncHeaderWithDataProcessLinesThrows()
+    {
+        using var data = SetupStream("header line\nfirst line\nsecond line\nthird line\nforth line\n");
+
+        A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).ReturnsLazily<IAsyncEnumerable<(bool Processed, Exception? Error)>,IAsyncEnumerable<FakeLineType>>(lines => ProcessLinesThrows(lines));
+
+        var result = await CsvParser.ProcessCsvAsync(
+            _stream,
+            _validateHeaderLine,
+            _parseLine,
+            _processLines,
+            _cancellationToken).ConfigureAwait(false);
+
+        A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
+        result.Processed.Should().Be(2);
+        result.Lines.Should().Be(3);
+        result.Errors.Count().Should().Be(1);
+        var error = result.Errors.First();
+        error.Line.Should().Be(3);
+        error.Error.Should().BeOfType(typeof(UnexpectedConditionException));
+        error.Error.Message.Should().Be("unexpected error");
+    }
+
+    #endregion
 
     #region Setup
 
@@ -197,7 +344,7 @@ public class CsvParserTest
     {
         A.CallTo(() => _stream.CanRead).Returns(true);
         A.CallTo(() => _parseLine(A<string>.Ignored)).Returns(_parseLineResult);
-        A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).ReturnsLazily<IAsyncEnumerable<(bool Processed, Exception? Error)>,IAsyncEnumerable<FakeLineType>>(lines => FakeReadLinesSuccess(lines));
+        A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).ReturnsLazily<IAsyncEnumerable<(bool Processed, Exception? Error)>,IAsyncEnumerable<FakeLineType>>(lines => ProcessLinesSuccess(lines));
     }
 
     private MemoryStream SetupStream(string stringdata)
@@ -207,10 +354,36 @@ public class CsvParserTest
         return data;
     }
 
-    private static async IAsyncEnumerable<(bool Processed, Exception? Error)> FakeReadLinesSuccess(IAsyncEnumerable<FakeLineType> lines)
+    private static async IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesSuccess(IAsyncEnumerable<FakeLineType> lines)
     {
         await foreach(var line in lines)
         {
+            yield return (true,null);
+        }
+    }
+
+    private async static IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesError(IAsyncEnumerable<FakeLineType> lines)
+    {
+        int numLine = 0;
+        await foreach(var line in lines)
+        {
+            numLine++;
+            yield return numLine == 3
+                ? (false, new ControllerArgumentException("error processing"))
+                : (true,null);
+        }
+    }
+
+    private async static IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesThrows(IAsyncEnumerable<FakeLineType> lines)
+    {
+        int numLine = 0;
+        await foreach(var line in lines)
+        {
+            numLine++;
+            if (numLine == 3)
+            {
+                throw new UnexpectedConditionException("unexpected error");
+            }
             yield return (true,null);
         }
     }
