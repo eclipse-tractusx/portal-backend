@@ -32,7 +32,7 @@ public interface IUserRolesRepository
     /// <param name="role"></param>
     /// <returns></returns>
     UserRole CreateAppUserRole(Guid appId, string role);
-    
+
     /// <summary>
     /// Add User Role for App Description
     /// </summary>
@@ -51,7 +51,7 @@ public interface IUserRolesRepository
     IAsyncEnumerable<(string Role,Guid Id)> GetUserRolesWithIdAsync(string keyCloakClientId);
     IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId);
     IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string clientId,string? languageShortName = null);
-    
+
     /// <summary>
     /// Gets all user role ids for the given offerId
     /// </summary>

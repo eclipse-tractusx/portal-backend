@@ -21,6 +21,7 @@
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -87,5 +88,5 @@ public interface IAppReleaseBusinessLogic
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<OfferProviderData> GetAppDetailsForStatusAsync(Guid appId, string userId);
+    Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
 }

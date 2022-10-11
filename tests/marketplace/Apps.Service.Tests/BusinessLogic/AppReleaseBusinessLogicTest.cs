@@ -76,8 +76,7 @@ public class AppReleaseBusinessLogicTest
         appUserRoleDescription.Add(new AppUserRoleDescription("fr","this is test3"));
         var appUserRoles = new List<AppUserRole>();
         appUserRoles.Add(new AppUserRole("IT Admin",appUserRoleDescription));
-       
-        
+
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP))).Returns((true,true));
 
         // Act
@@ -93,7 +92,7 @@ public class AppReleaseBusinessLogicTest
                 A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>._, A<string>._)).MustHaveHappened();
             }
         }
-        
+
         Assert.NotNull(result);
         Assert.IsType<List<AppRoleData>>(result);
     }
