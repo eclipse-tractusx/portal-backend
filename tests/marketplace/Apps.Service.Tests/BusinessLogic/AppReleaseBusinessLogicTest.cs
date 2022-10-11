@@ -42,7 +42,6 @@ public class AppReleaseBusinessLogicTest
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IOfferRepository _offerRepository;
-    private readonly IAppReleaseRepository _appReleaseRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly AppReleaseBusinessLogic _logic;
@@ -57,11 +56,9 @@ public class AppReleaseBusinessLogicTest
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerService = A.Fake<IOfferService>();
         _offerRepository = A.Fake<IOfferRepository>();
-        _appReleaseRepository = A.Fake<IAppReleaseRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _options = A.Fake<IOptions<AppsSettings>>();
-        A.CallTo(() => _portalRepositories.GetInstance<IAppReleaseRepository>()).Returns(_appReleaseRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
          _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
