@@ -245,8 +245,8 @@ public class OfferService : IOfferService
         var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
         var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
-                clientId, 
-                description, 
+                clientId,
+                description,
                 IamClientAuthMethod.SECRET, 
                 serviceAccountUserRoles.Select(x => x.UserRoleId), 
                 offerDetails.CompanyId, 
@@ -272,7 +272,9 @@ public class OfferService : IOfferService
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
-        return new OfferAutoSetupResponseData(serviceAccountId, serviceAccountData.AuthData.Secret);
+        return new OfferAutoSetupResponseData(
+            new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret),
+            new ClientInfoData(clientId));
     }
 
     /// <inheritdoc />
