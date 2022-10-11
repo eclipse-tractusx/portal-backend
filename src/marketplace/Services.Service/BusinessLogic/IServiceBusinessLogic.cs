@@ -49,8 +49,9 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
     /// <param name="iamUserId">Id of the user</param>
+    /// <param name="accessToken">The access token of the user</param>
     /// <returns></returns>
-    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId);
+    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken);
 
     /// <summary>
     /// Gets the service detail data for the given service
