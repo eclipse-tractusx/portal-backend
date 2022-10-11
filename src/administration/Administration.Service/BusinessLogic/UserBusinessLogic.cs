@@ -82,15 +82,15 @@ public class UserBusinessLogic : IUserBusinessLogic
         _settings = settings.Value;
     }
 
-    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string createdByName)
+    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdByName, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ArgumentOutOfRangeException($"user {createdByName} is not associated with any company");
+            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any company");
         }
         var (companyId, companyName, businessPartnerNumber, idpAliase) = result;
         if (companyName == null)
@@ -100,7 +100,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         var idpAlias = idpAliase.SingleOrDefault();
         if (idpAlias == null)
         {
-            throw new ArgumentOutOfRangeException($"user {createdByName} is not associated with any shared idp");
+            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any shared idp");
         }
 
         var clientId = _settings.Portal.KeyCloakClientID;
@@ -130,7 +130,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var pwd = new Password();
 
-        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdByName).ConfigureAwait(false);
+        var (creatorId, email) = await userRepository.GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         foreach (UserCreationInfo user in userList)
         {
             bool success = false;
@@ -155,7 +155,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
                 var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
-                var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
+                var validRoles = user.Roles.Where(role => !string.IsNullOrWhiteSpace(role));
                 if (validRoles.Any())
                 {
                     var clientRoleNames = new Dictionary<string, IEnumerable<string>>
@@ -187,7 +187,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                     { "password", password },
                     { "companyname", companyName },
                     { "message", user.Message ?? "" },
-                    { "nameCreatedBy", createdByName },
+                    { "nameCreatedBy", email },
                     { "url", _settings.Portal.BasePortalAddress },
                     { "username", user.eMail },
                 };
@@ -692,8 +692,8 @@ public class UserBusinessLogic : IUserBusinessLogic
         var roles = userRoleInfo.Roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
 
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var rolesToAdd = await userRoleRepository.GetRolesToAdd(iamClientId, userRoleInfo.CompanyUserId, roles).ToListAsync().ConfigureAwait(false);
-        var rolesToDelete = await userRoleRepository.GetAssignedRolesForDeletion(userRoleInfo.CompanyUserId, roles).ToListAsync().ConfigureAwait(false);
+        var rolesToAdd = await userRoleRepository.GetRolesToAdd(userRoleInfo.CompanyUserId, roles, appId).ToListAsync().ConfigureAwait(false);
+        var rolesToDelete = await userRoleRepository.GetAssignedRolesForDeletion(userRoleInfo.CompanyUserId, roles, appId).ToListAsync().ConfigureAwait(false);
        
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
@@ -710,7 +710,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
         }
-        _portalRepositories.RemoveRange(rolesToDelete.Select(x => new CompanyUserAssignedRole(x.CompanyUserId, x.CompanyUserRoleId)));
+        _portalRepositories.RemoveRange(rolesToDelete.Select(x => new CompanyUserAssignedRole(userRoleInfo.CompanyUserId, x.CompanyUserRoleId)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
