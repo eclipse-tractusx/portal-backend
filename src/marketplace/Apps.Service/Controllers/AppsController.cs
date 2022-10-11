@@ -339,6 +339,6 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
-        => await this.WithIamUserId(iamUserId => _appsBusinessLogic.AutoSetupAppAsync(data, iamUserId));
+    public Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data) =>
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.AutoSetupAppAsync(data, iamUserId));
 }

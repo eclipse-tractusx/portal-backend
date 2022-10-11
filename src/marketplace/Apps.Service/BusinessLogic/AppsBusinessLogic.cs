@@ -26,13 +26,13 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
