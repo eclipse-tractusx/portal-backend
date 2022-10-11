@@ -576,8 +576,8 @@ public class OfferServiceTests
         var result = await sut.AutoSetupServiceAsync(data, serviceAccountRoles, companyAdminRoles, _iamUser.UserEntityId, OfferTypeId.SERVICE).ConfigureAwait(false);
         
         // Assert
-        result.TechnicalUserId.Should().Be(_technicalUserId);
-        result.TechnicalUserSecret.Should().Be("katze!1234");
+        result.TechnicalUserInfo.TechnicalUserId.Should().Be(_technicalUserId);
+        result.TechnicalUserInfo.TechnicalUserSecret.Should().Be("katze!1234");
         clients.Should().HaveCount(1);
         appInstances.Should().HaveCount(1);
         appSubscriptionDetails.Should().HaveCount(1);
