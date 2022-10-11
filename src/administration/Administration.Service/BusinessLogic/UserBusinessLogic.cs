@@ -82,15 +82,15 @@ public class UserBusinessLogic : IUserBusinessLogic
         _settings = settings.Value;
     }
 
-    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
+    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdById, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any company");
+            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
         }
         var (companyId, companyName, businessPartnerNumber, idpAliase) = result;
         if (companyName == null)
@@ -100,12 +100,12 @@ public class UserBusinessLogic : IUserBusinessLogic
         var idpAlias = idpAliase.SingleOrDefault();
         if (idpAlias == null)
         {
-            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any shared idp");
+            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
         }
 
         var clientId = _settings.Portal.KeyCloakClientID;
 
-        var roles = userList
+        var roles = usersToCreate
                 .SelectMany(user => user.Roles)
                 .Where(role => !String.IsNullOrWhiteSpace(role))
                 .Distinct();
@@ -130,8 +130,8 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var pwd = new Password();
 
-        var (creatorId, email) = await userRepository.GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        foreach (UserCreationInfo user in userList)
+        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
+        foreach (UserCreationInfo user in usersToCreate)
         {
             bool success = false;
             try
@@ -155,8 +155,8 @@ public class UserBusinessLogic : IUserBusinessLogic
 
                 var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
 
-                var validRoles = user.Roles.Where(role => !string.IsNullOrWhiteSpace(role));
-                if (validRoles.Any())
+                var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
+                if (validRoles.Count() > 0)
                 {
                     var clientRoleNames = new Dictionary<string, IEnumerable<string>>
                     {
@@ -187,7 +187,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                     { "password", password },
                     { "companyname", companyName },
                     { "message", user.Message ?? "" },
-                    { "nameCreatedBy", email },
+                    { "nameCreatedBy", createdById },
                     { "url", _settings.Portal.BasePortalAddress },
                     { "username", user.eMail },
                 };
