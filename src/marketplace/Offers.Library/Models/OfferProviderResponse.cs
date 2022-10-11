@@ -17,13 +17,32 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+
+public record OfferProviderResponse(
+    string? Title, 
+    string Provider, 
+    string? LeadPictureUri, 
+    string? ProviderName, 
+    IEnumerable<string> UseCase, 
+    IEnumerable<OfferDescriptionData> Descriptions, 
+    IEnumerable<OfferAgreement> Agreements, 
+    IEnumerable<string> SupportedLanguageCodes, 
+    string? Price, 
+    IEnumerable<string> Images, 
+    string? ProviderUri, 
+    string? ContactEmail, 
+    string? ContactNumber, 
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+);
 
 /// <summary>
-/// Business logic for handling offer-related operations. Includes persistence layer access.
+/// Model for Document
 /// </summary>
-public interface IOfferSetupService
-{ 
-    Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl);
-}
+/// <param name="documentId"></param>
+/// <param name="documentName"></param>
+public record DocumentData(Guid documentId, string documentName);
+
