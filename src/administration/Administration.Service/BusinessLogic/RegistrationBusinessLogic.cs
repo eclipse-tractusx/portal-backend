@@ -163,7 +163,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _custodianService.CreateWallet(businessPartnerNumber, result.companyName).ConfigureAwait(false);
 
         var issuerBpn = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnForCompanyNameAsync(_settings.SdFactoryIssuerCompany).ConfigureAwait(false);
-        if (issuerBpn is null)
+        if (string.IsNullOrWhiteSpace(issuerBpn))
         {
             throw new ConfigurationException($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
         }

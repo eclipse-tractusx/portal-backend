@@ -138,14 +138,14 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid companyId, string companyName, string bpn, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
+    public Task<(Guid companyId, string companyName, string? bpn, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId
                 && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string, string>(
+            .Select(ca => new ValueTuple<Guid, string, string?, string>(
                 ca.CompanyId,
                 ca.Company!.Name,
-                ca.Company!.BusinessPartnerNumber!,
+                ca.Company!.BusinessPartnerNumber,
                 ca.Company!.Address!.Country!.Alpha2Code))
             .SingleOrDefaultAsync();
 
