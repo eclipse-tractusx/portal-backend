@@ -44,19 +44,19 @@ public interface IAppReleaseBusinessLogic
     /// <param name="appId"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
-    /// <param name="userId"></param>
+    /// <param name="iamUserId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken);
+    Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
     
     /// <summary>
     /// Add User Role for App
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="appAssignedDesc"></param>
-    /// <param name="userId"></param>
+    /// <param name="iamUserId"></param>
     /// <returns></returns>
-    Task AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string userId);
+    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId);
     
     /// <summary>
     /// Return Agreements for App_Contract Category
