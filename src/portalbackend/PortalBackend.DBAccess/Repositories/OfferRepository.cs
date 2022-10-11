@@ -265,10 +265,7 @@ public class OfferRepository : IOfferRepository
                     a.ProviderCompany!.Name,
                     a.UseCases.Select(uc => uc.Name),
                     a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.AgreementAssignedOffers.Where(agreementtAssignedOffer=>agreementtAssignedOffer.Agreement!.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId)).Select(agreementtAssignedOffer => new OfferAgreement(
-                        agreementtAssignedOffer.Agreement!.Id,
-                        agreementtAssignedOffer.Agreement!.Name,
-                        consentAssignedOffer.Consent.ConsentStatusId)),
+                    a.AgreementAssignedOffers.Where(agreementtAssignedOffer=>agreementtAssignedOffer.Agreement!.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId)).Select(agreementtAssignedOffer => agreementtAssignedOffer.Agreement!.Id),
                     a.SupportedLanguages.Select(l => l.ShortName),
                     a.OfferLicenses
                         .Select(license => license.Licensetext)
@@ -281,4 +278,16 @@ public class OfferRepository : IOfferRepository
                 a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<OfferAgreement>  GetAgreementConsentAsync(IEnumerable<Guid> agreementIds)=>
+        _context.Consents.AsNoTracking()
+            .Where(consent => agreementIds.Any(a =>a== consent.AgreementId))
+            .Select(y=>new OfferAgreement
+            (
+                y.AgreementId, 
+                y.Agreement!.Name, 
+                y.ConsentStatusId
+            ))
+            .AsAsyncEnumerable();
+    
 }

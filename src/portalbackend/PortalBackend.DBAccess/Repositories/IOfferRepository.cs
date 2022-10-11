@@ -188,4 +188,11 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="agreementIds"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<OfferAgreement>  GetAgreementConsentAsync(IEnumerable<Guid> agreementIds);
 }
