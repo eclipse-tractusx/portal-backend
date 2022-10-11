@@ -25,6 +25,22 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public interface IUserRolesRepository
 {
+    /// <summary>
+    /// Add User Role for App Id
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    UserRole CreateAppUserRole(Guid appId, string role);
+    
+    /// <summary>
+    /// Add User Role for App Description
+    /// </summary>
+    /// <param name="roleId"></param>
+    /// <param name="languageCode"></param>
+    /// <param name="description"></param>
+    /// <returns></returns>
+    UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
     CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId);
     CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole);

@@ -49,33 +49,4 @@ public class AppReleaseRepository : IAppReleaseRepository
             .Select(x=>x.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id)
             .SingleOrDefaultAsync();
     
-    ///<inheritdoc/>
-    public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
-        _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
-
-    ///<inheritdoc/>
-    public Task<bool> IsProviderCompanyUserAsync(Guid offerId, string userId) =>
-        _context.Offers
-            .AnyAsync(a => a.Id == offerId
-                && a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId));
-
-    ///<inheritdoc/>
-    public UserRole CreateAppUserRole(Guid appId, string role) =>
-        _context.UserRoles.Add(
-            new UserRole(
-                Guid.NewGuid(),
-                role,
-                appId
-            ))
-            .Entity;
-
-    ///<inheritdoc/>
-    public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>
-        _context.UserRoleDescriptions.Add(
-            new UserRoleDescription(
-                roleId,
-                languageCode,
-                description
-            ))
-            .Entity;
 }
