@@ -68,7 +68,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<string> CreateOwnCompanyUsers([FromBody] IEnumerable<UserCreationInfo> usersToCreate) =>
-        this.WithIamUserId(createdByName => _logic.CreateOwnCompanyUsersAsync(usersToCreate, createdByName));
+        this.WithIamUserId(iamUserId => _logic.CreateOwnCompanyUsersAsync(usersToCreate, iamUserId));
 
     /// <summary>
     /// Create new users for the companies shared identityprovider by upload of csv-file
