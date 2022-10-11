@@ -35,7 +35,7 @@ public interface ISdFactoryService
     /// <param name="accessToken">the access token</param>
     /// <param name="bpn">the bpn</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task RegisterConnector(ConnectorInputModel connectorInputModel, string accessToken, string bpn);
+    Task RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn);
 
     Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, string issuer);
 }

@@ -26,22 +26,30 @@ public class HttpMessageHandlerMock : HttpMessageHandler
 {
     private readonly HttpStatusCode _statusCode;
     private readonly Exception? _ex;
+    private readonly HttpContent? _httpContent;
 
-    public HttpMessageHandlerMock(HttpStatusCode statusCode, Exception? ex = null)
+    public HttpMessageHandlerMock(HttpStatusCode statusCode, HttpContent? httpContent = null, Exception? ex = null)
     {
         _statusCode = statusCode;
+        _httpContent = httpContent;
         _ex = ex;
     }
-    
+
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        if (_ex is null)
+        if (_ex != null)
         {
-            return Task.FromResult(new HttpResponseMessage(_statusCode));
+            throw _ex;
         }
 
-        throw _ex;
+        var httpResponseMessage = new HttpResponseMessage(_statusCode);
+        if (_httpContent != null)
+        {
+            httpResponseMessage.Content = _httpContent;
+        }
+
+        return Task.FromResult(httpResponseMessage);
     }
 }
