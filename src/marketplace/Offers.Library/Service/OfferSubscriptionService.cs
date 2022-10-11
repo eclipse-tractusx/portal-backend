@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -30,21 +31,22 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly ILogger<OfferSubscriptionService> _logger;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
-    /// <param name="offerService">Access to the offer service</param>
-    /// <param name="settings">Access to the settings</param>
+    /// <param name="logger">Access to the logger</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories, 
         IOfferSetupService offerSetupService, 
-        IOfferService offerService)
+        ILogger<OfferSubscriptionService> logger)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -77,6 +79,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             }
             catch (Exception e)
             {
+                _logger.LogInformation(e.Message);
                 autoSetupResult = e.Message;
             }
         }
