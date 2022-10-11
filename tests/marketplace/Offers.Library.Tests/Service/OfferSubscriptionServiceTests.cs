@@ -41,7 +41,8 @@ public class OfferSubscriptionServiceTests
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _existingServiceWithFailingAutoSetupId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
-    private readonly Guid _newOfferSubscriptionId = new("5305d56b-4544-40cc-a02e-912cc19998fa"); 
+    private readonly Guid _newOfferSubscriptionId = new("5305d56b-4544-40cc-a02e-912cc19998fa");
+    private readonly string _accessToken = "THISISAACCESSTOKEN";
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
@@ -96,7 +97,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, _notAssignedCompanyIdUser, OfferTypeId.SERVICE);
+        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, _notAssignedCompanyIdUser, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -137,7 +138,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId, OfferTypeId.SERVICE);
+        await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -165,7 +166,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        await sut.AddServiceSubscription(_existingServiceWithFailingAutoSetupId, _iamUser.UserEntityId, OfferTypeId.SERVICE);
+        await sut.AddServiceSubscription(_existingServiceWithFailingAutoSetupId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         notifications.Should().ContainSingle();
@@ -180,7 +181,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        async Task Action() => await sut.AddServiceSubscription(notExistingServiceId, _iamUser.UserEntityId, OfferTypeId.SERVICE);
+        async Task Action() => await sut.AddServiceSubscription(notExistingServiceId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -194,7 +195,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, Guid.NewGuid().ToString(), OfferTypeId.SERVICE);
+        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, Guid.NewGuid().ToString(), _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -275,9 +276,9 @@ public class OfferSubscriptionServiceTests
 
     private void SetupServices(IamUser iamUser)
     {
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.testurl.com")))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.testurl.com")))
             .ReturnsLazily(() => Task.CompletedTask);
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>.That.Matches(x => x == "https://www.fail.com")))
+        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.fail.com")))
             .ThrowsAsync(() => new ServiceException("Error occured"));
     }
 
