@@ -38,6 +38,7 @@ public class ServiceControllerTest
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private static readonly Guid ServiceId = new("4C1A6851-D4E7-4E10-A011-3732CD045453");
+    private readonly string _accessToken = "THISISTHEACCESSTOKEN";
     private readonly IFixture _fixture;
     private readonly IServiceBusinessLogic _logic;
     private readonly ServicesController _controller;
@@ -47,7 +48,7 @@ public class ServiceControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IServiceBusinessLogic>();
         this._controller = new ServicesController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
+        _controller.AddControllerContextWithClaimAndBearer(IamUserId, _accessToken);
     }
 
     [Fact]
@@ -90,7 +91,7 @@ public class ServiceControllerTest
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, IamUserId))
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, IamUserId, _accessToken))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -98,7 +99,7 @@ public class ServiceControllerTest
         var result = await this._controller.AddServiceSubscription(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }
@@ -198,7 +199,10 @@ public class ServiceControllerTest
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
-        var responseData = new OfferAutoSetupResponseData(Guid.NewGuid(), "abcPW");
+        var responseData = new OfferAutoSetupResponseData(
+            new TechnicalUserInfoData(Guid.NewGuid(), "abcPW", "sa1"),
+            new ClientInfoData(Guid.NewGuid().ToString())
+        );
         A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
             .Returns(responseData);
 
