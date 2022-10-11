@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -79,11 +80,11 @@ public class UserBusinessLogic : IUserBusinessLogic
         _settings = settings.Value;
     }
 
-    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
+    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
     {
-        var companyNameIdpAliasData = await GetCompanyNameSharedIdpAliasData(createdById).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await GetCompanyNameSharedIdpAliasCreatorData(iamUserId).ConfigureAwait(false);
 
-        var userCreationInfoIdps = usersToCreate.Select(user =>
+        var userCreationInfoIdps = userList.Select(user =>
             new UserCreationInfoIdp(
                 user.firstName ?? "",
                 user.lastName ?? "",
@@ -93,7 +94,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 ""
             )).ToAsyncEnumerable();
 
-        var emailData = usersToCreate.ToDictionary(
+        var emailData = userList.ToDictionary(
             user => user.userName ?? user.eMail,
             user => (user.eMail, user.Message));
 
@@ -118,7 +119,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 { "password", password ?? "" },
                 { "companyname", companyNameIdpAliasData.CompanyName },
                 { "message", message ?? "" },
-                { "nameCreatedBy", createdById },
+                { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
                 { "username", userName },
             };
@@ -136,17 +137,17 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    private async Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId)
+    private async Task<(CompanyNameIdpAliasData CompanyNameIdpAliasData, string CreatedByName)> GetCompanyNameSharedIdpAliasCreatorData(string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
         }
-        var (companyId, companyName, businessPartnerNumber, companyUserId, idpAliase) = result;
-        if (companyName == null)
+        var (company, companyUser, idpAliase) = result;
+        if (company.CompanyName == null)
         {
-            throw new UnexpectedConditionException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+            throw new UnexpectedConditionException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
         }
         if (!idpAliase.Any())
         {
@@ -156,7 +157,29 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             throw new ConflictException($"user {iamUserId} is associated with more than one shared idp");
         }
-        return new CompanyNameIdpAliasData(companyId, companyName, businessPartnerNumber, companyUserId, idpAliase.First(), true);
+        
+        var companyNameIdpAliasData = new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, idpAliase.First(), true);
+        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, iamUserId);
+
+        return (companyNameIdpAliasData,createdByName);
+    }
+
+    private static string CreateNameString(string? firstName, string? lastName, string? email, string iamUserId)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (firstName != null)
+        {
+            sb.Append(firstName);
+        }
+        if (lastName != null)
+        {
+            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
+        }
+        if (email != null)
+        {
+            sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
+        }
+        return firstName == null && lastName == null && email == null ? iamUserId : sb.ToString();
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
