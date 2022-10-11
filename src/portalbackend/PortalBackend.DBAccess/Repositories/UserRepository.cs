@@ -119,11 +119,11 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
             .Where(companyUser =>
-                userEntityId != null ? companyUser.IamUser!.UserEntityId == userEntityId : true
-                && companyUserId.HasValue ? companyUser.Id == companyUserId!.Value : true
-                && firstName != null ? companyUser.Firstname == firstName : true
-                && lastName != null ? companyUser.Lastname == lastName : true
-                && email != null && EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%"));
+                (userEntityId == null || companyUser.IamUser!.UserEntityId == userEntityId) &&
+                (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
+                (firstName == null || companyUser.Firstname == firstName) &&
+                (lastName == null || companyUser.Lastname == lastName) &&
+                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%")));
         }
 
     public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
