@@ -112,8 +112,10 @@ public class UserRepository : IUserRepository
         string? userEntityId = null,
         string? firstName = null,
         string? lastName = null,
-        string? email = null) =>
-        _dbContext.CompanyUsers
+        string? email = null) 
+        {
+        char[] escapeChar = { '%', '_', '[', ']', '^' };
+        return _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
             .Where(companyUser =>
@@ -121,7 +123,8 @@ public class UserRepository : IUserRepository
                 && companyUserId.HasValue ? companyUser.Id == companyUserId!.Value : true
                 && firstName != null ? companyUser.Firstname == firstName : true
                 && lastName != null ? companyUser.Lastname == lastName : true
-                && email != null ? companyUser.Email == email : true);
+                && email != null && EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%"));
+        }
 
     public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
