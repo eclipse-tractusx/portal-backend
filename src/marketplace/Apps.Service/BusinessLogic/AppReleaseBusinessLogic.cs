@@ -154,7 +154,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
+    public Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
         if (appId == Guid.Empty)
         {
@@ -173,15 +173,21 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
         }
-        return UploadAppDoc(appId, documentTypeId, document, userId, cancellationToken);
+        return UploadAppDoc(appId, documentTypeId, document, iamUserId, cancellationToken);
     }
 
-    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string userId, CancellationToken cancellationToken)
+    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IAppReleaseRepository>().GetCompanyUserIdForOfferUntrackedAsync(appId, userId).ConfigureAwait(false);
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(appId, iamUserId, OfferStatusId.CREATED, OfferTypeId.APP).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"app {appId} does not exist");
+        }
+        var companyUserId = result.CompanyUserId;
         if (companyUserId == Guid.Empty)
         {
-            throw new ForbiddenException($"userId {userId} is not assigned with App {appId}");
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
         }
         var documentName = document.FileName;
         using var sha512Hash = SHA512.Create();

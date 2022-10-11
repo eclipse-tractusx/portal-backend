@@ -294,4 +294,14 @@ public class OfferRepository : IOfferRepository
                 offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
             ))
             .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId && offer.OfferStatusId == offerStatusId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool,Guid>(
+                true,
+                offer.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id
+            ))
+            .SingleOrDefaultAsync();
 }

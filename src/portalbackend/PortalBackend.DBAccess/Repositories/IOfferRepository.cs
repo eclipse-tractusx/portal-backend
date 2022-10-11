@@ -205,4 +205,12 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+
+        /// <summary>
+    /// Return the Company User Id
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
 }
