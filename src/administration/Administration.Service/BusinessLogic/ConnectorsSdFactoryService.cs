@@ -53,13 +53,12 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn)
+    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, string issuerBpn)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
-        var requestModel = new ConnectorSdFactoryRequestModel(bpn, "DE", "DE", connectorInputModel.ConnectorUrl,
-            "connector", bpn, bpn, "BPNL000000000000");
+        var requestModel = new ConnectorSdFactoryRequestModel("ServiceOffering", connectorInputModel.ConnectorUrl,string.Empty, string.Empty, string.Empty, issuerBpn, bpn);
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
