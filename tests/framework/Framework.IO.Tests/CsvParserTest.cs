@@ -115,7 +115,7 @@ public class CsvParserTest
         var items = A.Fake<IEnumerator<string>>();
         A.CallTo(() => items.MoveNext()).Returns(true);
         A.CallTo(() => items.Current).Returns("item");
-        var result = CsvParser.NextStringItemIsNotNull(items, "itemName");
+        var result = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, "itemName");
         result.Should().Be("item");
     }
 
