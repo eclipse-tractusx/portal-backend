@@ -32,6 +32,7 @@ public class RegistrationSettings
         CompanyAdminRoles = null!;
         WelcomeNotificationTypeIds = null!;
         DocumentTypeIds = null!;
+        SdFactoryIssuerCompany = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
