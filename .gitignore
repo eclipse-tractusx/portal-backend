@@ -12,7 +12,7 @@ nupkg/
 src/.vscode/*
 !src/.vscode/settings.json
 
-test/.vscode/*
+tests/.vscode/*
 !src/.vscode/settings.json
 
 # Rider
