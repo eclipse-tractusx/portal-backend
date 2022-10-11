@@ -17,13 +17,16 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
+
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.17.0" />
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
@@ -40,10 +43,12 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\administration\Administration.Service\Administration.Service.csproj" />
     <ProjectReference Include="..\..\..\src\marketplace\Apps.Service\Apps.Service.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
+
 </Project>
