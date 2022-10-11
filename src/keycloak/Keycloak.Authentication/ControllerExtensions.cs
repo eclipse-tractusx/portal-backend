@@ -38,16 +38,8 @@ public static class ControllerExtensions
     /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
     public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
     {
-        var sub = controller.GetSub();
+        var sub = controller.GetIamUserId();
         return idConsumingFunction(sub);
-    }
-
-    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<string, string, T> tokenConsumingFunction)
-    {
-        var bearer = controller.GetBearerToken();
-        var sub = controller.GetSub();
-
-        return tokenConsumingFunction(bearer, sub);
     }
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
@@ -55,8 +47,15 @@ public static class ControllerExtensions
         var bearer = controller.GetBearerToken();
         return tokenConsumingFunction(bearer);
     }
+    
+    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
+    {
+        var bearerToken = controller.GetBearerToken();
+        var iamUserId = controller.GetIamUserId();
+        return tokenConsumingFunction((iamUserId, bearerToken));
+    }
 
-    private static string GetSub(this ControllerBase controller)
+    private static string GetIamUserId(this ControllerBase controller)
     {
         var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
         if (string.IsNullOrWhiteSpace(sub))
@@ -76,11 +75,10 @@ public static class ControllerExtensions
                 nameof(authorization));
         }
 
-        var bearer = authorization["Bearer ".Length..];
+        var bearer = authorization.Substring("Bearer ".Length);
         if (string.IsNullOrWhiteSpace(bearer))
         {
-            throw new ControllerArgumentException("Bearer-token in authorization-header must not be empty",
-                nameof(authorization));
+            throw new ControllerArgumentException("Bearer-token in authorization-header must not be empty", nameof(bearer));
         }
 
         return bearer;

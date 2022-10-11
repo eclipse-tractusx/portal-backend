@@ -100,7 +100,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
     {
-        var connectorData = await this.WithIamUserAndBearerToken((token, iamUserId) => _businessLogic.CreateConnectorAsync(connectorInputModel, token, iamUserId, false)).ConfigureAwait(false);
+        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, false)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
 
@@ -121,7 +121,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel)
     {
-        var connectorData = await this.WithIamUserAndBearerToken((token, iamUserId) => _businessLogic.CreateConnectorAsync(connectorInputModel, token, iamUserId, true)).ConfigureAwait(false);
+        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, true)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
 
