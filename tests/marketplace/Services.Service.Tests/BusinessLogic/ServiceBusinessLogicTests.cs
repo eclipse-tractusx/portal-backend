@@ -82,7 +82,6 @@ public class ServiceBusinessLogicTests
 
         _offerSetupService = A.Fake<IOfferSetupService>();
         _offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
-        
 
         SetupRepositories();
         SetupServices();
@@ -91,7 +90,7 @@ public class ServiceBusinessLogicTests
         {
             {"Test", new[] {"Technical User"}}
         };
-        
+
         var companyAdminRoles = new Dictionary<string, IEnumerable<string>>()
         {
             {"CatenaX", new[] {"Company Admin"}}
@@ -136,7 +135,6 @@ public class ServiceBusinessLogicTests
         result.Content.Should().HaveCount(5);
     }
 
-    
     [Fact]
     public async Task GetAllActiveServicesAsync_WithSmallSize_GetsExpectedEntries()
     {
@@ -155,7 +153,6 @@ public class ServiceBusinessLogicTests
 
     #region Add Service Subscription
 
-    
     [Fact]
     public async Task AddServiceSubscription_ReturnsCorrectId()
     {
@@ -171,7 +168,6 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Should().Be(offerSubscriptionId);
     }
-
 
     #endregion
 
@@ -369,17 +365,17 @@ public class ServiceBusinessLogicTests
         var serviceDetail = _fixture.Build<OfferDetailData>()
             .With(x => x.Id, _existingServiceId)
             .Create();
-        
+
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_iamUser.UserEntityId))
             .ReturnsLazily(() => (_companyUser.Id, _companyUser.CompanyId, "The Company", "test@mail.de"));
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_notAssignedCompanyIdUser))
             .ReturnsLazily(() => (_companyUser.Id, Guid.Empty, "The Company", "test@mail.de"));
         A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
             .ReturnsLazily(() => (Guid.Empty, _companyUser.CompanyId, "The Company", "test@mail.de"));
-        
+
         A.CallTo(() => _offerRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
-        
+
         A.CallTo(() => _offerRepository.GetOfferDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en"), A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => serviceDetail with {OfferSubscriptionDetailData = new []
             {
@@ -387,19 +383,19 @@ public class ServiceBusinessLogicTests
             }});
         A.CallTo(() => _offerRepository.GetOfferDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferDetailData?)null);
-        
+
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId || x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
-        
+
         A.CallTo(() => _offerRepository.CheckServiceExistsById(_existingServiceId))
             .Returns(true);
         A.CallTo(() => _offerRepository.CheckServiceExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
             .Returns(false);
-        
+
         var agreementData = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => _agreementRepository.GetOfferAgreementDataForOfferId(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
             .Returns(agreementData.ToAsyncEnumerable());
