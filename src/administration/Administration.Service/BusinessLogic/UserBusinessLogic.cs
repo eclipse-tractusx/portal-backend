@@ -679,7 +679,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
         {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException($"iamUserId for user {userRoleInfo.CompanyUserId} not found");
         }
 
         var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>()
