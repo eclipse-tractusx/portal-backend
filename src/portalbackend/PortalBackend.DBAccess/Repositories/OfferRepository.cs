@@ -265,9 +265,9 @@ public class OfferRepository : IOfferRepository
                     a.ProviderCompany!.Name,
                     a.UseCases.Select(uc => uc.Name),
                     a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.ConsentAssignedOffers.Select(consentAssignedOffer => new OfferAgreement(
-                        consentAssignedOffer.Consent!.AgreementId,
-                        consentAssignedOffer.Consent.Agreement!.Name,
+                    a.AgreementAssignedOffers.Where(agreementtAssignedOffer=>agreementtAssignedOffer.Agreement!.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId)).Select(agreementtAssignedOffer => new OfferAgreement(
+                        agreementtAssignedOffer.Agreement!.Id,
+                        agreementtAssignedOffer.Agreement!.Name,
                         consentAssignedOffer.Consent.ConsentStatusId)),
                     a.SupportedLanguages.Select(l => l.ShortName),
                     a.OfferLicenses
@@ -276,7 +276,8 @@ public class OfferRepository : IOfferRepository
                     a.OfferDetailImages.Select(image => image.ImageUrl),
                     a.MarketingUrl,
                     a.ContactEmail,
-                    a.ContactNumber),
+                    a.ContactNumber,
+                    a.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))),
                 a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
