@@ -117,7 +117,7 @@ public class OfferRepository : IOfferRepository
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
                 offer.SupportedLanguages.Select(l => l.ShortName),
-                offer.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))
+                offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
             ))
             .SingleOrDefaultAsync();
 
@@ -277,7 +277,7 @@ public class OfferRepository : IOfferRepository
                     a.MarketingUrl,
                     a.ContactEmail,
                     a.ContactNumber,
-                    a.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))),
+                    a.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
                 a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
