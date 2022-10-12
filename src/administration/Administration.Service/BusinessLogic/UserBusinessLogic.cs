@@ -668,22 +668,22 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
-        var companyUser = await _portalRepositories.GetInstance<IUserRepository>()
+        var companyUserIamData = await _portalRepositories.GetInstance<IUserRepository>()
             .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)
             .ConfigureAwait(false);
-        if (companyUser == null || string.IsNullOrWhiteSpace(companyUser.IdpName))
+        if (companyUserIamData == null || string.IsNullOrWhiteSpace(companyUserIamData.IdpName))
         {
             throw new NotFoundException(
                 $"Cannot identify companyId or shared idp : companyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {adminUserId}");
         }
 
-        if (string.IsNullOrWhiteSpace(companyUser.TargetIamUserId))
+        if (string.IsNullOrWhiteSpace(companyUserIamData.TargetIamUserId))
         {
             throw new NotFoundException($"iamUserId for user {userRoleInfo.CompanyUserId} not found");
         }
 
         var iamClientId = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetAppAssignedClientIdUntrackedAsync(appId, companyUser.CompanyId)
+            .GetAppAssignedClientIdUntrackedAsync(appId, companyUserIamData.CompanyId)
             .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(iamClientId))
         {
@@ -698,12 +698,12 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (rolesToAdd.Any())
         {
-            await AddRoles(userRoleInfo, iamClientId, rolesToAdd, companyUser, userRoleRepository).ConfigureAwait(false);
+            await AddRoles(userRoleInfo.CompanyUserId, iamClientId, rolesToAdd, companyUserIamData, userRoleRepository).ConfigureAwait(false);
         }
 
         if (rolesToDelete.Any())
         {
-            await DeleteRoles(userRoleInfo, iamClientId, rolesToDelete, companyUser).ConfigureAwait(false);
+            await DeleteRoles(userRoleInfo.CompanyUserId, iamClientId, rolesToDelete, companyUserIamData).ConfigureAwait(false);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -742,7 +742,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
-    private async Task AddRoles(UserRoleInfo userRoleInfo, string iamClientId, List<UserRoleWithId> rolesToAdd, CompanyIamUser companyUser, IUserRolesRepository userRoleRepository)
+    private async Task AddRoles(Guid companyUserId, string iamClientId, List<UserRoleWithId> rolesToAdd, CompanyIamUser companyUser, IUserRolesRepository userRoleRepository)
     {
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
@@ -752,11 +752,11 @@ public class UserBusinessLogic : IUserBusinessLogic
             .ConfigureAwait(false);
         foreach (var roleWithId in rolesToAdd)
         {
-            userRoleRepository.CreateCompanyUserAssignedRole(userRoleInfo.CompanyUserId, roleWithId.CompanyUserRoleId);
+            userRoleRepository.CreateCompanyUserAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
     }
 
-    private async Task DeleteRoles(UserRoleInfo userRoleInfo, string iamClientId, IReadOnlyCollection<UserRoleWithId> rolesToDelete, CompanyIamUser companyUser)
+    private async Task DeleteRoles(Guid companyUserId, string iamClientId, IReadOnlyCollection<UserRoleWithId> rolesToDelete, CompanyIamUser companyUser)
     {
         var roleNamesToDelete = new Dictionary<string, IEnumerable<string>>
         {
@@ -765,6 +765,6 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUser.TargetIamUserId!, roleNamesToDelete)
             .ConfigureAwait(false);
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
-            new CompanyUserAssignedRole(userRoleInfo.CompanyUserId, x.CompanyUserRoleId)));
+            new CompanyUserAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }
 }

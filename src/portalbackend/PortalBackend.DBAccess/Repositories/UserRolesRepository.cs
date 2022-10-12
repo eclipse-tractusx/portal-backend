@@ -103,7 +103,10 @@ public class UserRolesRepository : IUserRolesRepository
     public IAsyncEnumerable<UserRoleWithId> GetAssignedRolesForDeletion(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(role => role.OfferId == offerId && userRoles.Contains(role.UserRoleText) && role.CompanyUsers.Any(user => user.Id == companyUserId))
+            .Where(role =>
+                role.OfferId == offerId &&
+                userRoles.Contains(role.UserRoleText) &&
+                role.CompanyUsers.Any(user => user.Id == companyUserId))
             .Select(role => new UserRoleWithId( role.UserRoleText, role.Id))
             .ToAsyncEnumerable();
 

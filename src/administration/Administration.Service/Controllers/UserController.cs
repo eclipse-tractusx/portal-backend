@@ -378,7 +378,7 @@ public class UserController : ControllerBase
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
     [HttpPut]
-    //[Authorize(Roles = "modify_user_account")]
+    [Authorize(Roles = "modify_user_account")]
     [Route("app/{appId}/roles")]
     [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
