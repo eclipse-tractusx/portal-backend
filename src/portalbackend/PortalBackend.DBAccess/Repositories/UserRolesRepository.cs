@@ -71,14 +71,6 @@ public class UserRolesRepository : IUserRolesRepository
             .Include(companyUser => companyUser.IamUser)
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid CompanyUserId, Guid UserRoleId)> GetExistingRolesByNameForUserAsync(IEnumerable<string> roleNames, string iamUserId, Guid offerId) =>
-        _dbContext.CompanyUserAssignedRoles
-            .Where(cuar => 
-                roleNames.Any(x => x == cuar.UserRole!.UserRoleText && cuar.UserRole.OfferId == offerId) &&
-                cuar.CompanyUser!.IamUser!.UserEntityId == iamUserId)
-            .Select(cuar => new ValueTuple<Guid, Guid>(cuar.CompanyUserId, cuar.UserRoleId))
-            .AsAsyncEnumerable();
-    
     public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
         _dbContext.Remove(companyUserAssignedRole).Entity;
 
@@ -109,21 +101,19 @@ public class UserRolesRepository : IUserRolesRepository
     }
 
     public IAsyncEnumerable<UserRoleWithId> GetAssignedRolesForDeletion(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
-        _dbContext.CompanyUserAssignedRoles
+        _dbContext.UserRoles
             .AsNoTracking()
-            .Where(x => x.CompanyUserId == companyUserId && !userRoles.Any(ur => ur == x.UserRole!.UserRoleText && x.UserRole!.OfferId == offerId))
-            .Select(x => new UserRoleWithId(
-                    x.UserRole!.UserRoleText,
-                    x.UserRoleId))
+            .Where(role => role.OfferId == offerId && userRoles.Contains(role.UserRoleText) && role.CompanyUsers.Any(user => user.Id == companyUserId))
+            .Select(role => new UserRoleWithId( role.UserRoleText, role.Id))
             .ToAsyncEnumerable();
-    
+
     public IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(userRole =>
                 userRole.OfferId == offerId &&
-                userRoles.Contains(userRole.UserRoleText) &&
-                !userRole.CompanyUsers.SingleOrDefault(x => x.Id == companyUserId)!.CompanyUserAssignedRoles.Any(x => userRoles.Contains(x.UserRole!.UserRoleText)))
+                userRoles.Contains(userRole.UserRoleText) && 
+                userRole.CompanyUsers.All(user => user.Id != companyUserId))
             .Select(userRole => new UserRoleWithId(
                 userRole.UserRoleText,
                 userRole.Id
