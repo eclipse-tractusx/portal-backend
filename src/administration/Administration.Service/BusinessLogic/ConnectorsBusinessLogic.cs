@@ -92,10 +92,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken,
-        string iamUserId, bool isManaged, CancellationToken cancellationToken)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, bool isManaged, CancellationToken cancellationToken)
     {
-        var companyData = await ValidateCompanyDataAsync(connectorInputModel).ConfigureAwait(false);
+        var companyData = await ValidateCompanyDataAsync(connectorInputModel.Location, connectorInputModel.Provider, connectorInputModel.Host).ConfigureAwait(false);
 
         if (isManaged)
         {
@@ -126,14 +125,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         };
     }
 
-    private async Task<List<(Guid CompanyId, string? BusinessPartnerNumber)>> ValidateCompanyDataAsync(ConnectorInputModel connectorInputModel)
+    private async Task<List<(Guid CompanyId, string? BusinessPartnerNumber)>> ValidateCompanyDataAsync(string location, Guid provider, Guid? host)
     {
-        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
-
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"Location {location} does not exist", nameof(connectorInputModel.Location));
+            throw new ControllerArgumentException($"Location {location} does not exist", nameof(location));
         }
 
         var parameters = provider == host || !host.HasValue
@@ -146,12 +143,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (companyData.All(data => data.CompanyId != provider))
         {
-            throw new ControllerArgumentException($"Company {provider} does not exist", nameof(connectorInputModel.Provider));
+            throw new ControllerArgumentException($"Company {provider} does not exist", nameof(provider));
         }
 
         if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
         {
-            throw new ControllerArgumentException($"Company {host} does not exist", nameof(connectorInputModel.Host));
+            throw new ControllerArgumentException($"Company {host} does not exist", nameof(host));
         }
 
         return companyData;
