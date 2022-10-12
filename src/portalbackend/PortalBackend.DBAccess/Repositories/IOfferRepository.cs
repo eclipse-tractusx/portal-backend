@@ -98,6 +98,14 @@ public interface IOfferRepository
     CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId);
 
     /// <summary>
+    /// Add app Id and Document Id in App Assigned Document table 
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="documentId"></param>
+    /// <returns></returns>
+    OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId);
+
+    /// <summary>
     /// Adds <see cref="AppAssignedUseCase"/>s to the database
     /// </summary>
     /// <param name="useCases">The use cases that should be added to the database</param>
@@ -195,4 +203,21 @@ public interface IOfferRepository
     /// <param name="agreementIds"></param>
     /// <returns></returns>
     IAsyncEnumerable<OfferAgreement>  GetAgreementConsentAsync(IEnumerable<Guid> agreementIds);
+
+    /// <summary>
+    /// Verify that user is linked to the appId
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+
+        /// <summary>
+    /// Return the Company User Id
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
 }

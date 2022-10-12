@@ -39,6 +39,7 @@ public class OfferSetupServiceTests
     private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _existingServiceOfferId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
+    private readonly string _accessToken = "THISISAACCESSTOKEN";
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
@@ -76,7 +77,7 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
@@ -96,7 +97,7 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(Guid.NewGuid(), _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(Guid.NewGuid(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -114,7 +115,7 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, "not existing userid", "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, "not existing userid", _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -132,7 +133,7 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -151,7 +152,7 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -170,7 +171,7 @@ public class OfferSetupServiceTests
         var sut = _fixture.Create<OfferSetupService>();
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
