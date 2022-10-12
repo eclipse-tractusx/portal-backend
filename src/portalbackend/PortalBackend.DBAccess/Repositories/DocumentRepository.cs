@@ -41,7 +41,7 @@ public class DocumentRepository : IDocumentRepository
     }
     
     /// <inheritdoc />
-    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields)
+    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields)
     {
         var document = new Document(
             Guid.NewGuid(),
@@ -50,7 +50,7 @@ public class DocumentRepository : IDocumentRepository
             documentName,
             DateTimeOffset.UtcNow,
             DocumentStatusId.PENDING,
-            documentTypeId);
+            documentType);
 
         setupOptionalFields?.Invoke(document);
         return _dbContext.Documents.Add(document).Entity;
