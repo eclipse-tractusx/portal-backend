@@ -33,10 +33,10 @@ public interface ISdFactoryService
     /// </summary>
     /// <param name="connectorInputModel">the connector input model</param>
     /// <param name="accessToken">the access token</param>
-    /// <param name="bpn">the bpn</param>
+    /// <param name="businessPartnerNumber">the bpn</param>
     /// <param name="cancellationToken"></param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, CancellationToken cancellationToken);
+    Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken);
 
-    Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, CancellationToken cancellationToken);
+    Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
 }
