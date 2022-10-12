@@ -102,7 +102,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
-        this.WithIamUserId(iamUserId => _logic.ApprovePartnerRequest(iamUserId, applicationId));
+        this.WithIamUserAndBearerToken((auth) => _logic.ApprovePartnerRequest(auth.iamUserId, auth.bearerToken, applicationId));
 
     /// <summary>
     /// Decline the Partner Registration Request

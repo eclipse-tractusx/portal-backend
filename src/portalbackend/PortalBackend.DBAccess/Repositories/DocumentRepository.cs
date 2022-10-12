@@ -39,7 +39,7 @@ public class DocumentRepository : IDocumentRepository
     {
         this._dbContext = dbContext;
     }
-
+    
     /// <inheritdoc />
     public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, Action<Document>? setupOptionalFields)
     {
@@ -50,7 +50,7 @@ public class DocumentRepository : IDocumentRepository
             documentName,
             DateTimeOffset.UtcNow,
             DocumentStatusId.PENDING);
-        
+
         setupOptionalFields?.Invoke(document);
         return _dbContext.Documents.Add(document).Entity;
     }

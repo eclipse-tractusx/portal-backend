@@ -18,16 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-public interface IRegistrationBusinessLogic
+/// <summary>
+/// Settings used in business logic concerning connectors.
+/// </summary>
+public class SdFactorySettings
 {
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
+    /// <summary>
+    /// SD Factory endpoint for registering connectors.
+    /// </summary>
+    [Required]
+    public string SdFactoryUrl { get; set; } = null!;
+}
+
+public static class SdFactorySettingsExtensions
+{
+    public static IServiceCollection ConfigureSdFactorySettings(
+        this IServiceCollection services,
+        IConfigurationSection section
+        )
+    {
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        return services;
+    }
 }

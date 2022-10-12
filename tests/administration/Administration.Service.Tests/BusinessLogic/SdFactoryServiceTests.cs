@@ -42,16 +42,19 @@ using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
-public class ConnectorsSdFactoryServiceTests
+public class SdFactoryServiceTests
 {
-    private readonly Guid _companyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    #region Initialization
+    
+    private const string IssuerBpn = "BPNL00000003CRHK";
+    private readonly Guid _applicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
-    private readonly ConnectorsSdFactoryService _service;
+    private readonly SdFactoryService _service;
     private readonly ICollection<Document> _documents;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public ConnectorsSdFactoryServiceTests()
+    public SdFactoryServiceTests()
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -61,16 +64,20 @@ public class ConnectorsSdFactoryServiceTests
         _documents = new HashSet<Document>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        var settings = new ConnectorsSettings
+        var settings = new SdFactorySettings
         {
             SdFactoryUrl = "https://www.api.sdfactory.com"
         };
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
 
-        _service = new ConnectorsSdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories);
+        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories);
     }
 
+    #endregion
+    
+    #region Register Connector
+    
     [Fact]
     public async Task RegisterConnectorAsync_WithValidData_CreatesDocumentInDatabase()
     {
@@ -140,6 +147,79 @@ public class ConnectorsSdFactoryServiceTests
         exception.Message.Should().Be($"Access to SD factory failed with status code {HttpStatusCode.BadRequest}");
     }
 
+    #endregion
+    
+    #region RegisterSelfDescription
+    
+    [Fact]
+    public async Task RegisterSelfDescriptionAsync_WithValidData_CreatesDocumentInDatabase()
+    {
+        // Arrange
+        var contentJson = @"{
+          'id': 'http://sdhub.int.demo.catena-x.net/selfdescription/vc/62a86c917ed7226dae676c86',
+          '@context': [
+            'https://www.w3.org/2018/credentials/v1',
+            'https://abc.io/sd-document-v0.1.jsonld'
+          ],
+          'type': [
+            'VerifiableCredential',
+            'SD-document'
+          ],
+          'issuer': 'did:indy:idunion:test:JFcJRR9NSmtZaQGFMJuEjh',
+          'issuanceDate': '2022-06-14T11:10:09Z',
+          'expirationDate': '2022-09-12T11:10:09Z',
+          'credentialSubject': {
+            'bpn': 'BPNL000000000000',
+            'company_number': '123456',
+            'headquarter_country': 'DE',
+            'legal_country': 'DE',
+            'sd_type': 'connector',
+            'service_provider': 'http://demo.test.com',
+            'id': 'did:indy:idunion:test:123456789'
+          },
+          'proof': {
+            'type': 'Ed25519Signature2018',
+            'created': '2022-06-14T11:10:13Z',
+            'proofPurpose': 'assertionMethod',
+            'verificationMethod': 'did:indy:idunion:test:123456789#key-1',
+            'jws': 'this-is-a-super-secret-secret-not'
+          }
+        }";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
+        var httpClient = new HttpClient(httpMessageHandlerMock);
+        var accessToken = "this-is-a-super-secret-secret-not";
+        var bpn = "BPNL000000000009";
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+
+        // Act
+        await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, IssuerBpn).ConfigureAwait(false);
+
+        // Assert
+        _documents.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task  RegisterSelfDescriptionAsync_WithInvalidData_ThrowsException()
+    {
+        // Arrange
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock);
+        var accessToken = "this-is-a-super-secret-secret-not";
+        var bpn = "BPNL000000000009";
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+
+        // Act
+        async Task Action() => await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, IssuerBpn).ConfigureAwait(false);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<ServiceException>(Action);
+        exception.Message.Should().Be($"Access to SD factory failed with status code {HttpStatusCode.BadRequest}");
+    }
+
+    #endregion
+    
+    #region Setup
+    
     private static HttpContent FormContent(string s, string contentType)
     {
         HttpContent content = new StringContent(s);
@@ -162,7 +242,9 @@ public class ConnectorsSdFactoryServiceTests
                 setupOptionalFields?.Invoke(document);
                 _documents.Add(document);
             });
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
     }
+    
+    #endregion
 }

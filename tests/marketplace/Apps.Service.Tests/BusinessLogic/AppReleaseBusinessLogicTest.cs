@@ -66,25 +66,26 @@ public class AppReleaseBusinessLogicTest
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _options = A.Fake<IOptions<AppsSettings>>();
+        
+        _companyUser = _fixture.Build<CompanyUser>()
+            .Without(u => u.IamUser)
+            .Create();
+        _iamUser = _fixture.Build<IamUser>()
+            .With(u => u.CompanyUser, _companyUser)
+            .Create();
+        _companyUser.IamUser = _iamUser;
+        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
          _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
-
-         _companyUser = _fixture.Build<CompanyUser>()
-             .Without(u => u.IamUser)
-             .Create();
-         _iamUser = _fixture.Build<IamUser>()
-             .With(u => u.CompanyUser, _companyUser)
-             .Create();
-         _companyUser.IamUser = _iamUser;
     }
 
     [Fact]
     public async Task CreateServiceOffering_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
     {
         // Arrange
-        Guid appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
-        string iamUserId = new Guid("7eab8e16-8298-4b41-953b-515745423658").ToString();
+        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+        var iamUserId = new Guid("7eab8e16-8298-4b41-953b-515745423658").ToString();
         var appUserRoleDescription = new List<AppUserRoleDescription>();
         appUserRoleDescription.Add(new AppUserRoleDescription("en","this is test1"));
         appUserRoleDescription.Add(new AppUserRoleDescription("de","this is test2"));
@@ -115,7 +116,7 @@ public class AppReleaseBusinessLogicTest
     #region Create App Document
         
     [Fact]
-    public async Task AddFavouriteAppForUser_ExecutesSuccessfully()
+    public async Task CreateAppDocumentAsync_ExecutesSuccessfully()
     {
         // Arrange
         var appId = Guid.NewGuid();
@@ -159,7 +160,7 @@ public class AppReleaseBusinessLogicTest
     }
 
     #endregion
-        
+
     #region Setup
         
     private void SetupRepositories(Guid appId)

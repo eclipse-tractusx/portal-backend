@@ -32,6 +32,7 @@ public class RegistrationSettings
         CompanyAdminRoles = null!;
         WelcomeNotificationTypeIds = null!;
         DocumentTypeIds = null!;
+        SdFactoryIssuerCompany = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
@@ -55,6 +56,12 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId?> DocumentTypeIds { get; set; }
+
+    /// <summary>
+    /// Company Name to get the issuer for the sd factory
+    /// </summary>
+    [Required]
+    public string SdFactoryIssuerCompany { get; set; }
 }
 
 public static class RegistrationSettingsExtension

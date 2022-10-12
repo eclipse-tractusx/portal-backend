@@ -32,6 +32,7 @@ public class Document
         DocumentContent = null!;
         Consents = new HashSet<Consent>();
         Offers = new HashSet<Offer>();
+        Companies = new HashSet<Company>();
     }
     
     /// <summary>
@@ -82,4 +83,5 @@ public class Document
 
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<Company> Companies { get; private set; }
 }

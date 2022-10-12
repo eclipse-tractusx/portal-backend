@@ -137,6 +137,18 @@ public class ApplicationRepository : IApplicationRepository
             .Include(companyApplication => companyApplication.Company)
             .SingleOrDefaultAsync();
 
+    /// <inheritdoc />
+    public Task<(Guid companyId, string companyName, string? bpn, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
+        _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId
+                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string, string?, string>(
+                ca.CompanyId,
+                ca.Company!.Name,
+                ca.Company!.BusinessPartnerNumber,
+                ca.Company!.Address!.Country!.Alpha2Code))
+            .SingleOrDefaultAsync();
+
     public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId) =>
         _dbContext.Invitations
             .AsNoTracking()

@@ -32,6 +32,15 @@ public class CompanyApplication : IAuditableV1
         Invitations = new HashSet<Invitation>();
     }
 
+    /// <summary>
+    /// Please only use this to attach the entity
+    /// </summary>
+    /// <param name="id"></param>
+    public CompanyApplication(Guid id) : this()
+    {
+        Id = id;
+    }
+
     public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
