@@ -64,7 +64,7 @@ public class Document
     [MaxLength(255)]
     public string DocumentName { get; set; }
 
-    public DocumentTypeId? DocumentTypeId { get; set; }
+    public DocumentTypeId DocumentTypeId { get; set; }
 
     public DocumentStatusId DocumentStatusId { get; set; }
 
