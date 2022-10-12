@@ -159,13 +159,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         finally
         {
-            _portalRepositories.Attach(new CompanyApplication(applicationId), ca =>
+            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
             {
                 ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
                 ca.DateLastChanged = DateTimeOffset.UtcNow;    
             });
 
-            _portalRepositories.Attach(new Company(companyId), c =>
+            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
             {
                 c.CompanyStatusId = CompanyStatusId.ACTIVE;
                 c.SelfDescriptionDocumentId = documentId;

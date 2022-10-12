@@ -44,15 +44,6 @@ public class Company
         HostedConnectors = new HashSet<Connector>();
     }
     
-    /// <summary>
-    /// Please only use to update the entity
-    /// </summary>
-    /// <param name="id">Id of the entity</param>
-    public Company(Guid id) : this()
-    {
-        Id = id;
-    }
-
     public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
     {
         Id = id;
