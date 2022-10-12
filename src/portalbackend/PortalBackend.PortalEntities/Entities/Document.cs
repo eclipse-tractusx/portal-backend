@@ -44,7 +44,7 @@ public class Document
         Id = id;
     }
 
-    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId) : this()
     {
         Id = id;
         DocumentContent = documentContent;
@@ -52,6 +52,7 @@ public class Document
         DocumentName = documentName;
         DateCreated = dateCreated;
         DocumentStatusId = documentStatusId;
+        DocumentTypeId = documentTypeId;
     }
 
     public Guid Id { get; private set; }

@@ -94,12 +94,7 @@ public class SdFactoryService : ISdFactoryService
                 $"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
         }
 
-        void SetupOptionalFields(Document doc)
-        {
-            doc.DocumentTypeId = DocumentTypeId.SELF_DESCRIPTION_EDC;
-        }
-
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, SetupOptionalFields);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, DocumentTypeId.SELF_DESCRIPTION_EDC, null);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;
     }
