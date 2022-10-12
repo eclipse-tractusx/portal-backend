@@ -43,6 +43,13 @@ public class ApplicationRepository : IApplicationRepository
                 companyApplicationStatusId,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public CompanyApplication AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication>? setOptionalParameters = null)
+    {
+        var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, default, default, default)).Entity;
+        setOptionalParameters?.Invoke(companyApplication);
+        return companyApplication;
+    }
+
     public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
         _dbContext.Invitations.Add(
             new Invitation(
