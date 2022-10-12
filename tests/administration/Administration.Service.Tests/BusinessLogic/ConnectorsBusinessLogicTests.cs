@@ -55,7 +55,7 @@ public class ConnectorsBusinessLogicTests
     private readonly IConnectorsRepository _connectorsRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IConnectorsSdFactoryService _connectorsSdFactoryService;
+    private readonly ISdFactoryService _sdFactoryService;
     private readonly IFixture _fixture;
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IOptions<ConnectorsSettings> _options;
@@ -73,7 +73,7 @@ public class ConnectorsBusinessLogicTests
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _connectorsSdFactoryService = A.Fake<IConnectorsSdFactoryService>();
+        _sdFactoryService = A.Fake<ISdFactoryService>();
         _options = A.Fake<IOptions<ConnectorsSettings>>();
         _settings = A.Fake<ConnectorsSettings>();
         _settings = new ConnectorsSettings
@@ -87,7 +87,7 @@ public class ConnectorsBusinessLogicTests
 
         A.CallTo(() => _options.Value).Returns(_settings);
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, _options, _connectorsSdFactoryService);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, _options, _sdFactoryService);
     }
 
     #region Create Connector
@@ -312,11 +312,11 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _userRepository.GetTechnicalUserCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
             .ReturnsLazily(() => Guid.Empty);
 
-        A.CallTo(() => _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
                     A<string>._, A<string>._))
             .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
-                _connectorsSdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
+                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
                     A<string>._, A<string>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
         

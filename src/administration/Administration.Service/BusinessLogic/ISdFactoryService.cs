@@ -26,7 +26,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 /// <summary>
 /// Service to handle communication with the connectors sd factory
 /// </summary>
-public interface IConnectorsSdFactoryService
+public interface ISdFactoryService
 {
     /// <summary>
     /// Registers the Connector at the connectorsSdFactory
@@ -37,4 +37,6 @@ public interface IConnectorsSdFactoryService
     /// <param name="issuerBpn">the issuer bpn</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
     Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, string issuerBpn);
+
+    Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, string issuer);
 }

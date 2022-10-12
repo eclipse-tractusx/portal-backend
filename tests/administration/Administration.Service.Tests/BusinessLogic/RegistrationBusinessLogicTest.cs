@@ -47,6 +47,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLog
 public class RegistrationBusinessLogicTest
 {
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
+    private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
+    private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private static readonly Guid CompanyUserId1 = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
     private static readonly Guid CompanyUserId2 = new("857b93b1-8fcb-4141-81b0-ae81950d489f");
@@ -71,6 +73,8 @@ public class RegistrationBusinessLogicTest
     private readonly RegistrationSettings _settings;
     private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
     private readonly INotificationService _notificationService;
+    private readonly ISdFactoryService _sdFactory;
+    private readonly ICompanyRepository _companyRepository;
 
     public RegistrationBusinessLogicTest()
     {
@@ -86,12 +90,14 @@ public class RegistrationBusinessLogicTest
         _rolesRepository = A.Fake<IUserRolesRepository>();
         _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<RegistrationSettings>();
-            
+        _companyRepository = A.Fake<ICompanyRepository>();
+        
         var userRepository = A.Fake<IUserRepository>();
         var mailingService = A.Fake<IMailingService>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _notificationService = A.Fake<INotificationService>();
-
+        _sdFactory = A.Fake<ISdFactoryService>();
+        
         _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
         {
             NotificationTypeId.WELCOME,
@@ -101,17 +107,19 @@ public class RegistrationBusinessLogicTest
             NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION
         };
         _settings.ApplicationsMaxPageSize = 15;
+        _settings.SdFactoryIssuerCompany = "Catena-X";
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory);
     }
     
     #region ApprovePartnerRequest
@@ -133,10 +141,10 @@ public class RegistrationBusinessLogicTest
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
 
         //Act
-        var result = await _logic.ApprovePartnerRequest(IamUserId, Id).ConfigureAwait(false);
+        var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id)).MustHaveHappened(1, Times.Exactly);
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Id)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
@@ -155,10 +163,24 @@ public class RegistrationBusinessLogicTest
     public async Task ApprovePartnerRequest_WithDefaultApplicationId_ThrowsArgumentNullException()
     {
         //Act
-        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, Guid.Empty);
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty).ConfigureAwait(false);
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentNullException>(Action);
         ex.ParamName.Should().Be("applicationId");
+    }
+
+    [Fact]
+    public async Task ApprovePartnerRequest_WithNotAssignedUser_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var iamUserId = Guid.NewGuid().ToString();
+
+        //Act
+        async Task Action() => await _logic.ApprovePartnerRequest(iamUserId, AccessToken, Id).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Action);
+        ex.Message.Should().Be($"user {iamUserId} is not associated with a companyuser");
     }
 
     [Fact]
@@ -166,11 +188,12 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId))
-            .ReturnsLazily(() => (CompanyApplication?)null);
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>());
 
         //Act
-        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, applicationId);
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, applicationId).ConfigureAwait(false);
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().Be($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -179,21 +202,12 @@ public class RegistrationBusinessLogicTest
     [Fact]
     public async Task ApprovePartnerRequest_WithCompanyWithoutBPN_ThrowsArgumentException()
     {
-        // Arrange
-        var companyId = Guid.NewGuid();
-        var applicationId = companyId;
-        var companyApplication = new CompanyApplication(applicationId, companyId, CompanyApplicationStatusId.CREATED, DateTimeOffset.UtcNow)
-        {
-            Company = new Company(companyId, "test", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
-        };
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId))
-            .ReturnsLazily(() => companyApplication);
-
         //Act
-        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, applicationId);
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, IdWithoutBpn).ConfigureAwait(false);
+
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty (Parameter 'bpn')");
+        ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {IdWithoutBpn} company {Guid.Empty} is empty (Parameter 'bpn')");
         ex.ParamName.Should().Be($"bpn");
     }
 
@@ -209,12 +223,37 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task ApprovePartnerRequest_WithoutIssuerCompanySet_ThrowsConfigurationException()
+    {
+        // Arrange
+        _settings.SdFactoryIssuerCompany = "";
+        var roles = new List<string> { "Company Admin" };
+        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, roles.AsEnumerable() }
+        };
+        var userRoleData = new List<UserRoleData>() { new(UserRoleId, ClientId, "Company Admin") };
+
+        var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
+        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+
+        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
+
+        //Act
+        async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Action);
+        ex.Message.Should().Be($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
     }
 
     #region Setup
@@ -228,9 +267,6 @@ public class RegistrationBusinessLogicTest
         var company = _fixture.Build<Company>()
             .With(u => u.BusinessPartnerNumber, BusinessPartnerNumber)
             .With(u => u.Name, CompanyName)
-            .Create();
-        var companyApplication = _fixture.Build<CompanyApplication>()
-            .With(u => u.Company, company)
             .Create();
 
         var companyInvitedUsers = new List<CompanyInvitedUserData>
@@ -247,8 +283,17 @@ public class RegistrationBusinessLogicTest
             { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
         };
 
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationForSubmittedApplication(Id))
-            .Returns(companyApplication);
+        
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Matches(x => x == Id)))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(company.Id, company.Name, company.BusinessPartnerNumber!, "de"));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(IdWithoutBpn, company.Name, null, "de"));
+
+        A.CallTo(() => _companyRepository.GetBpnForCompanyNameAsync(A<string>.That.Matches(x => x == "Catena-X")))
+            .ReturnsLazily(() => "BPNL00000003CRHK");
+        
+        A.CallTo(() => _companyRepository.GetBpnForCompanyNameAsync(A<string>.That.Not.Matches(x => x == "Catena-X")))
+            .ReturnsLazily(() => (string?)null);
 
         var welcomeEmailData = new List<WelcomeEmailData>();
         welcomeEmailData.AddRange(new WelcomeEmailData[]

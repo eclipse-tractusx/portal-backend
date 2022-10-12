@@ -38,7 +38,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IConnectorsSdFactoryService _connectorsSdFactoryService;
+    private readonly ISdFactoryService _sdFactoryService;
     private readonly ConnectorsSettings _settings;
 
     /// <summary>
@@ -46,12 +46,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Access to the needed repositories</param>
     /// <param name="options">The options</param>
-    /// <param name="connectorsSdFactoryService">Access to the connectorsSdFactory</param>
-    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, IConnectorsSdFactoryService connectorsSdFactoryService)
+    /// <param name="sdFactoryService">Access to the connectorsSdFactory</param>
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryService sdFactoryService)
     {
         _portalRepositories = portalRepositories;
         _settings = options.Value;
-        _connectorsSdFactoryService = connectorsSdFactoryService;
+        _sdFactoryService = sdFactoryService;
     }
 
     /// <inheritdoc/>
@@ -182,7 +182,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConfigurationException($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
         }
 
-        var documentId = await _connectorsSdFactoryService
+        var documentId = await _sdFactoryService
             .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, issuerBpn)
             .ConfigureAwait(false);
         createdConnector.SelfDescriptionDocumentId = documentId;

@@ -18,16 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public interface IRegistrationBusinessLogic
-{
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
-}
+/// <summary>
+/// Model used to request connector registration at sd factory.
+/// </summary>
+public record SdFactoryRequestModel(
+    [property: JsonPropertyName("registrationNumber")] string RegistrationNumber,
+    [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
+    [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("bpn")] string Bpn,
+    [property: JsonPropertyName("holder")] string Holder,
+    [property: JsonPropertyName("issuer")] string Issuer);

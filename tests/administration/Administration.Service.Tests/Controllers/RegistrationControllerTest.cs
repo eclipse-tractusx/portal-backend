@@ -38,6 +38,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
     public class RegistrationControllerTest
     {
         private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+        private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
         private readonly IRegistrationBusinessLogic _logic;
         private readonly RegistrationController _controller;
         private readonly IFixture _fixture;
@@ -49,7 +50,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             _logic = A.Fake<IRegistrationBusinessLogic>();
             this._controller = new RegistrationController(_logic);
-            _controller.AddControllerContextWithClaim(IamUserId);
+            _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken);
         }
 
         [Fact]
@@ -57,14 +58,14 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
         {
             //Arrange
             var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, id))
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, id))
                       .Returns(true);
 
             //Act
             var result = await this._controller.ApprovePartnerRequest(id).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, id)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, id)).MustHaveHappenedOnceExactly();
             Assert.IsType<bool>(result);
             Assert.True(result);
         }
@@ -73,14 +74,14 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers
         public async Task Test2()
         {
             //Arrange
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty))
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty))
                       .Returns(false);
 
             //Act
             var result = await this._controller.ApprovePartnerRequest(Guid.Empty).ConfigureAwait(false);
 
             //Assert
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty)).MustHaveHappenedOnceExactly();
             Assert.IsType<bool>(result);
             Assert.False(result);
         }

@@ -74,7 +74,6 @@ public class RegistrationBusinessLogicTest
         
         _fixture.Inject(_provisioningManager);
         _fixture.Inject(_portalRepositories);
-
     }
 
     #region GetInvitedUser

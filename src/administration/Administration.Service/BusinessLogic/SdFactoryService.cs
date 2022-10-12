@@ -22,34 +22,35 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.Extensions.Options;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Service to handle communication with the connectors sd factory
 /// </summary>
-public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
+public class SdFactoryService : ISdFactoryService
 {
-    private readonly ConnectorsSettings _settings;
+    private const string SdType = "LegalPerson";
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly SdFactorySettings _settings;
 
     /// <summary>
-    /// Creates a new instance of <see cref="ConnectorsSdFactoryService"/>
+    /// Creates a new instance of <see cref="SdFactoryService"/>
     /// </summary>
-    /// <param name="options">The options</param>
     /// <param name="httpClientFactory">Factory to create httpClients</param>
-    /// <param name="portalRepositories">Access to the portal Repositories</param>
-    public ConnectorsSdFactoryService(IOptions<ConnectorsSettings> options, IHttpClientFactory httpClientFactory, IPortalRepositories portalRepositories)
+    /// <param name="options">The options</param>
+    /// <param name="portalRepositories">Access to the portalRepositories</param>
+    public SdFactoryService(IOptions<SdFactorySettings> options, IHttpClientFactory httpClientFactory, IPortalRepositories portalRepositories)
     {
+        _settings = options.Value;
         _httpClientFactory = httpClientFactory;
         _portalRepositories = portalRepositories;
-        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -60,10 +61,25 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel("ServiceOffering", connectorInputModel.ConnectorUrl,string.Empty, string.Empty, string.Empty, issuerBpn, bpn);
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel).ConfigureAwait(false);
+        return await ProcessResponse(bpn, response).ConfigureAwait(false);
+    }
 
+    /// <inheritdoc />
+    public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, string issuer)
+    {
+        using var httpClient =_httpClientFactory.CreateClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var requestModel = new SdFactoryRequestModel(applicationId.ToString(), countryCode, countryCode, SdType, bpn, bpn, issuer);
+        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel).ConfigureAwait(false);
+        return await ProcessResponse(bpn, response).ConfigureAwait(false);
+    }
+
+    private async Task<Guid> ProcessResponse(string bpn, HttpResponseMessage response)
+    {
         if (!response.IsSuccessStatusCode)
         {
-            throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}", response.StatusCode);
+            throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}",
+                response.StatusCode);
         }
 
         await using var stream = await response.Content.ReadAsStreamAsync();
@@ -74,7 +90,8 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
         var documentContent = ms.GetBuffer();
         if (ms.Length != stream.Length || documentContent.Length != stream.Length)
         {
-            throw new ControllerArgumentException($"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
+            throw new ControllerArgumentException(
+                $"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
         }
 
         void SetupOptionalFields(Document doc)
@@ -82,7 +99,8 @@ public class ConnectorsSdFactoryService : IConnectorsSdFactoryService
             doc.DocumentTypeId = DocumentTypeId.SELF_DESCRIPTION_EDC;
         }
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, SetupOptionalFields);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>()
+            .CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, SetupOptionalFields);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;
     }

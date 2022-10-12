@@ -30,6 +30,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -41,6 +42,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
+    private readonly ISdFactoryService _sdFactoryService;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories, 
@@ -48,7 +50,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IProvisioningManager provisioningManager, 
         ICustodianService custodianService, 
         IMailingService mailingService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        ISdFactoryService sdFactoryService)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -56,6 +59,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _custodianService = custodianService;
         _mailingService = mailingService;
         _notificationService = notificationService;
+        _sdFactoryService = sdFactoryService;
     }
 
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
@@ -114,16 +118,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
+    public Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId)
     {
         if (applicationId == Guid.Empty)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
-        return ApprovePartnerRequestInternal(iamUserId, applicationId);
+        return ApprovePartnerRequestInternal(iamUserId, accessToken, applicationId);
     }
 
-    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
+    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, string accessToken, Guid applicationId)
     {
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (creatorId == Guid.Empty)
@@ -131,25 +135,42 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new UnexpectedConditionException($"user {iamUserId} is not associated with a companyuser");
         }
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var companyApplication = await applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
-        if (companyApplication == null)
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
 
-        var businessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber;
+        var businessPartnerNumber = result.bpn;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {result.companyId} is empty", "bpn");
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
-        companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
+
+        var company = new Company(result.companyId);
+        _portalRepositories.Attach(company);
+        company.CompanyStatusId = CompanyStatusId.ACTIVE;
+
+        var companyApplication = new CompanyApplication(applicationId);
+        _portalRepositories.Attach(companyApplication);
         companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
         companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
+        await _custodianService.CreateWallet(businessPartnerNumber, result.companyName).ConfigureAwait(false);
+
+        var issuerBpn = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnForCompanyNameAsync(_settings.SdFactoryIssuerCompany).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(issuerBpn))
+        {
+            throw new ConfigurationException($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
+        }
+
+        var documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, result.countryCode, businessPartnerNumber, issuerBpn).ConfigureAwait(false);
+        company.SelfDescriptionDocumentId = documentId;
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
 
