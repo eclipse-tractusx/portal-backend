@@ -114,7 +114,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be("Location invalid does not exist (Parameter 'Location')");
+        exception.Message.Should().Be("Location invalid does not exist (Parameter 'location')");
     }
     
     [Fact]
@@ -130,7 +130,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be($"Company {_invalidCompanyId} does not exist (Parameter 'Provider')");
+        exception.Message.Should().Be($"Company {_invalidCompanyId} does not exist (Parameter 'provider')");
     }
     
     [Fact]
@@ -162,7 +162,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be($"Company {_invalidHostId} does not exist (Parameter 'Host')");
+        exception.Message.Should().Be($"Company {_invalidHostId} does not exist (Parameter 'host')");
     }
 
     #endregion
