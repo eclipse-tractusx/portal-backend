@@ -22,6 +22,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,10 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221007102646_CPLP-1625-ChangeDocumentTypeIdtoNonNullable")]
+    partial class CPLP1625ChangeDocumentTypeIdtoNonNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -652,10 +654,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
-                    b.Property<Guid?>("SelfDescriptionDocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("self_description_document_id");
-
                     b.Property<string>("Shortname")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -674,9 +672,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("CompanyStatusId")
                         .HasDatabaseName("ix_companies_company_status_id");
-
-                    b.HasIndex("SelfDescriptionDocumentId")
-                        .HasDatabaseName("ix_companies_self_description_document_id");
 
                     b.ToTable("companies", "portal");
                 });
@@ -4605,16 +4600,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_companies_company_statuses_company_status_id");
 
-                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "SelfDescriptionDocument")
-                        .WithMany("Companies")
-                        .HasForeignKey("SelfDescriptionDocumentId")
-                        .HasConstraintName("fk_companies_documents_self_description_document_id");
-
                     b.Navigation("Address");
 
                     b.Navigation("CompanyStatus");
-
-                    b.Navigation("SelfDescriptionDocument");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
@@ -5403,8 +5391,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
-                    b.Navigation("Companies");
-
                     b.Navigation("Consents");
                 });
 

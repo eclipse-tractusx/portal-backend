@@ -17,30 +17,32 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+
+public record OfferProviderResponse(
+    string? Title, 
+    string Provider, 
+    string? LeadPictureUri, 
+    string? ProviderName, 
+    IEnumerable<string> UseCase, 
+    IEnumerable<OfferDescriptionData> Descriptions, 
+    IEnumerable<OfferAgreement> Agreements, 
+    IEnumerable<string> SupportedLanguageCodes, 
+    string? Price, 
+    IEnumerable<string> Images, 
+    string? ProviderUri, 
+    string? ContactEmail, 
+    string? ContactNumber, 
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+);
 
 /// <summary>
-/// Model for Input Role
+/// Model for Document
 /// </summary>
-/// <param name="role"></param>
-/// <param name="descriptions"></param>
-/// <returns></returns>
-public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
-
-/// <summary>
-/// Model for Role Description
-/// </summary>
-/// <param name="languageCode"></param>
-/// <param name="description"></param>
-/// <returns></returns>
-public record AppUserRoleDescription(string languageCode, string description);
-
-/// <summary>
-/// Model for Role Data
-/// </summary>
-/// <param name="roleId"></param>
-/// <param name="roleName"></param>
-/// <returns></returns>
-public record AppRoleData(Guid roleId, string roleName);
+/// <param name="documentId"></param>
+/// <param name="documentName"></param>
+public record DocumentData(Guid documentId, string documentName);
 
