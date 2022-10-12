@@ -161,30 +161,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetBpnForCompanyName
-
-    [Fact]
-    public async Task GetBpnForCompanyNameAsync_WithValidName_ReturnsCompanyBpn()
-    {
-        var companyName = "Catena-X";
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        var bpn = await sut.GetBpnForCompanyNameAsync(companyName).ConfigureAwait(false);
-        bpn.Should().Be("CAXSDUMMYCATENAZZ");
-    }
-
-    [Fact]
-    public async Task GetBpnForCompanyNameAsync_WithNotExistingCompany_ReturnsEmptyString()
-    {
-        var companyName = "Not existing";
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        var bpn = await sut.GetBpnForCompanyNameAsync(companyName).ConfigureAwait(false);
-        bpn.Should().BeNullOrEmpty();
-    }
-
-    #endregion
-    
     #region Setup
     
     private async Task<(CompanyRepository, PortalDbContext)> CreateSut()

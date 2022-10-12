@@ -32,15 +32,16 @@ public class RegistrationSettings
         CompanyAdminRoles = null!;
         WelcomeNotificationTypeIds = null!;
         DocumentTypeIds = null!;
-        SdFactoryIssuerCompany = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
     
     [Required]
     public IDictionary<string,IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
+    
     [Required]
     public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
+    
     [Required]
     public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
 
@@ -56,12 +57,6 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId?> DocumentTypeIds { get; set; }
-
-    /// <summary>
-    /// Company Name to get the issuer for the sd factory
-    /// </summary>
-    [Required]
-    public string SdFactoryIssuerCompany { get; set; }
 }
 
 public static class RegistrationSettingsExtension

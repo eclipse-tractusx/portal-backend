@@ -27,10 +27,10 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -118,16 +118,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId)
+    public Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId, CancellationToken cancellationToken)
     {
         if (applicationId == Guid.Empty)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
-        return ApprovePartnerRequestInternal(iamUserId, accessToken, applicationId);
+        return ApprovePartnerRequestInternal(iamUserId, accessToken, applicationId, cancellationToken);
     }
 
-    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, string accessToken, Guid applicationId)
+    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, string accessToken, Guid applicationId, CancellationToken cancellationToken)
     {
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (creatorId == Guid.Empty)
@@ -151,24 +151,21 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
 
         var company = new Company(result.companyId);
-        _portalRepositories.Attach(company);
-        company.CompanyStatusId = CompanyStatusId.ACTIVE;
+        _portalRepositories.Attach(company, c =>
+        {
+            c.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
 
-        var companyApplication = new CompanyApplication(applicationId);
-        _portalRepositories.Attach(companyApplication);
-        companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-        companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
+        _portalRepositories.Attach(new CompanyApplication(applicationId), ca =>
+        {
+            ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+            ca.DateLastChanged = DateTimeOffset.UtcNow;    
+        });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await _custodianService.CreateWallet(businessPartnerNumber, result.companyName).ConfigureAwait(false);
+        await _custodianService.CreateWallet(businessPartnerNumber, result.companyName, cancellationToken).ConfigureAwait(false);
 
-        var issuerBpn = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnForCompanyNameAsync(_settings.SdFactoryIssuerCompany).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(issuerBpn))
-        {
-            throw new ConfigurationException($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
-        }
-
-        var documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, result.countryCode, businessPartnerNumber, issuerBpn).ConfigureAwait(false);
+        var documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, result.countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         company.SelfDescriptionDocumentId = documentId;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

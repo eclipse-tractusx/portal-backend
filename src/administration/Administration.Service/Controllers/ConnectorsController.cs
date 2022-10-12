@@ -87,6 +87,7 @@ public class ConnectorsController : ControllerBase
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
     /// </summary>
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>View model of the created connector.</returns>
     /// <remarks>Example: POST: /api/administration/connectors</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
@@ -98,9 +99,9 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
+    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, false)).ConfigureAwait(false);
+        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, false, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
 
@@ -108,6 +109,7 @@ public class ConnectorsController : ControllerBase
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
     /// </summary>
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>View model of the created connector.</returns>
     /// <remarks>Example: POST: /api/administration/connectors/managed</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
@@ -119,9 +121,9 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel)
+    public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, true)).ConfigureAwait(false);
+        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, true, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
 

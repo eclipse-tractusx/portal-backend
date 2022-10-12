@@ -32,6 +32,12 @@ public class SdFactorySettings
     /// </summary>
     [Required]
     public string SdFactoryUrl { get; set; } = null!;
+
+    /// <summary>
+    /// BPN of the issuer for the sd factory
+    /// </summary>
+    [Required]
+    public string SdFactoryIssuerBpn { get; set; } = null!;
 }
 
 public static class SdFactorySettingsExtensions

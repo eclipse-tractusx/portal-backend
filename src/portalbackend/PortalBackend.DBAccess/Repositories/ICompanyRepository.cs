@@ -80,6 +80,4 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
     Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
-
-    Task<string?> GetBpnForCompanyNameAsync(string companyName);
 }
