@@ -91,8 +91,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId) =>
-        _offerSubscriptionService.AddServiceSubscription(serviceId, iamUserId, OfferTypeId.SERVICE);
+    public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddServiceSubscription(serviceId, iamUserId, accessToken, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)

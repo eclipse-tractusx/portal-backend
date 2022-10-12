@@ -99,7 +99,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId)
     {
-        var serviceSubscriptionId = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AddServiceSubscription(serviceId, iamUserId)).ConfigureAwait(false);
+        var serviceSubscriptionId = await this.WithIamUserAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, auth.iamUserId, auth.bearerToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 

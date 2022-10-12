@@ -39,6 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\notification\Notification.Library\Notification.Library.csproj" />
@@ -50,10 +51,10 @@
     <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
   </ItemGroup>
 
-<ItemGroup>
-<SonarQubeSetting Include="sonar.coverage.exclusions">
-<Value>Program.cs</Value>
-</SonarQubeSetting>
-</ItemGroup>
+  <ItemGroup>
+    <SonarQubeSetting Include="sonar.coverage.exclusions">
+      <Value>Program.cs</Value>
+    </SonarQubeSetting>
+  </ItemGroup>
 
 </Project>
