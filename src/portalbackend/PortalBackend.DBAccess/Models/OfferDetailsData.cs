@@ -90,7 +90,7 @@ public record OfferDetailsData(
     /// <summary>
     /// Whether app has been purchased by the user's company.
     /// </summary>
-    OfferSubscriptionStatusId? IsSubscribed,
+    OfferSubscriptionStatusId IsSubscribed,
 
     /// <summary>
     /// Languages that the app is available in.
