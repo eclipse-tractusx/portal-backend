@@ -38,12 +38,6 @@ public class ConnectorsSettings
     /// </summary>
     [Required]
     public string SdFactoryUrl { get; set; } = null!;
-
-    /// <summary>
-    /// The Issuer company name to get the bpn
-    /// </summary>
-    [Required]
-    public string SdFactoryIssuerCompany { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions

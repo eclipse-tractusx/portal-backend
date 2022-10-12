@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
@@ -80,7 +81,6 @@ public class ConnectorsBusinessLogicTests
         {
             MaxPageSize = 15,
             SdFactoryUrl = "http://this-is-a-url.com",
-            SdFactoryIssuerCompany = "Catena-X"
         };
 
         SetupRepositoryMethods();
@@ -101,29 +101,12 @@ public class ConnectorsBusinessLogicTests
             _validCompanyId);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
     }
     
-    [Fact]
-    public async Task CreateConnectorAsync_WithoutIssuerNameSet_ThrowsCOnfigurationException()
-    {
-        // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
-            _validCompanyId);
-        _settings.SdFactoryIssuerCompany = string.Empty;
-        
-        // Act
-        async Task Action() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
-        
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConfigurationException>(Action);
-        ex.Message.Should().Be($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
-    }
-
     [Fact]
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
@@ -133,7 +116,7 @@ public class ConnectorsBusinessLogicTests
             _validCompanyId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -149,7 +132,7 @@ public class ConnectorsBusinessLogicTests
             _invalidCompanyId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -165,7 +148,7 @@ public class ConnectorsBusinessLogicTests
             _companyWithoutBpnId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -181,7 +164,7 @@ public class ConnectorsBusinessLogicTests
             _invalidHostId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -201,7 +184,7 @@ public class ConnectorsBusinessLogicTests
             _validCompanyId);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -216,7 +199,7 @@ public class ConnectorsBusinessLogicTests
             _validCompanyId);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _technicalUserId, true).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _technicalUserId, true, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -231,7 +214,7 @@ public class ConnectorsBusinessLogicTests
             _validHostId);
         
         // Act
-        async Task Action() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true).ConfigureAwait(false);
+        async Task Action() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action).ConfigureAwait(false);
@@ -283,11 +266,6 @@ public class ConnectorsBusinessLogicTests
                 new(_validCompanyId, "VALID")
             }.ToAsyncEnumerable());
 
-        A.CallTo(() => _companyRepository.GetBpnForCompanyNameAsync(A<string>.That.Matches(x => x == "Catena-X")))
-            .ReturnsLazily(() => "BPNL00000003CRHK");
-        A.CallTo(() => _companyRepository.GetBpnForCompanyNameAsync(A<string>.That.Not.Matches(x => x == "Catena-X")))
-            .ReturnsLazily(() => (string?)null);
-        
         A.CallTo(() =>
                 _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes(x =>
@@ -312,12 +290,10 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _userRepository.GetTechnicalUserCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
             .ReturnsLazily(() => Guid.Empty);
 
-        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
-                    A<string>._, A<string>._))
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
             .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
-                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
-                    A<string>._, A<string>._))
+                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
         
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);

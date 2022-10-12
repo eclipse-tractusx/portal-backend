@@ -26,7 +26,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -93,7 +92,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, bool isManaged)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken,
+        string iamUserId, bool isManaged, CancellationToken cancellationToken)
     {
         var companyData = await ValidateCompanyDataAsync(connectorInputModel).ConfigureAwait(false);
 
@@ -117,7 +117,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             }
         }
         
-        var createdConnector = await CreateAndRegisterConnectorAsync(connectorInputModel, accessToken, companyData).ConfigureAwait(false);
+        var createdConnector = await CreateAndRegisterConnectorAsync(connectorInputModel, accessToken, companyData, cancellationToken).ConfigureAwait(false);
         return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
         {
             Id = createdConnector.Id,
@@ -155,7 +155,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         return companyData;
     }
 
-    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, IEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> companyData)
+    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, IEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> companyData, CancellationToken cancellationToken)
     {
         var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
 
@@ -176,14 +176,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.StatusId = status;
             });
 
-        var issuerBpn = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnForCompanyNameAsync(_settings.SdFactoryIssuerCompany).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(issuerBpn))
-        {
-            throw new ConfigurationException($"Issuer {_settings.SdFactoryIssuerCompany} Business Partner Number was not found.");
-        }
-
         var documentId = await _sdFactoryService
-            .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, issuerBpn)
+            .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, cancellationToken)
             .ConfigureAwait(false);
         createdConnector.SelfDescriptionDocumentId = documentId;
 

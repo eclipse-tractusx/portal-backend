@@ -24,6 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
@@ -46,7 +47,6 @@ public class SdFactoryServiceTests
 {
     #region Initialization
     
-    private const string IssuerBpn = "BPNL00000003CRHK";
     private readonly Guid _applicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
@@ -66,7 +66,8 @@ public class SdFactoryServiceTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         var settings = new SdFactorySettings
         {
-            SdFactoryUrl = "https://www.api.sdfactory.com"
+            SdFactoryUrl = "https://www.api.sdfactory.com",
+            SdFactoryIssuerBpn = "BPNL00000003CRHK"
         };
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
@@ -117,11 +118,10 @@ public class SdFactoryServiceTests
         var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
-        var issuerBpn = "CATENAXTESTBPN12";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, issuerBpn).ConfigureAwait(false);
+        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
@@ -136,11 +136,10 @@ public class SdFactoryServiceTests
         var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
-        var issuerBpn = "CATENAXTESTBPN12";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, issuerBpn).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -192,7 +191,7 @@ public class SdFactoryServiceTests
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, IssuerBpn).ConfigureAwait(false);
+        await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
@@ -209,7 +208,7 @@ public class SdFactoryServiceTests
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
 
         // Act
-        async Task Action() => await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, IssuerBpn).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);

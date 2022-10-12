@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FakeItEasy;
 using FluentAssertions;
@@ -65,14 +66,14 @@ public class ConnectorsControllerTest
             Status = ConnectorStatusId.ACTIVE,
             Type = ConnectorTypeId.CONNECTOR_AS_A_SERVICE
         };
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, false))
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, false, A<CancellationToken>._))
             .ReturnsLazily(() => connectorResult);
 
         //Act
-        var result = await this._controller.CreateConnectorAsync(connectorInputModel).ConfigureAwait(false);
+        var result = await this._controller.CreateConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, false)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, false, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorResult);
     }
@@ -95,14 +96,14 @@ public class ConnectorsControllerTest
             Status = ConnectorStatusId.ACTIVE,
             Type = ConnectorTypeId.CONNECTOR_AS_A_SERVICE
         };
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, true))
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, true, A<CancellationToken>._))
             .ReturnsLazily(() => connectorResult);
 
         //Act
-        var result = await this._controller.CreateManagedConnectorAsync(connectorInputModel).ConfigureAwait(false);
+        var result = await this._controller.CreateManagedConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, true)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, true, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorResult);
     }

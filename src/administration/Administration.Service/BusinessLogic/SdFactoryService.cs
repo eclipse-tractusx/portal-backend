@@ -54,27 +54,27 @@ public class SdFactoryService : ISdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, string issuerBpn)
+    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, CancellationToken cancellationToken)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
-        var requestModel = new ConnectorSdFactoryRequestModel("ServiceOffering", connectorInputModel.ConnectorUrl,string.Empty, string.Empty, string.Empty, issuerBpn, bpn);
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel).ConfigureAwait(false);
-        return await ProcessResponse(bpn, response).ConfigureAwait(false);
+        var requestModel = new ConnectorSdFactoryRequestModel("ServiceOffering", connectorInputModel.ConnectorUrl,string.Empty, string.Empty, string.Empty, _settings.SdFactoryIssuerBpn, bpn);
+        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        return await ProcessResponse(bpn, response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, string issuer)
+    public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, CancellationToken cancellationToken)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        var requestModel = new SdFactoryRequestModel(applicationId.ToString(), countryCode, countryCode, SdType, bpn, bpn, issuer);
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel).ConfigureAwait(false);
-        return await ProcessResponse(bpn, response).ConfigureAwait(false);
+        var requestModel = new SdFactoryRequestModel(applicationId.ToString(), countryCode, countryCode, SdType, bpn, bpn, _settings.SdFactoryIssuerBpn);
+        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        return await ProcessResponse(bpn, response, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Guid> ProcessResponse(string bpn, HttpResponseMessage response)
+    private async Task<Guid> ProcessResponse(string bpn, HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (!response.IsSuccessStatusCode)
         {
@@ -82,11 +82,11 @@ public class SdFactoryService : ISdFactoryService
                 response.StatusCode);
         }
 
-        await using var stream = await response.Content.ReadAsStreamAsync();
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        var hash = await sha512Hash.ComputeHashAsync(ms);
+        await stream.CopyToAsync(ms, cancellationToken);
+        var hash = await sha512Hash.ComputeHashAsync(ms, cancellationToken);
         var documentContent = ms.GetBuffer();
         if (ms.Length != stream.Length || documentContent.Length != stream.Length)
         {
@@ -99,8 +99,7 @@ public class SdFactoryService : ISdFactoryService
             doc.DocumentTypeId = DocumentTypeId.SELF_DESCRIPTION_EDC;
         }
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>()
-            .CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, SetupOptionalFields);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, SetupOptionalFields);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;
     }
