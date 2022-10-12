@@ -128,28 +128,30 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task<List<(Guid CompanyId, string? BusinessPartnerNumber)>> ValidateCompanyDataAsync(ConnectorInputModel connectorInputModel)
     {
+        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
+
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
-                .CheckCountryExistsByAlpha2CodeAsync(connectorInputModel.Location.ToUpper()).ConfigureAwait(false))
+                .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"Location {connectorInputModel.Location} does not exist", nameof(connectorInputModel.Location));
+            throw new ControllerArgumentException($"Location {location} does not exist", nameof(connectorInputModel.Location));
         }
 
-        var parameters = connectorInputModel.Provider == connectorInputModel.Host || !connectorInputModel.Host.HasValue
-            ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(connectorInputModel.Provider, true), 1)
-            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (connectorInputModel.Provider, true), (connectorInputModel.Host.Value, false) }.AsEnumerable();
+        var parameters = provider == host || !host.HasValue
+            ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(provider, true), 1)
+            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host.Value, false) }.AsEnumerable();
         var companyData = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetConnectorCreationCompanyDataAsync(parameters)
             .ToListAsync().ConfigureAwait(false);
 
-        if (companyData.All(data => data.CompanyId != connectorInputModel.Provider))
+        if (companyData.All(data => data.CompanyId != provider))
         {
-            throw new ControllerArgumentException($"Company {connectorInputModel.Provider} does not exist", nameof(connectorInputModel.Provider));
+            throw new ControllerArgumentException($"Company {provider} does not exist", nameof(connectorInputModel.Provider));
         }
 
-        if (connectorInputModel.Provider != connectorInputModel.Host && connectorInputModel.Host.HasValue && companyData.All(data => data.CompanyId != connectorInputModel.Host))
+        if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
         {
-            throw new ControllerArgumentException($"Company {connectorInputModel.Host} does not exist", nameof(connectorInputModel.Host));
+            throw new ControllerArgumentException($"Company {host} does not exist", nameof(connectorInputModel.Host));
         }
 
         return companyData;
@@ -166,9 +168,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new UnexpectedConditionException($"provider company {provider} has no businessPartnerNumber assigned");
         }
 
-        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name,
-            location.ToUpper(), connectorUrl,
-            (connector) =>
+        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(
+            name,
+            location.ToUpper(),
+            connectorUrl,
+            connector =>
             {
                 connector.ProviderId = provider;
                 connector.HostId = host;
@@ -186,10 +190,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId)
-    {
-        await _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId).ConfigureAwait(false);
-    }
+    public Task DeleteConnectorAsync(Guid connectorId) =>
+        _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>

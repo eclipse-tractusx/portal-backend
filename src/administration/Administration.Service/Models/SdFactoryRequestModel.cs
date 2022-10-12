@@ -29,7 +29,12 @@ public record SdFactoryRequestModel(
     [property: JsonPropertyName("registrationNumber")] string RegistrationNumber,
     [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
     [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
-    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("type")] SdFactoryRequestModelSdType Type,
     [property: JsonPropertyName("bpn")] string Bpn,
     [property: JsonPropertyName("holder")] string Holder,
     [property: JsonPropertyName("issuer")] string Issuer);
+
+public enum SdFactoryRequestModelSdType
+{
+    LegalPerson
+}

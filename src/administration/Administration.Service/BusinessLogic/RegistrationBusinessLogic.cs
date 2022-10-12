@@ -140,34 +140,38 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
+        var (companyId, companyName, businessPartnerNumber, countryCode) = result;
 
-        var businessPartnerNumber = result.bpn;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {result.companyId} is empty", "bpn");
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty", "bpn");
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
 
-        var company = new Company(result.companyId);
-        _portalRepositories.Attach(company, c =>
+        Guid? documentId = null;
+        try
         {
-            c.CompanyStatusId = CompanyStatusId.ACTIVE;
-        });
+            await _custodianService.CreateWallet(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
 
-        _portalRepositories.Attach(new CompanyApplication(applicationId), ca =>
+            documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
+        }
+        finally
         {
-            ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-            ca.DateLastChanged = DateTimeOffset.UtcNow;    
-        });
+            _portalRepositories.Attach(new CompanyApplication(applicationId), ca =>
+            {
+                ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+                ca.DateLastChanged = DateTimeOffset.UtcNow;    
+            });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await _custodianService.CreateWallet(businessPartnerNumber, result.companyName, cancellationToken).ConfigureAwait(false);
-
-        var documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, result.countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
-        company.SelfDescriptionDocumentId = documentId;
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            _portalRepositories.Attach(new Company(companyId), c =>
+            {
+                c.CompanyStatusId = CompanyStatusId.ACTIVE;
+                c.SelfDescriptionDocumentId = documentId;
+            });
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
 
@@ -177,7 +181,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         if (assignedRoles == null) return true;
         
         var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-            .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+            .Select(initialClientRoles => (
+                client: initialClientRoles.Key,
+                roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
             .Where(clientRoles => clientRoles.roles.Any())
             .ToList();
 

@@ -5419,4 +5419,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 #pragma warning restore 612, 618
         }
     }
-} 
+}

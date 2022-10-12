@@ -18,15 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -35,7 +34,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 /// </summary>
 public class SdFactoryService : ISdFactoryService
 {
-    private const string SdType = "LegalPerson";
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IPortalRepositories _portalRepositories;
     private readonly SdFactorySettings _settings;
@@ -54,27 +52,47 @@ public class SdFactoryService : ISdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string bpn, CancellationToken cancellationToken)
+    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
-        var requestModel = new ConnectorSdFactoryRequestModel("ServiceOffering", connectorInputModel.ConnectorUrl,string.Empty, string.Empty, string.Empty, _settings.SdFactoryIssuerBpn, bpn);
+        var requestModel = new ConnectorSdFactoryRequestModel(
+            "ServiceOffering",
+            connectorInputModel.ConnectorUrl,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            _settings.SdFactoryIssuerBpn,
+            businessPartnerNumber);
+
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
-        return await ProcessResponse(bpn, response, cancellationToken).ConfigureAwait(false);
+
+        return await ProcessResponse(businessPartnerNumber, response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string bpn, CancellationToken cancellationToken)
+    public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        var requestModel = new SdFactoryRequestModel(applicationId.ToString(), countryCode, countryCode, SdType, bpn, bpn, _settings.SdFactoryIssuerBpn);
+
+        var requestModel = new SdFactoryRequestModel(
+            applicationId.ToString(),
+            countryCode,
+            countryCode,
+            SdFactoryRequestModelSdType.LegalPerson,
+            businessPartnerNumber,
+            businessPartnerNumber,
+            _settings.SdFactoryIssuerBpn);
+
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
-        return await ProcessResponse(bpn, response, cancellationToken).ConfigureAwait(false);
+
+        return await ProcessResponse(businessPartnerNumber, response, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Guid> ProcessResponse(string bpn, HttpResponseMessage response, CancellationToken cancellationToken)
+    private async Task<Guid> ProcessResponse(string businessPartnerNumber, HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (!response.IsSuccessStatusCode)
         {
@@ -94,7 +112,8 @@ public class SdFactoryService : ISdFactoryService
                 $"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
         }
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{bpn}.json", documentContent, hash, DocumentTypeId.SELF_DESCRIPTION_EDC, null);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{businessPartnerNumber}.json", documentContent, hash, DocumentTypeId.SELF_DESCRIPTION_EDC, null);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;
     }
