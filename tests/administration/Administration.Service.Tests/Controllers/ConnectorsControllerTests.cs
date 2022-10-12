@@ -31,14 +31,14 @@ using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers;
 
-public class ConnectorsControllerTest
+public class ConnectorsControllerTests
 {
     private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private const string AccessToken = "superSafeToken";
     private readonly IConnectorsBusinessLogic _logic;
     private readonly ConnectorsController _controller;
 
-    public ConnectorsControllerTest()
+    public ConnectorsControllerTests()
     {
         _logic = A.Fake<IConnectorsBusinessLogic>();
         this._controller = new ConnectorsController(_logic);
