@@ -96,7 +96,7 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Route("")]
     [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
@@ -117,8 +117,8 @@ public class ConnectorsController : ControllerBase
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("managed")]
-    //[Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(CreatedAtRouteResult), StatusCodes.Status201Created)]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
