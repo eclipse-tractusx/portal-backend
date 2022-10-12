@@ -105,7 +105,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             if (iamUserCompanyId == Guid.Empty)
             {
                 iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>()
-                    .GetTechnicalUserCompany(iamUserId)
+                    .GetServiceAccountCompany(iamUserId)
                     .ConfigureAwait(false);
             }
 

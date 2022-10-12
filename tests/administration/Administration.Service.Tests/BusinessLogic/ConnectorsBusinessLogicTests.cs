@@ -285,9 +285,9 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Not.Matches(x => x == _iamUserId)))
             .ReturnsLazily(() => Guid.Empty);
 
-        A.CallTo(() => _userRepository.GetTechnicalUserCompany(A<string>.That.Matches(x => x == _technicalUserId)))
+        A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Matches(x => x == _technicalUserId)))
             .ReturnsLazily(() => _validCompanyId);
-        A.CallTo(() => _userRepository.GetTechnicalUserCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
+        A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
             .ReturnsLazily(() => Guid.Empty);
 
         A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
