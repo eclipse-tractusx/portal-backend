@@ -18,13 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
@@ -32,10 +30,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FakeItEasy;
-using FluentAssertions;
-using FluentAssertions.Common;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;

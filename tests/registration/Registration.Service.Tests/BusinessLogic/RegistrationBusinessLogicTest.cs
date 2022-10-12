@@ -19,6 +19,11 @@
  ********************************************************************************/
 
 using AutoFixture;
+using FakeItEasy;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -27,11 +32,6 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
-using FakeItEasy;
-using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;

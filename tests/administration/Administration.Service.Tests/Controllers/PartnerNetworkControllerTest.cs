@@ -18,10 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Threading.Tasks;
+using FakeItEasy;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
-using FakeItEasy;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers;

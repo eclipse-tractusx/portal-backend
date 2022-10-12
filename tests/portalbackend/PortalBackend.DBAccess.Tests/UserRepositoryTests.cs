@@ -20,9 +20,9 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
