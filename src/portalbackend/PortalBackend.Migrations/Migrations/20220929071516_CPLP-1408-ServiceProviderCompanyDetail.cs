@@ -65,4 +65,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 schema: "portal");
         }
     }
-}
+} 

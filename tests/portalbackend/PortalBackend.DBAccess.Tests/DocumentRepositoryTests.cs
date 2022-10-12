@@ -61,10 +61,9 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var content = Encoding.UTF8.GetBytes(test);
 
         // Act
-        var result = sut.CreateDocument("New Document", content, content, doc =>
+        var result = sut.CreateDocument("New Document", content, content, DocumentTypeId.DATA_CONTRACT, doc =>
         {
             doc.DocumentStatusId = DocumentStatusId.INACTIVE;
-            doc.DocumentTypeId = DocumentTypeId.DATA_CONTRACT;
         });
 
         // Assert
