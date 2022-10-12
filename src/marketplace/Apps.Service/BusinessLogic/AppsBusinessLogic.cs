@@ -88,6 +88,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new NotFoundException($"appId {appId} does not exist");
         }
+
         return new AppDetailResponse(
             result.Id,
             result.Title ?? Constants.ErrorString,
@@ -101,7 +102,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.LongDescription ?? Constants.ErrorString,
             result.Price ?? Constants.ErrorString,
             result.Tags,
-            result.IsSubscribed,
+            result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
             result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
         );
