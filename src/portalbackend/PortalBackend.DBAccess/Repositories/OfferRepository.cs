@@ -269,7 +269,7 @@ public class OfferRepository : IOfferRepository
                     a.ProviderCompany!.Name,
                     a.UseCases.Select(uc => uc.Name),
                     a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.AgreementAssignedOffers.Where(agreementtAssignedOffer=>agreementtAssignedOffer.Agreement!.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId)).Select(agreementtAssignedOffer => agreementtAssignedOffer.Agreement!.Id),
+                    a.AgreementAssignedOffers.Where(agreementtAssignedOffer=>agreementtAssignedOffer.Agreement!.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId)).Select(aaot => aaot.AgreementId),
                     a.SupportedLanguages.Select(l => l.ShortName),
                     a.OfferLicenses
                         .Select(license => license.Licensetext)
