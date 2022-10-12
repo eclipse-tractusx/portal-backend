@@ -113,9 +113,9 @@ public interface IUserRepository
     IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
 
     /// <summary>
-    /// Gets a company Id for the given technical user
+    /// Gets a company Id for the given service account
     /// </summary>
-    /// <param name="iamUserId">Id of the technical user</param>
+    /// <param name="iamUserId">Id of the service account</param>
     /// <returns>The Id of the company</returns>
-    Task<Guid> GetTechnicalUserCompany(string iamUserId);
+    Task<Guid> GetServiceAccountCompany(string iamUserId);
 }

@@ -408,7 +408,7 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<Guid> GetTechnicalUserCompany(string iamUserId) =>
+    public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
         _dbContext.IamServiceAccounts
             .Where(x => x.UserEntityId == iamUserId)
             .Select(x => x.CompanyServiceAccount!.CompanyId)
