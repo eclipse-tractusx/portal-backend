@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EnpointSetup;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
 public static class Paths
 {
