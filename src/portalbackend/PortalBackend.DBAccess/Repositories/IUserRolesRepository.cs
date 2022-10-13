@@ -60,6 +60,5 @@ public interface IUserRolesRepository
     /// <returns>Returns a list of user role ids</returns>
     Task<List<string>> GetUserRolesForOfferIdAsync(Guid offerId);
 
-    IAsyncEnumerable<UserRoleWithId> GetAssignedRolesForDeletion(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
-    IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
+    IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
 }
