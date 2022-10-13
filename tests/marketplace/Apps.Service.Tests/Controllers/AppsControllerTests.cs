@@ -24,8 +24,6 @@ using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.App.Service.Tests.Controllers;
