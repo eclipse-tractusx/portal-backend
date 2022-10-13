@@ -100,26 +100,17 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-    public IAsyncEnumerable<UserRoleWithId> GetAssignedRolesForDeletion(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
+    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(role =>
                 role.OfferId == offerId &&
-                userRoles.Contains(role.UserRoleText) &&
-                role.CompanyUsers.Any(user => user.Id == companyUserId))
-            .Select(role => new UserRoleWithId( role.UserRoleText, role.Id))
-            .ToAsyncEnumerable();
-
-    public IAsyncEnumerable<UserRoleWithId> GetRolesToAdd(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
-        _dbContext.UserRoles
-            .AsNoTracking()
-            .Where(userRole =>
-                userRole.OfferId == offerId &&
-                userRoles.Contains(userRole.UserRoleText) && 
-                userRole.CompanyUsers.All(user => user.Id != companyUserId))
-            .Select(userRole => new UserRoleWithId(
+                (userRoles.Contains(role.UserRoleText) || 
+                role.CompanyUsers.Any(user => user.Id == companyUserId)))
+            .Select(userRole => new UserRoleModificationData(
                 userRole.UserRoleText,
-                userRole.Id
+                userRole.Id,
+                userRole.CompanyUsers.Any(user => user.Id == companyUserId)
             ))
             .ToAsyncEnumerable();
 

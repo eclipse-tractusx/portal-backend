@@ -21,3 +21,5 @@
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record UserRoleWithId(string CompanyUserRoleText, Guid CompanyUserRoleId);
+
+public record UserRoleModificationData(string CompanyUserRoleText, Guid CompanyUserRoleId, bool IsAssignedToUser);
