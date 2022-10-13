@@ -115,7 +115,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
-    
+    public virtual DbSet<AuditOffer20221013> AuditOffer20221013 { get; set; } = default!;
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -337,6 +337,8 @@ public class PortalDbContext : DbContext
                 .WithOne(d => d.Offer)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<Offer, AuditOffer20221013>();
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
