@@ -446,6 +446,11 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
+            entity.HasOne(p => p.SelfDescriptionDocument)
+                .WithMany(d => d.Companies)
+                .HasForeignKey(d => d.SelfDescriptionDocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasMany(p => p.UseCases)
                 .WithMany(p => p.Companies)
                 .UsingEntity<CompanyAssignedUseCase>(
@@ -774,6 +779,11 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Connector>(entity =>
         {
+            entity.HasOne(d => d.SelfDescriptionDocument)
+                .WithOne(p => p!.Connector!)
+                .HasForeignKey<Connector>(d => d.SelfDescriptionDocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
             entity.HasOne(d => d.Status)
                 .WithMany(p => p.Connectors)
                 .HasForeignKey(d => d.StatusId)

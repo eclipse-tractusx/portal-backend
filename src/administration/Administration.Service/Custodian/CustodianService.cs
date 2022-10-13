@@ -45,13 +45,13 @@ public class CustodianService : ICustodianService
     }
 
 
-    public async Task CreateWallet(string bpn, string name)
+    public async Task CreateWallet(string bpn, string name, CancellationToken cancellationToken)
     {
         var token = await GetToken();
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var requestBody = new { name = name, bpn = bpn };
         var stringContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-        var result = await _custodianHttpClient.PostAsync($"/api/wallets", stringContent);
+        var result = await _custodianHttpClient.PostAsync($"/api/wallets", stringContent, cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
             _logger.LogError($"Error on creating Wallet HTTP Response Code {result.StatusCode}");

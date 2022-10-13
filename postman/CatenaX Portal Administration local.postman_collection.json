@@ -384,7 +384,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/administration/user/owncompany/apps/{{appId}}/users?firstName=Testuser",
+					"raw": "https://localhost:5001/api/administration/user/owncompany/apps/{{appId}}/users",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -398,12 +398,6 @@
 						"apps",
 						"{{appId}}",
 						"users"
-					],
-					"query": [
-						{
-							"key": "firstName",
-							"value": "Testuser"
-						}
 					]
 				}
 			},
@@ -512,7 +506,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/administration/serviceprovider/owncompany",
+					"raw": "https://localhost:5001/api/administration/serviceprovider/9ec31a4d-b023-4752-91eb-cc58067f6981",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -522,7 +516,7 @@
 						"api",
 						"administration",
 						"serviceprovider",
-						"owncompany"
+						"9ec31a4d-b023-4752-91eb-cc58067f6981"
 					]
 				}
 			},
