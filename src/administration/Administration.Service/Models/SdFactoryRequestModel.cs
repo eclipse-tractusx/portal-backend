@@ -18,13 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
+using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public interface ICustodianService
+/// <summary>
+/// Model used to request connector registration at sd factory.
+/// </summary>
+public record SdFactoryRequestModel(
+    [property: JsonPropertyName("registrationNumber")] string RegistrationNumber,
+    [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
+    [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
+    [property: JsonPropertyName("type")] SdFactoryRequestModelSdType Type,
+    [property: JsonPropertyName("bpn")] string Bpn,
+    [property: JsonPropertyName("holder")] string Holder,
+    [property: JsonPropertyName("issuer")] string Issuer);
+
+public enum SdFactoryRequestModelSdType
 {
-    public Task<List<GetWallets>> GetWallets();
-
-    public Task CreateWallet(string bpn, string name, CancellationToken cancellationToken);
+    LegalPerson
 }

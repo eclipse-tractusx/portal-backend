@@ -18,22 +18,38 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Service to handle communication with the connectors sd factory
+/// Settings used in business logic concerning connectors.
 /// </summary>
-public interface IConnectorsSdFactoryService
+public class SdFactorySettings
 {
     /// <summary>
-    /// Registers the Connector at the connectorsSdFactory
+    /// SD Factory endpoint for registering connectors.
     /// </summary>
-    /// <param name="connectorInputModel">the connector input model</param>
-    /// <param name="accessToken">the access token</param>
-    /// <param name="bpn">the bpn</param>
-    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task RegisterConnector(ConnectorInputModel connectorInputModel, string accessToken, string bpn);
+    [Required]
+    public string SdFactoryUrl { get; set; } = null!;
+
+    /// <summary>
+    /// BPN of the issuer for the sd factory
+    /// </summary>
+    [Required]
+    public string SdFactoryIssuerBpn { get; set; } = null!;
+}
+
+public static class SdFactorySettingsExtensions
+{
+    public static IServiceCollection ConfigureSdFactorySettings(
+        this IServiceCollection services,
+        IConfigurationSection section
+        )
+    {
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        return services;
+    }
 }

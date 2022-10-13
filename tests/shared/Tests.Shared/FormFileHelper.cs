@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,13 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 
-public interface ICustodianService
+public static class FormFileHelper
 {
-    public Task<List<GetWallets>> GetWallets();
+    public static IFormFile GetFormFile(string content, string fileName, string contentType)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        writer.Write(content);
+        writer.Flush();
+        stream.Position = 0;
 
-    public Task CreateWallet(string bpn, string name, CancellationToken cancellationToken);
+        var headers = new HeaderDictionary {{HeaderNames.ContentType, contentType}};
+        return new FormFile(stream, 0, stream.Length, "id_from_form", fileName)
+        {
+            Headers = headers 
+        };
+    }
 }

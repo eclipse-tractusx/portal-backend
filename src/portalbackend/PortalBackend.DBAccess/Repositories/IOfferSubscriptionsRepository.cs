@@ -78,7 +78,7 @@ public interface IOfferSubscriptionsRepository
     /// <param name="iamUserId">Id of the iamUser.</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the offer details.</returns>
-    Task<OfferSubscriptionDetailData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
+    Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the auto setup data for the given offer subscription id
