@@ -45,7 +45,7 @@ public class ApplicationRepository : IApplicationRepository
 
     public CompanyApplication AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication>? setOptionalParameters = null)
     {
-        var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, default, default, default)).Entity;
+        var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, Guid.Empty, default, default)).Entity;
         setOptionalParameters?.Invoke(companyApplication);
         return companyApplication;
     }
