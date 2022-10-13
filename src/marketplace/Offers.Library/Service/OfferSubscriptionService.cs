@@ -68,6 +68,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
 
         var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
         var autoSetupResult = string.Empty;
         if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
         {
