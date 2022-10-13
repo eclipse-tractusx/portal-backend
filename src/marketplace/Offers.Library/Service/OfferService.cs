@@ -261,7 +261,7 @@ public class OfferService : IOfferService
         
         await _notificationService.CreateNotifications(
             companyAdminRoles,
-            offerDetails.CompanyUserId,
+            offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
             new (string?, NotificationTypeId)[]
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
