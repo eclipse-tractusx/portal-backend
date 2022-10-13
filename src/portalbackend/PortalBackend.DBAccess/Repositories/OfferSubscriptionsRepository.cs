@@ -136,12 +136,13 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<OfferSubscriptionDetailData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
+    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId && x.Offer!.OfferTypeId == offerTypeId)
-            .Select(x => new OfferSubscriptionDetailData(
+            .Select(x => new OfferSubscriptionTransferData(
                     x.OfferSubscriptionStatusId, 
                     x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
+                    x.Offer!.ProviderCompany!.CompanyServiceAccounts.Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
                     x.Company!.Name,
                     x.CompanyId,
                     x.RequesterId,
@@ -150,7 +151,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.Company.BusinessPartnerNumber!
             ))
             .SingleOrDefaultAsync();
-    
+
     /// <inheritdoc />
     public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
         _context.OfferSubscriptions
