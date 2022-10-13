@@ -37,12 +37,9 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
-    /// <param name="offerService">Access to the offer service</param>
-    /// <param name="settings">Access to the settings</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories, 
-        IOfferSetupService offerSetupService, 
-        IOfferService offerService)
+        IOfferSetupService offerSetupService)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
