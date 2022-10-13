@@ -32,6 +32,7 @@
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.17.0" />
     <PackageReference Include="FakeItEasy" Version="7.3.1" />
+    <PackageReference Include="FluentAssertions" Version="6.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="AutoFixture" Version="4.17.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -48,6 +49,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\registration\Registration.Service\Registration.Service.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 
 </Project>

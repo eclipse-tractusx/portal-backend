@@ -23,6 +23,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -64,7 +65,7 @@ public class OfferSetupServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        var sut = new OfferSetupService(_httpClientFactory);
+        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
 
         // Act
         async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
@@ -78,11 +79,11 @@ public class OfferSetupServiceTests
     public async Task AutoSetupOffer_WithDnsError_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new HttpRequestException ("DNS Error"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException ("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        var sut = new OfferSetupService(_httpClientFactory);
+        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
 
         // Act
         async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
@@ -96,11 +97,11 @@ public class OfferSetupServiceTests
     public async Task AutoSetupOffer_WithTimeout_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new TaskCanceledException("Timed out"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new TaskCanceledException("Timed out"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        var sut = new OfferSetupService(_httpClientFactory);
+        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
 
         // Act
         async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);

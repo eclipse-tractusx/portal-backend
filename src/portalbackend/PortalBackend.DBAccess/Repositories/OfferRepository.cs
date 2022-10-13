@@ -117,7 +117,7 @@ public class OfferRepository : IOfferRepository
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
                 offer.SupportedLanguages.Select(l => l.ShortName),
-                offer.Documents.Select(d => new DocumentTypeData(d.DocumentType!.Id, d.Id, d.DocumentName))
+                offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
             ))
             .SingleOrDefaultAsync();
 
@@ -132,6 +132,10 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId) =>
         _context.CompanyUserAssignedAppFavourites.Add(new CompanyUserAssignedAppFavourite(appId, companyUserId)).Entity;
+
+    ///<inheritdoc/>
+    public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
+        _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
 
     /// <inheritdoc />
     public void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases) =>
@@ -276,8 +280,29 @@ public class OfferRepository : IOfferRepository
                     a.OfferDetailImages.Select(image => image.ImageUrl),
                     a.MarketingUrl,
                     a.ContactEmail,
-                    a.ContactNumber),
+                    a.ContactNumber,
+                    a.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
                 a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
+            .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool,bool>(
+                true,
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
+            ))
+            .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId && offer.OfferStatusId == offerStatusId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool,Guid>(
+                true,
+                offer.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id
+            ))
             .SingleOrDefaultAsync();
 }
