@@ -58,7 +58,7 @@ public class DocumentsController : ControllerBase
     [Authorize(Roles = "view_documents")]
     [Produces("application/pdf")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-    public async Task<ActionResult> GetDocumentContentFileAsync([FromQuery] Guid documentId)
+    public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
         var (fileName, content) = await this.WithIamUserId(adminId => _businessLogic.GetDocumentAsync(documentId, adminId)).ConfigureAwait(false);
         return File(content, "application/pdf", fileName);
