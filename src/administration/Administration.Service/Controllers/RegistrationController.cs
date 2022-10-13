@@ -86,6 +86,7 @@ public class RegistrationController : ControllerBase
     /// Approves the partner request
     /// </summary>
     /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>the result as a boolean</returns>
     /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
     /// <response code="200">the result as a boolean.</response>
@@ -101,8 +102,8 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId) =>
-        this.WithIamUserId(iamUserId => _logic.ApprovePartnerRequest(iamUserId, applicationId));
+    public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId, CancellationToken cancellationToken) =>
+        this.WithIamUserAndBearerToken((auth) => _logic.ApprovePartnerRequest(auth.iamUserId, auth.bearerToken, applicationId, cancellationToken));
 
     /// <summary>
     /// Decline the Partner Registration Request
