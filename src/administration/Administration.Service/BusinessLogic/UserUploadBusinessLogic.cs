@@ -63,7 +63,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
             line => {
-                var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsShardIdp);
+                var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsSharedIdp);
                 return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.ProviderUserName, parsed.ProviderUserId);
             },
             lines =>
