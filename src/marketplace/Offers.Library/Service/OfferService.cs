@@ -327,10 +327,17 @@ public class OfferService : IOfferService
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
         var offerAgreementData = new List<OfferAgreement>();
-        await foreach(var item in _portalRepositories.GetInstance<IOfferRepository>().GetAgreementConsentAsync(offerDetail.OfferProviderData.Agreements).ConfigureAwait(false))
+        var agreementIds = offerDetail.OfferProviderData.Agreements.Select(x=>x.Id);
+        await foreach (var item in _portalRepositories.GetInstance<IOfferRepository>().GetAgreementConsentAsync(agreementIds).ConfigureAwait(false))
         {
             offerAgreementData.Add(new OfferAgreement(item.Id, item.Name, item.ConsentStatus));
         }
+        
+        foreach (var (agreementId, name) in offerDetail.OfferProviderData.Agreements.ExceptBy(offerAgreementData.Select(x => x.Id), input => input.Id).Select(input => (input.Id, input.Name)))
+        {
+            offerAgreementData.Add(new OfferAgreement(agreementId, name, string.Empty));
+        }
+
         return new OfferProviderResponse(
             offerDetail.OfferProviderData.Title,
             offerDetail.OfferProviderData.Provider,
