@@ -36,6 +36,8 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
+    Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null);
+
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     
     Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
