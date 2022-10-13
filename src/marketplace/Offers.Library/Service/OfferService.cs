@@ -219,7 +219,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
         }
 
-        if (offerDetails.CompanyUserId == Guid.Empty)
+        if (offerDetails.CompanyUserId == Guid.Empty && offerDetails.TechnicalUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
@@ -261,7 +261,7 @@ public class OfferService : IOfferService
         
         await _notificationService.CreateNotifications(
             companyAdminRoles,
-            offerDetails.CompanyUserId,
+            offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
             new (string?, NotificationTypeId)[]
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
@@ -315,7 +315,7 @@ public class OfferService : IOfferService
         return service.Id;
     }
 
-    public async Task<OfferProviderData> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
+    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
     {
         var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, userId, offerTypeId).ConfigureAwait(false);
         if (offerDetail == default)
@@ -326,7 +326,21 @@ public class OfferService : IOfferService
         {
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
-        return offerDetail.OfferProviderData;
+        return new OfferProviderResponse(
+            offerDetail.OfferProviderData.Title,
+            offerDetail.OfferProviderData.Provider,
+            offerDetail.OfferProviderData.LeadPictureUri,
+            offerDetail.OfferProviderData.ProviderName,
+            offerDetail.OfferProviderData.UseCase,
+            offerDetail.OfferProviderData.Descriptions,
+            offerDetail.OfferProviderData.Agreements,
+            offerDetail.OfferProviderData.SupportedLanguageCodes,
+            offerDetail.OfferProviderData.Price,
+            offerDetail.OfferProviderData.Images,
+            offerDetail.OfferProviderData.ProviderUri,
+            offerDetail.OfferProviderData.ContactEmail,
+            offerDetail.OfferProviderData.ContactNumber,
+            offerDetail.OfferProviderData.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))));
     }
     
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

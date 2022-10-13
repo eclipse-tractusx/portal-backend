@@ -74,18 +74,9 @@ public class OfferSubscriptionServiceTests
         _offerSetupService = A.Fake<IOfferSetupService>();
         
 
-        SetupRepositories(companyUser, iamUser);
+        SetupRepositories(iamUser);
         SetupServices(iamUser);
 
-        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>()
-        {
-            {"Test", new[] {"Technical User"}}
-        };
-        
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>()
-        {
-            {"CatenaX", new[] {"Company Admin"}}
-        };
         _fixture.Inject(_offerSetupService);
     }
 
@@ -207,7 +198,7 @@ public class OfferSubscriptionServiceTests
 
     #region Setup
 
-    private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
+    private void SetupRepositories(IamUser iamUser)
     {
         var serviceDetailData = new AsyncEnumerableStub<ValueTuple<Guid, string?, string, string?, string?, string?>>(_fixture.CreateMany<ValueTuple<Guid, string?, string, string?, string?, string?>>(5));
         var serviceDetail = _fixture.Build<OfferDetailData>()
