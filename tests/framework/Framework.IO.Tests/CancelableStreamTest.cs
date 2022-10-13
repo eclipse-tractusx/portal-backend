@@ -32,7 +32,6 @@ public class CancelableStreamTest
     private readonly Stream _stream;
     private readonly Memory<byte> _memory;
     private readonly ReadOnlyMemory<byte> _readOnlyMemory;
-    private readonly CancellationToken _cancellationToken;
     private readonly int _numBytesFirstRead;
     private readonly int _numBytesSecondRead;
     private readonly Func<int> _getNumBytes;
@@ -49,7 +48,6 @@ public class CancelableStreamTest
         _stream = A.Fake<Stream>();
         _memory = _fixture.Create<Memory<byte>>();
         _readOnlyMemory = _fixture.Create<ReadOnlyMemory<byte>>();
-        _cancellationToken = new CancellationToken();
         _numBytesFirstRead = _fixture.Create<int>();
         _numBytesSecondRead = _fixture.Create<int>();
         _getNumBytes = A.Fake<Func<int>>();
