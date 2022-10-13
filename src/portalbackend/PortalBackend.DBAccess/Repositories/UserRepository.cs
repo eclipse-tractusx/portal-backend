@@ -112,16 +112,19 @@ public class UserRepository : IUserRepository
         string? userEntityId = null,
         string? firstName = null,
         string? lastName = null,
-        string? email = null) =>
-        _dbContext.CompanyUsers
+        string? email = null)
+        {
+        char[] escapeChar = { '%', '_', '[', ']', '^' };
+        return _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
             .Where(companyUser =>
-                userEntityId != null ? companyUser.IamUser!.UserEntityId == userEntityId : true
-                && companyUserId.HasValue ? companyUser.Id == companyUserId!.Value : true
-                && firstName != null ? companyUser.Firstname == firstName : true
-                && lastName != null ? companyUser.Lastname == lastName : true
-                && email != null ? companyUser.Email == email : true);
+                (userEntityId == null || companyUser.IamUser!.UserEntityId == userEntityId) &&
+                (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
+                (firstName == null || companyUser.Firstname == firstName) &&
+                (lastName == null || companyUser.Lastname == lastName) &&
+                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%")));
+        }
 
     public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
@@ -145,13 +148,20 @@ public class UserRepository : IUserRepository
             .Select(companyUser => companyUser.IamUser!.UserEntityId)
             .AsAsyncEnumerable();
 
-    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
+    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanyAndCompanyUserId(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => new ValueTuple<Guid, Guid>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId))
             .SingleOrDefaultAsync();
-    
+
+    public Task<Guid> GetOwnCompanyId(string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser.CompanyUser!.CompanyId)
+            .SingleOrDefaultAsync();
+
     public Task<(Guid companyId, Guid companyUserId, string companyName, string? userEmail)> GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
@@ -398,7 +408,7 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<Guid> GetTechnicalUserCompany(string iamUserId) =>
+    public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
         _dbContext.IamServiceAccounts
             .Where(x => x.UserEntityId == iamUserId)
             .Select(x => x.CompanyServiceAccount!.CompanyId)

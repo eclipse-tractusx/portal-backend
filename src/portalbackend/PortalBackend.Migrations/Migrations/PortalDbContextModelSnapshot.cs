@@ -652,6 +652,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<Guid?>("SelfDescriptionDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("self_description_document_id");
+
                     b.Property<string>("Shortname")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -670,6 +674,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("CompanyStatusId")
                         .HasDatabaseName("ix_companies_company_status_id");
+
+                    b.HasIndex("SelfDescriptionDocumentId")
+                        .HasDatabaseName("ix_companies_self_description_document_id");
 
                     b.ToTable("companies", "portal");
                 });
@@ -1262,6 +1269,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("provider_id");
 
+                    b.Property<Guid?>("SelfDescriptionDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("self_description_document_id");
+
                     b.Property<int>("StatusId")
                         .HasColumnType("integer")
                         .HasColumnName("status_id");
@@ -1281,6 +1292,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
                     b.HasIndex("ProviderId")
                         .HasDatabaseName("ix_connectors_provider_id");
+
+                    b.HasIndex("SelfDescriptionDocumentId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_connectors_self_description_document_id");
 
                     b.HasIndex("StatusId")
                         .HasDatabaseName("ix_connectors_status_id");
@@ -3279,7 +3294,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("document_status_id");
 
-                    b.Property<int?>("DocumentTypeId")
+                    b.Property<int>("DocumentTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("document_type_id");
 
@@ -4598,9 +4613,16 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_companies_company_statuses_company_status_id");
 
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "SelfDescriptionDocument")
+                        .WithMany("Companies")
+                        .HasForeignKey("SelfDescriptionDocumentId")
+                        .HasConstraintName("fk_companies_documents_self_description_document_id");
+
                     b.Navigation("Address");
 
                     b.Navigation("CompanyStatus");
+
+                    b.Navigation("SelfDescriptionDocument");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
@@ -4831,6 +4853,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_connectors_companies_provider_id");
 
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "SelfDescriptionDocument")
+                        .WithOne("Connector")
+                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", "SelfDescriptionDocumentId")
+                        .HasConstraintName("fk_connectors_documents_self_description_document_id");
+
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorStatus", "Status")
                         .WithMany("Connectors")
                         .HasForeignKey("StatusId")
@@ -4848,6 +4875,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Provider");
+
+                    b.Navigation("SelfDescriptionDocument");
 
                     b.Navigation("Status");
 
@@ -4951,6 +4980,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentType", "DocumentType")
                         .WithMany("Documents")
                         .HasForeignKey("DocumentTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_documents_document_types_document_type_id");
 
                     b.Navigation("CompanyUser");
@@ -5387,6 +5418,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
+                    b.Navigation("Companies");
+
+                    b.Navigation("Connector");
+
                     b.Navigation("Consents");
                 });
 

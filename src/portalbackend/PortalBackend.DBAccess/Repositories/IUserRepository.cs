@@ -37,7 +37,8 @@ public interface IUserRepository
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
     Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
     IAsyncEnumerable<string> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId);
-    Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId);
+    Task<(Guid companyId, Guid companyUserId)> GetOwnCompanyAndCompanyUserId(string iamUserId);
+    Task<Guid> GetOwnCompanyId(string iamUserId);
     Task<(Guid companyId, Guid companyUserId, string companyName, string? userEmail)> GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(string iamUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
@@ -110,6 +111,13 @@ public interface IUserRepository
     /// <param name="userRoleIds">User role ids</param>
     /// <returns>Returns a list of the company user ids</returns>
     IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
+
+    /// <summary>
+    /// Gets a company Id for the given service account
+    /// </summary>
+    /// <param name="iamUserId">Id of the service account</param>
+    /// <returns>The Id of the company</returns>
+    Task<Guid> GetServiceAccountCompany(string iamUserId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 }
