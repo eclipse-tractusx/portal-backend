@@ -48,7 +48,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken, OfferTypeId offerTypeId)
     {
         var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId, offerTypeId).ConfigureAwait(false);
         if (serviceDetails == null)
@@ -73,7 +73,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         {
             try
             {
-                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
             }
             catch (Exception e)
             {
