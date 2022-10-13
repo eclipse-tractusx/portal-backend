@@ -39,7 +39,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<Guid> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents);
+public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents);
 
 /// <summary>
 /// Model for Offer Description
@@ -57,4 +57,12 @@ public record OfferDescriptionData(string languageCode, string longDescription, 
 /// <param name="Name"></param>
 /// <param name="ConsentStatus"></param>
 /// <returns></returns>
-public record OfferAgreement(Guid? Id, string? Name, ConsentStatusId ConsentStatus);
+public record OfferAgreement(Guid? Id, string? Name, string ConsentStatus);
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="Id"></param>
+/// <param name="Name"></param>
+/// <returns></returns>
+public record AgreementAssignedOfferData(Guid Id, string? Name);
