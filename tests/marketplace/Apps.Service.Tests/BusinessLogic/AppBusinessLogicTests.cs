@@ -22,6 +22,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
@@ -142,18 +143,20 @@ public class AppBusinessLogicTests
     [Fact]
     public async Task AutoSetupService_ReturnsExcepted()
     {
+        var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
         // Arrange
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), "abcSecret", "sa1"), new ClientInfoData(Guid.NewGuid().ToString())));
+            .ReturnsLazily(() => offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
-        var sut = _fixture.Create<AppsBusinessLogic>();
+
+        var sut = new AppsBusinessLogic(null!, null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
 
         // Act
         var result = await sut.AutoSetupAppAsync(data, IamUserId).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
+        result.Should().Be(offerAutoSetupResponseData);
     }
 
     #endregion
