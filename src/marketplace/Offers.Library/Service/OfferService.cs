@@ -219,7 +219,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
         }
 
-        if (offerDetails.CompanyUserId == Guid.Empty)
+        if (offerDetails.CompanyUserId == Guid.Empty && offerDetails.TechnicalUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
