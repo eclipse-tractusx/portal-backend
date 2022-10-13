@@ -148,13 +148,20 @@ public class UserRepository : IUserRepository
             .Select(companyUser => companyUser.IamUser!.UserEntityId)
             .AsAsyncEnumerable();
 
-    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanAndCompanyUseryId(string iamUserId) =>
+    public Task<(Guid companyId, Guid companyUserId)> GetOwnCompanyAndCompanyUserId(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => new ValueTuple<Guid, Guid>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId))
             .SingleOrDefaultAsync();
-    
+
+    public Task<Guid> GetOwnCompanyId(string iamUserId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId)
+            .Select(iamUser => iamUser.CompanyUser!.CompanyId)
+            .SingleOrDefaultAsync();
+
     public Task<(Guid companyId, Guid companyUserId, string companyName, string? userEmail)> GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
@@ -399,4 +406,11 @@ public class UserRepository : IUserRepository
                 x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
+        _dbContext.IamServiceAccounts
+            .Where(x => x.UserEntityId == iamUserId)
+            .Select(x => x.CompanyServiceAccount!.CompanyId)
+            .SingleOrDefaultAsync();
 }

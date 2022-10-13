@@ -160,7 +160,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Setup
     
     private async Task<(CompanyRepository, PortalDbContext)> CreateSut()

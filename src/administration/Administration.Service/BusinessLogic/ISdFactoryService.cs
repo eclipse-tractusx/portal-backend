@@ -18,38 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Service to handle communication with the connectors sd factory
 /// </summary>
-public class ConnectorsSettings
+public interface ISdFactoryService
 {
     /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
+    /// Registers the Connector at the connectorsSdFactory
     /// </summary>
-    [Required]
-    public int MaxPageSize { get; set; }
+    /// <param name="connectorInputModel">the connector input model</param>
+    /// <param name="accessToken">the access token</param>
+    /// <param name="businessPartnerNumber">the bpn</param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+    Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// SD Factory endpoint for registering connectors.
-    /// </summary>
-    [Required]
-    public string SdFactoryUrl { get; set; } = null!;
-}
-
-public static class ConnectorsSettingsExtensions
-{
-    public static IServiceCollection ConfigureConnectorsSettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
-    {
-        services.AddOptions<ConnectorsSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        return services;
-    }
+    Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
 }
