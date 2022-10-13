@@ -24,6 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -155,11 +156,19 @@ public class UserRepository : IUserRepository
             .Select(iamUser => new ValueTuple<Guid, Guid>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId))
             .SingleOrDefaultAsync();
     
-    public Task<(Guid companyId, Guid companyUserId, string companyName, string? userEmail)> GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(string iamUserId) =>
+    public Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => new ValueTuple<Guid, Guid, string, string?>(iamUser.CompanyUser!.CompanyId, iamUser.CompanyUserId, iamUser.CompanyUser!.Company!.Name, iamUser.CompanyUser!.Email))
+            .Select(iamUser => new ValueTuple<CompanyInformationData, Guid, string?>(
+                new CompanyInformationData(
+                    iamUser.CompanyUser!.CompanyId,
+                    iamUser.CompanyUser.Company!.Name,
+                    iamUser.CompanyUser.Company!.Address!.CountryAlpha2Code,
+                    iamUser.CompanyUser.Company!.BusinessPartnerNumber
+                ),
+                iamUser.CompanyUserId, 
+                iamUser.CompanyUser!.Company!.Name))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>
