@@ -32,13 +32,13 @@ public interface IDocumentRepository
     /// <summary>
     /// Creates a document in the persistence layer.
     /// </summary>
-    /// <param name="companyUserId">Id of the company</param>
     /// <param name="documentName">The documents name</param>
     /// <param name="documentContent">The document itself</param>
     /// <param name="hash">Hash of the document</param>
-    /// <param name="documentTypeId">Type of the document</param>
+    /// <param name="documentType">the document type id</param>
+    /// <param name="setupOptionalFields">Action to setup the additional fields</param>
     /// <returns>Returns the created document</returns>
-    Document CreateDocument(Guid companyUserId, string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId);
+    Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields);
 
     /// <summary>
     /// Gets the document with the given id from the persistence layer.

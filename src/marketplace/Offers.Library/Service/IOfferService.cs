@@ -112,6 +112,13 @@ public interface IOfferService
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>The id of the newly created service</returns>
     Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId, OfferTypeId offerTypeId);
-
-    Task<OfferProviderData> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }

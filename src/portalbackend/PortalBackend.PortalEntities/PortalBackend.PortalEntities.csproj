@@ -32,13 +32,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.4" />
   </ItemGroup>
   <ItemGroup>
     <SonarQubeSetting Include="sonar.coverage.exclusions">
       <Value>AuditCompanyAssignedApp.cs</Value>
       <Value>AuditCompanyUser.cs</Value>
+      <Value>PortalDbContext.cs</Value>
     </SonarQubeSetting>
   </ItemGroup>
 

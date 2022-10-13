@@ -35,6 +35,26 @@ public class UserRolesRepository : IUserRolesRepository
         _dbContext = portalDbContext;
     }
 
+    ///<inheritdoc/>
+    public UserRole CreateAppUserRole(Guid appId, string role) =>
+        _dbContext.UserRoles.Add(
+            new UserRole(
+                Guid.NewGuid(),
+                role,
+                appId
+            ))
+            .Entity;
+
+    ///<inheritdoc/>
+    public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>
+        _dbContext.UserRoleDescriptions.Add(
+            new UserRoleDescription(
+                roleId,
+                languageCode,
+                description
+            ))
+            .Entity;
+
     public CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId) =>
         _dbContext.CompanyUserAssignedRoles.Add(
             new CompanyUserAssignedRole(

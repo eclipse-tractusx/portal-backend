@@ -91,8 +91,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId) =>
-        _offerSubscriptionService.AddServiceSubscription(serviceId, iamUserId, OfferTypeId.SERVICE);
+    public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddServiceSubscription(serviceId, iamUserId, accessToken, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
@@ -141,5 +141,5 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.SERVICE);
 }

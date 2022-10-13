@@ -18,19 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -43,6 +45,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
     private readonly AppsSettings _settings;
+    private readonly IOfferService _offerService;
 
     /// <summary>
     /// Constructor.
@@ -50,12 +53,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
     /// <param name="notificationService">Notification service.</param>
+    /// <param name="offerService">Offer service</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOptions<AppsSettings> settings)
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOfferService offerService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
         _notificationService = notificationService;
+        _offerService = offerService;
         _settings = settings.Value;
     }
 
@@ -87,6 +92,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new NotFoundException($"appId {appId} does not exist");
         }
+
         return new AppDetailResponse(
             result.Id,
             result.Title ?? Constants.ErrorString,
@@ -100,7 +106,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.LongDescription ?? Constants.ErrorString,
             result.Price ?? Constants.ErrorString,
             result.Tags,
-            result.IsSubscribed,
+            result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
             result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
         );
@@ -467,4 +473,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                         app.ThumbnailUrl))
                     .AsAsyncEnumerable()));
     }
+     
+    /// <inheritdoc />
+    public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
 }
