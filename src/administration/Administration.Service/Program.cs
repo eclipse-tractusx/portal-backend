@@ -74,10 +74,12 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
+builder.Services.AddTransient<ISdFactoryService, SdFactoryService>()
+    .ConfigureSdFactorySettings(builder.Configuration.GetSection("SdFactory"));
+
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 
-builder.Services.AddTransient<IConnectorsSdFactoryService, ConnectorsSdFactoryService>()
-                .AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
+builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
 builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();

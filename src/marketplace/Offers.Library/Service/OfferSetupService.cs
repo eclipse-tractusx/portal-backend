@@ -18,10 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
    
@@ -29,17 +31,21 @@ public class OfferSetupService : IOfferSetupService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<OfferSetupService> _logger;
 
-    public OfferSetupService(IPortalRepositories portalRepositories, IHttpClientFactory httpClientFactory)
+    public OfferSetupService(IPortalRepositories portalRepositories, IHttpClientFactory httpClientFactory, ILogger<OfferSetupService> logger)
     {
         _portalRepositories = portalRepositories;
         _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
     
     /// <inheritdoc />
-    public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string serviceDetailsAutoSetupUrl)
+    public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl)
     {
+        _logger.LogInformation("AutoSetup started");
         using var httpClient = _httpClientFactory.CreateClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetThirdPartyAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
@@ -57,12 +63,15 @@ public class OfferSetupService : IOfferSetupService
 
         try
         {
+            _logger.LogInformation("OfferSetupService was called with the following url: {serviceDetailsAutoSetupUrl}", serviceDetailsAutoSetupUrl);
             var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
 
-            if (response.IsSuccessStatusCode)
-                return;
+            if (!response.IsSuccessStatusCode)
+                throw new ServiceException(
+                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode}",
+                    response.StatusCode);
 
-            throw new ServiceException(response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode}", response.StatusCode);
+            _logger.LogInformation("OfferSetupService AutoSetup was successfully executed.");
         }
         catch (InvalidOperationException e)
         {

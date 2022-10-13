@@ -49,6 +49,13 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null)
+    {
+        var company = _context.Attach(new Company(companyId, null!, default, default)).Entity;
+        setOptionalParameters?.Invoke(company);
+        return company;
+    }
+
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
         _context.Addresses.Add(
             new Address(

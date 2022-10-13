@@ -18,11 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
@@ -30,25 +31,26 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly ILogger<OfferSubscriptionService> _logger;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
-    /// <param name="offerService">Access to the offer service</param>
-    /// <param name="settings">Access to the settings</param>
+    /// <param name="logger">Access to the logger</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories, 
         IOfferSetupService offerSetupService, 
-        IOfferService offerService)
+        ILogger<OfferSubscriptionService> logger)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
+        _logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken, OfferTypeId offerTypeId)
     {
         var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId, offerTypeId).ConfigureAwait(false);
         if (serviceDetails == null)
@@ -73,10 +75,11 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         {
             try
             {
-                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
             }
             catch (Exception e)
             {
+                _logger.LogInformation("Error occure while executing AutoSetupOffer: {ErrorMessage}", e.Message);
                 autoSetupResult = e.Message;
             }
         }

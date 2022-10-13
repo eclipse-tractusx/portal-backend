@@ -95,7 +95,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
         {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyAppication {applicationId}");
+            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
 
         var documentName = document.FileName;
@@ -110,7 +110,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         }
         
-        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(companyUserId, documentName, documentContent, hash, documentTypeId);
+        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, doc =>
+        {
+            doc.CompanyUserId = companyUserId;
+        });
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

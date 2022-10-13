@@ -20,6 +20,7 @@
 
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
@@ -142,4 +143,12 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Auto setup the app.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
 }
