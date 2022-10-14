@@ -137,7 +137,7 @@ public class UserRepository : IUserRepository
                 companyUser.Email))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(string UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId) =>
+    public IAsyncEnumerable<(string? UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser =>
@@ -145,7 +145,7 @@ public class UserRepository : IUserRepository
                 (companyUser.Email == email ||
                  companyUser.Firstname == firstName ||
                  companyUser.Lastname == lastName ))
-            .Select(companyUser => new ValueTuple<string,Guid>(
+            .Select(companyUser => new ValueTuple<string?,Guid>(
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Firstname == firstName && companyUser.Lastname == lastName && companyUser.Email == email
                     ? companyUser.Id
