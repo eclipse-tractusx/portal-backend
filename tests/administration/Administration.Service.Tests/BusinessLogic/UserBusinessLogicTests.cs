@@ -234,7 +234,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         });
-        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, AdminIamUser).ConfigureAwait(false);
+        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, CreatedCentralUserId).ConfigureAwait(false);
 
         // Assert
         _companyUserAssignedRole.Should().HaveCount(2);
@@ -431,13 +431,18 @@ public class UserBusinessLogicTests
             .ReturnsLazily(() => CreatedCentralUserId);
         A.CallTo(() => _provisioningManager.CreateSharedUserLinkedToCentralAsync(A<string>.That.Not.Matches(x => x == "central"), A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._))
             .ReturnsLazily(() => Guid.NewGuid().ToString());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily(() => new Dictionary<string, IEnumerable<string>>
+            {
+                {IamClientId, new List<string> {"Existing Role", "Supplier"}}
+            });
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == CreatedCentralUserId), A<IDictionary<string, IEnumerable<string>>>._))
             .ReturnsLazily(() => new Dictionary<string, IEnumerable<string>>
             {
-                {"central", new List<string> {"Company Admin"}}
+                {IamClientId, new List<string> {"Company Admin"}}
             });
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(
-                A<string>.That.Not.Matches(x => x == CreatedCentralUserId), A<IDictionary<string, IEnumerable<string>>>._))
+                A<string>.That.Not.Matches(x => x == CreatedCentralUserId || x == _iamUser.UserEntityId), A<IDictionary<string, IEnumerable<string>>>._))
             .ReturnsLazily(() => new Dictionary<string, IEnumerable<string>>());
         _fixture.Inject(_provisioningManager);
     }

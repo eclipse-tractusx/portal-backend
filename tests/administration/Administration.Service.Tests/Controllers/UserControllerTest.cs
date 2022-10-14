@@ -28,6 +28,7 @@ using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
@@ -54,15 +55,16 @@ public class UserControllerTest
         //Arrange
         var appId = new Guid("8d4bfde6-978f-4d82-86ce-8d90d52fbf3f");
         var userRoleInfo = new UserRoleInfo(CompanyUserId, new[] { "Company Admin" });
+        var notAssignedRoles = new List<UserRoleWithId>();
         A.CallTo(() => _logic.ModifyUserRoleAsync(A<Guid>._, A<UserRoleInfo>._, A<string>._))
-                  .ReturnsLazily(() => Task.CompletedTask);
+                  .ReturnsLazily(() => notAssignedRoles);
 
         //Act
         var result = await this._controller.ModifyUserRolesAsync(appId, userRoleInfo).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.ModifyUserRoleAsync(A<Guid>.That.Matches(x => x == appId), A<UserRoleInfo>.That.Matches(x => x.CompanyUserId == CompanyUserId && x.Roles.Count() == 1), A<string>.That.Matches(x => x == IamUserId))).MustHaveHappenedOnceExactly();
-        Assert.IsType<OkResult>(result);
-        result.Should().NotBeNull();
+        Assert.IsType<List<UserRoleWithId>>(result);
+        result.Should().BeEmpty();
     }
 }
