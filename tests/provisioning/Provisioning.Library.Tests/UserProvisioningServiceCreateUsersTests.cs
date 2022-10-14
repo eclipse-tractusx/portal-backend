@@ -33,7 +33,7 @@ using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Tests;
 
-public class UserProvisioningServiceTests
+public class UserProvisioningServiceCreateUsersTests
 {
     private readonly IFixture _fixture;
     private readonly Random _random;
@@ -50,7 +50,7 @@ public class UserProvisioningServiceTests
     private readonly IEnumerable<(string Role, Guid Id)> _userRolesWithId;
     private readonly CancellationTokenSource _cancellationTokenSource;
 
-    public UserProvisioningServiceTests()
+    public UserProvisioningServiceCreateUsersTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -77,6 +77,8 @@ public class UserProvisioningServiceTests
         SetupRepositories();
         SetupProvisioningManager();
     }
+
+    #region CreateOwnCompanyIdpUsersAsync
 
     [Fact]
     public async void TestFixtureSetup()
@@ -262,6 +264,10 @@ public class UserProvisioningServiceTests
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
     }
 
+    #endregion
+
+    #region Setup
+
     private void SetupRepositories()
     {
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
@@ -308,4 +314,6 @@ public class UserProvisioningServiceTests
             numRoles--;
         }
     }
+
+    #endregion
 }
