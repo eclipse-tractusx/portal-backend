@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
@@ -58,8 +59,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        var (companyId, companyUserId, companyName, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(iamUserId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
+        var (companyInformation, companyUserId, userEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
+        if (companyInformation.CompanyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
         }
@@ -69,13 +70,29 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
         }
 
-        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        if (companyInformation.BusinessPartnerNumber == null)
+        {
+            throw new ConflictException($"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
+        }
+
+        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+
         var autoSetupResult = string.Empty;
         if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
         {
             try
             {
-                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+                var autoSetupData = new OfferThirdPartyAutoSetupData(
+                    new OfferThirdPartyAutoSetupCustomerData(
+                        companyInformation.OrganizationName,
+                        companyInformation.Country,
+                        userEmail),
+                    new OfferThirdPartyAutoSetupPropertyData(
+                        companyInformation.BusinessPartnerNumber,
+                        offerSubscription.Id,
+                        serviceId)
+                );
+                await _offerSetupService.AutoSetupOffer(autoSetupData, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -89,8 +106,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             var notificationContent = new
             {
                 serviceDetails.AppName,
-                RequestorCompanyName = companyName,
-                UserEmail = requesterEmail,
+                RequestorCompanyName = companyInformation.OrganizationName,
+                UserEmail = userEmail,
                 AutoSetupExecuted = !string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl),
                 AutoSetupError = autoSetupResult
             };
