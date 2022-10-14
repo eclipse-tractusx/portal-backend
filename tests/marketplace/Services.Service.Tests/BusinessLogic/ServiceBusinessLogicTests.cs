@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using PortalBackend.DBAccess.Models;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.BusinessLogic;
@@ -84,7 +85,6 @@ public class ServiceBusinessLogicTests
         _offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
 
         SetupRepositories();
-        SetupServices();
 
         var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>()
         {
@@ -366,7 +366,6 @@ public class ServiceBusinessLogicTests
             .With(x => x.Id, _existingServiceId)
             .Create();
         
-        
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(_iamUser.UserEntityId, _companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>{new (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId), new (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyShortName(_iamUser.UserEntityId, A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
@@ -383,12 +382,13 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _userRepository.GetOwnCompanyAndCompanyUserId(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
             .ReturnsLazily(() => (Guid.Empty, _companyUser.CompanyId));
 
-        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_iamUser.UserEntityId))
-            .ReturnsLazily(() => (_companyUser.Id, _companyUser.CompanyId, "The Company", "test@mail.de"));
-        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(_notAssignedCompanyIdUser))
-            .ReturnsLazily(() => (_companyUser.Id, Guid.Empty, "The Company", "test@mail.de"));
-        A.CallTo(() => _userRepository.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
-            .ReturnsLazily(() => (Guid.Empty, _companyUser.CompanyId, "The Company", "test@mail.de"));
+        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(_iamUser.UserEntityId))
+            .ReturnsLazily(() => (new CompanyInformationData(_companyUser.CompanyId, "The Company", "DE", "BPN00000001"), _companyUser.Id, "test@mail.de"));
+        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(_notAssignedCompanyIdUser))
+            .ReturnsLazily(() => (new CompanyInformationData(Guid.Empty, "The Company", "DE", "BPN00000001"), _companyUser.Id, "test@mail.de"));
+        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
+            .ReturnsLazily(() => (new CompanyInformationData(_companyUser.CompanyId, "The Company", "DE", "BPN00000001"), Guid.Empty, "test@mail.de"));
+
 
         A.CallTo(() => _offerRepository.GetActiveServices())
             .Returns(serviceDetailData.AsQueryable());
@@ -473,14 +473,6 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         _fixture.Inject(_portalRepositories);
-    }
-
-    private void SetupServices()
-    {
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.testurl.com")))
-            .ReturnsLazily(() => Task.CompletedTask);
-        A.CallTo(() => _offerSetupService.AutoSetupOffer(A<Guid>._, A<string>.That.Matches(x => x == _iamUser.UserEntityId), A<string>._, A<string>.That.Matches(x => x == "https://www.fail.com")))
-            .ThrowsAsync(() => new ServiceException("Error occured"));
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
