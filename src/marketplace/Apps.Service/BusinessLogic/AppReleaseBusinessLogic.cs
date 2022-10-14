@@ -280,4 +280,23 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
         _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
+
+    /// <inheritdoc/>
+    public async Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId)
+    {
+        var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRoleUntrackedAsync(appId, iamUserId, OfferStatusId.CREATED, roleId).ConfigureAwait(false);
+        if (!appUserRole.IsProviderCompanyUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
+        }
+        if (!appUserRole.OfferStatus)
+        {
+            throw new ControllerArgumentException($"AppId must be in Created State");
+        }
+        if (!appUserRole.IsRoleIdExist)
+        {
+            throw new NotFoundException($"role {roleId} does not exist");
+        }
+        await _portalRepositories.GetInstance<IOfferRepository>().DeleteAppRoleAsync(appId, roleId).ConfigureAwait(false);
+    }
 }
