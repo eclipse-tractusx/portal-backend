@@ -42,10 +42,7 @@ public class UserUploadBusinessLogicTests
     private readonly Guid _identityProviderId;
     private readonly string _iamUserId;
     private readonly Encoding _encoding;
-    private readonly string _headerLine;
     private readonly Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
-    private readonly string _specialLine;
-    private readonly UserCreationInfoIdp _specialCreationInfo;
     private readonly Exception _error;
     private readonly Random _random;
 
@@ -66,32 +63,16 @@ public class UserUploadBusinessLogicTests
         _iamUserId = _fixture.Create<string>();
         _encoding = _fixture.Create<Encoding>();
 
-        _headerLine = string.Join(",",new [] {
-            UserUploadBusinessLogic.CsvHeaders.FirstName,
-            UserUploadBusinessLogic.CsvHeaders.LastName,
-            UserUploadBusinessLogic.CsvHeaders.Email,
-            UserUploadBusinessLogic.CsvHeaders.ProviderUserName,
-            UserUploadBusinessLogic.CsvHeaders.ProviderUserId,
-            UserUploadBusinessLogic.CsvHeaders.Roles });
-
         _processLine = A.Fake<Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
-
-        _specialCreationInfo = _fixture.Create<UserCreationInfoIdp>();
-        _specialLine = string.Join(",", new [] {
-            _specialCreationInfo.FirstName,
-            _specialCreationInfo.LastName,
-            _specialCreationInfo.Email,
-            _specialCreationInfo.UserName,
-            _specialCreationInfo.UserId
-        }.Concat(_specialCreationInfo.Roles));
 
         _error = _fixture.Create<TestException>();
     }
 
+    #region UploadOwnCompanyIdpUsersAsync
     [Fact]
     public async void TestSetup()
     {
-        SetupFakes(new [] { _headerLine });
+        SetupFakes(new [] { HeaderLine() });
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
 
@@ -109,7 +90,7 @@ public class UserUploadBusinessLogicTests
     public async void TestUserCreationAllSuccess()
     {
         SetupFakes(new [] {
-            _headerLine,
+            HeaderLine(),
             NextLine(),
             NextLine(),
             NextLine(),
@@ -132,6 +113,7 @@ public class UserUploadBusinessLogicTests
     public async void TestUserCreationHeaderParsingThrows()
     {
         var invalidHeader = _fixture.Create<string>();
+
         SetupFakes(new [] {
             invalidHeader,
             NextLine(),
@@ -152,40 +134,30 @@ public class UserUploadBusinessLogicTests
     [Fact]
     public async void TestUserCreationCreationError()
     {
+        var creationInfo = _fixture.Create<UserCreationInfoIdp>();
+
         SetupFakes(new [] {
-            _headerLine,
+            HeaderLine(),
             NextLine(),
             NextLine(),
-            _specialLine,
+            NextLine(creationInfo),
             NextLine(),
             NextLine()
         });
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info =>
-                info.FirstName == _specialCreationInfo.FirstName &&
-                info.LastName == _specialCreationInfo.LastName &&
-                info.Email == _specialCreationInfo.Email &&
-                info.Roles.SequenceEqual(_specialCreationInfo.Roles) &&
-                info.UserId == _specialCreationInfo.UserId &&
-                info.UserName == _specialCreationInfo.UserName)))
-                .ReturnsLazily(
-                    (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-                        .With(x => x.CompanyUserId, Guid.Empty)
-                        .With(x => x.UserName, creationInfo.UserName)
-                        .With(x => x.Error, _error)
-                        .Create());
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatches(info, creationInfo))))
+            .ReturnsLazily(
+                (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                    .With(x => x.CompanyUserId, Guid.Empty)
+                    .With(x => x.UserName, creationInfo.UserName)
+                    .With(x => x.Error, _error)
+                    .Create());
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info =>
-                info.FirstName == _specialCreationInfo.FirstName &&
-                info.LastName == _specialCreationInfo.LastName &&
-                info.Email == _specialCreationInfo.Email &&
-                info.Roles.SequenceEqual(_specialCreationInfo.Roles) &&
-                info.UserId == _specialCreationInfo.UserId &&
-                info.UserName == _specialCreationInfo.UserName))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
@@ -199,7 +171,7 @@ public class UserUploadBusinessLogicTests
     public async void TestUserCreationParsingError()
     {
         SetupFakes(new [] {
-            _headerLine,
+            HeaderLine(),
             NextLine(),
             NextLine(),
             _fixture.Create<string>(),
@@ -222,34 +194,25 @@ public class UserUploadBusinessLogicTests
     [Fact]
     public async void TestUserCreationCreationThrows()
     {
+        var creationInfo = _fixture.Create<UserCreationInfoIdp>();
+
         SetupFakes(new [] {
-            _headerLine,
+            HeaderLine(),
             NextLine(),
             NextLine(),
-            _specialLine,
+            NextLine(creationInfo),
             NextLine(),
             NextLine()
         });
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info =>
-                info.FirstName == _specialCreationInfo.FirstName &&
-                info.LastName == _specialCreationInfo.LastName &&
-                info.Email == _specialCreationInfo.Email &&
-                info.Roles.SequenceEqual(_specialCreationInfo.Roles) &&
-                info.UserId == _specialCreationInfo.UserId &&
-                info.UserName == _specialCreationInfo.UserName))).Throws(_error);
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatches(info, creationInfo))))
+            .Throws(_error);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info =>
-                info.FirstName == _specialCreationInfo.FirstName &&
-                info.LastName == _specialCreationInfo.LastName &&
-                info.Email == _specialCreationInfo.Email &&
-                info.Roles.SequenceEqual(_specialCreationInfo.Roles) &&
-                info.UserId == _specialCreationInfo.UserId &&
-                info.UserName == _specialCreationInfo.UserName))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
 
         result.Should().NotBeNull();
         result.Created.Should().Be(2);
@@ -259,6 +222,167 @@ public class UserUploadBusinessLogicTests
         result.Errors.Single().Should().Be($"line: 3, message: {_error.Message}");
     }
 
+    #endregion
+
+    #region UploadOwnCompanySharedIdpUsersAsync
+
+    [Fact]
+    public async void TestSetupSharedIdp()
+    {
+        SetupFakes(new [] { HeaderLineSharedIdp() });
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId))).MustHaveHappened();
+        result.Should().NotBeNull();
+        result.Created.Should().Be(0);
+        result.Error.Should().Be(0);
+        result.Total.Should().Be(0);
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async void TestUserCreationSharedIdpAllSuccess()
+    {
+        SetupFakes(new [] {
+            HeaderLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp()
+        });
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(5);
+        result.Error.Should().Be(0);
+        result.Total.Should().Be(5);
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async void TestUserCreationSharedIdpHeaderParsingThrows()
+    {
+        var invalidHeader = _fixture.Create<string>();
+
+        SetupFakes(new [] {
+            invalidHeader,
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp()
+        });
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
+
+        async Task Act() => await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"invalid format: expected 'FirstName', got '{invalidHeader}' (Parameter 'document')");
+    }
+
+    [Fact]
+    public async void TestUserCreationSharedIdpCreationError()
+    {
+        var creationInfo = _fixture.Create<UserCreationInfoIdp>();
+
+        SetupFakes(new [] {
+            HeaderLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(creationInfo),
+            NextLineSharedIdp(),
+            NextLineSharedIdp()
+        });
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo))))
+            .ReturnsLazily(
+                (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                    .With(x => x.CompanyUserId, Guid.Empty)
+                    .With(x => x.UserName, creationInfo.UserName)
+                    .With(x => x.Error, _error)
+                    .Create());
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened();
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(4);
+        result.Error.Should().Be(1);
+        result.Total.Should().Be(5);
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Single().Should().Be($"line: 3, message: {_error.Message}");
+    }
+
+    [Fact]
+    public async void TestUserCreationSharedIdpParsingError()
+    {
+        SetupFakes(new [] {
+            HeaderLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            _fixture.Create<string>(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp()
+        });
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(4);
+        result.Error.Should().Be(1);
+        result.Total.Should().Be(5);
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Single().Should().Be("line: 3, message: value for LastName type string expected (Parameter 'document')");
+    }
+
+    [Fact]
+    public async void TestUserCreationSharedIdpCreationThrows()
+    {
+        var creationInfo = _fixture.Create<UserCreationInfoIdp>();
+
+        SetupFakes(new [] {
+            HeaderLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(creationInfo),
+            NextLineSharedIdp(),
+            NextLineSharedIdp()
+        });
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo))))
+            .Throws(_error);
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService,_options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened();
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(2);
+        result.Error.Should().Be(1);
+        result.Total.Should().Be(3);
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Single().Should().Be($"line: 3, message: {_error.Message}");
+    }
+
+    #endregion
+
+    #region Setup
+
     private void SetupFakes(IEnumerable<string> lines)
     {
         A.CallTo(() => _document.ContentType).Returns("text/csv");
@@ -266,6 +390,9 @@ public class UserUploadBusinessLogicTests
 
         A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId)))
             .Returns(_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create());
+
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId)))
+            .Returns(_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create());
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
             .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, string keycloakClientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, CancellationToken cancellationToken) =>
@@ -278,10 +405,59 @@ public class UserUploadBusinessLogicTests
                 .Create());
     }
 
-    private String NextLine()
-    {
-        return string.Join(",",_fixture.CreateMany<string>(_random.Next(5,10)));        
-    }
+    private string HeaderLine() =>
+        string.Join(",",new [] {
+            UserUploadBusinessLogic.CsvHeaders.FirstName,
+            UserUploadBusinessLogic.CsvHeaders.LastName,
+            UserUploadBusinessLogic.CsvHeaders.Email,
+            UserUploadBusinessLogic.CsvHeaders.ProviderUserName,
+            UserUploadBusinessLogic.CsvHeaders.ProviderUserId,
+            UserUploadBusinessLogic.CsvHeaders.Roles });        
+
+    private string NextLine() =>
+        string.Join(",",_fixture.CreateMany<string>(_random.Next(5,10)));        
+
+    private string HeaderLineSharedIdp() =>
+        string.Join(",",new [] {
+            UserUploadBusinessLogic.CsvHeaders.FirstName,
+            UserUploadBusinessLogic.CsvHeaders.LastName,
+            UserUploadBusinessLogic.CsvHeaders.Email,
+            UserUploadBusinessLogic.CsvHeaders.Roles });        
+
+    private string NextLineSharedIdp() =>
+        string.Join(",",_fixture.CreateMany<string>(_random.Next(3,7)));        
+
+    private string NextLine(UserCreationInfoIdp userCreationInfoIdp) =>
+        string.Join(",", new [] {
+            userCreationInfoIdp.FirstName,
+            userCreationInfoIdp.LastName,
+            userCreationInfoIdp.Email,
+            userCreationInfoIdp.UserName,
+            userCreationInfoIdp.UserId
+        }.Concat(userCreationInfoIdp.Roles));
+
+    private string NextLineSharedIdp(UserCreationInfoIdp userCreationInfoIdp) =>
+        string.Join(",", new [] {
+            userCreationInfoIdp.FirstName,
+            userCreationInfoIdp.LastName,
+            userCreationInfoIdp.Email,
+        }.Concat(userCreationInfoIdp.Roles));
+
+    private bool CreationInfoMatches(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
+        creationInfo.FirstName == other.FirstName &&
+        creationInfo.LastName == other.LastName &&
+        creationInfo.Email == other.Email &&
+        creationInfo.Roles.SequenceEqual(other.Roles) &&
+        creationInfo.UserId == other.UserId &&
+        creationInfo.UserName == other.UserName;
+
+    private bool CreationInfoMatchesSharedIdp(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
+        creationInfo.FirstName == other.FirstName &&
+        creationInfo.LastName == other.LastName &&
+        creationInfo.Email == other.Email &&
+        creationInfo.Roles.SequenceEqual(other.Roles);
+
+    #endregion
 
     [Serializable]
     public class TestException : Exception
