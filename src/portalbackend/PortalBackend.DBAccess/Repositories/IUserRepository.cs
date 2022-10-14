@@ -21,6 +21,7 @@
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -39,7 +40,7 @@ public interface IUserRepository
     IAsyncEnumerable<string> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId);
     Task<(Guid companyId, Guid companyUserId)> GetOwnCompanyAndCompanyUserId(string iamUserId);
     Task<Guid> GetOwnCompanyId(string iamUserId);
-    Task<(Guid companyId, Guid companyUserId, string companyName, string? userEmail)> GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(string iamUserId);
+    Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(string iamUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);

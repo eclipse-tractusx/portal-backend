@@ -20,46 +20,29 @@
 
 using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
    
 public class OfferSetupService : IOfferSetupService
 {
-    private readonly IPortalRepositories _portalRepositories;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<OfferSetupService> _logger;
 
-    public OfferSetupService(IPortalRepositories portalRepositories, IHttpClientFactory httpClientFactory, ILogger<OfferSetupService> logger)
+    public OfferSetupService(IHttpClientFactory httpClientFactory, ILogger<OfferSetupService> logger)
     {
-        _portalRepositories = portalRepositories;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
     
     /// <inheritdoc />
-    public async Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl)
+    public async Task AutoSetupOffer(OfferThirdPartyAutoSetupData autoSetupData, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl)
     {
         _logger.LogInformation("AutoSetup started");
         using var httpClient = _httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetThirdPartyAutoSetupDataAsync(serviceSubscriptionId, iamUserId).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new NotFoundException($"serviceSubscription {serviceSubscriptionId} does not exist");
-        }
-        var (autoSetupData, isUsersCompany) = result;
-        if (!isUsersCompany)
-        {
-            throw new ForbiddenException($"IamUser {iamUserId} company is not associated with serviceSubscription");
-        }
-        if (autoSetupData.OfferThirdPartyAutoSetupProperties.BpnNumber == null)
-        {
-            throw new ConflictException($"company {autoSetupData.OfferThirdPartyAutoSetupCustomer.OrganizationName} has no BusinessPartnerNumber assigned");
-        }
 
         try
         {
