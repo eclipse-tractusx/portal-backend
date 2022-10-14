@@ -56,7 +56,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
-    
+    public virtual DbSet<AuditOffer20221013> AuditOffer20221013 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
@@ -116,7 +116,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
-    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -338,6 +337,8 @@ public class PortalDbContext : DbContext
                 .WithOne(d => d.Offer)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<Offer, AuditOffer20221013>();
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
