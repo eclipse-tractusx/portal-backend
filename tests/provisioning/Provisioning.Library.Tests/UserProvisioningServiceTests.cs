@@ -20,6 +20,8 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -35,6 +37,9 @@ public class UserProvisioningServiceTests
 {
     private readonly IFixture _fixture;
     private readonly Random _random;
+    private readonly int _numUsers;
+    private readonly int _numRoles;
+    private readonly int _indexInvalidUser;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
@@ -42,7 +47,6 @@ public class UserProvisioningServiceTests
     private readonly CompanyNameIdpAliasData _companyNameIdpAliasData;
     private readonly CompanyNameIdpAliasData _companyNameIdpAliasDataSharedIdp;
     private readonly string _clientId;
-    private readonly IEnumerable<UserCreationInfoIdp> _userCreationInfoIdp;
     private readonly IEnumerable<(string Role, Guid Id)> _userRolesWithId;
     private readonly CancellationTokenSource _cancellationTokenSource;
 
@@ -54,14 +58,16 @@ public class UserProvisioningServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _random = new Random();
+        _numUsers = 10;
+        _indexInvalidUser = 5;
+        _numRoles = 5;
 
         _companyNameIdpAliasData = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create();
         _companyNameIdpAliasDataSharedIdp = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create();
 
         _clientId = _fixture.Create<string>();
         _cancellationTokenSource = new CancellationTokenSource();
-        _userRolesWithId = _fixture.CreateMany<(string,Guid)>(5).ToList();
-        _userCreationInfoIdp = CreateUserCreationInfoIdp(_userRolesWithId.Select(u => u.Role),10);
+        _userRolesWithId = _fixture.CreateMany<(string,Guid)>(_numRoles).ToList();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _provisioningManager = A.Fake<IProvisioningManager>();
@@ -70,20 +76,19 @@ public class UserProvisioningServiceTests
 
         SetupRepositories();
         SetupProvisioningManager();
-
-        _fixture.Inject(_portalRepositories);
-        _fixture.Inject(_provisioningManager);
     }
 
     [Fact]
     public async void TestFixtureSetup()
     {
-        var sut = _fixture.Create<UserProvisioningService>();
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
 
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
+        
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             _clientId,
-            _userCreationInfoIdp.ToAsyncEnumerable(),
+            userCreationInfoIdp,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
@@ -92,6 +97,49 @@ public class UserProvisioningServiceTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceOrMore();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceOrMore();
         A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappenedOnceOrMore();
+    }
+
+    [Fact]
+    public async void TestCreateUsersAllSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+        
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            _clientId,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveCount(_numUsers);
+        result.Select(r => r.UserName).Should().ContainInOrder(userCreationInfoIdp.Select(u => u.UserName));
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
+
+    [Fact]
+    public async void TestCreateUsersInvalidRolesError()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userInvalidRoles = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp(
+            () => userInvalidRoles).ToList();
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            _clientId,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveCount(_numUsers);
+        result.Where((r,index) => index != _indexInvalidUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+        var error = result.ElementAt(_indexInvalidUser).Error;
+        error.Should().NotBeNull();
+        error.Should().BeOfType(typeof(ControllerArgumentException));
+        error!.Message.Should().Be($"invalid Roles: [{string.Join(", ",userInvalidRoles.Roles)}]");
     }
 
     private void SetupRepositories()
@@ -118,23 +166,25 @@ public class UserProvisioningServiceTests
             .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles);
     }
 
-    private IEnumerable<UserCreationInfoIdp> CreateUserCreationInfoIdp(IEnumerable<string> roles, int numUsers)
+    private IEnumerable<UserCreationInfoIdp> CreateUserCreationInfoIdp(Func<UserCreationInfoIdp>? createInvalidUser = null)
     {
-        var numUsersToCreate = numUsers;
-        while (numUsersToCreate > 0)
+        var indexUser = 0;
+        while (indexUser < _numUsers)
         {
-            yield return _fixture.Build<UserCreationInfoIdp>().With(x => x.Roles, PickRoles(roles)).Create();
-            numUsersToCreate--;
+            yield return (indexUser == _indexInvalidUser && createInvalidUser != null)
+                ? createInvalidUser()
+                : _fixture.Build<UserCreationInfoIdp>().With(x => x.Roles, PickValidRoles().ToList()).Create();
+            indexUser++;
         }
     }
 
-    private IEnumerable<string> PickRoles(IEnumerable<string> roles)
+    private IEnumerable<string> PickValidRoles()
     {
-        var maxRoles = roles.Count();
+        var maxRoles = _userRolesWithId.Count();
         var numRoles = _random.Next(maxRoles);
         while(numRoles > 0)
         {
-            yield return roles.ElementAt(_random.Next(maxRoles));
+            yield return _userRolesWithId.ElementAt(_random.Next(maxRoles)).Role;
             numRoles--;
         }
     }
