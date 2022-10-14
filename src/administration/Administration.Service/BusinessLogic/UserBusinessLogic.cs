@@ -752,13 +752,13 @@ public class UserBusinessLogic : IUserBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
-    private async Task<List<UserRoleModificationData>> AddRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToAdd, CompanyIamUser companyUser, IUserRolesRepository userRoleRepository)
+    private async Task<List<UserRoleModificationData>> AddRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToAdd, CompanyIamUser companyUserIamData, IUserRolesRepository userRoleRepository)
     {
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             {iamClientId, rolesToAdd.Select(x => x.CompanyUserRoleText)}
         };
-        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUser.TargetIamUserId!, clientRoleNames)
+        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUserIamData.TargetIamUserId!, clientRoleNames)
             .ConfigureAwait(false);
         foreach (var roleWithId in rolesToAdd.Where(x => assignedRoles[iamClientId].Contains(x.CompanyUserRoleText)))
         {
@@ -768,13 +768,13 @@ public class UserBusinessLogic : IUserBusinessLogic
         return rolesToAdd.Where(x => !assignedRoles[iamClientId].Contains(x.CompanyUserRoleText)).ToList();
     }
 
-    private async Task DeleteRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToDelete, CompanyIamUser companyUser)
+    private async Task DeleteRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToDelete, CompanyIamUser companyUserIamData)
     {
         var roleNamesToDelete = new Dictionary<string, IEnumerable<string>>
         {
             {iamClientId, rolesToDelete.Select(x => x.CompanyUserRoleText)}
         };
-        await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUser.TargetIamUserId!, roleNamesToDelete)
+        await _provisioningManager.DeleteClientRolesFromCentralUserAsync(companyUserIamData.TargetIamUserId!, roleNamesToDelete)
             .ConfigureAwait(false);
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
             new CompanyUserAssignedRole(companyUserId, x.CompanyUserRoleId)));
