@@ -89,4 +89,13 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Delete User Role by appId and roleId
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="roleId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
 }
