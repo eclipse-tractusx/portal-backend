@@ -58,8 +58,8 @@ public class UserProvisioningServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _random = new Random();
-        _numUsers = 10;
-        _indexInvalidUser = 5;
+        _numUsers = 2;
+        _indexInvalidUser = 1;
         _numRoles = 5;
 
         _companyNameIdpAliasData = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create();
@@ -123,9 +123,9 @@ public class UserProvisioningServiceTests
     {
         var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
 
-        var userInvalidRoles = _fixture.Create<UserCreationInfoIdp>();
+        var userWithInvalidRoles = _fixture.Create<UserCreationInfoIdp>();
         var userCreationInfoIdp = CreateUserCreationInfoIdp(
-            () => userInvalidRoles).ToList();
+            () => userWithInvalidRoles).ToList();
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
@@ -136,10 +136,45 @@ public class UserProvisioningServiceTests
 
         result.Should().HaveCount(_numUsers);
         result.Where((r,index) => index != _indexInvalidUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+
         var error = result.ElementAt(_indexInvalidUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ControllerArgumentException));
-        error!.Message.Should().Be($"invalid Roles: [{string.Join(", ",userInvalidRoles.Roles)}]");
+        error!.Message.Should().Be($"invalid Roles: [{string.Join(", ",userWithInvalidRoles.Roles)}]");
+    }
+
+    [Fact]
+    public async void TestCreateUsersRolesAssignmentError()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var roles = userCreationInfoIdp.ElementAt(_indexInvalidUser).Roles;
+        var assignedRoles = roles.Take(roles.Count()-1);
+        var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + userCreationInfoIdp.ElementAt(_indexInvalidUser).UserId;
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName ==  centralUserName), A<IEnumerable<(string,IEnumerable<string>)>>._))
+            .Returns(iamUserId);
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new [] { (_clientId, assignedRoles) }.ToDictionary(x => x._clientId, x => x.assignedRoles));
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            _clientId,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveCount(_numUsers);
+        result.Where((r,index) => index != _indexInvalidUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+
+        var error = result.ElementAt(_indexInvalidUser).Error;
+        error.Should().NotBeNull();
+        error.Should().BeOfType(typeof(ConflictException));
+        error!.Message.Should().Be($"invalid role data, client: {_clientId}, [{String.Join(", ", roles.Except(assignedRoles))}] has not been assigned in keycloak");
     }
 
     private void SetupRepositories()
@@ -181,7 +216,7 @@ public class UserProvisioningServiceTests
     private IEnumerable<string> PickValidRoles()
     {
         var maxRoles = _userRolesWithId.Count();
-        var numRoles = _random.Next(maxRoles);
+        var numRoles = _random.Next(1,maxRoles);
         while(numRoles > 0)
         {
             yield return _userRolesWithId.ElementAt(_random.Next(maxRoles)).Role;
