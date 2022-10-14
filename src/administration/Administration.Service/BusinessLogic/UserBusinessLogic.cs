@@ -666,8 +666,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                     }).AsAsyncEnumerable()));
     }
 
-    public async Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo,
-        string adminUserId)
+    public async Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId)
     {
         var companyUserIamData = await _portalRepositories.GetInstance<IUserRepository>()
             .GetIdpUserByIdUntrackedAsync(userRoleInfo.CompanyUserId, adminUserId)

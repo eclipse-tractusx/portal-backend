@@ -380,7 +380,7 @@ public class UserController : ControllerBase
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Route("app/{appId}/roles")]
-    [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
