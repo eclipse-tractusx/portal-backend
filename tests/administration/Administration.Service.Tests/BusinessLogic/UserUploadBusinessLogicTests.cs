@@ -405,7 +405,7 @@ public class UserUploadBusinessLogicTests
                 .Create());
     }
 
-    private string HeaderLine() =>
+    private static string HeaderLine() =>
         string.Join(",",new [] {
             UserUploadBusinessLogic.CsvHeaders.FirstName,
             UserUploadBusinessLogic.CsvHeaders.LastName,
@@ -417,7 +417,7 @@ public class UserUploadBusinessLogicTests
     private string NextLine() =>
         string.Join(",",_fixture.CreateMany<string>(_random.Next(5,10)));        
 
-    private string HeaderLineSharedIdp() =>
+    private static string HeaderLineSharedIdp() =>
         string.Join(",",new [] {
             UserUploadBusinessLogic.CsvHeaders.FirstName,
             UserUploadBusinessLogic.CsvHeaders.LastName,
@@ -427,7 +427,7 @@ public class UserUploadBusinessLogicTests
     private string NextLineSharedIdp() =>
         string.Join(",",_fixture.CreateMany<string>(_random.Next(3,7)));        
 
-    private string NextLine(UserCreationInfoIdp userCreationInfoIdp) =>
+    private static string NextLine(UserCreationInfoIdp userCreationInfoIdp) =>
         string.Join(",", new [] {
             userCreationInfoIdp.FirstName,
             userCreationInfoIdp.LastName,
@@ -436,14 +436,14 @@ public class UserUploadBusinessLogicTests
             userCreationInfoIdp.UserId
         }.Concat(userCreationInfoIdp.Roles));
 
-    private string NextLineSharedIdp(UserCreationInfoIdp userCreationInfoIdp) =>
+    private static string NextLineSharedIdp(UserCreationInfoIdp userCreationInfoIdp) =>
         string.Join(",", new [] {
             userCreationInfoIdp.FirstName,
             userCreationInfoIdp.LastName,
             userCreationInfoIdp.Email,
         }.Concat(userCreationInfoIdp.Roles));
 
-    private bool CreationInfoMatches(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
+    private static bool CreationInfoMatches(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
         creationInfo.FirstName == other.FirstName &&
         creationInfo.LastName == other.LastName &&
         creationInfo.Email == other.Email &&
@@ -451,7 +451,7 @@ public class UserUploadBusinessLogicTests
         creationInfo.UserId == other.UserId &&
         creationInfo.UserName == other.UserName;
 
-    private bool CreationInfoMatchesSharedIdp(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
+    private static bool CreationInfoMatchesSharedIdp(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
         creationInfo.FirstName == other.FirstName &&
         creationInfo.LastName == other.LastName &&
         creationInfo.Email == other.Email &&
