@@ -312,7 +312,7 @@ public class OfferRepository : IOfferRepository
         _context.Offers
             .Where(offer => offer.Id == offerId)
             .Select(offer => new ValueTuple<bool, bool, bool>(
-                (offer.OfferStatusId == offerStatusId) || false,
+                (offer.OfferStatusId == offerStatusId),
                 offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                 offer.UserRoles.Any(userRole => userRole.Id == roleId)
             ))
