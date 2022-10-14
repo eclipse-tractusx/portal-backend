@@ -229,6 +229,7 @@ public class UserBusinessLogicTests
         // Act
         var userRoleInfo = new UserRoleInfo(_companyUser.Id, new []
         {
+            "Existing Role",
             "Company Admin",
             "Buyer",
             "Supplier"
@@ -248,13 +249,31 @@ public class UserBusinessLogicTests
         // Act
         var userRoleInfo = new UserRoleInfo(_companyUser.Id, new []
         {
-            "Company Admin",
-            "Buyer"
+            "Company Admin"
         });
         await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, AdminIamUser).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<CompanyUserAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ModifyUserRoleAsync_WithNotExistingRole_ThrowsException()
+    {
+        // Arrange
+        var sut = _fixture.Create<UserBusinessLogic>();
+
+        // Act
+        var userRoleInfo = new UserRoleInfo(_companyUser.Id, new []
+        {
+            "NotExisting",
+            "Buyer"
+        });
+        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, AdminIamUser).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("Roles");
     }
 
     [Fact]
@@ -296,7 +315,7 @@ public class UserBusinessLogicTests
         
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be("User not found");
+        ex.Message.Should().Be($"iamUserId for user {_noTargetIamUserSet} not found");
     }
 
     [Fact]
@@ -381,19 +400,16 @@ public class UserBusinessLogicTests
             .ReturnsLazily(() => IamClientId);
         A.CallTo(() => _offerRepository.GetAppAssignedClientIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId), A<Guid>._))
             .ReturnsLazily(() => (string?)null);
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Buyer") && x.Contains("Company Admin")), A<Guid>._))
-            .ReturnsLazily(() => new List<UserRoleWithId> { new("Buyer", _buyerRoleId), new("Company Admin", _adminRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Buyer") && !x.Contains("Company Admin")), A<Guid>._))
-            .ReturnsLazily(() => new List<UserRoleWithId> { new("Buyer", _buyerRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && x.Contains("Company Admin")), A<Guid>._))
-            .ReturnsLazily(() => new List<UserRoleWithId> { new("Company Admin", _adminRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetRolesToAdd(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Buyer") && !x.Contains("Company Admin")), A<Guid>._))
-            .ReturnsLazily(() => new List<UserRoleWithId>().ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => !x.Contains("Supplier")), A<Guid>._))
-            .ReturnsLazily(() => new List<UserRoleWithId> { new("Supplier", _buyerRoleId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRolesRepository.GetAssignedRolesForDeletion(A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Contains("Supplier")), A<Guid>._))
-            .ReturnsLazily(() => new List<UserRoleWithId>().ToAsyncEnumerable());
-
+        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
+            .ReturnsLazily(() => new List<UserRoleModificationData>
+            {
+                new("Existing Role", Guid.NewGuid(), false), 
+                new("Buyer", _buyerRoleId, true), 
+                new("Company Admin", _adminRoleId, true),
+                new("Supplier", _supplierRoleId, false),
+                
+            }.ToAsyncEnumerable());
+        
         A.CallTo(() => _userRolesRepository.CreateCompanyUserAssignedRole(A<Guid>._, A<Guid>._))
             .Invokes(x =>
             {

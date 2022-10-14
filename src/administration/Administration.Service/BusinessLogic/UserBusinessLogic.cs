@@ -697,7 +697,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         var notExistingRoles = distinctRoles.Where(r => !roles.Select(ur => ur.CompanyUserRoleText).Contains(r));
         if (notExistingRoles.Any())
         {
-            throw new ControllerArgumentException($"The roles {string.Join(",", notExistingRoles)} do not exist");
+            throw new ControllerArgumentException($"The roles {string.Join(",", notExistingRoles)} do not exist", nameof(userRoleInfo.Roles));
         }
 
         var rolesToAdd = distinctRoles.Except(roles.Where(x => x.IsAssignedToUser).Select(x => x.CompanyUserRoleText));
