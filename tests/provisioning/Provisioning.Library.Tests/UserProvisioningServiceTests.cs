@@ -96,6 +96,29 @@ public class UserProvisioningServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappenedOnceOrMore();
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceOrMore();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappenedOnceOrMore();
+    }
+
+    [Fact]
+    public async void TestSharedIdpFixtureSetup()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
+        
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasDataSharedIdp,
+            _clientId,
+            userCreationInfoIdp,
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustHaveHappenedOnceOrMore();
         A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappenedOnceOrMore();
     }
 
