@@ -694,27 +694,27 @@ public class OfferServiceTests
                 A<Guid>.That.Matches(x => x == _validSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferSubscriptionDetailData(OfferSubscriptionStatusId.ACTIVE, companyUser.Id,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, companyUser.Id, Guid.Empty,
                 companyUser.Company!.Name, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
                 _bpn));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferSubscriptionDetailData(OfferSubscriptionStatusId.PENDING, companyUser.Id,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, companyUser.Id, Guid.Empty,
                 string.Empty, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
                 _bpn));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => (OfferSubscriptionDetailData?)null);
+            .ReturnsLazily(() => (OfferSubscriptionTransferData?)null);
 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() =>new OfferSubscriptionDetailData(OfferSubscriptionStatusId.PENDING, Guid.Empty,
+            .ReturnsLazily(() =>new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty,
                 string.Empty, companyUser.CompanyId, companyUser.Id, _existingServiceId, "Test Service",
                 _bpn));
 

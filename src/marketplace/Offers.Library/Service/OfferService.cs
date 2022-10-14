@@ -219,7 +219,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
         }
 
-        if (offerDetails.CompanyUserId == Guid.Empty)
+        if (offerDetails.CompanyUserId == Guid.Empty && offerDetails.TechnicalUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
@@ -261,7 +261,7 @@ public class OfferService : IOfferService
         
         await _notificationService.CreateNotifications(
             companyAdminRoles,
-            offerDetails.CompanyUserId,
+            offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
             new (string?, NotificationTypeId)[]
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
