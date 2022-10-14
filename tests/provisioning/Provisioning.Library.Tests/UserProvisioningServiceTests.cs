@@ -39,7 +39,7 @@ public class UserProvisioningServiceTests
     private readonly Random _random;
     private readonly int _numUsers;
     private readonly int _numRoles;
-    private readonly int _indexInvalidUser;
+    private readonly int _indexSpecialUser;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
@@ -58,8 +58,8 @@ public class UserProvisioningServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _random = new Random();
-        _numUsers = 2;
-        _indexInvalidUser = 1;
+        _numUsers = 10;
+        _indexSpecialUser = 5;
         _numRoles = 5;
 
         _companyNameIdpAliasData = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create();
@@ -92,12 +92,12 @@ public class UserProvisioningServiceTests
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened();
     }
 
     [Fact]
@@ -114,12 +114,12 @@ public class UserProvisioningServiceTests
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustHaveHappenedOnceOrMore();
-        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappenedOnceOrMore();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened();
     }
 
     [Fact]
@@ -158,9 +158,9 @@ public class UserProvisioningServiceTests
         ).ToListAsync().ConfigureAwait(false);
 
         result.Should().HaveCount(_numUsers);
-        result.Where((r,index) => index != _indexInvalidUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+        result.Where((r,index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
 
-        var error = result.ElementAt(_indexInvalidUser).Error;
+        var error = result.ElementAt(_indexSpecialUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ControllerArgumentException));
         error!.Message.Should().Be($"invalid Roles: [{string.Join(", ",userWithInvalidRoles.Roles)}]");
@@ -173,9 +173,9 @@ public class UserProvisioningServiceTests
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
 
-        var roles = userCreationInfoIdp.ElementAt(_indexInvalidUser).Roles;
+        var roles = userCreationInfoIdp.ElementAt(_indexSpecialUser).Roles;
         var assignedRoles = roles.Take(roles.Count()-1);
-        var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + userCreationInfoIdp.ElementAt(_indexInvalidUser).UserId;
+        var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + userCreationInfoIdp.ElementAt(_indexSpecialUser).UserId;
         var iamUserId = _fixture.Create<string>();
 
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName ==  centralUserName), A<IEnumerable<(string,IEnumerable<string>)>>._))
@@ -192,12 +192,74 @@ public class UserProvisioningServiceTests
         ).ToListAsync().ConfigureAwait(false);
 
         result.Should().HaveCount(_numUsers);
-        result.Where((r,index) => index != _indexInvalidUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+        result.Where((r,index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
 
-        var error = result.ElementAt(_indexInvalidUser).Error;
+        var error = result.ElementAt(_indexSpecialUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
         error!.Message.Should().Be($"invalid role data, client: {_clientId}, [{String.Join(", ", roles.Except(assignedRoles))}] has not been assigned in keycloak");
+    }
+
+    [Fact]
+    public async void TestCreateUsersDuplicateKeycloakUserError()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._))
+            .Returns(new [] { (UserEntityId: (string?)iamUserId, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
+
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>.That.IsEqualTo(iamUserId)))
+            .Returns(new [] { new IdentityProviderLink(_companyNameIdpAliasData.IdpAlias,userInfo.UserId,userInfo.UserName) }.ToAsyncEnumerable());
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            _clientId,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustHaveHappened();
+
+        result.Should().HaveCount(_numUsers);
+        result.Where((r,index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+
+        var error = result.ElementAt(_indexSpecialUser).Error;
+        error.Should().NotBeNull();
+        error.Should().BeOfType(typeof(ConflictException));
+        error!.Message.Should().Be($"existing user {iamUserId} in keycloak for provider userid {userInfo.UserId}, {userInfo.UserName}");
+    }
+
+    [Fact]
+    public async void TestCreateUsersExistingCompanyUserWithoutKeycloakUserSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+        var companyUserId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._))
+            .Returns(new [] { (UserEntityId: (string?)null, CompanyUserId: companyUserId) }.ToAsyncEnumerable());
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            _clientId,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>.That.IsEqualTo(companyUserId), A<string>._)).MustHaveHappened();
+
+        result.Should().HaveCount(_numUsers);
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
     }
 
     private void SetupRepositories()
@@ -229,7 +291,7 @@ public class UserProvisioningServiceTests
         var indexUser = 0;
         while (indexUser < _numUsers)
         {
-            yield return (indexUser == _indexInvalidUser && createInvalidUser != null)
+            yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
                 ? createInvalidUser()
                 : _fixture.Build<UserCreationInfoIdp>().With(x => x.Roles, PickValidRoles().ToList()).Create();
             indexUser++;
