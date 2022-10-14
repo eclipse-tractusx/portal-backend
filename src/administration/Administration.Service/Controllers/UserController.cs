@@ -383,11 +383,8 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<OkResult> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo)
-    {
+    public async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
         await this.WithIamUserId(adminUserId => _logic.ModifyUserRoleAsync(appId, userRoleInfo, adminUserId)).ConfigureAwait(false);
-        return Ok();
-    }
 
     /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.
