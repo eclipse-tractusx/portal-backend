@@ -138,7 +138,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return (firstName, lastName, email, roles);
     }
 
-    private enum CsvHeaders
+    public enum CsvHeaders
     {
         FirstName,
         LastName,
