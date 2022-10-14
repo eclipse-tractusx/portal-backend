@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Newtonsoft.Json;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
@@ -46,12 +47,13 @@ public class OfferSetupService : IOfferSetupService
 
         try
         {
-            _logger.LogInformation("OfferSetupService was called with the following url: {serviceDetailsAutoSetupUrl}", serviceDetailsAutoSetupUrl);
+            // TODO: Remove the autosetupdata from logging after testing.
+            _logger.LogInformation("OfferSetupService was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", serviceDetailsAutoSetupUrl, JsonConvert.SerializeObject(autoSetupData));
             var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
                 throw new ServiceException(
-                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode}",
+                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {await response.Content.ReadAsStringAsync()}",
                     response.StatusCode);
 
             _logger.LogInformation("OfferSetupService AutoSetup was successfully executed.");
