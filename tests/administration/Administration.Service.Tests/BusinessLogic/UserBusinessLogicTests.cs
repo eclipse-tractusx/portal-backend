@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -101,6 +102,139 @@ public class UserBusinessLogicTests
         result.Should().NotBeNull();
         result.Should().HaveSameCount(userList);
         result.Should().Match(r => r.SequenceEqual(userList.Select(u => u.eMail)));
+    }
+
+    [Fact]
+    public async void TestUserCreationInvalidUserThrows()
+    {
+        SetupFakes();
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<IdentityProviderCategoryId>._))
+            .ReturnsLazily(() => (((Guid,string?,string?),(Guid,string?,string?,string?),IEnumerable<string>))default);
+
+        var userList = _fixture.Create<IEnumerable<UserCreationInfo>>();        
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        async Task Act() => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+
+        error.Message.Should().Be($"user {_iamUserId} is not associated with any company");
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async void TestUserCreationCompanyNameNullThrows()
+    {
+        SetupFakes();
+
+        var companyId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<IdentityProviderCategoryId>._))
+            .Returns(_fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
+                (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
+                IEnumerable<string> IdpAliase)>()
+                .With(x => x.Company, _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
+                    .With(x => x.CompanyId, companyId)
+                    .With(x => x.CompanyName, (string?)null)
+                    .Create())
+                .Create());
+
+        var userList = _fixture.Create<IEnumerable<UserCreationInfo>>();        
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        async Task Act() => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+
+        error.Message.Should().Be($"assertion failed: companyName of company {companyId} should never be null here");
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async void TestUserCreationNoIdpAliasThrows()
+    {
+        SetupFakes();
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<IdentityProviderCategoryId>._))
+            .Returns(_fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
+                (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
+                IEnumerable<string> IdpAliase)>()
+                .With(x => x.IdpAliase, Enumerable.Empty<string>())
+                .Create());
+
+        var userList = _fixture.Create<IEnumerable<UserCreationInfo>>();        
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        async Task Act() => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+
+        error.Message.Should().Be($"user {_iamUserId} is not associated with any shared idp");
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async void TestUserCreationMultipleIdpAliaseThrows()
+    {
+        SetupFakes();
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<IdentityProviderCategoryId>._))
+            .Returns(_fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
+                (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
+                IEnumerable<string> IdpAliase)>()
+                .With(x => x.IdpAliase, _fixture.CreateMany<string>(2))
+                .Create());
+
+        var userList = _fixture.Create<IEnumerable<UserCreationInfo>>();        
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        async Task Act() => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        error.Message.Should().Be($"user {_iamUserId} is associated with more than one shared idp");
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -202,6 +336,43 @@ public class UserBusinessLogicTests
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 2);
 
         error.Should().BeSameAs(expected);
+    }
+
+    [Fact]
+    public async void TestUserCreationSendMailError()
+    {
+        SetupFakes();
+
+        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var error = _fixture.Create<TestException>();
+
+        var userList = new [] {
+            _fixture.Create<UserCreationInfo>(),
+            _fixture.Create<UserCreationInfo>(),
+            userCreationInfo,
+            _fixture.Create<UserCreationInfo>(),
+            _fixture.Create<UserCreationInfo>()
+        };
+
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail),A<Dictionary<string,string>>._,A<List<string>>._))
+            .Throws(error);
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        var result = await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 5);
+
+        result.Should().NotBeNull();
+        result.Should().HaveCount(5);
     }
 
     #endregion
