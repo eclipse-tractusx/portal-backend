@@ -95,7 +95,7 @@ public class UserBusinessLogicTests
 
         var result = await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
 
-        A.CallTo(() => _mockLogger.MockLog(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._)).MustNotHaveHappened();
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == userList.Count());
 
         result.Should().NotBeNull();
@@ -148,7 +148,7 @@ public class UserBusinessLogicTests
             u.Roles == userCreationInfo.Roles            
         ))).MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _mockLogger.MockLog(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 4);
 
         result.Should().NotBeNull();
@@ -198,7 +198,7 @@ public class UserBusinessLogicTests
             u.Roles == userCreationInfo.Roles            
         ))).MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _mockLogger.MockLog(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._)).MustNotHaveHappened();
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 2);
 
         error.Should().BeSameAs(expected);
@@ -231,58 +231,6 @@ public class UserBusinessLogicTests
                 .Create());
     }
 
-    private static string HeaderLine() =>
-        string.Join(",",new [] {
-            UserUploadBusinessLogic.CsvHeaders.FirstName,
-            UserUploadBusinessLogic.CsvHeaders.LastName,
-            UserUploadBusinessLogic.CsvHeaders.Email,
-            UserUploadBusinessLogic.CsvHeaders.ProviderUserName,
-            UserUploadBusinessLogic.CsvHeaders.ProviderUserId,
-            UserUploadBusinessLogic.CsvHeaders.Roles });        
-
-    private string NextLine() =>
-        string.Join(",",_fixture.CreateMany<string>(_random.Next(5,10)));        
-
-    private static string HeaderLineSharedIdp() =>
-        string.Join(",",new [] {
-            UserUploadBusinessLogic.CsvHeaders.FirstName,
-            UserUploadBusinessLogic.CsvHeaders.LastName,
-            UserUploadBusinessLogic.CsvHeaders.Email,
-            UserUploadBusinessLogic.CsvHeaders.Roles });        
-
-    private string NextLineSharedIdp() =>
-        string.Join(",",_fixture.CreateMany<string>(_random.Next(3,7)));        
-
-    private static string NextLine(UserCreationInfoIdp userCreationInfoIdp) =>
-        string.Join(",", new [] {
-            userCreationInfoIdp.FirstName,
-            userCreationInfoIdp.LastName,
-            userCreationInfoIdp.Email,
-            userCreationInfoIdp.UserName,
-            userCreationInfoIdp.UserId
-        }.Concat(userCreationInfoIdp.Roles));
-
-    private static string NextLineSharedIdp(UserCreationInfoIdp userCreationInfoIdp) =>
-        string.Join(",", new [] {
-            userCreationInfoIdp.FirstName,
-            userCreationInfoIdp.LastName,
-            userCreationInfoIdp.Email,
-        }.Concat(userCreationInfoIdp.Roles));
-
-    private static bool CreationInfoMatches(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
-        creationInfo.FirstName == other.FirstName &&
-        creationInfo.LastName == other.LastName &&
-        creationInfo.Email == other.Email &&
-        creationInfo.Roles.SequenceEqual(other.Roles) &&
-        creationInfo.UserId == other.UserId &&
-        creationInfo.UserName == other.UserName;
-
-    private static bool CreationInfoMatchesSharedIdp(UserCreationInfoIdp creationInfo, UserCreationInfoIdp other) =>
-        creationInfo.FirstName == other.FirstName &&
-        creationInfo.LastName == other.LastName &&
-        creationInfo.Email == other.Email &&
-        creationInfo.Roles.SequenceEqual(other.Roles);
-
     #endregion
 
     [Serializable]
@@ -298,7 +246,7 @@ public class UserBusinessLogicTests
 
     public interface IMockLogger<T>
     {
-        void MockLog(LogLevel logLevel, Exception? exception);
+        void Log(LogLevel logLevel, Exception? exception, string logMessage);
     }
 
     public class MockLogger<T> : ILogger<T>
@@ -315,11 +263,13 @@ public class UserBusinessLogicTests
         public bool IsEnabled(LogLevel logLevel) => true;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState,Exception?,string> formatter) =>
-            _logger.MockLog(logLevel,exception);
+            _logger.Log(logLevel,exception,formatter(state,exception));
         
         public class TestDisposable : IDisposable
         {
-            public void Dispose() {}
+            public void Dispose() {
+                GC.SuppressFinalize(this);
+            }
         }
     }
 }
