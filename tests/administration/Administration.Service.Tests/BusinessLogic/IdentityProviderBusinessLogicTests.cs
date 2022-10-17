@@ -56,7 +56,6 @@ public class IdentityProviderBusinessLogicTests
     private readonly string _sharedIdpAlias;
     private readonly Guid _otherIdentityProviderId;
     private readonly string _otherIdpAlias;
-    private readonly Exception _error;
 
     public IdentityProviderBusinessLogicTests()
     {
@@ -96,8 +95,6 @@ public class IdentityProviderBusinessLogicTests
                 HeaderProviderUserId = "ProviderUserId",
                 HeaderProviderUserName = "ProviderUserName"
             };
-
-        _error = _fixture.Create<TestException>();
     }
 
     #region UploadOwnCompanyUsersIdentityProviderLinkDataAsync
@@ -119,6 +116,7 @@ public class IdentityProviderBusinessLogicTests
             _options);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers);
         result.Error.Should().Be(0);
@@ -232,6 +230,7 @@ public class IdentityProviderBusinessLogicTests
             _options);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers-1);
         result.Error.Should().Be(0);
@@ -287,6 +286,7 @@ public class IdentityProviderBusinessLogicTests
             _options);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers-1);
         result.Error.Should().Be(1);
@@ -338,6 +338,7 @@ public class IdentityProviderBusinessLogicTests
             _options);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers-1);
         result.Error.Should().Be(0);
@@ -388,6 +389,7 @@ public class IdentityProviderBusinessLogicTests
             _options);
 
         var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document,_iamUserId,CancellationToken.None).ConfigureAwait(false);
+
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers-1);
         result.Error.Should().Be(1);
@@ -496,15 +498,4 @@ public class IdentityProviderBusinessLogicTests
     private record TestUserData(Guid CompanyUserId, string UserEntityId, string FirstName, string LastName, string Email, string SharedIdpUserId, string SharedIdpUserName, string OtherIdpUserId, string OtherIdpUserName);
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }
