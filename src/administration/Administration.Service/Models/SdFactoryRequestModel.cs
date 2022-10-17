@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
@@ -29,12 +30,13 @@ public record SdFactoryRequestModel(
     [property: JsonPropertyName("registrationNumber")] string RegistrationNumber,
     [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
     [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
-    [property: JsonPropertyName("type")] SdFactoryRequestModelSdType Type,
+    [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
     [property: JsonPropertyName("bpn")] string Bpn,
     [property: JsonPropertyName("holder")] string Holder,
     [property: JsonPropertyName("issuer")] string Issuer);
 
 public enum SdFactoryRequestModelSdType
 {
+    [EnumMember(Value = "LegalPerson")]
     LegalPerson
 }
