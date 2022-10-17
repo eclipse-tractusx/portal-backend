@@ -89,7 +89,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, _notAssignedCompanyIdUser, _accessToken, OfferTypeId.SERVICE);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingServiceId, _notAssignedCompanyIdUser, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -130,7 +130,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
+        await sut.AddOfferSubscriptionAsync(_existingServiceId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -158,7 +158,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        await sut.AddServiceSubscription(_existingServiceWithFailingAutoSetupId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
+        await sut.AddOfferSubscriptionAsync(_existingServiceWithFailingAutoSetupId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         notifications.Should().ContainSingle();
@@ -173,7 +173,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        async Task Action() => await sut.AddServiceSubscription(notExistingServiceId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(notExistingServiceId, _iamUser.UserEntityId, _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -187,7 +187,7 @@ public class OfferSubscriptionServiceTests
         var sut = _fixture.Create<OfferSubscriptionService>();
 
         // Act
-        async Task Action() => await sut.AddServiceSubscription(_existingServiceId, Guid.NewGuid().ToString(), _accessToken, OfferTypeId.SERVICE);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingServiceId, Guid.NewGuid().ToString(), _accessToken, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);

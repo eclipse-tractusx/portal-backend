@@ -84,4 +84,14 @@ public enum NotificationTypeId : int
     /// Technical user was created
     /// </summary>
     TECHNICAL_USER_CREATION = 12,
+    
+    /// <summary>
+    /// Service request
+    /// </summary>
+    SERVICE_REQUEST = 13,
+    
+    /// <summary>
+    /// Activation of a service
+    /// </summary>
+    SERVICE_ACTIVATION = 14
 }

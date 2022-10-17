@@ -24,5 +24,5 @@ namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
 public interface IOfferSubscriptionService
 {
-    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken, OfferTypeId offerTypeId);
+    Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, OfferTypeId offerTypeId);
 }
