@@ -186,13 +186,15 @@ public class IdentityProviderBusinessLogicTests
     {
         var numUsers = 5;
 
+        var changedEmail = _fixture.Create<string>();
+
         var unchanged = _fixture.Create<TestUserData>();
         var changed = new TestUserData(
             unchanged.CompanyUserId,
             unchanged.UserEntityId,
             unchanged.FirstName,
             unchanged.LastName,
-            _fixture.Create<string>(),
+            changedEmail,
             unchanged.SharedIdpUserId,
             unchanged.SharedIdpUserName,
             unchanged.OtherIdpUserId,
@@ -211,6 +213,19 @@ public class IdentityProviderBusinessLogicTests
 
         SetupFakes(users,lines);
 
+        var changedEmailResult = (string?)null;
+        var lastEditorId = (Guid?)null;
+
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).ReturnsLazily((Guid companyUserId, Action<CompanyUser>? setOptionalParameters) =>
+            {
+                var companyUser = new CompanyUser(companyUserId,Guid.Empty,default!,default!,Guid.Empty);
+                setOptionalParameters?.Invoke(companyUser);
+                changedEmailResult = companyUser.Email;
+                lastEditorId = companyUser.LastEditorId;
+                return companyUser;
+            }
+        );
+
         var sut = new IdentityProviderBusinessLogic(
             _portalRepositories,
             _provisioningManager,
@@ -228,6 +243,11 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustHaveHappenedOnceExactly();
+
+        changedEmailResult.Should().NotBeNull();
+        changedEmailResult.Should().Be(changedEmail);
+        lastEditorId.Should().HaveValue();
+        lastEditorId!.Value.Should().Be(_companyUserId);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
     }
 
