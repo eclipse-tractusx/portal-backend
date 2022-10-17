@@ -65,10 +65,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     /// <inheritdoc />
     public async Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
-        {
-            throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
-        }
+        ValidateServiceProviderDetailData(data);
 
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
         if (result == default)
@@ -80,8 +77,41 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
         }
 
-        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(result.CompanyId, data.Url);
+        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>()
+            .CreateServiceProviderCompanyDetail(result.CompanyId, data.Url);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return companyDetails.Id;
+    }
+
+    /// <inheritdoc />
+    public Task UpdateServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, ServiceProviderDetailData data, string iamUserId)
+    {
+        ValidateServiceProviderDetailData(data);
+        return UpdateServiceProviderCompanyDetailsInternalAsync(serviceProviderDetailDataId, data, iamUserId);
+    }
+
+    private static void ValidateServiceProviderDetailData(ServiceProviderDetailData data)
+    {
+        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
+        {
+            throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
+        }
+    }
+    
+    private async Task UpdateServiceProviderCompanyDetailsInternalAsync(Guid serviceProviderDetailDataId,
+        ServiceProviderDetailData data, string iamUserId)
+    {
+        if (!await _portalRepositories
+                .GetInstance<ICompanyRepository>()
+                .CheckServiceProviderDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
+                .ConfigureAwait(false))
+        {
+            throw new NotFoundException($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyServiceProviderDetails(
+            serviceProviderDetailDataId,
+            details => { details.AutoSetupUrl = data.Url; });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
