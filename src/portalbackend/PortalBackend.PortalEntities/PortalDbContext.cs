@@ -61,6 +61,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20221005 { get; set; } = default!;
+    public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -565,7 +566,12 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyServiceAccountAssignedRoles)
                 .WithOne(d => d.CompanyServiceAccount!);
         });
-
+        
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+           entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+        });
+        
         modelBuilder.Entity<CompanyServiceAccountStatus>()
             .HasData(
                 Enum.GetValues(typeof(CompanyServiceAccountStatusId))
