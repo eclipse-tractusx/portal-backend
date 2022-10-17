@@ -38,7 +38,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
     private readonly InvitationSettings _settings;
-    private readonly ILogger<InvitationBusinessLogic> _logger;
 
     /// <summary>
     /// Constructor.
@@ -48,22 +47,18 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     /// <param name="portalRepositories">Portal Repositories</param>
     /// <param name="mailingService">Mailing Service</param>
     /// <param name="settings">Settings</param>
-    /// <param name="logger">logger</param>
     public InvitationBusinessLogic(
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         IPortalRepositories portalRepositories,
         IMailingService mailingService,
-        IOptions<InvitationSettings> settings,
-        ILogger<InvitationBusinessLogic> logger
-        )
+        IOptions<InvitationSettings> settings)
     {
         _provisioningManager = provisioningManager;
         _userProvisioningService = userProvisioningService;
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
         _settings = settings.Value;
-        _logger = logger;
     }
 
     public Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
