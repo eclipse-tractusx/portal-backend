@@ -141,6 +141,17 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             ))
             .ToAsyncEnumerable();
 
+    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string Alias)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
+        _context.IdentityProviders
+            .AsNoTracking()
+            .Where(identityProvider => identityProvider.Companies.Any(company => company.Id == companyId))
+            .Select(identityProvider => new ValueTuple<Guid,IdentityProviderCategoryId,string>(
+                identityProvider.Id,
+                identityProvider.IdentityProviderCategoryId,
+                identityProvider.IamIdentityProvider!.IamIdpAlias
+            ))
+            .ToAsyncEnumerable();
+
     public IAsyncEnumerable<(Guid IdentityProviderId, string Alias)> GetOwnCompanyIdentityProviderAliasDataUntracked(string iamUserId, IEnumerable<Guid> identityProviderIds) =>
         _context.IamUsers
             .AsNoTracking()
