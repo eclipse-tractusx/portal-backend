@@ -123,6 +123,13 @@ public class IdentityProviderBusinessLogicTests
         result.Error.Should().Be(0);
         result.Total.Should().Be(numUsers);
         result.Errors.Should().BeEmpty();
+
+        A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._,A<IdentityProviderLink>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateCentralUserAsync(A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmUserAsync(A<string>._,A<string>._,A<string>._,A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion

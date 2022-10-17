@@ -28,10 +28,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 [AuditEntityV1(typeof(AuditCompanyUser20221005))]
 public class CompanyUser : IAuditableV1
 {
-    /// <summary>
-    /// Only needed for ef and the audit entity
-    /// </summary>
-    public CompanyUser()
+    private CompanyUser()
     {
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();

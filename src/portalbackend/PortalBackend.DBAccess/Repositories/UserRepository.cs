@@ -97,6 +97,13 @@ public class UserRepository : IUserRepository
                 Email = email,
             }).Entity;
 
+    public CompanyUser AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? setOptionalParameters = null)
+    {
+        var companyUser = _dbContext.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default, Guid.Empty)).Entity;
+        setOptionalParameters?.Invoke(companyUser);
+        return companyUser;
+    }
+
     public IamUser CreateIamUser(Guid companyUserId, string iamUserId) =>
         _dbContext.IamUsers.Add(
             new IamUser(
