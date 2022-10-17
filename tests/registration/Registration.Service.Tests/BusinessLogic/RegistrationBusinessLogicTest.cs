@@ -30,6 +30,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
@@ -48,10 +49,16 @@ public class RegistrationBusinessLogicTest
     private readonly IInvitationRepository _invitationRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly IUserRepository _userRepository;
+    private readonly ICompanyRepository _companyRepository;
+    private readonly IApplicationRepository _applicationRepository;
     private readonly IPortalRepositories _portalRepositories;
-    private const string IamUserId = "807b4089-5258-496b-974d-feeb5540cb50";
-    private readonly Guid _companyUserId = new ("807b4089-5258-496b-974d-feeb5540cb99");
-    private readonly Guid _existingApplicationId = Guid.NewGuid();
+    private readonly string _iamUserId;
+    private readonly Guid _companyUserId;
+    private readonly Guid _existingApplicationId;
+    private readonly TestException _error;
+    private readonly IOptions<RegistrationSettings> _options;
+    private readonly IMailingService _mailingService;
+    private readonly Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
 
     public RegistrationBusinessLogicTest()
     {
@@ -59,9 +66,12 @@ public class RegistrationBusinessLogicTest
         _portalRepositories = A.Fake<IPortalRepositories>();
         _provisioningManager = A.Fake<IProvisioningManager>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
+        _mailingService = A.Fake<IMailingService>();
         _invitationRepository = A.Fake<IInvitationRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _userRepository = A.Fake<IUserRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
+        _applicationRepository = A.Fake<IApplicationRepository>();
 
         var options = Options.Create(new RegistrationSettings
         {
@@ -72,6 +82,15 @@ public class RegistrationBusinessLogicTest
         _fixture.Inject(A.Fake<IMailingService>());
         _fixture.Inject(A.Fake<IBPNAccess>());
         _fixture.Inject(A.Fake<ILogger<RegistrationBusinessLogic>>());
+
+        _options = _fixture.Create<IOptions<RegistrationSettings>>();
+
+        _iamUserId = _fixture.Create<string>();
+        _companyUserId = _fixture.Create<Guid>();
+        _existingApplicationId = _fixture.Create<Guid>();
+        _error = _fixture.Create<TestException>();
+
+        _processLine = A.Fake<Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
         SetupRepositories();
         
@@ -140,7 +159,7 @@ public class RegistrationBusinessLogicTest
         var sut = _fixture.Create<RegistrationBusinessLogic>();
 
         // Act
-        await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, IamUserId, CancellationToken.None);
+        await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -155,7 +174,7 @@ public class RegistrationBusinessLogicTest
         var sut = _fixture.Create<RegistrationBusinessLogic>();
 
         // Act
-        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Action);
@@ -170,7 +189,7 @@ public class RegistrationBusinessLogicTest
         var sut = _fixture.Create<RegistrationBusinessLogic>();
 
         // Act
-        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, IamUserId, CancellationToken.None);
+        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -186,11 +205,11 @@ public class RegistrationBusinessLogicTest
         var notExistingId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await sut.UploadDocumentAsync(notExistingId, file, DocumentTypeId.ADDITIONAL_DETAILS, IamUserId, CancellationToken.None);
+        async Task Action() => await sut.UploadDocumentAsync(notExistingId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be($"iamUserId {IamUserId} is not assigned with CompanyApplication {notExistingId}");
+        ex.Message.Should().Be($"iamUserId {_iamUserId} is not assigned with CompanyApplication {notExistingId}");
     }
 
     [Fact]
@@ -211,30 +230,93 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region InviteNewUserAsync
+
+    [Fact]
+    public async Task TestInviteNewUserAsyncSuccess()
+    {
+        SetupFakesForInvitation();
+
+        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            _mailingService,
+            null!,
+            _provisioningManager,
+            _userProvisioningService,
+            null!,
+            _portalRepositories);
+
+        var result = await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId).ConfigureAwait(false);
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<string>._, A<IAsyncEnumerable<UserCreationInfoIdp>>._, A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId),A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<Dictionary<string,string>>._, A<List<string>>._)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task TestInviteNewUserAsyncCreationErrorThrows()
+    {
+        SetupFakesForInvitation();
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>._)).ReturnsLazily(
+            (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                .With(x => x.UserName, creationInfo.UserName)
+                .With(x => x.Error, _error)
+                .Create());
+
+        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            _mailingService,
+            null!,
+            _provisioningManager,
+            _userProvisioningService,
+            null!,
+            _portalRepositories);
+
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId);
+
+        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be(_error.Message);
+
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<string>._, A<IAsyncEnumerable<UserCreationInfoIdp>>._, A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId),A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositories()
     {
         var invitedUserRole = _fixture.CreateMany<string>(2).AsEnumerable();
         var invitedUser = _fixture.CreateMany<InvitedUserDetail>(1).ToAsyncEnumerable();
+
         A.CallTo(() => _invitationRepository.GetInvitedUserDetailsUntrackedAsync(_existingApplicationId))
             .Returns(invitedUser);
         A.CallTo(() => _invitationRepository.GetInvitedUserDetailsUntrackedAsync(Guid.Empty)).Throws(new Exception());
+
         A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(A<string>._, A<string>._))
             .Returns(invitedUserRole);
         A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(string.Empty, string.Empty)).Throws(new Exception());
 
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Matches(x => x == _existingApplicationId), A<string>.That.Matches(x => x == IamUserId)))
+                A<Guid>.That.Matches(x => x == _existingApplicationId), A<string>.That.Matches(x => x == _iamUserId)))
             .ReturnsLazily(() => _companyUserId);
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Matches(x => x == _existingApplicationId), A<string>.That.Not.Matches(x => x == IamUserId)))
+                A<Guid>.That.Matches(x => x == _existingApplicationId), A<string>.That.Not.Matches(x => x == _iamUserId)))
             .ReturnsLazily(() => Guid.Empty);
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingApplicationId), A<string>.That.Matches(x => x == IamUserId)))
+                A<Guid>.That.Not.Matches(x => x == _existingApplicationId), A<string>.That.Matches(x => x == _iamUserId)))
             .ReturnsLazily(() => Guid.Empty);
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingApplicationId), A<string>.That.Not.Matches(x => x == IamUserId)))
+                A<Guid>.That.Not.Matches(x => x == _existingApplicationId), A<string>.That.Not.Matches(x => x == _iamUserId)))
             .ReturnsLazily(() => Guid.Empty);
         
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>())
@@ -243,7 +325,36 @@ public class RegistrationBusinessLogicTest
             .Returns(_invitationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>())
             .Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>())
+            .Returns(_applicationRepository);
+    }
+
+    private void SetupFakesForInvitation()
+    {
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, string keycloakClientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, CancellationToken cancellationToken) =>
+                userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>._)).ReturnsLazily(
+            (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                .With(x => x.UserName, creationInfo.UserName)
+                .With(x => x.Error, (Exception?)null)
+                .Create());
+
     }
 
     #endregion
+
+    [Serializable]
+    public class TestException : Exception
+    {
+        public TestException() { }
+        public TestException(string message) : base(message) { }
+        public TestException(string message, Exception inner) : base(message, inner) { }
+        protected TestException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }
