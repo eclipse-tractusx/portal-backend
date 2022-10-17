@@ -257,6 +257,93 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
+    public async Task TestInviteNewUserEmptyEmailThrows()
+    {
+        SetupFakesForInvitation();
+
+        var userCreationInfo = _fixture.Build<UserCreationInfo>()
+            .With(x => x.eMail, "")
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            _mailingService,
+            null!,
+            _provisioningManager,
+            _userProvisioningService,
+            null!,
+            _portalRepositories);
+
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("email must not be empty");
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task TestInviteNewUserUserAlreadyExistsThrows()
+    {
+        SetupFakesForInvitation();
+
+        A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(A<string>._,A<string>._)).Returns(false);
+
+        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            _mailingService,
+            null!,
+            _provisioningManager,
+            _userProvisioningService,
+            null!,
+            _portalRepositories);
+
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"user with email {userCreationInfo.eMail} does already exist");
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task TestInviteNewUserNoSharedIdpThrows()
+    {
+        SetupFakesForInvitation();
+
+        A.CallTo(() => _companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
+            (
+                CompanyId: _fixture.Create<Guid>(),
+                CompanyName: _fixture.Create<string>(),
+                Alias: (string?)null,
+                CompanyUserId: _fixture.Create<Guid>()
+            ));
+
+        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            _mailingService,
+            null!,
+            _provisioningManager,
+            _userProvisioningService,
+            null!,
+            _portalRepositories);
+
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId);
+
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"shared idp for CompanyApplication {_existingApplicationId} not found");
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task TestInviteNewUserAsyncCreationErrorThrows()
     {
         SetupFakesForInvitation();

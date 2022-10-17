@@ -28,8 +28,8 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using Xunit;
 using System.Text;
+using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
