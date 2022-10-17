@@ -288,7 +288,7 @@ public class RegistrationBusinessLogicTest
     {
         SetupFakesForInvitation();
 
-        A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(A<string>._,A<string>._)).Returns(false);
+        A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(A<string>._,A<string>._)).Returns(true);
 
         var userCreationInfo = _fixture.Create<UserCreationInfo>();
 
