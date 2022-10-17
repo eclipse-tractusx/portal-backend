@@ -562,7 +562,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
                 if (existingProfile != profile)
                 {
-                    await UpdateUserProfileAsync(userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias, creatorId).ConfigureAwait(false);
+                    await UpdateUserProfileAsync(userRepository, userEntityId, companyUserId, profile, existingLinks, sharedIdpAlias, creatorId).ConfigureAwait(false);
                     updated = true;
                 }
                 success = updated;
@@ -628,7 +628,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return true;
     }
 
-    private async ValueTask UpdateUserProfileAsync(string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias, Guid creatorId)
+    private async ValueTask UpdateUserProfileAsync(IUserRepository userRepository, string userEntityId, Guid companyUserId, UserProfile profile, IEnumerable<IdentityProviderLink> existingLinks, string? sharedIdpAlias, Guid creatorId)
     {
         var (firstName, lastName, email) = (profile.FirstName ?? "", profile.LastName ?? "", profile.Email ?? "");
 
@@ -642,12 +642,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName, lastName, email).ConfigureAwait(false);
             }
         }
-        _portalRepositories.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default, creatorId), companyUser =>
-        {
-            companyUser.Firstname = profile.FirstName;
-            companyUser.Lastname = profile.LastName;
-            companyUser.Email = profile.Email;
-        });
+        userRepository.AttachAndModifyCompanyUser(companyUserId, companyUser =>
+            {
+                companyUser.Firstname = profile.FirstName;
+                companyUser.Lastname = profile.LastName;
+                companyUser.Email = profile.Email;
+                companyUser.LastEditorId = creatorId;
+            });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
    }
 
