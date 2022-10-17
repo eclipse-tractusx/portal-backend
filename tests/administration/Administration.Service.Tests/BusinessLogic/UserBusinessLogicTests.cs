@@ -724,14 +724,13 @@ public class UserBusinessLogicTests
 
         var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
 
-        var companyUserCount = companyUserIds.Count();
-        result.Should().HaveCount(companyUserCount-1);
+        result.Should().HaveCount(companyUserIds.Length-1);
         result.Should().Match(r => Enumerable.SequenceEqual(r,companyUserIds.Take(2).Concat(companyUserIds.Skip(3))));
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserCount);
-        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserCount);
-        A.CallTo(() => _userRolesRepository.RemoveCompanyUserAssignedRole(A<CompanyUserAssignedRole>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * (companyUserCount-1));
-        A.CallTo(() => _userRepository.RemoveIamUser(A<IamUser>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserCount-1);
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
+        A.CallTo(() => _userRolesRepository.RemoveCompanyUserAssignedRole(A<CompanyUserAssignedRole>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * (companyUserIds.Length-1));
+        A.CallTo(() => _userRepository.RemoveIamUser(A<IamUser>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error),_error,A<string>.That.IsEqualTo($"Error while deleting companyUser {invalidUserId} from shared idp {sharedIdpAlias}"))).MustHaveHappened();
@@ -776,16 +775,15 @@ public class UserBusinessLogicTests
 
         var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
 
-        var companyUserCount = companyUserIds.Count();
-        result.Should().HaveCount(companyUserCount-1);
+        result.Should().HaveCount(companyUserIds.Length-1);
         result.Should().Match(r => Enumerable.SequenceEqual(r,companyUserIds.Take(2).Concat(companyUserIds.Skip(3))));
 
         A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
 
-        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserCount);
-        A.CallTo(() => _userRolesRepository.RemoveCompanyUserAssignedRole(A<CompanyUserAssignedRole>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * (companyUserCount-1));
-        A.CallTo(() => _userRepository.RemoveIamUser(A<IamUser>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserCount-1);
+        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
+        A.CallTo(() => _userRolesRepository.RemoveCompanyUserAssignedRole(A<CompanyUserAssignedRole>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * (companyUserIds.Length-1));
+        A.CallTo(() => _userRepository.RemoveIamUser(A<IamUser>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error),_error,A<string>.That.IsEqualTo($"Error while deleting companyUser {invalidUserId}"))).MustHaveHappened();
