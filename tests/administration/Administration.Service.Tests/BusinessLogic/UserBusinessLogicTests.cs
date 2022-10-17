@@ -377,6 +377,82 @@ public class UserBusinessLogicTests
 
     #endregion
 
+    #region CreateOwnCompanyIdpUserAsync
+
+    [Fact]
+    public async void TestCreateOwnCompanyIdpUserAsyncSuccess()
+    {
+        SetupFakes();
+
+        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            null!,
+            null!,
+            null!,
+            _options);
+
+        var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
+        result.Should().NotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async void TestCreateOwnCompanyIdpUserAsyncError()
+    {
+        SetupFakes();
+
+        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).ReturnsLazily(
+            (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                .With(x => x.UserName, creationInfo.UserName)
+                .With(x => x.Error, _error)
+                .Create());
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            null!,
+            null!,
+            null!,
+            _options);
+
+        async Task Act() => await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be(_error.Message);
+    }
+
+    [Fact]
+    public async void TestCreateOwnCompanyIdpUserAsyncThrows()
+    {
+        SetupFakes();
+
+        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+
+        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).Throws(_error);
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            null!,
+            null!,
+            null!,
+            _options);
+
+        async Task Act() => await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be(_error.Message);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupFakes()
@@ -385,7 +461,8 @@ public class UserBusinessLogicTests
             .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, string keycloakClientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, CancellationToken cancellationToken) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(null!);
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._,A<string>._)).Returns(_fixture.Create<CompanyNameIdpAliasData>());
+
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._, A<IdentityProviderCategoryId>._))
