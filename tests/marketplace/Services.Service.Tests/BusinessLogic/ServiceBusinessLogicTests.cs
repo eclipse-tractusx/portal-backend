@@ -158,7 +158,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionService.AddServiceSubscription(A<Guid>._, A<string>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<string>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => offerSubscriptionId);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferService>(), _offerSubscriptionService, Options.Create(new ServiceSettings()));
 

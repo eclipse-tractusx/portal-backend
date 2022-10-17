@@ -51,12 +51,12 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken, OfferTypeId offerTypeId)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, OfferTypeId offerTypeId)
     {
-        var serviceDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(serviceId, offerTypeId).ConfigureAwait(false);
-        if (serviceDetails == null)
+        var offerProviderDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(false);
+        if (offerProviderDetails == null)
         {
-            throw new NotFoundException($"Service {serviceId} does not exist");
+            throw new NotFoundException($"Service {offerId} does not exist");
         }
 
         var (companyInformation, companyUserId, userEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
@@ -75,10 +75,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new ConflictException($"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
         }
 
-        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
 
         var autoSetupResult = string.Empty;
-        if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
+        if (!string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl))
         {
             try
             {
@@ -90,9 +90,9 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                     new OfferThirdPartyAutoSetupPropertyData(
                         companyInformation.BusinessPartnerNumber,
                         offerSubscription.Id,
-                        serviceId)
+                        offerId)
                 );
-                await _offerSetupService.AutoSetupOffer(autoSetupData, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+                await _offerSetupService.AutoSetupOffer(autoSetupData, iamUserId, accessToken, offerProviderDetails.AutoSetupUrl).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -101,17 +101,32 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             }
         }
 
-        if (serviceDetails.SalesManagerId.HasValue)
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        var notificationContent = new
         {
-            var notificationContent = new
-            {
-                serviceDetails.AppName,
-                RequestorCompanyName = companyInformation.OrganizationName,
-                UserEmail = userEmail,
-                AutoSetupExecuted = !string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl),
-                AutoSetupError = autoSetupResult
-            };
-            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(serviceDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
+            offerProviderDetails.AppName,
+            offerId,
+            RequestorCompanyName = companyInformation.OrganizationName,
+            UserEmail = userEmail,
+            AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
+            AutoSetupError = autoSetupResult
+        };
+        if (offerProviderDetails.SalesManagerId.HasValue)
+        {
+            var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
+            notificationRepository.CreateNotification(offerProviderDetails.SalesManagerId.Value, notificationTypeId, false,
+                notification =>
+                {
+                    notification.CreatorUserId = companyUserId;
+                    notification.Content = JsonSerializer.Serialize(notificationContent);
+                });
+        }
+        //Get Service Manager Id
+        var serviceManagerId = Guid.NewGuid();
+        if (serviceManagerId != Guid.Empty)
+        {   
+            var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
+            notificationRepository.CreateNotification(serviceManagerId, notificationTypeId, false,
                 notification =>
                 {
                     notification.CreatorUserId = companyUserId;
@@ -121,5 +136,11 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return offerSubscription.Id;
+    }
+
+    private static NotificationTypeId GetOfferSubscriptionNotificationType(OfferTypeId offerTypeId)
+    {
+        var appSubscriptionRequest = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_REQUEST : NotificationTypeId.APP_SUBSCRIPTION_REQUEST;
+        return appSubscriptionRequest;
     }
 }
