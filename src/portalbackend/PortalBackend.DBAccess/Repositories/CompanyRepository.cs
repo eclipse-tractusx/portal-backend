@@ -168,7 +168,7 @@ public class CompanyRepository : ICompanyRepository
     /// <inheritdoc />
     public ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null)
     {
-        var serviceProviderCompanyDetail = _context.Attach(new ServiceProviderCompanyDetail(serviceProviderCompanyDetailId, default, null!, default)).Entity;
+        var serviceProviderCompanyDetail = _context.Attach(new ServiceProviderCompanyDetail(serviceProviderCompanyDetailId, Guid.Empty, null!, default)).Entity;
         setOptionalParameters?.Invoke(serviceProviderCompanyDetail);
         return serviceProviderCompanyDetail;
     }
