@@ -63,10 +63,12 @@ public interface ICompanyRepository
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
     /// <param name="iamUserId">IAm User Id</param>
-    /// <param name="companyRole">The company Role</param>
+    /// <param name="companyRoleId">The company Role</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId);
 
+    Task<bool> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId);
+    
     /// <summary>
     /// Creates service provider company details
     /// </summary>
@@ -82,4 +84,12 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
     Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
+    
+    /// <summary>
+    /// Updates the service provider company details
+    /// </summary>
+    /// <param name="serviceProviderCompanyDetailId">Id of the service provider company details</param>
+    /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
+    /// <returns></returns>
+    ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null);
 }
