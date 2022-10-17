@@ -350,7 +350,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
     {
-        var userIdpData = await _portalRepositories.GetInstance<IUserRepository>().GetUserWithShardIdpDataAsync(iamUserId).ConfigureAwait(false);
+        var userIdpData = await _portalRepositories.GetInstance<IUserRepository>().GetUserWithSharedIdpDataAsync(iamUserId).ConfigureAwait(false);
         if (userIdpData == null)
         {
             throw new ConflictException($"iamUser {iamUserId} is not associated to any companyUser");
@@ -383,7 +383,14 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error while deleting comapnyUser {companyUser.Id} from shared idp {iamIdpAlias}");
+                if (iamIdpAlias == null)
+                {
+                    _logger.LogError(e, "Error while deleting companyUser {companyUserId}",companyUser.Id);
+                }
+                else
+                {
+                    _logger.LogError(e, "Error while deleting companyUser {companyUserId} from shared idp {iamIdpAlias}",companyUser.Id,iamIdpAlias);
+                }
             }
             if (success)
             {

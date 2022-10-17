@@ -307,7 +307,7 @@ public class UserRepository : IUserRepository
                     ))))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserWithIdpData?> GetUserWithShardIdpDataAsync(string iamUserId) =>
+    public Task<CompanyUserWithIdpData?> GetUserWithSharedIdpDataAsync(string iamUserId) =>
         _dbContext.CompanyUsers
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
             .Include(companyUser => companyUser.CompanyUserAssignedRoles)

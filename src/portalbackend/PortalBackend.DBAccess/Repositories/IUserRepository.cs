@@ -63,7 +63,7 @@ public interface IUserRepository
 
     Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
-    Task<CompanyUserWithIdpData?> GetUserWithShardIdpDataAsync(string iamUserId);
+    Task<CompanyUserWithIdpData?> GetUserWithSharedIdpDataAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
 
     /// <summary>
