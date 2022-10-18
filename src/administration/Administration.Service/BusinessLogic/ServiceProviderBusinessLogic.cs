@@ -63,10 +63,14 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
+    public Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
         ValidateServiceProviderDetailData(data);
+        return CreateServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
+    }
 
+    private async Task<Guid> CreateServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
+    {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
         if (result == default)
         {
@@ -101,12 +105,16 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     private async Task UpdateServiceProviderCompanyDetailsInternalAsync(Guid serviceProviderDetailDataId,
         ServiceProviderDetailData data, string iamUserId)
     {
-        if (!await _portalRepositories
-                .GetInstance<ICompanyRepository>()
-                .CheckServiceProviderDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
-                .ConfigureAwait(false))
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .CheckServiceProviderDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
+            .ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
+        }
+        if (!result.IsSameCompany)
+        {
+            throw new ForbiddenException($"users {iamUserId} is not associated with service-provider company");
         }
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyServiceProviderDetails(

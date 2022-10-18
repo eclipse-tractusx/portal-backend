@@ -144,11 +144,13 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<bool> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId) =>
+    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId) =>
         _context.ServiceProviderCompanyDetails.AsNoTracking()
-            .AnyAsync(details => 
-                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId) && 
-                details.Id == serviceProviderCompanyDetailsId);
+            .Where(details => details.Id == serviceProviderCompanyDetailsId)
+            .Select(details => new ValueTuple<bool,bool>(
+                true,
+                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
     
     /// <inheritdoc />
     public ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl) =>
