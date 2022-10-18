@@ -62,11 +62,10 @@ public class UserRolesRepository : IUserRolesRepository
                 userRoleId
             )).Entity;
 
-    public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId) =>
-        _dbContext.CompanyUsers
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-            .Where(companyUser => companyUserIds.Contains(companyUser.Id) && companyUser.IamUser!.UserEntityId != null)
+    public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId) =>
+        _dbContext.Companies
+            .Where(company => company.CompanyUsers.Any(cu => cu.Id == companyUserId))
+            .SelectMany(company => company.CompanyUsers.Where(companyUser => companyUserIds.Contains(companyUser.Id)))
             .Include(companyUser => companyUser.CompanyUserAssignedRoles)
             .Include(companyUser => companyUser.IamUser)
             .AsAsyncEnumerable();

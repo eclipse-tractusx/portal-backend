@@ -18,6 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-public record IdentityProviderUpdateStats(int Updated, int Unchanged, int Error, int Total, IEnumerable<string> Errors);
+public static class Paths
+{
+    public static readonly string Notification = "/api/notification";
+}
