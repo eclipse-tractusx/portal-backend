@@ -28,46 +28,34 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 /// </summary>
 /// <param name="Name">Display name of the connector.</param>
 /// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Type">Connector type.</param>
 /// <param name="Status">Connector status.</param>
 /// <param name="Location">Connector's location country code.</param>
-/// <param name="Provider">Providing company's ID..</param>
-/// <param name="Host">Hosting company's ID.</param>
 public record ConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
-    ConnectorTypeId Type,
     ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
-    Guid Provider,
-    Guid? Host);
+    [StringLength(2, MinimumLength = 2)] string Location);
 
 /// <summary>
 /// Input model defining all parameters for creating a connector in persistence layer.
 /// </summary>
-public record ManagedConnectorInputModel : ConnectorInputModel
-{
-    /// <summary>
-    /// Input model defining all parameters for creating a connector in persistence layer.
-    /// </summary>
-    /// <param name="name">Display name of the connector.</param>
-    /// <param name="connectorUrl"> URL of the connector..</param>
-    /// <param name="type">Connector type.</param>
-    /// <param name="status">Connector status.</param>
-    /// <param name="location">Connector's location country code.</param>
-    /// <param name="provider">Providing company's ID..</param>
-    /// <param name="host">Hosting company's ID.</param>
-    public ManagedConnectorInputModel(string name,
-        string connectorUrl,
-        ConnectorTypeId type,
-        ConnectorStatusId status,
-        string location,
-        Guid provider,
-        Guid host) 
-        : base(name, connectorUrl, type, status, location, provider, host)
-    {
-        this.Host = host;
-    }
+/// <param name="Name">Display name of the connector.</param>
+/// <param name="ConnectorUrl"> URL of the connector..</param>
+/// <param name="Status">Connector status.</param>
+/// <param name="Location">Connector's location country code.</param>
+/// <param name="ProviderBpn">Providing company's BPN.</param>
+public record ManagedConnectorInputModel(
+    [MaxLength(255)] string Name,
+    [MaxLength(255)] string ConnectorUrl,
+    ConnectorStatusId Status,
+    [StringLength(2, MinimumLength = 2)] string Location,
+    string ProviderBpn);
 
-    public new Guid Host { get; }
-}
+public record ConnectorRequestModel(
+    [MaxLength(255)] string Name,
+    [MaxLength(255)] string ConnectorUrl,
+    ConnectorTypeId ConnectorType,
+    ConnectorStatusId Status,
+    [StringLength(2, MinimumLength = 2)] string Location,
+    Guid Provider,
+    Guid Host);

@@ -93,19 +93,12 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(
-        IEnumerable<(Guid companyId, bool bpnRequested)> parameters)
-    {
-        var bpnRequestCompanyIds = parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).ToList();
-        return _context.Companies
-            .AsNoTracking()
-            .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
-            .Select(company => new ValueTuple<Guid,string?>(
-                company.Id,
-                bpnRequestCompanyIds.Contains(company.Id) ? company.BusinessPartnerNumber : null
-            ))
-            .AsAsyncEnumerable();
-    }
+    public Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber) =>
+        _context.Companies
+        .AsNoTracking()
+        .Where(company => company.BusinessPartnerNumber == businessPartnerNumber)
+        .Select(company => company.Id)
+        .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
         _context.Companies
@@ -156,5 +149,12 @@ public class CompanyRepository : ICompanyRepository
                 new ServiceProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
                 x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
                 x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<string?> GetCompanyBpnByIdAsync(Guid companyId) =>
+        _context.Companies.AsNoTracking()
+            .Where(x => x.Id == companyId)
+            .Select(x => x.BusinessPartnerNumber)
             .SingleOrDefaultAsync();
 }

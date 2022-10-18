@@ -37,6 +37,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLog
 public class ConnectorsBusinessLogicTests
 {
     private static readonly Guid _validCompanyId = Guid.NewGuid();
+    private static readonly string _validCompanyBpn = "CATENAXBPN123";
     private static readonly Guid _validHostId = Guid.NewGuid();
     private static readonly Guid _companyWithoutBpnId = Guid.NewGuid();
     private static readonly Guid _invalidCompanyId = Guid.NewGuid();
@@ -90,81 +91,29 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
-            _validCompanyId);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "de");
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
     }
-    
+
     [Fact]
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "invalid", _validCompanyId,
-            _validCompanyId);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "invalid");
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         exception.Message.Should().Be("Location invalid does not exist (Parameter 'location')");
     }
     
-    [Fact]
-    public async Task CreateConnectorAsync_WithInvalidCompany_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _invalidCompanyId,
-            _invalidCompanyId);
-        
-        // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be($"Company {_invalidCompanyId} does not exist (Parameter 'provider')");
-    }
-    
-    [Fact]
-    public async Task CreateConnectorAsync_WithCompanyWithoutBpn_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _companyWithoutBpnId,
-            _companyWithoutBpnId);
-        
-        // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be($"provider company {_companyWithoutBpnId} has no businessPartnerNumber assigned");
-    }
-    
-    [Fact]
-    public async Task CreateConnectorAsync_WithInvalid_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
-            _invalidHostId);
-        
-        // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        exception.Message.Should().Be($"Company {_invalidHostId} does not exist (Parameter 'host')");
-    }
-
     #endregion
     
     #region CreateManagedConnectorAsync
@@ -173,12 +122,10 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
-            _validCompanyId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "de", _validCompanyBpn);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, _accessToken, _iamUserId, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -188,31 +135,41 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
-            _validCompanyId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "de", _validCompanyBpn);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _technicalUserId, true, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, _accessToken, _technicalUserId, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task CreateManagedConnectorAsync_WithDifferentCompanyIdThanUsersCompanyId_ThrowsException()
+    public async Task CreateManagedConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
-            _validHostId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "invalid", _validCompanyBpn);
         
         // Act
-        async Task Action() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _accessToken, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        exception.ParamName.Should().Be("location");
+    }
+
+    [Fact]
+    public async Task CreateManagedConnectorAsync_WithNotExistingBpn_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "de",  "THISISNOTEXISTING");
+        
+        // Act
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, _accessToken, _technicalUserId, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action).ConfigureAwait(false);
-        ex.ParamName.Should().Be("Host");
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("providerBpn");
     }
 
     #endregion
@@ -226,40 +183,15 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x.Length == 2)))
             .Returns(false);
 
-        A.CallTo(() => _companyRepository.GetConnectorCreationCompanyDataAsync(
-                A<IEnumerable<(Guid companyId, bool bpnRequested)>>.That.Matches(x =>
-                    x.Count() == 1 && x.First().companyId == _validCompanyId)))
-            .Returns(new List<(Guid CompanyId, string? BusinessPartnerNumber)>
-            {
-                new(_validCompanyId, "VALID")
-            }.ToAsyncEnumerable());
-        A.CallTo(() => _companyRepository.GetConnectorCreationCompanyDataAsync(
-                A<IEnumerable<(Guid companyId, bool bpnRequested)>>.That.Matches(x =>
-                    x.Count() == 2 && x.Any(y => y.companyId == _validCompanyId) && x.Any(y => y.companyId == _validHostId))))
-            .Returns(new List<(Guid CompanyId, string? BusinessPartnerNumber)>
-            {
-                new(_validCompanyId, "VALID"),
-                new(_validHostId, "VALID_HOST")
-            }.ToAsyncEnumerable());
-        A.CallTo(() => _companyRepository.GetConnectorCreationCompanyDataAsync(
-                A<IEnumerable<(Guid companyId, bool bpnRequested)>>.That.Matches(x =>
-                    x.Count() == 1 && x.Any(y => y.companyId == _invalidCompanyId))))
-            .Returns(new List<(Guid CompanyId, string? BusinessPartnerNumber)>().ToAsyncEnumerable());
-        A.CallTo(() => _companyRepository.GetConnectorCreationCompanyDataAsync(
-                A<IEnumerable<(Guid companyId, bool bpnRequested)>>.That.Matches(x =>
-                    x.Count() == 1 && x.Any(y => y.companyId == _companyWithoutBpnId))))
-            .Returns(new List<(Guid CompanyId, string? BusinessPartnerNumber)>
-            {
-                new(_companyWithoutBpnId, null)
-            }.ToAsyncEnumerable());
-        A.CallTo(() => _companyRepository.GetConnectorCreationCompanyDataAsync(
-                A<IEnumerable<(Guid companyId, bool bpnRequested)>>.That.Matches(x =>
-                    x.Count() == 2 && x.Any(y => y.companyId == _validCompanyId) && x.Any(y => y.companyId == _invalidHostId))))
-            .Returns(new List<(Guid CompanyId, string? BusinessPartnerNumber)>
-            {
-                new(_validCompanyId, "VALID")
-            }.ToAsyncEnumerable());
-
+        A.CallTo(() => _companyRepository.GetCompanyBpnByIdAsync(A<Guid>.That.Matches(x => x == _validCompanyId)))
+            .ReturnsLazily(() => _validCompanyBpn);
+        A.CallTo(() => _companyRepository.GetCompanyBpnByIdAsync(A<Guid>.That.Not.Matches(x => x == _validCompanyId)))
+            .ReturnsLazily(() => string.Empty);
+        A.CallTo(() => _companyRepository.GetCompanyIdByBpnAsync(A<string>.That.Matches(x => x == _validCompanyBpn)))
+            .ReturnsLazily(() => _validCompanyId);
+        A.CallTo(() => _companyRepository.GetCompanyIdByBpnAsync(A<string>.That.Not.Matches(x => x == _validCompanyBpn)))
+            .ReturnsLazily(() => Guid.Empty);
+        
         A.CallTo(() =>
                 _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes(x =>
@@ -284,10 +216,10 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
             .ReturnsLazily(() => Guid.Empty);
 
-        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorRequestModel>._, A<string>.That.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
             .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
-                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
+                _sdFactoryService.RegisterConnectorAsync(A<ConnectorRequestModel>._, A<string>.That.Not.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
         
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
