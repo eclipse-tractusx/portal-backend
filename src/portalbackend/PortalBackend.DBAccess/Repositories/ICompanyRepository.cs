@@ -67,7 +67,7 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId);
 
-    Task<bool> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId);
+    Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId);
     
     /// <summary>
     /// Creates service provider company details

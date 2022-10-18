@@ -303,14 +303,13 @@ public class ServiceProviderBusinessLogicTest
             .ReturnsLazily(() => ((ServiceProviderDetailReturnData,bool,bool))default);
         
         A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => true);
+            .ReturnsLazily(() => (true,true));
         A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => false);
+            .ReturnsLazily(() => (true,false));
         A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => false);
+            .ReturnsLazily(() => ((bool,bool))default);
         A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => false);
-
+            .ReturnsLazily(() => ((bool,bool))default);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         _fixture.Inject(_portalRepositories);
