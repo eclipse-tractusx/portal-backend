@@ -22,7 +22,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
@@ -569,7 +568,7 @@ public class PortalDbContext : DbContext
         
         modelBuilder.Entity<UserRole>(entity =>
         {
-           entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+            entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
         });
         
         modelBuilder.Entity<CompanyServiceAccountStatus>()
