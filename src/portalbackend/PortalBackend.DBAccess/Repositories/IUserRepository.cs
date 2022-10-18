@@ -55,14 +55,6 @@ public interface IUserRepository
     /// <returns>Returns the id of the CompanyUser</returns>
     Task<Guid> GetCompanyUserIdForIamUserUntrackedAsync(string userId);
 
-    /// <summary>
-    /// Get the IdpName ,UserId and Role Ids by CompanyUser and AdminUser Id
-    /// </summary>
-    /// <param name="companyUserId"></param>
-    /// <param name="adminUserId"></param>
-    /// <returns>Company and IamUser</returns>
-    Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId);
-
     Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<CompanyUserWithIdpData?> GetUserWithSharedIdpDataAsync(string iamUserId);
@@ -120,4 +112,6 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the service account</param>
     /// <returns>The Id of the company</returns>
     Task<Guid> GetServiceAccountCompany(string iamUserId);
+
+    Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
 }
