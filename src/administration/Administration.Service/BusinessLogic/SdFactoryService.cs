@@ -27,7 +27,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
