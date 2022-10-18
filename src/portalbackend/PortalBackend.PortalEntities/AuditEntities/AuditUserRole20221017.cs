@@ -18,34 +18,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-[AuditEntityV1(typeof(AuditUserRole20221017))]
-public class UserRole : IAuditableV1
+public class AuditUserRole20221017 : IAuditEntityV1
 {
-    private UserRole()
+    public AuditUserRole20221017()
     {
         UserRoleText = null!;
-        CompanyUsers = new HashSet<CompanyUser>();
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-        UserRoleDescriptions = new HashSet<UserRoleDescription>();
     }
 
-    public UserRole(Guid id, string userRoleText, Guid offerId) : this()
-    {
-        Id = id;
-        UserRoleText = userRoleText;
-        OfferId = offerId;
-    }
-
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
+    
     public Guid Id { get; private set; }
 
-    [MaxLength(255)]
     [Column("user_role")]
     public string UserRoleText { get; set; }
 
@@ -53,9 +45,11 @@ public class UserRole : IAuditableV1
     
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual Offer? Offer { get; set; }
-    public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
-    public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }
+
