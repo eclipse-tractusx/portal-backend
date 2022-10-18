@@ -39,7 +39,7 @@ public record SdFactoryRequestModel(
 /// Model used to request connector registration at sd factory.
 /// </summary>
 public record ConnectorSdFactoryRequestModel(
-    [property: JsonPropertyName("type")] SdFactoryRequestModelSdType Type,
+    [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
     [property: JsonPropertyName("providedBy")] string ProvidedBy,
     [property: JsonPropertyName("aggregationOf")] string? AggregationOf,
     [property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
@@ -52,5 +52,7 @@ public enum SdFactoryRequestModelSdType
 {
     [EnumMember(Value = "LegalPerson")]
     LegalPerson,
+
+    [EnumMember(Value = "ServiceOffering")]
     ServiceOffering
 }
