@@ -110,7 +110,7 @@ public class SdFactoryServiceTests
         }";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
+        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
@@ -128,7 +128,7 @@ public class SdFactoryServiceTests
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
+        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);

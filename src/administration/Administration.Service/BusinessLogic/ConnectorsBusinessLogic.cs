@@ -28,6 +28,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -92,31 +94,28 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, bool isManaged, CancellationToken cancellationToken)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
     {
-        var companyData = await ValidateCompanyDataAsync(connectorInputModel.Location, connectorInputModel.Provider, connectorInputModel.Host).ConfigureAwait(false);
+        var (name, connectorUrl, status, location) = connectorInputModel;
+        await CheckLocationExists(location);
 
-        if (isManaged)
+        var companyId = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
+        var providerBpn = await _portalRepositories
+            .GetInstance<ICompanyRepository>()
+            .GetCompanyBpnByIdAsync(companyId)
+            .ConfigureAwait(false);
+
+        if (string.IsNullOrEmpty(providerBpn))
         {
-            // First check if iamUser is normal user
-            var iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyId(iamUserId).ConfigureAwait(false);
-            // if not check for technical user
-            if (iamUserCompanyId == Guid.Empty)
-            {
-                iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>()
-                    .GetServiceAccountCompany(iamUserId)
-                    .ConfigureAwait(false);
-            }
-
-            if (iamUserCompanyId != connectorInputModel.Host)
-            {
-                throw new ControllerArgumentException(
-                    $"CompanyId {iamUserCompanyId} does not match the host company {connectorInputModel.Host}",
-                    nameof(connectorInputModel.Host));
-            }
+            throw new UnexpectedConditionException($"provider company {companyId} has no businessPartnerNumber assigned");
         }
-        
-        var createdConnector = await CreateAndRegisterConnectorAsync(connectorInputModel, accessToken, companyData, cancellationToken).ConfigureAwait(false);
+
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, status, location, companyId, companyId);
+        var createdConnector = await CreateAndRegisterConnectorAsync(
+            connectorRequestModel,
+            accessToken,
+            providerBpn
+            , cancellationToken).ConfigureAwait(false);
         return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
         {
             Id = createdConnector.Id,
@@ -125,45 +124,64 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         };
     }
 
-    private async Task<List<(Guid CompanyId, string? BusinessPartnerNumber)>> ValidateCompanyDataAsync(string location, Guid provider, Guid? host)
+    public async Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    {
+        var companyId = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
+        var (name, connectorUrl, status, location, providerBpn) = connectorInputModel;
+        await CheckLocationExists(location).ConfigureAwait(false);
+
+        var providerId = await _portalRepositories
+            .GetInstance<ICompanyRepository>()
+            .GetCompanyIdByBpnAsync(providerBpn)
+            .ConfigureAwait(false);
+
+        if (providerId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"Company {providerBpn} does not exist", nameof(providerBpn));
+        }
+
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, status, location, providerId, companyId);
+        var createdConnector = await CreateAndRegisterConnectorAsync(
+            connectorRequestModel, 
+            accessToken, 
+            providerBpn, 
+            cancellationToken)
+            .ConfigureAwait(false);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
+        {
+            Id = createdConnector.Id,
+            Status = createdConnector.StatusId,
+            Type = createdConnector.TypeId
+        };
+    }
+
+    private async Task<Guid> GetCompanyOfUserOrTechnicalUser(string iamUserId)
+    {
+        var iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyId(iamUserId)
+            .ConfigureAwait(false);
+        // if not check for technical user
+        if (iamUserCompanyId == Guid.Empty)
+        {
+            iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>()
+                .GetServiceAccountCompany(iamUserId)
+                .ConfigureAwait(false);
+        }
+
+        return iamUserCompanyId;
+    }
+
+    private async Task CheckLocationExists(string location)
     {
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
             throw new ControllerArgumentException($"Location {location} does not exist", nameof(location));
         }
-
-        var parameters = provider == host || !host.HasValue
-            ? Enumerable.Repeat(((Guid companyId, bool bpnRequested)) new ValueTuple<Guid, bool>(provider, true), 1)
-            : (IEnumerable<(Guid companyId, bool bpnRequested)>) new [] { (provider, true), (host.Value, false) }.AsEnumerable();
-        var companyData = await _portalRepositories
-            .GetInstance<ICompanyRepository>()
-            .GetConnectorCreationCompanyDataAsync(parameters)
-            .ToListAsync().ConfigureAwait(false);
-
-        if (companyData.All(data => data.CompanyId != provider))
-        {
-            throw new ControllerArgumentException($"Company {provider} does not exist", nameof(provider));
-        }
-
-        if (provider != host && host.HasValue && companyData.All(data => data.CompanyId != host))
-        {
-            throw new ControllerArgumentException($"Company {host} does not exist", nameof(host));
-        }
-
-        return companyData;
     }
 
-    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, IEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> companyData, CancellationToken cancellationToken)
+    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorRequestModel connectorInputModel, string accessToken, string providerBusinessPartnerNumber, CancellationToken cancellationToken)
     {
         var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
-
-        var providerBusinessPartnerNumber = companyData.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
-
-        if (providerBusinessPartnerNumber == null)
-        {
-            throw new UnexpectedConditionException($"provider company {provider} has no businessPartnerNumber assigned");
-        }
 
         var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(
             name,
