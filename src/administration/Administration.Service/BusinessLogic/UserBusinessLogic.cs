@@ -550,24 +550,22 @@ public class UserBusinessLogic : IUserBusinessLogic
         
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roles = await userRoleRepository.GetAssignedAndMatchingRoles(userRoleInfo.CompanyUserId, distinctRoles, appId).ToListAsync().ConfigureAwait(false);
-        var notExistingRoles = distinctRoles.Where(r => !roles.Select(ur => ur.CompanyUserRoleText).Contains(r));
-        if (notExistingRoles.Any())
+        var nonExistingRoles = distinctRoles.Except(roles.Select(r => r.CompanyUserRoleText));
+        if (nonExistingRoles.Any())
         {
-            throw new ControllerArgumentException($"The roles {string.Join(",", notExistingRoles)} do not exist", nameof(userRoleInfo.Roles));
+            throw new ControllerArgumentException($"The roles {string.Join(",", nonExistingRoles)} do not exist", nameof(userRoleInfo.Roles));
         }
 
-        var rolesToAdd = distinctRoles.Except(roles.Where(x => x.IsAssignedToUser).Select(x => x.CompanyUserRoleText));
-        var rolesToDelete = roles.Where(x => x.IsAssignedToUser).Select(x => x.CompanyUserRoleText).Except(distinctRoles);
+        var rolesToAdd = roles.Where(role => !role.IsAssignedToUser);
+        var rolesToDelete =  roles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles,role => role.CompanyUserRoleText);;
 
-        var rolesNotAdded = new List<UserRoleModificationData>();
-        if (rolesToAdd.Any())
-        {
-            rolesNotAdded = await AddRoles(userRoleInfo.CompanyUserId, iamClientId, roles.Where(x => rolesToAdd.Contains(x.CompanyUserRoleText)), companyUserIamData, userRoleRepository).ConfigureAwait(false);
-        }
+        var rolesNotAdded = rolesToAdd.Any()
+            ? rolesToAdd.Except(await AddRoles(userRoleInfo.CompanyUserId, iamClientId, rolesToAdd, companyUserIamData, userRoleRepository).ConfigureAwait(false))
+            : Enumerable.Empty<UserRoleModificationData>();
 
         if (rolesToDelete.Any())
         {
-            await DeleteRoles(userRoleInfo.CompanyUserId, iamClientId, roles.Where(x => rolesToDelete.Contains(x.CompanyUserRoleText)), companyUserIamData).ConfigureAwait(false);
+            await DeleteRoles(userRoleInfo.CompanyUserId, iamClientId, rolesToDelete, companyUserIamData).ConfigureAwait(false);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -616,12 +614,13 @@ public class UserBusinessLogic : IUserBusinessLogic
         };
         var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(companyUserIamData.TargetIamUserId!, clientRoleNames)
             .ConfigureAwait(false);
-        foreach (var roleWithId in rolesToAdd.Where(x => assignedRoles[iamClientId].Contains(x.CompanyUserRoleText)))
+        var rolesAdded = rolesToAdd.IntersectBy(assignedRoles[iamClientId],role => role.CompanyUserRoleText).ToList();
+        foreach (var roleWithId in rolesAdded)
         {
             userRoleRepository.CreateCompanyUserAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
 
-        return rolesToAdd.Where(x => !assignedRoles[iamClientId].Contains(x.CompanyUserRoleText)).ToList();
+        return rolesAdded;
     }
 
     private async Task DeleteRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToDelete, CompanyIamUser companyUserIamData)
