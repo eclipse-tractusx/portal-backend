@@ -21,7 +21,6 @@
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,7 +32,6 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Microsoft.Extensions.Options;
-using PasswordGenerator;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
@@ -48,7 +46,6 @@ public class UserBusinessLogic : IUserBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IProvisioningDBAccess _provisioningDBAccess;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IUserRepository _userRepository;
     private readonly IMailingService _mailingService;
     private readonly ILogger<UserBusinessLogic> _logger;
     private readonly UserSettings _settings;
@@ -76,138 +73,111 @@ public class UserBusinessLogic : IUserBusinessLogic
         _userProvisioningService = userProvisioningService;
         _provisioningDBAccess = provisioningDBAccess;
         _portalRepositories = portalRepositories;
-        _userRepository = _portalRepositories.GetInstance<IUserRepository>();
         _mailingService = mailingService;
         _logger = logger;
         _settings = settings.Value;
     }
 
-    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> usersToCreate, string createdById)
+    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
     {
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var (companyNameIdpAliasData, nameCreatedBy) = await GetCompanyNameSharedIdpAliasCreatorData(iamUserId).ConfigureAwait(false);
 
-        var result = await userRepository.GetCompanyNameIdpAliaseUntrackedAsync(createdById, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any company");
-        }
-        var (companyId, companyName, businessPartnerNumber, idpAliase) = result;
-        if (companyName == null)
-        {
-            throw new Exception($"assertion failed: companyName of company {companyId} should never be null here");
-        }
-        var idpAlias = idpAliase.SingleOrDefault();
-        if (idpAlias == null)
-        {
-            throw new ArgumentOutOfRangeException($"user {createdById} is not associated with any shared idp");
-        }
+        var userCreationInfoIdps = userList.Select(user =>
+            new UserCreationInfoIdp(
+                user.firstName ?? "",
+                user.lastName ?? "",
+                user.eMail,
+                user.Roles,
+                user.userName ?? user.eMail,
+                ""
+            )).ToAsyncEnumerable();
+
+        var emailData = userList.ToDictionary(
+            user => user.userName ?? user.eMail,
+            user => (user.eMail, user.Message));
 
         var clientId = _settings.Portal.KeyCloakClientID;
 
-        var roles = usersToCreate
-                .SelectMany(user => user.Roles)
-                .Where(role => !String.IsNullOrWhiteSpace(role))
-                .Distinct();
-
-        var userRoleIds = await userRolesRepository.GetUserRoleWithIdsUntrackedAsync(
-            clientId,
-            roles
-            )
-            .ToDictionaryAsync(
-                companyRoleWithId => companyRoleWithId.CompanyUserRoleText,
-                companyRoleWithId => companyRoleWithId.CompanyUserRoleId
-            )
-            .ConfigureAwait(false);
-
-        foreach (var role in roles)
+        await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).ConfigureAwait(false))
         {
-            if (!userRoleIds.ContainsKey(role))
+            var (email, message) = emailData[userName];
+
+            if (error != null)
             {
-                throw new ArgumentException($"invalid Role: {role}");
+                _logger.LogError(error, "Error while creating user {UserName} ({Email})", userName, email);
+                continue;
             }
-        }
 
-        var pwd = new Password();
+            var inviteTemplateName = string.IsNullOrWhiteSpace(message)
+                ? "PortalTemplate"
+                : "PortalTemplateWithMessage";
 
-        var creatorId = await userRepository.GetCompanyUserIdForIamUserUntrackedAsync(createdById).ConfigureAwait(false);
-        foreach (UserCreationInfo user in usersToCreate)
-        {
-            bool success = false;
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "password", password ?? "" },
+                { "companyname", companyNameIdpAliasData.CompanyName },
+                { "message", message ?? "" },
+                { "nameCreatedBy", nameCreatedBy },
+                { "url", _settings.Portal.BasePortalAddress },
+                { "username", userName },
+            };
+
             try
             {
-                var password = pwd.Next();
-                var centralUserId = await _provisioningManager.CreateSharedUserLinkedToCentralAsync(
-                    idpAlias,
-                    new UserProfile(
-                        user.userName ?? user.eMail,
-                        user.firstName,
-                        user.lastName,
-                        user.eMail,
-                        password
-                    ),
-                    _provisioningManager.GetStandardAttributes(
-                        alias: idpAlias,
-                        organisationName: companyName,
-                        businessPartnerNumber: businessPartnerNumber
-                    )
-                ).ConfigureAwait(false);
-
-                var companyUser = userRepository.CreateCompanyUser(user.firstName, user.lastName, user.eMail, companyId, CompanyUserStatusId.ACTIVE, creatorId);
-
-                var validRoles = user.Roles.Where(role => !String.IsNullOrWhiteSpace(role));
-                if (validRoles.Count() > 0)
-                {
-                    var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-                    {
-                        { clientId, validRoles }
-                    };
-                    var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
-                    foreach (var role in assignedRoles)
-                    {
-                        userRolesRepository.CreateCompanyUserAssignedRole(companyUser.Id, userRoleIds[role]);
-                    }
-                    if (assignedRoles.Count() < validRoles.Count())
-                    {
-                        //TODO change return-type of method to include role-assignment-error information if assignedRoles is not the same as validRoles
-                        _logger.LogError($"invalid role data, client: {clientId}, [{String.Join(", ",validRoles.Except(assignedRoles))}] has not been assigned in keycloak");
-                    }
-                }
-
-                userRepository.CreateIamUser(companyUser, centralUserId);
-
-                var inviteTemplateName = "PortalTemplate";
-                if (!string.IsNullOrWhiteSpace(user.Message))
-                {
-                    inviteTemplateName = "PortalTemplateWithMessage";
-                }
-
-                var mailParameters = new Dictionary<string, string>
-                {
-                    { "password", password },
-                    { "companyname", companyName },
-                    { "message", user.Message ?? "" },
-                    { "nameCreatedBy", createdById },
-                    { "url", _settings.Portal.BasePortalAddress },
-                    { "username", user.eMail },
-                };
-
-                await _mailingService.SendMails(user.eMail, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
-
-                success = true;
+                await _mailingService.SendMails(email, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
             }
-            catch (Exception e)
+            catch(Exception e)
             {
-                _logger.LogError(e, $"Error while creating user {user.userName ?? user.eMail}");
+                _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", email, userName);
             }
 
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-            if (success)
-            {
-                yield return user.eMail;
-            }
+            yield return email;
         }
+    }
+
+    private async Task<(CompanyNameIdpAliasData CompanyNameIdpAliasData, string CreatedByName)> GetCompanyNameSharedIdpAliasCreatorData(string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+        }
+        var (company, companyUser, idpAliase) = result;
+        if (company.CompanyName == null)
+        {
+            throw new UnexpectedConditionException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
+        }
+        if (!idpAliase.Any())
+        {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any shared idp");
+        }
+        if (idpAliase.Count() > 1)
+        {
+            throw new ConflictException($"user {iamUserId} is associated with more than one shared idp");
+        }
+        
+        var companyNameIdpAliasData = new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, idpAliase.First(), true);
+        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, iamUserId);
+
+        return (companyNameIdpAliasData,createdByName);
+    }
+
+    private static string CreateNameString(string? firstName, string? lastName, string? email, string iamUserId)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (firstName != null)
+        {
+            sb.Append(firstName);
+        }
+        if (lastName != null)
+        {
+            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
+        }
+        if (email != null)
+        {
+            sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
+        }
+        return firstName == null && lastName == null && email == null ? iamUserId : sb.ToString();
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
@@ -224,131 +194,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw result.Error;
         }
         return result.CompanyUserId;
-    }
-
-    public ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        if (!document.ContentType.Equals("text/csv", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new UnsupportedMediaTypeException($"Only contentType text/csv files are allowed.");
-        }
-        return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
-    }
-
-    private async ValueTask<IdentityProviderUserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
-
-        using var stream = document.OpenReadStream();
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
-
-        int numCreated = 0;
-        var errors = new List<String>();
-        int numLines = 0;
-
-        try
-        {
-            await ValidateUploadOwnIdpUsersHeadersAsync(reader).ConfigureAwait(false);
-
-            await foreach (var result in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-                companyNameIdpAliasData,
-                _settings.Portal.KeyCloakClientID,
-                ParseUploadOwnIdpUsersCSVLines(reader, companyNameIdpAliasData.IsShardIdp)))
-            {
-                numLines++;
-                if (result.Error != null)
-                {
-                    errors.Add($"line: {numLines}, message: {result.Error.Message}");
-                }
-                else
-                {
-                    numCreated++;
-                }
-            }
-        }
-        catch(TaskCanceledException tce)
-        {
-            errors.Add($"line: {numLines}, message: {tce.Message}");
-        }
-        return new IdentityProviderUserCreationStats(numCreated, errors.Count, numLines, errors);
-    }
-
-    private static async ValueTask ValidateUploadOwnIdpUsersHeadersAsync(StreamReader reader)
-    {
-        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        if (firstLine == null)
-        {
-            throw new ControllerArgumentException("uploaded file contains no lines");
-        }
-
-        var headers = firstLine.Split(",").GetEnumerator();
-        foreach (var csvHeader in new [] { "FirstName", "LastName", "Email", "ProviderUserName", "ProviderUserId", "Roles" })
-        {
-            if (!headers.MoveNext())
-            {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
-            }
-            if ((string)headers.Current != csvHeader)
-            {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
-            }
-        }
-    }
-
-    private static async IAsyncEnumerable<UserCreationInfoIdp> ParseUploadOwnIdpUsersCSVLines(StreamReader reader, bool isSharedIdp)
-    {
-        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-
-        while (nextLine != null)
-        {
-            var (firstName, lastName, email, providerUserName, providerUserId, roles) = ParseUploadOwnIdpUsersCSVLine(nextLine, isSharedIdp);
-            yield return new UserCreationInfoIdp(firstName, lastName, email, roles, providerUserName, providerUserId);
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
-        }
-    }
-
-    private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
-    {
-        var items = line.Split(",").AsEnumerable().GetEnumerator();
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for FirstName type string expected");
-        }
-        var firstName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for LastName type string expected");
-        }
-        var lastName = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for Email type string expected");
-        }
-        var email = items.Current;
-        if(!items.MoveNext() || string.IsNullOrWhiteSpace(items.Current))
-        {
-            throw new ControllerArgumentException($"value for ProviderUserName type string expected");
-        }
-        var providerUserName = items.Current;
-        if(!items.MoveNext() || (!isSharedIdp && string.IsNullOrWhiteSpace(items.Current)))
-        {
-            throw new ControllerArgumentException($"value for ProviderUserId type string expected");
-        }
-        var providerUserId = items.Current;
-        var roles = ParseUploadOwnIdpUsersRoles(items).ToList();
-        return (firstName, lastName, email, providerUserName, providerUserId, roles);
-    }
-
-    private static IEnumerable<string> ParseUploadOwnIdpUsersRoles(IEnumerator<string> items)
-    {
-        while (items.MoveNext())
-        {
-            if(string.IsNullOrWhiteSpace(items.Current))
-            {
-                throw new ControllerArgumentException($"value for Role type string expected");
-            }
-            yield return items.Current;
-        }
     }
 
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
@@ -417,7 +262,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid companyUserId, string iamUserId)
     {
-        var details = await _userRepository.GetOwnCompanyUserDetailsUntrackedAsync(companyUserId, iamUserId).ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserDetailsUntrackedAsync(companyUserId, iamUserId).ConfigureAwait(false);
         if (details == null)
         {
             throw new NotFoundException($"no company-user data found for user {companyUserId} in company of {iamUserId}");
@@ -431,7 +276,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             throw new ControllerArgumentException("businessPartnerNumbers must not exceed 20 characters", nameof(businessPartnerNumbers));
         }
-        var user = await _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(companyUserId, adminUserId).ConfigureAwait(false);
+        var user = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(companyUserId, adminUserId).ConfigureAwait(false);
         if (user == null || user.UserEntityId == null)
         {
             throw new NotFoundException($"user {companyUserId} not found in company of {adminUserId}");
@@ -452,7 +297,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId)
     {
-        var details = await _userRepository.GetUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (details == null)
         {
             throw new NotFoundException($"no company-user data found for user {iamUserId}");
@@ -462,7 +307,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId)
     {
-        var userData = await _userRepository.GetUserWithCompanyIdpAsync(iamUserId).ConfigureAwait(false);
+        var userData = await _portalRepositories.GetInstance<IUserRepository>().GetUserWithCompanyIdpAsync(iamUserId).ConfigureAwait(false);
         if (userData == null)
         {
             throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
@@ -505,39 +350,47 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
     {
-        var userData = await _userRepository.GetUserWithIdpAsync(iamUserId).ConfigureAwait(false);
-        if (userData == null)
+        var userIdpData = await _portalRepositories.GetInstance<IUserRepository>().GetUserWithSharedIdpDataAsync(iamUserId).ConfigureAwait(false);
+        if (userIdpData == null)
         {
-            throw new NotFoundException($"iamUser {iamUserId} is not a shared idp user");
+            throw new ConflictException($"iamUser {iamUserId} is not associated to any companyUser");
         }
-        if (userData.CompanyUser.Id != companyUserId)
+        if (userIdpData.CompanyUser.Id != companyUserId)
         {
             throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
         }
-        await DeleteUserInternalAsync(userData.CompanyUser, userData.IamIdpAlias).ConfigureAwait(false);
+        await DeleteUserInternalAsync(userIdpData.CompanyUser, userIdpData.IamIdpAlias, userIdpData.CompanyUser.CompanyId).ConfigureAwait(false);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string adminUserId)
+    public async IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId)
     {
-        var iamIdpAlias = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasUntrackedAsync(adminUserId);
-        if (iamIdpAlias == null)
+        var iamIdpAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(iamUserId);
+        if (iamIdpAliasData == default)
         {
-            throw new NotFoundException($"iamUser {adminUserId} is not a shared idp user");
+            throw new ConflictException($"iamUser {iamUserId} is not assigned to any companyUser");
         }
+        var (iamIdpAlias, adminUserId) = iamIdpAliasData;
 
         await foreach (var companyUser in _portalRepositories.GetInstance<IUserRolesRepository>().GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
         {
             var success = false;
             try
             {
-                await DeleteUserInternalAsync(companyUser, iamIdpAlias).ConfigureAwait(false);
+                await DeleteUserInternalAsync(companyUser, iamIdpAlias, adminUserId).ConfigureAwait(false);
                 success = true;
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error while deleting comapnyUser {companyUser.Id} from shared idp {iamIdpAlias}");
+                if (iamIdpAlias == null)
+                {
+                    _logger.LogError(e, "Error while deleting companyUser {companyUserId}",companyUser.Id);
+                }
+                else
+                {
+                    _logger.LogError(e, "Error while deleting companyUser {companyUserId} from shared idp {iamIdpAlias}",companyUser.Id,iamIdpAlias);
+                }
             }
             if (success)
             {
@@ -547,15 +400,17 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task DeleteUserInternalAsync(CompanyUser companyUser, string iamIdpAlias)
+    private async Task DeleteUserInternalAsync(CompanyUser companyUser, string? iamIdpAlias, Guid administratorId)
     {
-        var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
-        if (userIdShared == null)
+        if (iamIdpAlias != null)
         {
-            throw new UnexpectedConditionException($"user {companyUser.IamUser!.UserEntityId} not found in central idp");
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            if (userIdShared != null)
+            {
+                await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
+            }
         }
-        await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
-        await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false); //TODO doesn't handle the case where user is both shared and own idp user
+        await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
@@ -564,6 +419,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
         _portalRepositories.GetInstance<IUserRepository>().RemoveIamUser(companyUser.IamUser);
         companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
+        companyUser.LastEditorId = administratorId;
     }
 
     [Obsolete]

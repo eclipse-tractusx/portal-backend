@@ -18,12 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
@@ -45,7 +41,8 @@ public class UserControllerTest
     {
         _logic = A.Fake<IUserBusinessLogic>();
         var logger = A.Fake<ILogger<UserController>>();
-        this._controller = new UserController(logger, _logic);
+        var uploadBusinessLogic = A.Fake<IUserUploadBusinessLogic>();
+        this._controller = new UserController(logger, _logic, uploadBusinessLogic);
         _controller.AddControllerContextWithClaim(IamUserId);
     }
 
@@ -55,9 +52,8 @@ public class UserControllerTest
         //Arrange
         var appId = new Guid("8d4bfde6-978f-4d82-86ce-8d90d52fbf3f");
         var userRoleInfo = new UserRoleInfo(CompanyUserId, new[] { "Company Admin" });
-        var notAssignedRoles = new List<UserRoleWithId>();
         A.CallTo(() => _logic.ModifyUserRoleAsync(A<Guid>._, A<UserRoleInfo>._, A<string>._))
-                  .ReturnsLazily(() => notAssignedRoles);
+                  .ReturnsLazily(() => new List<UserRoleWithId>());
 
         //Act
         var result = await this._controller.ModifyUserRolesAsync(appId, userRoleInfo).ConfigureAwait(false);
