@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.FileProviders;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 var VERSION = "v2";
 
@@ -42,6 +43,8 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddMailingAndTemplateManager(builder.Configuration)
                 .AddPortalRepositories(builder.Configuration)
                 .AddProvisioningManager(builder.Configuration);
+
+builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
