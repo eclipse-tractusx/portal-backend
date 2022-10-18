@@ -73,7 +73,7 @@ public class AsyncEnumerableStringStreamTest
     private MemoryStream GetExpected()
     {
         var praeamble = _encoding.GetPreamble();
-        var dataBytes = _encoding.GetBytes(string.Join("\n",_data)+"\n");
+        var dataBytes = _encoding.GetBytes(string.Join(Environment.NewLine,_data)+Environment.NewLine);
         var ms = new MemoryStream(praeamble.Length + dataBytes.Length);
         ms.Write(praeamble,0,praeamble.Length);
         ms.Write(dataBytes,0,dataBytes.Length);
