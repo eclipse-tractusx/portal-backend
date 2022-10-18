@@ -44,7 +44,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 {
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IProvisioningDBAccess _provisioningDBAccess;
+    private readonly IProvisioningDBAccess _provisioningDbAccess;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMailingService _mailingService;
     private readonly ILogger<UserBusinessLogic> _logger;
@@ -55,7 +55,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// </summary>
     /// <param name="provisioningManager">Provisioning Manager</param>
     /// <param name="userProvisioningService">User Provisioning Service</param>
-    /// <param name="provisioningDBAccess">Provisioning DBAccess</param>
+    /// <param name="provisioningDbAccess">Provisioning DBAccess</param>
     /// <param name="mailingService">Mailing Service</param>
     /// <param name="logger">logger</param>
     /// <param name="settings">Settings</param>
@@ -63,7 +63,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     public UserBusinessLogic(
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
-        IProvisioningDBAccess provisioningDBAccess,
+        IProvisioningDBAccess provisioningDbAccess,
         IPortalRepositories portalRepositories,
         IMailingService mailingService,
         ILogger<UserBusinessLogic> logger,
@@ -71,7 +71,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     {
         _provisioningManager = provisioningManager;
         _userProvisioningService = userProvisioningService;
-        _provisioningDBAccess = provisioningDBAccess;
+        _provisioningDbAccess = provisioningDbAccess;
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
         _logger = logger;
@@ -447,15 +447,15 @@ public class UserBusinessLogic : IUserBusinessLogic
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
 
-        var userInfo = (await _provisioningDBAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false))
-            ?? _provisioningDBAccess.CreateUserPasswordResetInfo(userId, now, 0);
+        var userInfo = (await _provisioningDbAccess.GetUserPasswordResetInfo(userId).ConfigureAwait(false))
+            ?? _provisioningDbAccess.CreateUserPasswordResetInfo(userId, now, 0);
 
         if (now < userInfo.PasswordModifiedAt.AddHours(_settings.PasswordReset.NoOfHours))
         {
             if (userInfo.ResetCount < _settings.PasswordReset.MaxNoOfReset)
             {
                 userInfo.ResetCount++;
-                await _provisioningDBAccess.SaveAsync().ConfigureAwait(false);
+                await _provisioningDbAccess.SaveAsync().ConfigureAwait(false);
                 return true;
             }
         }
@@ -463,7 +463,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             userInfo.ResetCount = 1;
             userInfo.PasswordModifiedAt = now;
-            await _provisioningDBAccess.SaveAsync().ConfigureAwait(false);
+            await _provisioningDbAccess.SaveAsync().ConfigureAwait(false);
             return true;
         }
         return false;
@@ -554,7 +554,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
 
         var rolesToAdd = roles.Where(role => !role.IsAssignedToUser);
-        var rolesToDelete =  roles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles,role => role.CompanyUserRoleText);;
+        var rolesToDelete =  roles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles,role => role.CompanyUserRoleText);
 
         var rolesNotAdded = rolesToAdd.Any()
             ? rolesToAdd.Except(await AddRoles(userRoleInfo.CompanyUserId, result.IamClientId, rolesToAdd, result.IamUserId, userRoleRepository).ConfigureAwait(false))
