@@ -251,23 +251,6 @@ public class UserRepository : IUserRepository
             .Select(iamUser => new ValueTuple<Guid, string>(iamUser.CompanyUser!.Company!.Id, iamUser.CompanyUser!.Company!.BusinessPartnerNumber!))
             .SingleOrDefaultAsync();
 
-    /// <inheritdoc/>
-    public Task<CompanyIamUser?> GetIdpUserByIdUntrackedAsync(Guid companyUserId, string adminUserId) =>
-        _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.Id == companyUserId
-                                  && companyUser.Company!.CompanyUsers.Any(companyUser =>
-                                      companyUser.IamUser!.UserEntityId == adminUserId))
-            .Select(companyUser => new CompanyIamUser(
-                companyUser.CompanyId,
-                companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole =>
-                    companyUserAssignedRole.UserRoleId))
-            {
-                TargetIamUserId = companyUser.IamUser!.UserEntityId,
-                IdpName = companyUser.Company!.IdentityProviders
-                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault()
-            }).SingleOrDefaultAsync();
-
     public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
@@ -411,5 +394,15 @@ public class UserRepository : IUserRepository
         _dbContext.IamServiceAccounts
             .Where(x => x.UserEntityId == iamUserId)
             .Select(x => x.CompanyServiceAccount!.CompanyId)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser => new ValueTuple<string?, string, bool>( 
+                companyUser.Company!.OfferSubscriptions.SingleOrDefault(subscription => subscription.OfferId == offerId)!.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId, 
+                companyUser.IamUser!.UserEntityId,
+                companyUser.Company.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 }
