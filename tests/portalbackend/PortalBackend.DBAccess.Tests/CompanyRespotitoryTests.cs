@@ -198,7 +198,8 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.CheckServiceProviderDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeTrue();
+        result.Should().NotBe(default);
+        result.IsSameCompany.Should().BeTrue();
     }
 
     [Fact]
@@ -211,7 +212,8 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.CheckServiceProviderDetailsExistsForUser(Guid.NewGuid().ToString(), new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeFalse();
+        result.Should().NotBe(default);
+        result.IsSameCompany.Should().BeFalse();
     }
 
     [Fact]
@@ -224,7 +226,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.CheckServiceProviderDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeFalse();
+        result.Should().Be(default);
     }
 
     #endregion
