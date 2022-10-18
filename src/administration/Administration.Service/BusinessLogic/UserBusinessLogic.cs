@@ -583,7 +583,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (userWithBpn.AssignedBusinessPartner == null)
         {
-            throw new NotFoundException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
+            throw new ForbiddenException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
         }
 
         if (userWithBpn.UserEntityId == null)
@@ -603,7 +603,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
-    private async Task<List<UserRoleModificationData>> AddRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToAdd, string iamUserId, IUserRolesRepository userRoleRepository)
+    private async Task<IEnumerable<UserRoleModificationData>> AddRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToAdd, string iamUserId, IUserRolesRepository userRoleRepository)
     {
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
