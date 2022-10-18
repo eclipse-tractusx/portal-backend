@@ -51,5 +51,5 @@ public class DocumentTemplate
     public string Documenttemplateversion { get; set; }
 
     // Navigation properties
-    public virtual AgreementAssignedDocumentTemplate? AgreementAssignedDocumentTemplate { get; set; }
+    public virtual AgreementAssignedDocument? AgreementAssignedDocument { get; set; }
 }
