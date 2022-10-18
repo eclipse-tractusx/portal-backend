@@ -175,7 +175,7 @@ public class UserRepository : IUserRepository
                     iamUser.CompanyUser.Company!.BusinessPartnerNumber
                 ),
                 iamUser.CompanyUserId, 
-                iamUser.CompanyUser!.Company!.Name))
+                iamUser.CompanyUser!.Email))
             .SingleOrDefaultAsync();
 
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId) =>
