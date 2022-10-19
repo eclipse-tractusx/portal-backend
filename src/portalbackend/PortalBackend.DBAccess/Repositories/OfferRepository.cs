@@ -56,13 +56,6 @@ public class OfferRepository : IOfferRepository
             c.ProviderCompany!.ServiceProviderCompanyDetail!.AutoSetupUrl
         )).SingleOrDefaultAsync();
 
-    /// <inheritdoc/>
-    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
-        _context.OfferSubscriptions.AsNoTracking()
-            .Where(subscription => subscription.OfferId == appId && subscription.CompanyId == companyId)
-            .Select(x => x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
-            .SingleOrDefaultAsync();
-    
     /// <inheritdoc />
     public Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null)
     {
