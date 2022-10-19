@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Threading.Tasks;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -80,5 +78,23 @@ public class ServiceProviderControllerTest
         Assert.IsType<ServiceProviderDetailReturnData>(result);
         result.Id.Should().Be(id);
         result.CompanyId.Should().Be(CompanyId);
+    }
+    
+    
+    [Fact]
+    public async Task UpdateServiceProviderCompanyDetail_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var id = Guid.NewGuid();
+        var data = new ServiceProviderDetailData("https://this-is-a-test.de");  
+        A.CallTo(() => _logic.UpdateServiceProviderCompanyDetailsAsync(id, data, IamUserId))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.UpdateServiceProviderCompanyDetail(id, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateServiceProviderCompanyDetailsAsync(id, data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }

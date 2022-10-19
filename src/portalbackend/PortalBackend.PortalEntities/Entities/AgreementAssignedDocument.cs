@@ -20,20 +20,20 @@
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class AgreementAssignedDocumentTemplate
+public class AgreementAssignedDocument
 {
-    private AgreementAssignedDocumentTemplate() {}
+    private AgreementAssignedDocument() {}
 
-    public AgreementAssignedDocumentTemplate(Guid agreementId, Guid documentTemplateId)
+    public AgreementAssignedDocument(Guid agreementId, Guid documentId)
     {
         AgreementId = agreementId;
-        DocumentTemplateId = documentTemplateId;
+        DocumentId = documentId;
     }
 
     public Guid AgreementId { get; private set; }
-    public Guid DocumentTemplateId { get; private set; }
+    public Guid DocumentId { get; private set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
-    public virtual DocumentTemplate? DocumentTemplate { get; private set; }
+    public virtual Document? Document { get; private set; }
 }
