@@ -26,10 +26,9 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Root;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -67,13 +66,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connectors.OrderByDescending(connector => connector.Name)
                     .Skip(skip)
                     .Take(take)
-                    .Select(c => 
-                        new ConnectorData(c.Name, c.Location!.Alpha2Code)
-                        {
-                            Id = c.Id,
-                            Status = c.Status!.Id,
-                            Type = c.Type!.Id
-                        }
+                    .Select(c =>
+                        new ConnectorData(c.Name, c.Location!.Alpha2Code, c.Id, c.TypeId, c.StatusId)
                     ).AsAsyncEnumerable()
             )
         );
@@ -114,14 +108,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var createdConnector = await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             accessToken,
-            providerBpn
-            , cancellationToken).ConfigureAwait(false);
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
-        {
-            Id = createdConnector.Id,
-            Status = createdConnector.StatusId,
-            Type = createdConnector.TypeId
-        };
+            providerBpn,
+            cancellationToken).ConfigureAwait(false);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId);
     }
 
     public async Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
@@ -145,14 +134,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             connectorRequestModel, 
             accessToken, 
             providerBpn, 
-            cancellationToken)
-            .ConfigureAwait(false);
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
-        {
-            Id = createdConnector.Id,
-            Status = createdConnector.StatusId,
-            Type = createdConnector.TypeId
-        };
+            cancellationToken).ConfigureAwait(false);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId);
     }
 
     private async Task<Guid> GetCompanyOfUserOrTechnicalUser(string iamUserId)
