@@ -85,4 +85,7 @@ public class Document
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
+    
+    // Navigation properties
+    public virtual AgreementAssignedDocument? AgreementAssignedDocument { get; set; }
 }

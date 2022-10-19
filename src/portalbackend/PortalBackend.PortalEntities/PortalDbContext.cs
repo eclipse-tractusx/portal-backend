@@ -87,7 +87,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
-    public virtual DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
@@ -162,7 +161,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.AgreementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.DocumentTemplate)
+            entity.HasOne(d => d.Document)
                 .WithOne(p => p!.AgreementAssignedDocument!)
                 .HasForeignKey<AgreementAssignedDocument>(d => d.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
