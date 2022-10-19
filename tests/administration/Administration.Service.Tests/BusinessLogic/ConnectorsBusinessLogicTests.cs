@@ -43,6 +43,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid _invalidCompanyId = Guid.NewGuid();
     private static readonly Guid _invalidHostId = Guid.NewGuid();
     private static readonly string _iamUserId = Guid.NewGuid().ToString();
+    private static readonly string _userWithoutBpn = Guid.NewGuid().ToString();
     private static readonly string _technicalUserId = Guid.NewGuid().ToString();
     private static readonly string _accessToken = "validToken";
     private static readonly List<Connector> _connectors = new();
@@ -52,17 +53,14 @@ public class ConnectorsBusinessLogicTests
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryService _sdFactoryService;
-    private readonly IFixture _fixture;
     private readonly ConnectorsBusinessLogic _logic;
-    private readonly IOptions<ConnectorsSettings> _options;
-    private readonly ConnectorsSettings _settings;
 
     public ConnectorsBusinessLogicTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
 
         _countryRepository = A.Fake<ICountryRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -70,9 +68,9 @@ public class ConnectorsBusinessLogicTests
         _userRepository = A.Fake<IUserRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _sdFactoryService = A.Fake<ISdFactoryService>();
-        _options = A.Fake<IOptions<ConnectorsSettings>>();
-        _settings = A.Fake<ConnectorsSettings>();
-        _settings = new ConnectorsSettings
+        IOptions<ConnectorsSettings> options = A.Fake<IOptions<ConnectorsSettings>>();
+        var settings = A.Fake<ConnectorsSettings>();
+        settings = new ConnectorsSettings
         {
             MaxPageSize = 15,
             SdFactoryUrl = "http://this-is-a-url.com",
@@ -80,9 +78,9 @@ public class ConnectorsBusinessLogicTests
 
         SetupRepositoryMethods();
 
-        A.CallTo(() => _options.Value).Returns(_settings);
+        A.CallTo(() => options.Value).Returns(settings);
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, _options, _sdFactoryService);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryService);
     }
 
     #region Create Connector
@@ -114,6 +112,20 @@ public class ConnectorsBusinessLogicTests
         exception.Message.Should().Be("Location invalid does not exist (Parameter 'location')");
     }
     
+    [Fact]
+    public async Task CreateConnectorAsync_WithCompanyWithoutBon_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "de");
+        
+        // Act
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _userWithoutBpn, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        exception.Message.Should().Be($"provider company {_companyWithoutBpnId} has no businessPartnerNumber assigned");
+    }
+
     #endregion
     
     #region CreateManagedConnectorAsync
@@ -208,7 +220,9 @@ public class ConnectorsBusinessLogicTests
 
         A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Matches(x => x == _iamUserId)))
             .ReturnsLazily(() => _validCompanyId);
-        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Not.Matches(x => x == _iamUserId)))
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Matches(x => x == _userWithoutBpn)))
+            .ReturnsLazily(() => _companyWithoutBpnId);
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Not.Matches(x => x == _iamUserId || x == _userWithoutBpn)))
             .ReturnsLazily(() => Guid.Empty);
 
         A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Matches(x => x == _technicalUserId)))
