@@ -49,6 +49,13 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null)
+    {
+        var company = _context.Attach(new Company(companyId, null!, default, default)).Entity;
+        setOptionalParameters?.Invoke(company);
+        return company;
+    }
+
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
         _context.Addresses.Add(
             new Address(
@@ -67,22 +74,18 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => new ValueTuple<string?,Guid>(company!.Name, company.Id))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
-        _context.IamUsers
-            .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId
-                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new CompanyNameIdIdpAlias(
-                    company!.Name,
-                    company.Id)
-            {
-                IdpAlias = company.IdentityProviders
-                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                        .SingleOrDefault()
-            })
+    public Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
+        _context.Companies.AsNoTracking()
+            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId))
+            .Select(company => new ValueTuple<Guid,string,string?,Guid>(
+                company.Id,
+                company.Name,
+                company.IdentityProviders
+                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    .SingleOrDefault(),
+                company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id
+            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
