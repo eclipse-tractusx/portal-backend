@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
 /// <summary>
@@ -25,5 +27,5 @@ namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 /// </summary>
 public interface IOfferSetupService
 { 
-    Task AutoSetupOffer(Guid serviceSubscriptionId, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl);
+    Task AutoSetupOffer(OfferThirdPartyAutoSetupData autoSetupData, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl);
 }

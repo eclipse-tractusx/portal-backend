@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -66,7 +67,7 @@ public class SdFactoryServiceTests
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
 
-        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories);
+        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories, A.Fake<ILogger<SdFactoryService>>());
     }
 
     #endregion
@@ -109,7 +110,7 @@ public class SdFactoryServiceTests
         }";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
+        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
@@ -119,6 +120,8 @@ public class SdFactoryServiceTests
 
         // Assert
         _documents.Should().HaveCount(1);
+        var document = _documents.Single();
+        document.DocumentName.Should().Be($"SelfDescription_Connector.json");
     }
 
     [Fact]
@@ -127,7 +130,7 @@ public class SdFactoryServiceTests
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
+        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
@@ -189,6 +192,8 @@ public class SdFactoryServiceTests
 
         // Assert
         _documents.Should().HaveCount(1);
+        var document = _documents.Single();
+        document.DocumentName.Should().Be($"SelfDescription_LegalPerson.json");
     }
 
     [Fact]

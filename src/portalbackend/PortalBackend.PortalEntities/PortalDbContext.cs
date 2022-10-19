@@ -22,7 +22,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
@@ -48,7 +47,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Address> Addresses { get; set; } = default!;
     public virtual DbSet<Agreement> Agreements { get; set; } = default!;
     public virtual DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
-    public virtual DbSet<AgreementAssignedDocumentTemplate> AgreementAssignedDocumentTemplates { get; set; } = default!;
+    public virtual DbSet<AgreementAssignedDocument> AgreementAssignedDocuments { get; set; } = default!;
     public virtual DbSet<AgreementAssignedOffer> AgreementAssignedOffers { get; set; } = default!;
     public virtual DbSet<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
@@ -61,6 +60,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221005> AuditCompanyUserAssignedRole20221005 { get; set; } = default!;
+    public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -87,7 +88,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
-    public virtual DbSet<DocumentTemplate> DocumentTemplates { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
@@ -136,6 +136,24 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Agreements)
                 .HasForeignKey(d => d.IssuerCompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasMany(p => p.Documents)
+                .WithMany(p => p.Agreements)
+                .UsingEntity<AgreementAssignedDocument>(
+                    j => j
+                        .HasOne(d => d.Document!)
+                        .WithMany()
+                        .HasForeignKey(d => d.DocumentId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.Agreement!)
+                        .WithMany()
+                        .HasForeignKey(d => d.AgreementId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.AgreementId, e.DocumentId });
+                    });
         });
 
         modelBuilder.Entity<AgreementAssignedCompanyRole>(entity =>
@@ -150,21 +168,6 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.CompanyRole)
                 .WithMany(p => p!.AgreementAssignedCompanyRoles!)
                 .HasForeignKey(d => d.CompanyRoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
-
-        modelBuilder.Entity<AgreementAssignedDocumentTemplate>(entity =>
-        {
-            entity.HasKey(e => new { e.AgreementId, e.DocumentTemplateId });
-
-            entity.HasOne(d => d.Agreement)
-                .WithMany(p => p!.AgreementAssignedDocumentTemplates)
-                .HasForeignKey(d => d.AgreementId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.DocumentTemplate)
-                .WithOne(p => p!.AgreementAssignedDocumentTemplate!)
-                .HasForeignKey<AgreementAssignedDocumentTemplate>(d => d.DocumentTemplateId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
@@ -565,7 +568,12 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyServiceAccountAssignedRoles)
                 .WithOne(d => d.CompanyServiceAccount!);
         });
-
+        
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+        });
+        
         modelBuilder.Entity<CompanyServiceAccountStatus>()
             .HasData(
                 Enum.GetValues(typeof(CompanyServiceAccountStatusId))
@@ -621,7 +629,7 @@ public class PortalDbContext : DbContext
                         j =>
                         {
                             j.HasKey(e => new { e.CompanyUserId, e.UserRoleId });
-                            j.HasAuditV1Triggers<CompanyUserAssignedRole,AuditCompanyUserAssignedRole20221005>();
+                            j.HasAuditV1Triggers<CompanyUserAssignedRole, AuditCompanyUserAssignedRole20221018>();
                         });
 
             entity.HasMany(p => p.CompanyUserAssignedRoles)

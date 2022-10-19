@@ -74,38 +74,27 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => new ValueTuple<string?,Guid>(company!.Name, company.Id))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
-        _context.IamUsers
-            .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId
-                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new CompanyNameIdIdpAlias(
-                    company!.Name,
-                    company.Id)
-            {
-                IdpAlias = company.IdentityProviders
-                        .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                        .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                        .SingleOrDefault()
-            })
+    public Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
+        _context.Companies.AsNoTracking()
+            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId))
+            .Select(company => new ValueTuple<Guid,string,string?,Guid>(
+                company.Id,
+                company.Name,
+                company.IdentityProviders
+                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
+                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
+                    .SingleOrDefault(),
+                company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id
+            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(
-        IEnumerable<(Guid companyId, bool bpnRequested)> parameters)
-    {
-        var bpnRequestCompanyIds = parameters.Where(parameter => parameter.bpnRequested).Select(parameter => parameter.companyId).ToList();
-        return _context.Companies
-            .AsNoTracking()
-            .Where(company => parameters.Select(parameter => parameter.companyId).Contains(company.Id))
-            .Select(company => new ValueTuple<Guid,string?>(
-                company.Id,
-                bpnRequestCompanyIds.Contains(company.Id) ? company.BusinessPartnerNumber : null
-            ))
-            .AsAsyncEnumerable();
-    }
+    public Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber) =>
+        _context.Companies
+        .AsNoTracking()
+        .Where(company => company.BusinessPartnerNumber == businessPartnerNumber)
+        .Select(company => company.Id)
+        .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
         _context.Companies
@@ -137,12 +126,21 @@ public class CompanyRepository : ICompanyRepository
     public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId) =>
         _context.Companies.AsNoTracking()
             .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
-            .Select(company => new ValueTuple<Guid,bool>(
+            .Select(company => new ValueTuple<Guid, bool>(
                 company.Id,
                 company.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)
             ))
             .SingleOrDefaultAsync();
 
+    /// <inheritdoc />
+    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId) =>
+        _context.ServiceProviderCompanyDetails.AsNoTracking()
+            .Where(details => details.Id == serviceProviderCompanyDetailsId)
+            .Select(details => new ValueTuple<bool,bool>(
+                true,
+                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+    
     /// <inheritdoc />
     public ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl) =>
         _context.ServiceProviderCompanyDetails.Add(new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
@@ -156,5 +154,20 @@ public class CompanyRepository : ICompanyRepository
                 new ServiceProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
                 x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
                 x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null)
+    {
+        var serviceProviderCompanyDetail = _context.Attach(new ServiceProviderCompanyDetail(serviceProviderCompanyDetailId, Guid.Empty, null!, default)).Entity;
+        setOptionalParameters?.Invoke(serviceProviderCompanyDetail);
+        return serviceProviderCompanyDetail;
+    }
+    
+    /// <inheritdoc />
+    public Task<string?> GetCompanyBpnByIdAsync(Guid companyId) =>
+        _context.Companies.AsNoTracking()
+            .Where(x => x.Id == companyId)
+            .Select(x => x.BusinessPartnerNumber)
             .SingleOrDefaultAsync();
 }

@@ -30,6 +30,7 @@ public class Document
         DocumentHash = null!;
         DocumentName = null!;
         DocumentContent = null!;
+        Agreements = new HashSet<Agreement>();
         Consents = new HashSet<Consent>();
         Offers = new HashSet<Offer>();
         Companies = new HashSet<Company>();
@@ -82,6 +83,7 @@ public class Document
     /// </summary>
     public virtual Connector? Connector { get; set; }
 
+    public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }

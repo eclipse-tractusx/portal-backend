@@ -51,12 +51,7 @@ public class ConnectorsRepository : IConnectorsRepository
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId)
             .Select(connector => ((ConnectorData ConnectorData, bool IsProviderUser)) new (
-                new ConnectorData(connector.Name, connector.Location!.Alpha2Code)
-                {
-                    Id = connector.Id,
-                    Status = connector.Status!.Id,
-                    Type = connector.Type!.Id
-                },
+                new ConnectorData(connector.Name, connector.Location!.Alpha2Code, connector.Id, connector.TypeId, connector.StatusId),
                 connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
             ))
             .SingleOrDefaultAsync();
