@@ -25,4 +25,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 
 public record CompanyRoleAgreementData(
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> CompanyRoleData,
-    [property: JsonPropertyName("agreements")] IEnumerable<AgreementData> AgreementData);
+    [property: JsonPropertyName("agreements")] IEnumerable<AgreementDocumentData> AgreementData);
