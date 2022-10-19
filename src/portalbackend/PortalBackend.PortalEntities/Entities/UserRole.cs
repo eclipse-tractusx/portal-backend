@@ -43,6 +43,16 @@ public class UserRole : IAuditableV1
         OfferId = offerId;
     }
 
+    /// <summary>
+    /// construtor used for the Remove case
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public UserRole(Guid id) : this()
+    {
+        Id = id;
+    }
+
     public Guid Id { get; private set; }
 
     [MaxLength(255)]

@@ -29,6 +29,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -297,6 +298,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new NotFoundException($"role {roleId} does not exist");
         }
-        await _portalRepositories.GetInstance<IOfferRepository>().DeleteAppRoleAsync(appId, roleId).ConfigureAwait(false);
+        try
+        {
+            _portalRepositories.Remove(new UserRole(roleId));
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new NotFoundException("User Role with provided ID does not exist.");
+        }
+
     }
 }
