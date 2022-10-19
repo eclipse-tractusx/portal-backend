@@ -38,24 +38,24 @@ public static class ControllerExtensions
     /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
     public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
     {
-        var sub = GetIamUserId(controller);
+        var sub = controller.GetIamUserId();
         return idConsumingFunction(sub);
     }
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
     {
-        var bearer = GetBearerToken(controller);
+        var bearer  = controller.GetBearerToken();
         return tokenConsumingFunction(bearer);
     }
     
     public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
     {
-        var bearerToken = GetBearerToken(controller);
-        var iamUserId = GetIamUserId(controller);
+        var bearerToken = controller.GetBearerToken();
+        var iamUserId = controller.GetIamUserId();
         return tokenConsumingFunction((iamUserId, bearerToken));
     }
 
-    private static string GetIamUserId(ControllerBase controller)
+    private static string GetIamUserId(this ControllerBase controller)
     {
         var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
         if (string.IsNullOrWhiteSpace(sub))
@@ -66,7 +66,7 @@ public static class ControllerExtensions
         return sub;
     }
 
-    private static string GetBearerToken(ControllerBase controller)
+    private static string GetBearerToken(this ControllerBase controller)
     {
         var authorization = controller.Request.Headers.Authorization.FirstOrDefault();
         if (authorization == null || !authorization.StartsWith("Bearer "))

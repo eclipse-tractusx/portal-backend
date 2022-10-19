@@ -20,24 +20,25 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using FakeItEasy;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests;
 
 public class AppBusinessLogicTests
 {
+    private const string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
@@ -132,6 +133,29 @@ public class AppBusinessLogicTests
         A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
     }
+
+    #region Auto setup service
+
+    [Fact]
+    public async Task AutoSetupService_ReturnsExcepted()
+    {
+        var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
+        // Arrange
+        var offerService = A.Fake<IOfferService>();
+        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
+            .ReturnsLazily(() => offerAutoSetupResponseData);
+        var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
+
+        var sut = new AppsBusinessLogic(null!, null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
+
+        // Act
+        var result = await sut.AutoSetupAppAsync(data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(offerAutoSetupResponseData);
+    }
+
+    #endregion
 
     private (CompanyUser, IamUser) CreateTestUserPair()
     {

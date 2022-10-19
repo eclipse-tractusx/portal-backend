@@ -23,11 +23,10 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
@@ -37,13 +36,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Tests.Service;
 public class OfferSetupServiceTests
 {
     private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
-    private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
-    private readonly Guid _existingServiceOfferId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly string _accessToken = "THISISAACCESSTOKEN";
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
-    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
-    private readonly IPortalRepositories _portalRepositories;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public OfferSetupServiceTests()
@@ -55,71 +50,10 @@ public class OfferSetupServiceTests
 
         _iamUser = CreateTestUserPair();
 
-        _portalRepositories = A.Fake<IPortalRepositories>();
-        _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _httpClientFactory = A.Fake<IHttpClientFactory>();
-
-        SetupRepositories();
     }
 
-    #region Get Service Agreement
-
-    [Fact]
-    public async Task AutoSetupOffer_WithSuccessfullyCall_ReturnsTrue()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
-        _fixture.Inject(_httpClientFactory);
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<OfferSetupService>();
-
-        // Act
-        await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
-            A<Guid>.That.Matches(x => x == _existingServiceId),
-            A<string>.That.Matches(x => x == _iamUser.UserEntityId))).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task AutoSetupOffer_WithNotExistingServiceId_ThrowsArgumentException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
-        _fixture.Inject(_httpClientFactory);
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<OfferSetupService>();
-
-        // Act
-        async Task Action() => await sut.AutoSetupOffer(Guid.NewGuid(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-    }
-
-    [Fact]
-    public async Task AutoSetupOffer_WithNotAssociatedUserId_ThrowsArgumentException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
-        _fixture.Inject(_httpClientFactory);
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<OfferSetupService>();
-
-        // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, "not existing userid", _accessToken, "https://www.superservice.com").ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-    }
+    #region AutoSetupOffer
 
     [Fact]
     public async Task AutoSetupOffer_WithNonSuccessfullyClientCall_ThrowsServiceException()
@@ -129,11 +63,10 @@ public class OfferSetupServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<OfferSetupService>();
+        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -144,15 +77,14 @@ public class OfferSetupServiceTests
     public async Task AutoSetupOffer_WithDnsError_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new HttpRequestException ("DNS Error"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException ("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<OfferSetupService>();
+        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -163,15 +95,14 @@ public class OfferSetupServiceTests
     public async Task AutoSetupOffer_WithTimeout_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, new TaskCanceledException("Timed out"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new TaskCanceledException("Timed out"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<OfferSetupService>();
+        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
 
         // Act
-        async Task Action() => await sut.AutoSetupOffer(_existingServiceId, _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
+        async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -181,22 +112,6 @@ public class OfferSetupServiceTests
     #endregion
 
     #region Setup
-
-    private void SetupRepositories()
-    {
-        A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
-            .ReturnsLazily(() => new ValueTuple<OfferThirdPartyAutoSetupData,bool>(
-                new OfferThirdPartyAutoSetupData(
-                    new OfferThirdPartyAutoSetupCustomerData("Test Provider", "de", "tony@stark.com"),
-                    new OfferThirdPartyAutoSetupPropertyData("BPNL000000000009", _existingServiceOfferId, _existingServiceId))
-                ,true));
-        A.CallTo(() => _offerSubscriptionsRepository.GetThirdPartyAutoSetupDataAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>.That.Matches(x => x == _iamUser.UserEntityId)))
-            .ReturnsLazily(() => ((OfferThirdPartyAutoSetupData,bool))default);
-
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
-    }
 
     private IamUser CreateTestUserPair()
     {

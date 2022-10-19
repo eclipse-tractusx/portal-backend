@@ -18,9 +18,38 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EnpointSetup;
+using System.ComponentModel.DataAnnotations;
 
-public static class Paths
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+
+/// <summary>
+/// Settings used in business logic concerning connectors.
+/// </summary>
+public class SdFactorySettings
 {
-    public static readonly string Notification = "/api/notification";
+    /// <summary>
+    /// SD Factory endpoint for registering connectors.
+    /// </summary>
+    [Required]
+    public string SdFactoryUrl { get; set; } = null!;
+
+    /// <summary>
+    /// BPN of the issuer for the sd factory
+    /// </summary>
+    [Required]
+    public string SdFactoryIssuerBpn { get; set; } = null!;
+}
+
+public static class SdFactorySettingsExtensions
+{
+    public static IServiceCollection ConfigureSdFactorySettings(
+        this IServiceCollection services,
+        IConfigurationSection section
+        )
+    {
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        return services;
+    }
 }

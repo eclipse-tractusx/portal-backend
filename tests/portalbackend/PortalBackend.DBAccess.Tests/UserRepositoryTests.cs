@@ -20,9 +20,9 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
@@ -57,12 +57,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(ValidIamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(ValidIamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
-        result.companyName.Should().Be("Catena-X");
+        result.companyInformation.OrganizationName.Should().Be("Catena-X");
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         (result == default).Should().BeTrue();
@@ -89,7 +89,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryId(ValidIamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyAndCompanyUserId(ValidIamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -103,7 +103,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanAndCompanyUseryId(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyAndCompanyUserId(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         (result == default).Should().BeTrue();

@@ -36,11 +36,13 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
+    Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null);
+
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     
     Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
-    Task<CompanyNameIdIdpAlias?> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
+    Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 
     /// <summary>
     /// Checks an set of CompanyIds for existence and returns the associated BusinessPartnerNumber if requested

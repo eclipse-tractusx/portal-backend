@@ -18,10 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
@@ -38,7 +34,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Xunit;
 
-namespace Administration.Service.Tests.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class ServiceAccountBusinessLogicTests
 {

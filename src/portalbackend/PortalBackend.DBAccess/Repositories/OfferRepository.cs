@@ -56,13 +56,6 @@ public class OfferRepository : IOfferRepository
             c.ProviderCompany!.ServiceProviderCompanyDetail!.AutoSetupUrl
         )).SingleOrDefaultAsync();
 
-    /// <inheritdoc/>
-    public Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId) =>
-        _context.OfferSubscriptions.AsNoTracking()
-            .Where(subscription => subscription.OfferId == appId && subscription.CompanyId == companyId)
-            .Select(x => x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId)
-            .SingleOrDefaultAsync();
-    
     /// <inheritdoc />
     public Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null)
     {
@@ -284,7 +277,6 @@ public class OfferRepository : IOfferRepository
                 a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
-    
     ///<inheritdoc/>
     public Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
@@ -304,7 +296,8 @@ public class OfferRepository : IOfferRepository
                 offer.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id
             ))
             .SingleOrDefaultAsync();
-            
+
+    ///<inheritdoc/>    
     public IAsyncEnumerable<OfferAgreement>  GetAgreementConsentAsync(IEnumerable<Guid> agreementIds)=>
         _context.Consents.AsNoTracking()
             .Where(consent => consent.ConsentAssignedOffers.Any(consentAssignedOffer=>agreementIds.Contains(consentAssignedOffer.Consent!.AgreementId)))           

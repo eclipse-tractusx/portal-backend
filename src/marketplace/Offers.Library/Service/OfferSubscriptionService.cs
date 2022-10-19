@@ -18,11 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
@@ -30,21 +32,22 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly ILogger<OfferSubscriptionService> _logger;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
-    /// <param name="offerService">Access to the offer service</param>
-    /// <param name="settings">Access to the settings</param>
+    /// <param name="logger">Access to the logger</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories, 
         IOfferSetupService offerSetupService, 
-        IOfferService offerService)
+        ILogger<OfferSubscriptionService> logger)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -56,8 +59,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        var (companyId, companyUserId, companyName, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync(iamUserId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
+        var (companyInformation, companyUserId, userEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
+        if (companyInformation.CompanyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
         }
@@ -67,16 +70,33 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
         }
 
-        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        if (companyInformation.BusinessPartnerNumber == null)
+        {
+            throw new ConflictException($"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
+        }
+
+        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(serviceId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+
         var autoSetupResult = string.Empty;
         if (!string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl))
         {
             try
             {
-                await _offerSetupService.AutoSetupOffer(offerSubscription.Id, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
+                var autoSetupData = new OfferThirdPartyAutoSetupData(
+                    new OfferThirdPartyAutoSetupCustomerData(
+                        companyInformation.OrganizationName,
+                        companyInformation.Country,
+                        userEmail),
+                    new OfferThirdPartyAutoSetupPropertyData(
+                        companyInformation.BusinessPartnerNumber,
+                        offerSubscription.Id,
+                        serviceId)
+                );
+                await _offerSetupService.AutoSetupOffer(autoSetupData, iamUserId, accessToken, serviceDetails.AutoSetupUrl).ConfigureAwait(false);
             }
             catch (Exception e)
             {
+                _logger.LogInformation("Error occure while executing AutoSetupOffer: {ErrorMessage}", e.Message);
                 autoSetupResult = e.Message;
             }
         }
@@ -86,8 +106,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             var notificationContent = new
             {
                 serviceDetails.AppName,
-                RequestorCompanyName = companyName,
-                UserEmail = requesterEmail,
+                RequestorCompanyName = companyInformation.OrganizationName,
+                UserEmail = userEmail,
                 AutoSetupExecuted = !string.IsNullOrWhiteSpace(serviceDetails.AutoSetupUrl),
                 AutoSetupError = autoSetupResult
             };
