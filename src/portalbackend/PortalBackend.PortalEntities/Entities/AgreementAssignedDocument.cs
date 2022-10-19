@@ -35,5 +35,5 @@ public class AgreementAssignedDocument
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
-    public virtual DocumentTemplate? DocumentTemplate { get; private set; }
+    public virtual Document? Document { get; private set; }
 }
