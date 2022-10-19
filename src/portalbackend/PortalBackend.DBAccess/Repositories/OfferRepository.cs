@@ -298,16 +298,14 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>    
-    public IAsyncEnumerable<OfferAgreement>  GetAgreementConsentAsync(IEnumerable<Guid> agreementIds)=>
+    public IAsyncEnumerable<OfferAgreement> GetAgreementConsentAsync(IEnumerable<Guid> agreementIds) =>
         _context.Consents.AsNoTracking()
-            .Where(consent => consent.ConsentAssignedOffers.Any(consentAssignedOffer=>agreementIds.Contains(consentAssignedOffer.Consent!.AgreementId)))           
-             .Select(y=>new OfferAgreement
+            .Where(consent => consent.ConsentAssignedOffers.Any(consentAssignedOffer => agreementIds.Contains(consentAssignedOffer.Consent!.AgreementId)))
+            .Select(y => new OfferAgreement
             (
-                y.AgreementId, 
-                y.Agreement!.Name, 
+                y.AgreementId,
+                y.Agreement!.Name,
                 y.ConsentStatusId.ToString()
             )).Distinct()
             .AsAsyncEnumerable();
-    
-   
 }
