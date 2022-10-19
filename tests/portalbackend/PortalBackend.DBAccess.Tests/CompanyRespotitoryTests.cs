@@ -160,6 +160,138 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+    
+    #region GetCompanyIdByBpn
+    
+    [Fact]
+    public async Task GetCompanyIdByBpn_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyIdByBpnAsync("CAXSDUMMYCATENAZZ").ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBe(Guid.Empty);
+        results.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+    }
+     
+    [Fact]
+    public async Task GetCompanyIdByBpn_WithNotExistingBpn_ReturnsEmptyGuid()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyIdByBpnAsync("NOTEXISTING").ConfigureAwait(false);
+
+        // Assert
+        results.Should().Be(Guid.Empty);
+    }
+
+    #endregion
+
+    #region GetCompanyBpnById
+    
+    [Fact]
+    public async Task GetCompanyBpnByIdAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyBpnByIdAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+        results.Should().Be("CAXSDUMMYCATENAZZ");
+    }
+     
+    [Fact]
+    public async Task GetCompanyBpnByIdAsync_WithNotExistingId_ReturnsEmpty()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyBpnByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        results.Should().BeNull();
+    }
+
+    #endregion
+
+    #region AttachAndModifyServiceProviderDetails
+
+    [Fact]
+    public async Task AttachAndModifyServiceProviderDetails_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com/new";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.AttachAndModifyServiceProviderDetails(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"),
+            detail => { detail.AutoSetupUrl = url; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.AutoSetupUrl.Should().Be(url);
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<ServiceProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+    }
+
+    #endregion
+
+    #region AttachAndModifyServiceProviderDetails
+
+    [Fact]
+    public async Task CheckServiceProviderDetailsExistsForUser_WithValidIamUserAndDetailId_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckServiceProviderDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.IsSameCompany.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckServiceProviderDetailsExistsForUser_WithNotExistingIamUserAndExistingDetailId_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckServiceProviderDetailsExistsForUser(Guid.NewGuid().ToString(), new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.IsSameCompany.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckServiceProviderDetailsExistsForUser_WithExistingIamUserAndNotExistingDetailId_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckServiceProviderDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
 
     #region Setup
     

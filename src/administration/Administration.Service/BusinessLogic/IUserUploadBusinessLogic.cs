@@ -18,19 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// Model used to request connector registration at sd factory.
-/// </summary>
-public record ConnectorSdFactoryRequestModel(
-    [property: JsonPropertyName("type")] string Type,
-    [property: JsonPropertyName("providedBy")] string ProvidedBy,
-    [property: JsonPropertyName("aggregationOf")] string? AggregationOf,
-    [property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
-    [property: JsonPropertyName("policies")] string Policies,
-    [property: JsonPropertyName("issuer")] string Issuer,
-    [property: JsonPropertyName("holder")] string Holder
-);
+public interface IUserUploadBusinessLogic
+{
+    ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken);
+}

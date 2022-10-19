@@ -45,14 +45,6 @@ public interface IOfferRepository
     public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
-    /// Get Client Name by App Id
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="companyId"></param>
-    /// <returns>Client Name</returns>
-    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId);
-
-    /// <summary>
     /// Adds an app to the database
     /// </summary>
     /// <param name="provider">Provider of the app</param>

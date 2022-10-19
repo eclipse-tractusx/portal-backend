@@ -18,9 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EnpointSetup;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public static class Paths
+public class AgreementAssignedDocument
 {
-    public static readonly string Notification = "/api/notification";
+    private AgreementAssignedDocument() {}
+
+    public AgreementAssignedDocument(Guid agreementId, Guid documentId)
+    {
+        AgreementId = agreementId;
+        DocumentId = documentId;
+    }
+
+    public Guid AgreementId { get; private set; }
+    public Guid DocumentId { get; private set; }
+
+    // Navigation properties
+    public virtual Agreement? Agreement { get; private set; }
+    public virtual Document? Document { get; private set; }
 }
