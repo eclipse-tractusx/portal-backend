@@ -405,4 +405,15 @@ public class UserRepository : IUserRepository
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Company.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds) =>
+        _dbContext.Offers
+            .Where(x => x.Id == offerId)
+            .SelectMany(x => x.ProviderCompany!.CompanyUsers)
+            .Where(x => 
+                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
+                x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
+            .Select(x => x.Id)
+            .ToAsyncEnumerable();
 }

@@ -25,6 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
@@ -51,7 +52,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, OfferTypeId offerTypeId)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId)
     {
         var offerProviderDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(false);
         if (offerProviderDetails == null)
@@ -101,8 +102,24 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             }
         }
 
+        await SendNotifications(offerId, offerTypeId, offerProviderDetails, companyInformation, userEmail, autoSetupResult, companyUserId, serviceManagerRoles).ConfigureAwait(false);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return offerSubscription.Id;
+    }
+
+    private async Task SendNotifications(
+        Guid offerId,
+        OfferTypeId offerTypeId,
+        OfferProviderDetailsData offerProviderDetails,
+        CompanyInformationData companyInformation,
+        string? userEmail,
+        string autoSetupResult,
+        Guid companyUserId,
+        IDictionary<string, IEnumerable<string>> serviceManagerRoles)
+    {
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        var notificationContent = new
+        var notificationContent = JsonSerializer.Serialize(new
         {
             offerProviderDetails.AppName,
             offerId,
@@ -110,32 +127,41 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             UserEmail = userEmail,
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
             AutoSetupError = autoSetupResult
-        };
+        });
+        var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
+
         if (offerProviderDetails.SalesManagerId.HasValue)
         {
-            var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
             notificationRepository.CreateNotification(offerProviderDetails.SalesManagerId.Value, notificationTypeId, false,
                 notification =>
                 {
                     notification.CreatorUserId = companyUserId;
-                    notification.Content = JsonSerializer.Serialize(notificationContent);
-                });
-        }
-        //Get Service Manager Id
-        var serviceManagerId = Guid.NewGuid();
-        if (serviceManagerId != Guid.Empty)
-        {   
-            var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
-            notificationRepository.CreateNotification(serviceManagerId, notificationTypeId, false,
-                notification =>
-                {
-                    notification.CreatorUserId = companyUserId;
-                    notification.Content = JsonSerializer.Serialize(notificationContent);
+                    notification.Content = notificationContent;
                 });
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return offerSubscription.Id;
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(serviceManagerRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+        
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
+        {
+            notificationRepository.CreateNotification(
+                receiver,
+                notificationTypeId,
+                false,
+                notification =>
+                {
+                    notification.CreatorUserId = companyUserId;
+                    notification.Content = notificationContent;
+                });
+        }
     }
 
     private static NotificationTypeId GetOfferSubscriptionNotificationType(OfferTypeId offerTypeId)

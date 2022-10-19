@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
 
@@ -31,6 +32,7 @@ public class ServiceSettings
     {
         this.CompanyAdminRoles = null!;
         this.ServiceAccountRoles = null!;
+        this.ServiceManagerRoles = null!;
     }
     
     [Required]
@@ -41,6 +43,9 @@ public class ServiceSettings
     
     [Required]
     public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; }
+
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ServiceManagerRoles { get; set; }
 }
 
 public static class ServiceSettingsExtension
