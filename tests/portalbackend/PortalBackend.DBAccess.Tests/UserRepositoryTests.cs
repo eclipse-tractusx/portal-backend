@@ -22,8 +22,9 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -37,6 +38,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
     private const string ValidIamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
+    private readonly Guid _validOfferId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -107,6 +109,37 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         (result == default).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Get own company app users
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersUntrackedAsync_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, ValidIamUserId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeEmpty();
+        result.Should().HaveCount(6);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersUntrackedAsync_WithNotExistingIamUser_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, Guid.NewGuid().ToString()).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
     #endregion
