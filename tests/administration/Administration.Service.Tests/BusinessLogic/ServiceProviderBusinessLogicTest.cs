@@ -88,9 +88,9 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        var ex = await Assert.ThrowsAsync<ConflictException>(Action);
+        await Assert.ThrowsAsync<ConflictException>(Action);
         _serviceProviderDetails.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
@@ -104,9 +104,9 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
     }
 
@@ -121,9 +121,9 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
     }
 
@@ -138,9 +138,9 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
     }
 
@@ -204,9 +204,9 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().Be($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
@@ -221,9 +221,9 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().Be($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
@@ -237,10 +237,10 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
         _serviceProviderDetails.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
@@ -254,10 +254,10 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
         _serviceProviderDetails.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     [Fact]
@@ -271,10 +271,10 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
         _serviceProviderDetails.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion
