@@ -216,11 +216,4 @@ public interface IOfferRepository
     /// <returns></returns>
     Task<(bool OfferStatus, bool IsProviderCompanyUser,bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
 
-    /// <summary>
-    /// Delete App User Role by appId and roleId
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="roleId"></param>
-    /// <returns></returns>
-    Task DeleteAppRoleAsync(Guid appId, Guid roleId);
 }

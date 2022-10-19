@@ -23,7 +23,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -310,20 +309,4 @@ public class OfferRepository : IOfferRepository
                 offer.UserRoles.Any(userRole => userRole.Id == roleId)
             ))
             .SingleOrDefaultAsync();
-
-    ///<inheritdoc/>
-    public async Task DeleteAppRoleAsync(Guid appId, Guid roleId)
-    {
-        try
-        {
-            var userRole = new UserRole(roleId, string.Empty, appId);
-            _context.UserRoles.Attach(userRole);
-            _context.UserRoles.Remove(userRole);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new NotFoundException("User Role with provided ID does not exist.");
-        }
-    }
 }
