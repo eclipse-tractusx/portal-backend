@@ -120,6 +120,8 @@ public class SdFactoryServiceTests
 
         // Assert
         _documents.Should().HaveCount(1);
+        var document = _documents.Single();
+        document.DocumentName.Should().Be($"SelfDescription_Connector.json");
     }
 
     [Fact]
@@ -190,6 +192,8 @@ public class SdFactoryServiceTests
 
         // Assert
         _documents.Should().HaveCount(1);
+        var document = _documents.Single();
+        document.DocumentName.Should().Be($"SelfDescription_LegalPerson.json");
     }
 
     [Fact]
