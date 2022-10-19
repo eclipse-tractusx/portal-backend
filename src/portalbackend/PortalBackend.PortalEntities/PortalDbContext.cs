@@ -136,6 +136,24 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Agreements)
                 .HasForeignKey(d => d.IssuerCompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasMany(p => p.Documents)
+                .WithMany(p => p.Agreements)
+                .UsingEntity<AgreementAssignedDocument>(
+                    j => j
+                        .HasOne(d => d.Document!)
+                        .WithMany()
+                        .HasForeignKey(d => d.DocumentId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.Agreement!)
+                        .WithMany()
+                        .HasForeignKey(d => d.AgreementId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.AgreementId, e.DocumentId });
+                    });
         });
 
         modelBuilder.Entity<AgreementAssignedCompanyRole>(entity =>
@@ -150,21 +168,6 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.CompanyRole)
                 .WithMany(p => p!.AgreementAssignedCompanyRoles!)
                 .HasForeignKey(d => d.CompanyRoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
-
-        modelBuilder.Entity<AgreementAssignedDocument>(entity =>
-        {
-            entity.HasKey(e => new { e.AgreementId, e.DocumentId });
-
-            entity.HasOne(d => d.Agreement)
-                .WithMany(p => p!.AgreementAssignedDocuments)
-                .HasForeignKey(d => d.AgreementId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.Document)
-                .WithOne(p => p!.AgreementAssignedDocument!)
-                .HasForeignKey<AgreementAssignedDocument>(d => d.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
