@@ -18,9 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EnpointSetup;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public static class Paths
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+
+public interface IUserUploadBusinessLogic
 {
-    public static readonly string Notification = "/api/notification";
+    ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }
