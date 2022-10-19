@@ -86,7 +86,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var mailParams = new Dictionary<string, string>
         {
             { "offerProviderName", offerProviderDetails.ProviderName},
-            { "offerName", offerProviderDetails.OfferName },
+            { "offerName", offerProviderDetails.OfferName! },
             { "url", basePortalAddress },
         };
         await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
