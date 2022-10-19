@@ -44,7 +44,7 @@ public static class ControllerExtensions
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
     {
-        var bearer  = controller.GetBearerToken();
+        var bearer = controller.GetBearerToken();
         return tokenConsumingFunction(bearer);
     }
     
