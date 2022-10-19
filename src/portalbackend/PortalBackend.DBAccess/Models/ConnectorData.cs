@@ -28,7 +28,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public record ConnectorData(
     string Name,
-    [property:StringLength(2, MinimumLength = 2)]
+    [StringLength(2, MinimumLength = 2)]
     string Location,
     Guid Id,
     ConnectorTypeId Type,
