@@ -60,6 +60,9 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
+
+    [Required] public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+
 }
 
 /// <summary>

@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -102,37 +103,34 @@ public class AppBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
+    #region Add Service Subscription
+
     [Fact]
-    public async Task AddCompanyAppSubscription_ExecutesSuccessfully()
+    public async Task AddServiceSubscription_ReturnsCorrectId()
     {
         // Arrange
-        var appId = _fixture.Create<Guid>();
-        var appName = "Test App";
-        var providerName = "New Provider";
-        var providerContactEmail = "email@provider.com";
-        var (companyUser, iamUser) = CreateTestUserPair();
-
-        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAsync(appId, iamUser.UserEntityId, OfferTypeId.APP))
-            .Returns(new ValueTuple<Guid, OfferSubscription?, string, Guid>(companyUser.CompanyId, null, "umbrella corporation", companyUser.Id));
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
-            .Returns(new OfferSubscription(Guid.NewGuid(), appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id));
-        A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(appId, OfferTypeId.APP))
-            .Returns(new OfferProviderDetailsData(appName, providerName, providerContactEmail, Guid.NewGuid(), null));
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
-        _fixture.Inject(_portalRepositories);
-        var mailingService = A.Fake<IMailingService>();
-        _fixture.Inject(mailingService);
-
-        var sut = _fixture.Create<AppsBusinessLogic>();
+        var offerSubscriptionId = Guid.NewGuid();
+        var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
+            .ReturnsLazily(() => offerSubscriptionId);
+        var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService, A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
 
         // Act
-        await sut.AddOwnCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
+        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), "44638c72-690c-42e8-bd5e-c8ac3047ff82", "THISISAACCESSTOKEN").ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
-        A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
+        result.Should().Be(offerSubscriptionId);
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(
+                A<Guid>._,
+                A<string>._,
+                A<string>._,
+                A<IDictionary<string, IEnumerable<string>>>._,
+                A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
+                A<string>._))
+            .MustHaveHappenedOnceExactly();
     }
+
+    #endregion
 
     #region Auto setup service
 

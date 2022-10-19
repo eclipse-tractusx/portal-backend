@@ -92,7 +92,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.SERVICE);
+        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
     public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)

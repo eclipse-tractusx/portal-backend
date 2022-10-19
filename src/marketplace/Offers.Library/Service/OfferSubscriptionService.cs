@@ -25,6 +25,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
@@ -33,6 +35,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSetupService _offerSetupService;
+    private readonly IMailingService _mailingService;
     private readonly ILogger<OfferSubscriptionService> _logger;
 
     /// <summary>
@@ -40,32 +43,93 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSetupService">SetupService for the 3rd Party Service Provider</param>
+    /// <param name="mailingService">Mail service.</param>
     /// <param name="logger">Access to the logger</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories, 
-        IOfferSetupService offerSetupService, 
+        IOfferSetupService offerSetupService,
+        IMailingService mailingService,
         ILogger<OfferSubscriptionService> logger)
     {
         _portalRepositories = portalRepositories;
         _offerSetupService = offerSetupService;
+        _mailingService = mailingService;
         _logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress)
     {
-        var offerProviderDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(false);
+        var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
+        var (companyInformation, companyUserId, userEmail) = await ValidateCompanyInformationAsync(iamUserId).ConfigureAwait(false);
+
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerSubscription = offerTypeId == OfferTypeId.APP
+            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, companyUserId).ConfigureAwait(false)
+            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+
+        var autoSetupResult = await ExecuteAutoSetupAsync(offerId, iamUserId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscription).ConfigureAwait(false);
+        var notificationContent = JsonSerializer.Serialize(new
+        {
+            AppName = offerProviderDetails.OfferName,
+            offerId,
+            RequestorCompanyName = companyInformation.OrganizationName,
+            UserEmail = userEmail,
+            AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
+            AutoSetupError = autoSetupResult
+        });
+        await SendNotifications(offerId, offerTypeId, offerProviderDetails, companyUserId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+        if (string.IsNullOrEmpty(offerProviderDetails.ProviderContactEmail)) return offerSubscription.Id;
+
+        var mailParams = new Dictionary<string, string>
+        {
+            { "offerProviderName", offerProviderDetails.ProviderName},
+            { "offerName", offerProviderDetails.OfferName },
+            { "url", basePortalAddress },
+        };
+        await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        return offerSubscription.Id;
+    }
+
+    private async Task<OfferProviderDetailsData> ValidateOfferProviderDetailDataAsync(Guid offerId, OfferTypeId offerTypeId)
+    {
+        var offerProviderDetails = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(false);
         if (offerProviderDetails == null)
         {
             throw new NotFoundException($"Service {offerId} does not exist");
         }
 
-        var (companyInformation, companyUserId, userEmail) = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
+        if (offerProviderDetails.OfferName is not null && offerProviderDetails.ProviderContactEmail is not null)
+            return offerProviderDetails;
+
+        var nullProperties = new List<string>();
+        if (offerProviderDetails.OfferName is null)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerProviderDetails.OfferName)}");
+        }
+
+        if (offerProviderDetails.ProviderContactEmail is null)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerProviderDetails.ProviderContactEmail)}");
+        }
+
+        throw new UnexpectedConditionException(
+            $"The following fields of the offer '{offerProviderDetails}' have not been configured properly: {string.Join(", ", nullProperties)}");
+
+    }
+
+    private async Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> ValidateCompanyInformationAsync(string iamUserId)
+    {
+        var (companyInformation, companyUserId, userEmail) = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
         if (companyInformation.CompanyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
         }
-        
+
         if (companyUserId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
@@ -73,61 +137,88 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         if (companyInformation.BusinessPartnerNumber == null)
         {
-            throw new ConflictException($"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
+            throw new ConflictException(
+                $"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
         }
 
-        var offerSubscription = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        return (companyInformation, companyUserId, userEmail);
+    }
 
-        var autoSetupResult = string.Empty;
-        if (!string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl))
+    private static async Task<OfferSubscription> HandleAppSubscriptionAsync(
+        Guid offerId,
+        IOfferSubscriptionsRepository offerSubscriptionsRepository,
+        CompanyInformationData companyInformation,
+        Guid companyUserId)
+    {
+        OfferSubscription offerSubscription;
+        var (offerSubscriptionId, offerSubscriptionStateId) = await offerSubscriptionsRepository
+            .GetOfferSubscriptionStateForCompanyAsync(offerId, companyInformation.CompanyId, OfferTypeId.APP)
+            .ConfigureAwait(false);
+        if (offerSubscriptionStateId == default)
         {
-            try
+            if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
             {
-                var autoSetupData = new OfferThirdPartyAutoSetupData(
-                    new OfferThirdPartyAutoSetupCustomerData(
-                        companyInformation.OrganizationName,
-                        companyInformation.Country,
-                        userEmail),
-                    new OfferThirdPartyAutoSetupPropertyData(
-                        companyInformation.BusinessPartnerNumber,
-                        offerSubscription.Id,
-                        offerId)
-                );
-                await _offerSetupService.AutoSetupOffer(autoSetupData, iamUserId, accessToken, offerProviderDetails.AutoSetupUrl).ConfigureAwait(false);
+                throw new ConflictException($"company {companyInformation.CompanyId} is already subscribed to {offerId}");
             }
-            catch (Exception e)
-            {
-                _logger.LogInformation("Error occure while executing AutoSetupOffer: {ErrorMessage}", e.Message);
-                autoSetupResult = e.Message;
-            }
+
+            offerSubscription = offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
+                os => { os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING; });
+        }
+        else
+        {
+            offerSubscription = offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
+                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
         }
 
-        await SendNotifications(offerId, offerTypeId, offerProviderDetails, companyInformation, userEmail, autoSetupResult, companyUserId, serviceManagerRoles).ConfigureAwait(false);
+        return offerSubscription;
+    }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return offerSubscription.Id;
+    private async Task<string> ExecuteAutoSetupAsync(
+        Guid offerId, 
+        string iamUserId, 
+        string accessToken,
+        OfferProviderDetailsData offerProviderDetails, 
+        CompanyInformationData companyInformation, 
+        string? userEmail,
+        OfferSubscription offerSubscription)
+    {
+        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl)) return string.Empty;
+        
+        try
+        {
+            var autoSetupData = new OfferThirdPartyAutoSetupData(
+                new OfferThirdPartyAutoSetupCustomerData(
+                    companyInformation.OrganizationName,
+                    companyInformation.Country,
+                    userEmail),
+                new OfferThirdPartyAutoSetupPropertyData(
+                    companyInformation.BusinessPartnerNumber,
+                    offerSubscription.Id,
+                    offerId)
+            );
+            await _offerSetupService
+                .AutoSetupOffer(autoSetupData, iamUserId, accessToken, offerProviderDetails.AutoSetupUrl)
+                .ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            _logger.LogInformation("Error occure while executing AutoSetupOffer: {ErrorMessage}", e.Message);
+            return e.Message;
+        }
+
+        return string.Empty;
     }
 
     private async Task SendNotifications(
         Guid offerId,
         OfferTypeId offerTypeId,
         OfferProviderDetailsData offerProviderDetails,
-        CompanyInformationData companyInformation,
-        string? userEmail,
-        string autoSetupResult,
         Guid companyUserId,
+        string notificationContent,
         IDictionary<string, IEnumerable<string>> serviceManagerRoles)
     {
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        var notificationContent = JsonSerializer.Serialize(new
-        {
-            offerProviderDetails.AppName,
-            offerId,
-            RequestorCompanyName = companyInformation.OrganizationName,
-            UserEmail = userEmail,
-            AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
-            AutoSetupError = autoSetupResult
-        });
+        
         var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
 
         if (offerProviderDetails.SalesManagerId.HasValue)
