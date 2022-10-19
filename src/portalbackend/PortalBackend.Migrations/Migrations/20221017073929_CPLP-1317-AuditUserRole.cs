@@ -64,11 +64,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP FUNCTION LC_TRIGGER_AFTER_DELETE_USERROLE() CASCADE;");
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_DELETE_USERROLE() CASCADE;");
 
-            migrationBuilder.Sql("DROP FUNCTION LC_TRIGGER_AFTER_INSERT_USERROLE() CASCADE;");
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_INSERT_USERROLE() CASCADE;");
 
-            migrationBuilder.Sql("DROP FUNCTION LC_TRIGGER_AFTER_UPDATE_USERROLE() CASCADE;");
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_USERROLE() CASCADE;");
 
             migrationBuilder.DropTable(
                 name: "audit_user_role20221017",

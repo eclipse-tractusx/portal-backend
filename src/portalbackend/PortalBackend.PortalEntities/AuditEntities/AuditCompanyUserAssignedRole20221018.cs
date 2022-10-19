@@ -28,13 +28,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntiti
 /// <summary>
 /// Audit entity for <see cref="CompanyUserAssignedRole"/> only needed for configuration purposes
 /// </summary>
-public class AuditCompanyUserAssignedRole20221005 : IAuditEntityV1
+public class AuditCompanyUserAssignedRole20221018 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
-
-    public Guid Id { get; set; }
 
     public Guid CompanyUserId { get; set; }
     

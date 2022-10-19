@@ -99,6 +99,20 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
+    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(role =>
+                role.OfferId == offerId &&
+                (userRoles.Contains(role.UserRoleText) || 
+                role.CompanyUsers.Any(user => user.Id == companyUserId)))
+            .Select(userRole => new UserRoleModificationData(
+                userRole.UserRoleText,
+                userRole.Id,
+                userRole.CompanyUsers.Any(user => user.Id == companyUserId)
+            ))
+            .ToAsyncEnumerable();
+
     public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
         _dbContext.UserRoles
             .AsNoTracking()

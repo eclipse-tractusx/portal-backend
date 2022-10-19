@@ -58,4 +58,6 @@ public interface IUserRolesRepository
     /// <param name="offerId">Id of the offer the roles are assigned to.</param>
     /// <returns>Returns a list of user role ids</returns>
     Task<List<string>> GetUserRolesForOfferIdAsync(Guid offerId);
+
+    IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
 }

@@ -22,9 +22,9 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -46,6 +46,7 @@ public class UserBusinessLogicTests
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityProviderRepository _identityProviderRepository;
+    private readonly IOfferRepository _offerRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IMailingService _mailingService;
@@ -54,7 +55,13 @@ public class UserBusinessLogicTests
     private readonly IOptions<UserSettings> _options;
     private readonly Guid _identityProviderId;
     private readonly string _iamUserId;
+    private readonly string _adminIamUser;
     private readonly Guid _companyUserId;
+    private readonly Guid _companyId;
+    private readonly Guid _validOfferId;
+    private readonly Guid _noTargetIamUserSet;
+    private readonly string _createdCentralUserId;
+    private readonly ICollection<CompanyUserAssignedRole> _companyUserAssignedRole = new HashSet<CompanyUserAssignedRole>();
     private readonly Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Func<CompanyUser,CompanyUser> _companyUserSelectFunction;
     private readonly Exception _error;
@@ -74,15 +81,21 @@ public class UserBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
+        _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _mailingService = A.Fake<IMailingService>();
-        _mockLogger = A.Fake<UserBusinessLogicTests.IMockLogger<UserBusinessLogic>>();
-        _logger = new UserBusinessLogicTests.MockLogger<UserBusinessLogic>(_mockLogger);
+        _mockLogger = A.Fake<IMockLogger<UserBusinessLogic>>();
+        _logger = new MockLogger<UserBusinessLogic>(_mockLogger);
         _options = _fixture.Create<IOptions<UserSettings>>();
 
         _identityProviderId = _fixture.Create<Guid>();
         _iamUserId = _fixture.Create<string>();
+        _adminIamUser = _fixture.Create<string>();
         _companyUserId = _fixture.Create<Guid>();
+        _companyId = _fixture.Create<Guid>();
+        _validOfferId = _fixture.Create<Guid>();
+        _noTargetIamUserSet = _fixture.Create<Guid>();
+        _createdCentralUserId = _fixture.Create<string>();
 
         _processLine = A.Fake<Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
         _companyUserSelectFunction = A.Fake<Func<CompanyUser,CompanyUser>>();
@@ -91,6 +104,7 @@ public class UserBusinessLogicTests
     }
 
     #region CreateOwnCompanyUsersAsync
+
     [Fact]
     public async void TestUserCreationAllSuccess()
     {
@@ -584,6 +598,157 @@ public class UserBusinessLogicTests
 
     #endregion
 
+    #region Modify UserRole Async
+
+    [Fact]
+    public async Task ModifyUserRoleAsync_WithTwoNewRoles_AddsTwoRolesToTheDatabase()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+
+        var sut = new UserBusinessLogic(
+            _provisioningManager,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _logger,
+            _options
+        );
+
+        // Act
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        {
+            "Existing Role",
+            "Company Admin",
+            "Buyer",
+            "Supplier"
+        });
+        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _createdCentralUserId).ConfigureAwait(false);
+
+        // Assert
+        _companyUserAssignedRole.Should().HaveCount(2);
+    }
+    
+    [Fact]
+    public async Task ModifyUserRoleAsync_WithOneRoleToDelete_DeletesTheRole()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+
+        var sut = new UserBusinessLogic(
+            _provisioningManager,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _logger,
+            _options
+        );
+
+        // Act
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        {
+            "Company Admin"
+        });
+        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<CompanyUserAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ModifyUserRoleAsync_WithNotExistingRole_ThrowsException()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+
+        var sut = new UserBusinessLogic(
+            _provisioningManager,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _logger,
+            _options
+        );
+
+        // Act
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        {
+            "NotExisting",
+            "Buyer"
+        });
+        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("Roles");
+    }
+
+    [Fact]
+    public async Task CreateServiceOffering_WithNotFoundCompanyUser_ThrowsException()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+
+        var sut = new UserBusinessLogic(
+            _provisioningManager,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _logger,
+            _options
+        );
+
+        // Act
+        var userRoleInfo = new UserRoleInfo(Guid.NewGuid(), new []
+        {
+            "Company Admin",
+            "Buyer",
+            "Supplier"
+        });
+        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        ex.Message.Should().Be($"CompanyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {_adminIamUser}");
+    }
+
+    [Fact]
+    public async Task ModifyUserRoleAsync_WithInvalidOfferId_ThrowsException()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+
+        var sut = new UserBusinessLogic(
+            _provisioningManager,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _logger,
+            _options
+        );
+        var invalidAppId = Guid.NewGuid();
+
+        // Act
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        {
+            "Company Admin",
+            "Buyer",
+            "Supplier"
+        });
+        async Task Action() => await sut.ModifyUserRoleAsync(invalidAppId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Action);
+        ex.ParamName.Should().Be("appId");
+    }
+
+    #endregion
+
     #region DeleteOwnCompanyUsersAsync
 
     [Fact]
@@ -793,9 +958,9 @@ public class UserBusinessLogicTests
 
     #region Setup
 
-    private void SetupFakesForUserCreation(bool IsBulkUserCreation)
+    private void SetupFakesForUserCreation(bool isBulkUserCreation)
     {
-        if (IsBulkUserCreation)
+        if (isBulkUserCreation)
         {
             A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
 
@@ -864,6 +1029,58 @@ public class UserBusinessLogicTests
             });
 
         A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).Returns(_fixture.Create<string>());
+    }
+
+    private void SetupFakesForUserRoleModification()
+    {
+        var iamClientId = "Cl1-CX-Registration";
+        var adminRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+        var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
+        var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser || x == _createdCentralUserId)))
+            .ReturnsLazily(() => new ValueTuple<string?, string, bool>(iamClientId, _iamUserId, true));
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser)))
+            .ReturnsLazily(() => new ValueTuple<string?, string, bool>(null, _iamUserId, true));
+        A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Not.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser)))
+            .ReturnsLazily(() => new ValueTuple<string?, string, bool>(iamClientId, _iamUserId, false));
+        
+        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
+            .ReturnsLazily(() => new List<UserRoleModificationData>
+            {
+                new("Existing Role", Guid.NewGuid(), false), 
+                new("Buyer", buyerRoleId, true), 
+                new("Company Admin", adminRoleId, true),
+                new("Supplier", supplierRoleId, false),
+
+            }.ToAsyncEnumerable());
+
+        A.CallTo(() => _userRolesRepository.CreateCompanyUserAssignedRole(A<Guid>._, A<Guid>._))
+            .Invokes(x =>
+            {
+                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
+                var companyUserRoleId = x.Arguments.Get<Guid>("companyUserRoleId");
+
+                var companyUserAssignedRole = new CompanyUserAssignedRole(companyUserId, companyUserRoleId);
+                _companyUserAssignedRole.Add(companyUserAssignedRole);
+            });
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily(() => new Dictionary<string, IEnumerable<string>>
+            {
+                {iamClientId, new List<string> {"Existing Role", "Supplier"}}
+            });
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _createdCentralUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily(() => new Dictionary<string, IEnumerable<string>>
+            {
+                {iamClientId, new List<string> {"Company Admin"}}
+            });
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(
+                A<string>.That.Not.Matches(x => x == _createdCentralUserId || x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily(() => new Dictionary<string, IEnumerable<string>>());
+
+        _fixture.Inject(_provisioningManager);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
     }
 
     #endregion
