@@ -61,7 +61,7 @@ public class AgreementRepository : IAgreementRepository
             .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,
-                agreement.AgreementAssignedDocuments.Select(docId=>docId.DocumentId)))
+                agreement.Documents.Select(doc=>doc.Id)))
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>

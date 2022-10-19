@@ -569,7 +569,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasName("pk_agreement_assigned_documents");
 
                     b.HasIndex("DocumentId")
-                        .IsUnique()
                         .HasDatabaseName("ix_agreement_assigned_documents_document_id");
 
                     b.ToTable("agreement_assigned_documents", "portal");
@@ -4614,14 +4613,14 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocument", b =>
                 {
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
-                        .WithMany("AgreementAssignedDocuments")
+                        .WithMany()
                         .HasForeignKey("AgreementId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_documents_agreements_agreement_id");
 
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
-                        .WithOne("AgreementAssignedDocument")
-                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocument", "DocumentId")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_documents_documents_document_id");
 
@@ -5429,8 +5428,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 {
                     b.Navigation("AgreementAssignedCompanyRoles");
 
-                    b.Navigation("AgreementAssignedDocuments");
-
                     b.Navigation("AgreementAssignedOfferTypes");
 
                     b.Navigation("AgreementAssignedOffers");
@@ -5564,8 +5561,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
-                    b.Navigation("AgreementAssignedDocument");
-
                     b.Navigation("Companies");
 
                     b.Navigation("Connector");

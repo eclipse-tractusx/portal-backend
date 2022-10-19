@@ -66,8 +66,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 name: "ix_agreement_assigned_documents_document_id",
                 schema: "portal",
                 table: "agreement_assigned_documents",
-                column: "document_id",
-                unique: true);
+                column: "document_id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

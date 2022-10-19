@@ -36,8 +36,8 @@ public record AgreementData(
 /// </summary>
 /// <param name="AgreementId">Id of the agreement</param>
 /// <param name="AgreementName">Name of the agreement</param>
-/// <param name="DocumentId">Id of the document</param>
+/// <param name="DocumentIds">Ids of the documents</param>
 public record AgreementDocumentData(
     [property: JsonPropertyName("agreementId")] Guid AgreementId,
     [property: JsonPropertyName("name")] string AgreementName,
-    [property: JsonPropertyName("DocumentId")] IEnumerable<Guid> DocumentId);
+    [property: JsonPropertyName("documentIds")] IEnumerable<Guid> DocumentIds);
