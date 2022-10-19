@@ -56,3 +56,12 @@ public enum SdFactoryRequestModelSdType
     [EnumMember(Value = "ServiceOffering")]
     ServiceOffering
 }
+
+public enum SdFactoryResponseModelTitle
+{
+    [EnumMember(Value = "Connector")]
+    Connector,
+
+    [EnumMember(Value = "LegalPerson")]
+    LegalPerson
+}
