@@ -160,6 +160,68 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+    
+    #region GetCompanyIdByBpn
+    
+    [Fact]
+    public async Task GetCompanyIdByBpn_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyIdByBpnAsync("CAXSDUMMYCATENAZZ").ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBe(Guid.Empty);
+        results.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+    }
+     
+    [Fact]
+    public async Task GetCompanyIdByBpn_WithNotExistingBpn_ReturnsEmptyGuid()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyIdByBpnAsync("NOTEXISTING").ConfigureAwait(false);
+
+        // Assert
+        results.Should().Be(Guid.Empty);
+    }
+
+    #endregion
+
+    #region GetCompanyBpnById
+    
+    [Fact]
+    public async Task GetCompanyBpnByIdAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyBpnByIdAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+        results.Should().Be("CAXSDUMMYCATENAZZ");
+    }
+     
+    [Fact]
+    public async Task GetCompanyBpnByIdAsync_WithNotExistingId_ReturnsEmpty()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetCompanyBpnByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        results.Should().BeNull();
+    }
+
+    #endregion
 
     #region AttachAndModifyServiceProviderDetails
 
