@@ -45,4 +45,3 @@ public record OfferProviderResponse(
 /// <param name="documentId"></param>
 /// <param name="documentName"></param>
 public record DocumentData(Guid documentId, string documentName);
-
