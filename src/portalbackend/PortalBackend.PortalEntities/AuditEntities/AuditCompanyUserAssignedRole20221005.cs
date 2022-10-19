@@ -35,7 +35,7 @@ public class AuditCompanyUserAssignedRole20221005 : IAuditEntityV1
     public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; set; }
-    
+
     public Guid CompanyUserId { get; set; }
     
     public Guid UserRoleId { get; set; }

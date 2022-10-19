@@ -18,22 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public class AgreementAssignedDocumentTemplate
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+
+public interface IUserUploadBusinessLogic
 {
-    private AgreementAssignedDocumentTemplate() {}
-
-    public AgreementAssignedDocumentTemplate(Guid agreementId, Guid documentTemplateId)
-    {
-        AgreementId = agreementId;
-        DocumentTemplateId = documentTemplateId;
-    }
-
-    public Guid AgreementId { get; private set; }
-    public Guid DocumentTemplateId { get; private set; }
-
-    // Navigation properties
-    public virtual Agreement? Agreement { get; private set; }
-    public virtual DocumentTemplate? DocumentTemplate { get; private set; }
+    ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }

@@ -404,7 +404,7 @@
 			"response": []
 		},
 		{
-			"name": "Users for App Copy",
+			"name": "Update Roles for App",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -416,11 +416,11 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n   \"companyUserId\": \"872ed57d-fba2-4b10-9ce6-682b0f1b8af4\",\r\n   \"roles\": [\r\n       \"3ff68c40-6581-4e48-a03a-2a6c1c5aac89\"\r\n   ]\r\n}",
+					"raw": "{\r\n   \"companyUserId\": \"6f831eb7-2ed1-4c82-8617-09c55b9d31d6\",\r\n   \"roles\": [\r\n       \"Company Admin\",\r\n       \"fraud_app_user\"\r\n   ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -523,6 +523,39 @@
 			"response": []
 		},
 		{
+			"name": "Get ServiceProvider Company Details",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJvTGI2ZDRTaWRUZXFQM1N5Y0EzeVpacFRkQm5FQnlTUGI3blRoWGkxQ0dZIn0.eyJleHAiOjE2NTY0MDQxOTMsImlhdCI6MTY1NjQwMzg5MywiYXV0aF90aW1lIjoxNjU2NDAxMzg1LCJqdGkiOiIyMTMyOWJkMi01MWY3LTRmYzctYTAwYS00ZmFlYWNmZDBkOTgiLCJpc3MiOiJodHRwczovL2Rldmhvc3Q6ODQ0My9pYW1jZW50cmFsL2F1dGgvcmVhbG1zL0NYLUNlbnRyYWwiLCJhdWQiOlsiQ2wyLUNYLVBvcnRhbCIsIkNsMS1DWC1SZWdpc3RyYXRpb24iXSwic3ViIjoiZTliMWMwZTQtOTUzZC00NTM5LWI3MDMtZGNhOWU5MTFlYWI1IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiQ2wyLUNYLVBvcnRhbCIsIm5vbmNlIjoiZTg1NzIwYjEtYTE2Ni00Mjk0LWIyZjItNjdhZTI2ZTE1MDQyIiwic2Vzc2lvbl9zdGF0ZSI6IjVkZmQwZTdmLTk4ZDktNDVhNS1hY2RjLTA1YzdkODQzODdjZSIsImFjciI6IjAiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9jYXRlbmF4aW50YWtzc3J2Lmdlcm1hbnl3ZXN0Y2VudHJhbC5jbG91ZGFwcC5henVyZS5jb20iLCJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJodHRwczovL2NhdGVuYXhpbnRha3Nwb3J0YWwuZ2VybWFueXdlc3RjZW50cmFsLmNsb3VkYXBwLmF6dXJlLmNvbSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJkZWZhdWx0LXJvbGVzLWNhdGVuYS14IHJlYWxtIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJDbDEtQ1gtUmVnaXN0cmF0aW9uIjp7InJvbGVzIjpbImludml0ZV91c2VyIiwiQ1ggQWRtaW4iLCJ1cGxvYWRfZG9jdW1lbnRzIiwiYWRkX2NvbXBhbnlfZGF0YSIsInN1Ym1pdF9yZWdpc3RyYXRpb24iLCJzaWduX2NvbnNlbnQiLCJDb21wYW55IEFkbWluIiwidmlld19yZWdpc3RyYXRpb24iXX0sIkNsMi1DWC1Qb3J0YWwiOnsicm9sZXMiOlsidmlld19zdWJtaXR0ZWRfYXBwbGljYXRpb25zIiwidmlld19jbGllbnRfcm9sZXMiLCJkZWxldGVfZG9jdW1lbnRzIiwiYWRkX3NlbWFudGljX21vZGVsIiwidmlld19kb2N1bWVudHMiLCJhZGRfZGlnaXRpYWxfdHdpbiIsInNldHVwX2Nvbm5lY3RvciIsInZpZXdfdGVjaF91c2VyX21hbmFnZW1lbnQiLCJhZGRfdXNlcl9hY2NvdW50IiwiYXBwcm92ZV9uZXdfcGFydG5lciIsImRlbGV0ZV91c2VyX2FjY291bnQiLCJhZGRfYXBwIiwiZGVsZXRlX3RlY2hfdXNlcl9tYW5hZ2VtZW50IiwiYWRkX3RlY2hfdXNlcl9tYW5hZ2VtZW50Iiwidmlld19zZW1hbnRpY19odWIiLCJDWCBBZG1pbiIsImZpbHRlcl9hcHBzIiwic2V0dXBfaWRwIiwiaW52aXRlX25ld19wYXJ0bmVyIiwidmlld191c2VyX21hbmFnZW1lbnQiLCJ2aWV3X2RpZ2l0YWxfdHdpbnMiLCJ2aWV3X2FwcHMiLCJlZGl0X2FwcHMiLCJkZWxldGVfYXBwcyJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI1ZGZkMGU3Zi05OGQ5LTQ1YTUtYWNkYy0wNWM3ZDg0Mzg3Y2UiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlRlc3R1c2VyIERldmhvc3QiLCJvcmdhbmlzYXRpb24iOiJEZXZob3N0IFNoYXJlZCBJZHAiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJpZHAxLjZlYzQ2Y2Q0LTVhZWMtNDZjMy04OGRjLTJhMjgzOTk0YWI5MiIsImdpdmVuX25hbWUiOiJUZXN0dXNlciIsImZhbWlseV9uYW1lIjoiRGV2aG9zdCIsImVtYWlsIjoibm8uZW1haWxAY2F0ZW5hLm5ldCIsInRlbmFudCI6ImlkcDEifQ.bt5uzFIHXgoeiiKTSYMv5x4ukuvY7VYg0HZCrAFiDAHwvTPxgVZEuhH-kj0ZpEI-A2BO5dVdKr6282gqSUov8QlLOq3xHzBAFHkVc8oH-255IlCWSr2D2UR3XGd7cVQdQyHvYihqSzxqXMdiRHR6O2CTmFi67YURIJ5m0d834benFOJloWVL9Uj3043-m_AjPAJBT83wn6ng0fHDQSNxgtFqnmoMIq4U2uU7haEtj6Jp8N_wdrAnjdfRlk7FTWUDF9fZk6xk6mebR-sZrclSGJllK7rKy0n1NwJKEViJlQjNdBnPsyje4QB_z6gY8xRwOrTUpKV2CjLpffiRBhwDRA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/serviceprovider/owncompany/a5d6e764-8174-47f4-8936-1e41f61dbe0c",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"serviceprovider",
+						"owncompany",
+						"a5d6e764-8174-47f4-8936-1e41f61dbe0c"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Create Managed Connector",
 			"request": {
 				"auth": {
@@ -539,7 +572,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"name\": \"Connector23\",\r\n  \"connectorUrl\": \"test.test@test.de\",\r\n  \"type\": \"COMPANY_CONNECTOR\",\r\n  \"status\": \"PENDING\",\r\n  \"location\": \"DE\",\r\n  \"provider\": \"cac8fa6a-9db7-4bad-9cbd-56298b74bac2\",\r\n  \"host\": \"cac8fa6a-9db7-4bad-9cbd-56298b74bac2\"\r\n}",
+					"raw": "{\r\n  \"name\": \"Connector23\",\r\n  \"connectorUrl\": \"test.test@test.de\",\r\n  \"type\": \"COMPANY_CONNECTOR\",\r\n  \"status\": \"PENDING\",\r\n  \"location\": \"DE\",\r\n  \"provider\": \"5812d8ec-f1e8-4f2a-8aaa-86b8eebcf415\",\r\n  \"host\": \"5812d8ec-f1e8-4f2a-8aaa-86b8eebcf415\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

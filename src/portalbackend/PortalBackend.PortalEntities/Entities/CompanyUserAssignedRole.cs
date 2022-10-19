@@ -23,7 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20221005))]
+[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20221018))]
 public class CompanyUserAssignedRole : IAuditableV1
 {
     public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
@@ -32,7 +32,6 @@ public class CompanyUserAssignedRole : IAuditableV1
         UserRoleId = userRoleId;
     }
     
-    public Guid Id { get; set; }
     public Guid CompanyUserId { get; private set; }
     public Guid UserRoleId { get; private set; }
 

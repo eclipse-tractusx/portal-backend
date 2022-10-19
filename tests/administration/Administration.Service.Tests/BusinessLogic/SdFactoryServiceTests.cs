@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -66,7 +67,7 @@ public class SdFactoryServiceTests
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
 
-        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories);
+        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories, A.Fake<ILogger<SdFactoryService>>());
     }
 
     #endregion

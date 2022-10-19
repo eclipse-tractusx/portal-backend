@@ -18,38 +18,38 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class DocumentTemplate
+public class AuditUserRole20221017 : IAuditEntityV1
 {
-    private DocumentTemplate()
+    public AuditUserRole20221017()
     {
-        Documenttemplatename = null!;
-        Documenttemplateversion = null!;
+        UserRoleText = null!;
     }
 
-    public DocumentTemplate(Guid id, string documenttemplatename, string documenttemplateversion, DateTimeOffset dateCreated)
-    {
-        Id = id;
-        Documenttemplatename = documenttemplatename;
-        Documenttemplateversion = documenttemplateversion;
-        DateCreated = dateCreated;
-    }
-
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
+    
     public Guid Id { get; private set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
+    [Column("user_role")]
+    public string UserRoleText { get; set; }
 
-    public DateTimeOffset? DateLastChanged { get; set; }
-
-    [MaxLength(255)]
-    public string Documenttemplatename { get; set; }
-
-    [MaxLength(255)]
-    public string Documenttemplateversion { get; set; }
-
-    // Navigation properties
-    public virtual AgreementAssignedDocumentTemplate? AgreementAssignedDocumentTemplate { get; set; }
+    public Guid OfferId { get; set; }
+    
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }
+
