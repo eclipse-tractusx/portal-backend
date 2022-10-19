@@ -415,17 +415,19 @@ public class UserRepository : IUserRepository
         string? email = null,
         string? roleName = null)
     {
-        var regex = new Regex(@"(?<!(?<!\\)\\(?:\\\\)*)(?=[\%\\_\[\]\^])", RegexOptions.IgnorePatternWhitespace);
-        firstName = firstName == null ? null : regex.Replace(firstName, $"%{regex.Replace(firstName!, @"\")}%"); 
-        lastName = lastName == null ? null : regex.Replace(lastName, $"%{regex.Replace(lastName!, @"\")}%"); 
-        email = email == null ? null : regex.Replace(email, $"%{regex.Replace(email!, @"\")}%"); 
-        roleName = roleName == null ? null : regex.Replace(roleName, $"%{regex.Replace(roleName!, @"\")}%"); 
+        var regex = new Regex(@"(?=[\%\\_\[\]\^])", RegexOptions.IgnorePatternWhitespace);
+        firstName = firstName == null ? null : regex.Replace(firstName, @"\"); 
+        lastName = lastName == null ? null : regex.Replace(lastName!, @"\"); 
+        email = email == null ? null : regex.Replace(email!, @"\"); 
+        roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
         return _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) && companyUser.IamUser!.UserEntityId == iamUserId)
+            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) &&
+                                  companyUser.IamUser!.UserEntityId == iamUserId)
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-            .Where(companyUser => firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{regex.Replace(firstName!, @"\")}%")
-                && lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{regex.Replace(lastName!, @"\")!}%")
-                && email == null || EF.Functions.ILike(companyUser.Email!, $"%{regex.Replace(email!, @"\")!}%")
-                && roleName == null || companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{regex.Replace(roleName!, @"\")!}%")));
+            .Where(companyUser => 
+                firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName!}%") &&
+                lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName!}%") &&
+                email == null || EF.Functions.ILike(companyUser.Email!, $"%{email!}%") &&
+                roleName == null || companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName!}%")));
     }
 }
