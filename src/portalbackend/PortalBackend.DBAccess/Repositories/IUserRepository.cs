@@ -114,4 +114,6 @@ public interface IUserRepository
     Task<Guid> GetServiceAccountCompany(string iamUserId);
 
     Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 }
