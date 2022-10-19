@@ -20,6 +20,7 @@
 
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
@@ -40,6 +41,23 @@ public class AppsControllerTests
         _logic = A.Fake<IAppsBusinessLogic>();
         this._controller = new AppsController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(IamUserId, _accessToken);
+    }
+
+    [Fact]
+    public async Task AddServiceSubscription_ReturnsExpectedId()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, IamUserId, _accessToken))
+            .Returns(offerSubscriptionId);
+
+        //Act
+        var serviceId = Guid.NewGuid();
+        var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 
     [Fact]
