@@ -34,7 +34,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Xunit;
 
-namespace Administration.Service.Tests.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class ServiceAccountBusinessLogicTests
 {

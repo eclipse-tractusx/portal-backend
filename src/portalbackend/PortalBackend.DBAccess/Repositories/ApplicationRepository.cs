@@ -35,11 +35,11 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
+    public CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId) =>
         _dbContext.CompanyApplications.Add(
             new CompanyApplication(
                 Guid.NewGuid(),
-                company.Id,
+                companyId,
                 companyApplicationStatusId,
                 DateTimeOffset.UtcNow)).Entity;
 
@@ -50,12 +50,12 @@ public class ApplicationRepository : IApplicationRepository
         return companyApplication;
     }
 
-    public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+    public Invitation CreateInvitation(Guid applicationId, Guid companyUserId) =>
         _dbContext.Invitations.Add(
             new Invitation(
                 Guid.NewGuid(),
                 applicationId,
-                user.Id,
+                companyUserId,
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
 
