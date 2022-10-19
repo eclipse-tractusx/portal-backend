@@ -133,12 +133,21 @@ public class CompanyRepository : ICompanyRepository
     public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId) =>
         _context.Companies.AsNoTracking()
             .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
-            .Select(company => new ValueTuple<Guid,bool>(
+            .Select(company => new ValueTuple<Guid, bool>(
                 company.Id,
                 company.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)
             ))
             .SingleOrDefaultAsync();
 
+    /// <inheritdoc />
+    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId) =>
+        _context.ServiceProviderCompanyDetails.AsNoTracking()
+            .Where(details => details.Id == serviceProviderCompanyDetailsId)
+            .Select(details => new ValueTuple<bool,bool>(
+                true,
+                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+    
     /// <inheritdoc />
     public ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl) =>
         _context.ServiceProviderCompanyDetails.Add(new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
@@ -153,4 +162,12 @@ public class CompanyRepository : ICompanyRepository
                 x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
                 x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null)
+    {
+        var serviceProviderCompanyDetail = _context.Attach(new ServiceProviderCompanyDetail(serviceProviderCompanyDetailId, Guid.Empty, null!, default)).Entity;
+        setOptionalParameters?.Invoke(serviceProviderCompanyDetail);
+        return serviceProviderCompanyDetail;
+    }
 }
