@@ -396,23 +396,23 @@ public class UserController : ControllerBase
             roleName));
 
     /// <summary>
-    /// Adds a user role
+    /// Updates the roles for the user
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
     /// <param name="userRoleInfo"></param>
     /// <returns></returns>
-    /// <remarks>Example: POST: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
-    /// <response code="200">Role got successfully added to the user account.</response>
+    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Roles got successfully updated user account.</response>
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
-    [HttpPost]
+    [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Route("app/{appId}/roles")]
-    [ProducesResponseType(typeof(UserRoleMessage), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<UserRoleMessage> AddUserRole([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
-        this.WithIamUserId(adminUserId => _logic.AddUserRoleAsync(appId, userRoleInfo, adminUserId));
+    public Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
+        this.WithIamUserId(adminUserId => _logic.ModifyUserRoleAsync(appId, userRoleInfo, adminUserId));
 
     /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.
