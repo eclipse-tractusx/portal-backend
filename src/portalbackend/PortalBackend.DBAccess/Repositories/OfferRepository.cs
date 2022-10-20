@@ -194,10 +194,6 @@ public class OfferRepository : IOfferRepository
             )).AsAsyncEnumerable();
     
      /// <inheritdoc />
-     public Task<bool> CheckServiceExistsById(Guid serviceId) => 
-         _context.Offers.AnyAsync(x => x.Id == serviceId && x.OfferTypeId == OfferTypeId.SERVICE);
-
-     /// <inheritdoc />
     public IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices() =>
         _context.Offers
             .AsNoTracking()

@@ -99,7 +99,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(false);
         if (offerProviderDetails == null)
         {
-            throw new NotFoundException($"Service {offerId} does not exist");
+            throw new NotFoundException($"Offer {offerId} does not exist");
         }
 
         if (offerProviderDetails.OfferName is not null && offerProviderDetails.ProviderContactEmail is not null)
@@ -156,18 +156,19 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(false);
         if (offerSubscriptionStateId == default)
         {
+            offerSubscription = offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
+                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+        }
+        else
+        {
             if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
             {
-                throw new ConflictException($"company {companyInformation.CompanyId} is already subscribed to {offerId}");
+                throw new ConflictException(
+                    $"company {companyInformation.CompanyId} is already subscribed to {offerId}");
             }
 
             offerSubscription = offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
                 os => { os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING; });
-        }
-        else
-        {
-            offerSubscription = offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
-                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
         }
 
         return offerSubscription;
