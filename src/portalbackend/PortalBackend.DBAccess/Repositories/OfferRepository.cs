@@ -262,13 +262,12 @@ public class OfferRepository : IOfferRepository
                     offer.ProviderCompany!.Name,
                     offer.UseCases.Select(uc => uc.Name),
                     offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    offer.AgreementAssignedOffers.Where(aao=>aao.Agreement!.AgreementAssignedOfferTypes
-                    .Any(aaot => aaot.OfferTypeId == offerTypeId))
-                    .Select(aaot => new AgreementAssignedOfferData(
-                        aaot.AgreementId, 
-                        aaot.Agreement!.Name,
-                        offer.ConsentAssignedOffers.Select(cao => cao.Consent)
-                        .SingleOrDefault(consent => consent!.AgreementId == aaot.AgreementId)!.ConsentStatusId)),
+                    offer.OfferType!.AgreementAssignedOfferTypes
+                    .Select(aaot => aaot.Agreement)
+                    .Select(agreement => new AgreementAssignedOfferData(
+                        agreement!.Id, 
+                        agreement.Name,
+                        agreement.Consents.SingleOrDefault(consent => consent.ConsentAssignedOffers.Any(cao => cao.OfferId == offer.Id))!.ConsentStatusId)),
                     offer.SupportedLanguages.Select(l => l.ShortName),
                     offer.OfferLicenses
                         .Select(license => license.Licensetext)
