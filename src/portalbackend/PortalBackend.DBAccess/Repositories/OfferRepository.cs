@@ -64,6 +64,16 @@ public class OfferRepository : IOfferRepository
         return app;
     }
 
+    public Offer AttachAndModifyOffer(Guid offerId, Action<Offer>? setOptionalParameters = null)
+    {
+        var offer = _context.Attach(new Offer(offerId, null!, default, default)).Entity;
+        setOptionalParameters?.Invoke(offer);
+        return offer;
+    }
+
+    public Offer DeleteOffer(Guid offerId) =>
+        _context.Remove(new Offer(offerId, null!, default, default)).Entity;
+
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
