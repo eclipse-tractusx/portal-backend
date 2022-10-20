@@ -631,4 +631,9 @@ public class UserBusinessLogic : IUserBusinessLogic
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
             new CompanyUserAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }
+
+    public Task<int> DeleteUserOwnAccountAsync(string userId)
+    {
+        
+    }
 }
