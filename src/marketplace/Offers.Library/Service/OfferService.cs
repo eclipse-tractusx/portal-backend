@@ -327,23 +327,23 @@ public class OfferService : IOfferService
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
 
-        var offerAgreementData = offerDetail.OfferProviderData.Agreements.Select(a => new OfferAgreement(a.Id, a.Name, a.ConsentStatus == null ? string.Empty : a.ConsentStatus.ToString()));
+        var data = offerDetail.OfferProviderData;
 
         return new OfferProviderResponse(
-            offerDetail.OfferProviderData.Title,
-            offerDetail.OfferProviderData.Provider,
-            offerDetail.OfferProviderData.LeadPictureUri,
-            offerDetail.OfferProviderData.ProviderName,
-            offerDetail.OfferProviderData.UseCase,
-            offerDetail.OfferProviderData.Descriptions,
-            offerAgreementData,
-            offerDetail.OfferProviderData.SupportedLanguageCodes,
-            offerDetail.OfferProviderData.Price,
-            offerDetail.OfferProviderData.Images,
-            offerDetail.OfferProviderData.ProviderUri,
-            offerDetail.OfferProviderData.ContactEmail,
-            offerDetail.OfferProviderData.ContactNumber,
-            offerDetail.OfferProviderData.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))));
+            data.Title,
+            data.Provider,
+            data.LeadPictureUri,
+            data.ProviderName,
+            data.UseCase,
+            data.Descriptions,
+            data.Agreements.Select(a => new OfferAgreement(a.AgreementId, a.AgreementName, a.ConsentStatusId == null ? string.Empty : a.ConsentStatusId.ToString())),
+            data.SupportedLanguageCodes,
+            data.Price,
+            data.Images,
+            data.ProviderUri,
+            data.ContactEmail,
+            data.ContactNumber,
+            data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))));
     }
     
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
