@@ -15,7 +15,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="OfferName">Name of the offer</param>
 /// <param name="Bpn">Bpn of the app company</param>
 /// <param name="RequesterEmail">Email address of the requesting company user</param>
-/// <param name="RequesterName">Name of the requesting company user</param>
 public record OfferSubscriptionTransferData(
     OfferSubscriptionStatusId Status, 
     Guid CompanyUserId, 
@@ -26,5 +25,4 @@ public record OfferSubscriptionTransferData(
     Guid OfferId, 
     string OfferName, 
     string Bpn,
-    string? RequesterEmail,
-    string? RequesterName);
+    string? RequesterEmail);

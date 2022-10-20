@@ -131,8 +131,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.OfferId,
                     x.Offer!.Name!,
                     x.Company.BusinessPartnerNumber!,
-                    x.Requester!.Email,
-                    x.Requester!.Lastname
+                    x.Requester!.Email
             ))
             .SingleOrDefaultAsync();
 
