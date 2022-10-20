@@ -57,7 +57,7 @@ public record OfferDescriptionData(string languageCode, string longDescription, 
 /// <param name="Name"></param>
 /// <param name="ConsentStatus"></param>
 /// <returns></returns>
-public record OfferAgreement(Guid? Id, string? Name, string ConsentStatus);
+public record OfferAgreement(Guid? Id, string? Name, string? ConsentStatus);
 
 /// <summary>
 /// 
@@ -65,4 +65,4 @@ public record OfferAgreement(Guid? Id, string? Name, string ConsentStatus);
 /// <param name="Id"></param>
 /// <param name="Name"></param>
 /// <returns></returns>
-public record AgreementAssignedOfferData(Guid Id, string? Name);
+public record AgreementAssignedOfferData(Guid Id, string? Name, ConsentStatusId?  ConsentStatus);

@@ -188,13 +188,6 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
-    
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="agreementIds"></param>
-    /// <returns></returns>
-    IAsyncEnumerable<OfferAgreement>  GetAgreementConsentAsync(IEnumerable<Guid> agreementIds);
 
     /// <summary>
     /// Verify that user is linked to the appId
@@ -205,7 +198,7 @@ public interface IOfferRepository
     /// <returns></returns>
     Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
-        /// <summary>
+    /// <summary>
     /// Return the Company User Id
     /// </summary>
     /// <param name="offerId"></param>

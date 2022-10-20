@@ -254,27 +254,31 @@ public class OfferRepository : IOfferRepository
             .AsNoTracking()
             .AsSplitQuery() 
             .Where(a => a.Id == offerId && a.OfferTypeId == offerTypeId)
-            .Select(a => new ValueTuple<OfferProviderData,bool>(
+            .Select(offer => new ValueTuple<OfferProviderData,bool>(
                 new OfferProviderData(
-                    a.Name,
-                    a.Provider,
-                    a.ThumbnailUrl,
-                    a.ProviderCompany!.Name,
-                    a.UseCases.Select(uc => uc.Name),
-                    a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.AgreementAssignedOffers.Where(agreementtAssignedOffer=>agreementtAssignedOffer.Agreement!.AgreementAssignedOfferTypes
+                    offer.Name,
+                    offer.Provider,
+                    offer.ThumbnailUrl,
+                    offer.ProviderCompany!.Name,
+                    offer.UseCases.Select(uc => uc.Name),
+                    offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                    offer.AgreementAssignedOffers.Where(aao=>aao.Agreement!.AgreementAssignedOfferTypes
                     .Any(aaot => aaot.OfferTypeId == offerTypeId))
-                    .Select(aaot => new AgreementAssignedOfferData(aaot.AgreementId, aaot.Agreement!.Name)).Distinct(),
-                    a.SupportedLanguages.Select(l => l.ShortName),
-                    a.OfferLicenses
+                    .Select(aaot => new AgreementAssignedOfferData(
+                        aaot.AgreementId, 
+                        aaot.Agreement!.Name,
+                        offer.ConsentAssignedOffers.Select(cao => cao.Consent)
+                        .SingleOrDefault(consent => consent!.AgreementId == aaot.AgreementId)!.ConsentStatusId)),
+                    offer.SupportedLanguages.Select(l => l.ShortName),
+                    offer.OfferLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault(),
-                    a.OfferDetailImages.Select(image => image.ImageUrl),
-                    a.MarketingUrl,
-                    a.ContactEmail,
-                    a.ContactNumber,
-                    a.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
-                a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
+                    offer.OfferDetailImages.Select(image => image.ImageUrl),
+                    offer.MarketingUrl,
+                    offer.ContactEmail,
+                    offer.ContactNumber,
+                    offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
     ///<inheritdoc/>
@@ -296,16 +300,4 @@ public class OfferRepository : IOfferRepository
                 offer.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id
             ))
             .SingleOrDefaultAsync();
-
-    ///<inheritdoc/>    
-    public IAsyncEnumerable<OfferAgreement> GetAgreementConsentAsync(IEnumerable<Guid> agreementIds) =>
-        _context.Consents.AsNoTracking()
-            .Where(consent => consent.ConsentAssignedOffers.Any(consentAssignedOffer => agreementIds.Contains(consentAssignedOffer.Consent!.AgreementId)))
-            .Select(y => new OfferAgreement
-            (
-                y.AgreementId,
-                y.Agreement!.Name,
-                y.ConsentStatusId.ToString()
-            )).Distinct()
-            .AsAsyncEnumerable();
 }
