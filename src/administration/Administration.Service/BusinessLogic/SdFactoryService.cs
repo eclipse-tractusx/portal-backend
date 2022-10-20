@@ -27,6 +27,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -57,15 +58,15 @@ public class SdFactoryService : ISdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task<Guid> RegisterConnectorAsync(ConnectorRequestModel connectorRequestModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         using var httpClient =_httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(
-            "ServiceOffering",
-            connectorInputModel.ConnectorUrl,
+            SdFactoryRequestModelSdType.ServiceOffering,
+            connectorRequestModel.ConnectorUrl,
             string.Empty,
             string.Empty,
             string.Empty,
@@ -74,7 +75,7 @@ public class SdFactoryService : ISdFactoryService
 
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
 
-        return await ProcessResponse(businessPartnerNumber, response, cancellationToken).ConfigureAwait(false);
+        return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -96,10 +97,10 @@ public class SdFactoryService : ISdFactoryService
         _logger.LogInformation("SdFactory RegisterSelfDescriptionAsync was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", _settings.SdFactoryUrl, JsonSerializer.Serialize(requestModel));
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
 
-        return await ProcessResponse(businessPartnerNumber, response, cancellationToken).ConfigureAwait(false);
+        return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Guid> ProcessResponse(string businessPartnerNumber, HttpResponseMessage response, CancellationToken cancellationToken)
+    private async Task<Guid> ProcessResponse(SdFactoryResponseModelTitle docTitle, HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (!response.IsSuccessStatusCode)
         {
@@ -119,7 +120,15 @@ public class SdFactoryService : ISdFactoryService
                 $"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
         }
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{businessPartnerNumber}.json", documentContent, hash, DocumentTypeId.SELF_DESCRIPTION_EDC, null);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
+            $"SelfDescription_{docTitle}.json", 
+            documentContent, 
+            hash, 
+            DocumentTypeId.SELF_DESCRIPTION_EDC,
+            doc =>
+            {
+                doc.DocumentStatusId = DocumentStatusId.LOCKED;
+            });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;

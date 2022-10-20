@@ -52,25 +52,17 @@ public class ConnectorsControllerTests
         var connectorInputModel = new ConnectorInputModel(
             "New Connector", 
             "https://connec-tor.com",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
             ConnectorStatusId.ACTIVE,
-            "the location",
-            Guid.NewGuid(),
-            Guid.NewGuid());
-        var connectorResult = new ConnectorData("New Connector", "the location")
-        {
-            Id = Guid.NewGuid(),
-            Status = ConnectorStatusId.ACTIVE,
-            Type = ConnectorTypeId.CONNECTOR_AS_A_SERVICE
-        };
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, false, A<CancellationToken>._))
+            "the location");
+        var connectorResult = new ConnectorData("New Connector", "the location", Guid.NewGuid(), ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE);
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => connectorResult);
 
         //Act
         var result = await this._controller.CreateConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, false, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorResult);
     }
@@ -82,25 +74,18 @@ public class ConnectorsControllerTests
         var connectorInputModel = new ManagedConnectorInputModel(
             "New Connector", 
             "https://connec-tor.com",
-            ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
             ConnectorStatusId.ACTIVE,
             "the location",
-            Guid.NewGuid(),
-            Guid.NewGuid());
-        var connectorResult = new ConnectorData("New Connector", "the location")
-        {
-            Id = Guid.NewGuid(),
-            Status = ConnectorStatusId.ACTIVE,
-            Type = ConnectorTypeId.CONNECTOR_AS_A_SERVICE
-        };
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, true, A<CancellationToken>._))
+            "VALIDBPN1234");
+        var connectorResult = new ConnectorData("New Connector", "the location", Guid.NewGuid(), ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE);
+        A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, AccessToken, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => connectorResult);
 
         //Act
         var result = await this._controller.CreateManagedConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, true, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, AccessToken, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(connectorResult);
     }

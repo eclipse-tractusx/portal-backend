@@ -45,12 +45,11 @@ public interface ICompanyRepository
     Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 
     /// <summary>
-    /// Checks an set of CompanyIds for existence and returns the associated BusinessPartnerNumber if requested
+    /// Checks the bpn for existence and returns the associated CompanyId
     /// </summary>
-    /// <param name="companyId">Id of the company to check</param>
-    /// <param name="bpnRequested">whether the assigned businessPartnerNumber should be returned</param>
-    /// <returns>(CompanyId, BusinessPartnerNumber) for any company that exists</returns>
-    IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters);
+    /// <param name="businessPartnerNumber">The business partner number</param>
+    /// <returns>the company id or guid empty if not found</returns>
+    Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber);
 
     /// <summary>
     /// Get all member companies bpn
@@ -92,4 +91,11 @@ public interface ICompanyRepository
     /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
     /// <returns></returns>
     ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null);
+
+    /// <summary>
+    /// Gets the business partner number for the given id
+    /// </summary>
+    /// <param name="companyId">Id of the company</param>
+    /// <returns>Returns the business partner number</returns>
+    Task<string?> GetCompanyBpnByIdAsync(Guid companyId);
 }

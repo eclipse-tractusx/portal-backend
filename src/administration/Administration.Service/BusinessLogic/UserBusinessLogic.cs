@@ -494,7 +494,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         string? email = null,
         string? roleName = null)
     {
-        var appUsers = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOwnCompanyAppUsersUntrackedAsync(
+        var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
             appId, 
             iamUserId,
             firstName,
