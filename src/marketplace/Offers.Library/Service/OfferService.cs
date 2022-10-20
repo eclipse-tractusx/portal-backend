@@ -326,15 +326,8 @@ public class OfferService : IOfferService
         {
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
-        var offerAgreementData = new List<OfferAgreement>();
-        foreach(var agreementConsentData in offerDetail.OfferProviderData.Agreements)
-        {
-            if (agreementConsentData.ConsentStatus == null)
-            {
-                offerAgreementData.Add(new OfferAgreement(agreementConsentData.Id, agreementConsentData.Name, string.Empty));
-            }
-            offerAgreementData.Add(new OfferAgreement(agreementConsentData.Id, agreementConsentData.Name, agreementConsentData.ConsentStatus.ToString()));
-        }
+
+        var offerAgreementData = offerDetail.OfferProviderData.Agreements.Select(a => new OfferAgreement(a.Id, a.Name, a.ConsentStatus == null ? string.Empty : a.ConsentStatus.ToString()));
 
         return new OfferProviderResponse(
             offerDetail.OfferProviderData.Title,
