@@ -54,4 +54,6 @@ public interface IUserBusinessLogic
     Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId);
 
     Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
+
+    Task<int> DeleteUserOwnAccountAsync(string userId);
 }
