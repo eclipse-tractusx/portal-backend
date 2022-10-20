@@ -88,7 +88,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ConflictException($"app {appId} is not in status CREATED");
         }
-        _portalRepositories.Attach(new Offer(appId), app =>
+        appRepository.AttachAndModifyOffer(appId, app =>
         {
             if (appResult.ContactEmail != updateModel.ContactEmail)
             {

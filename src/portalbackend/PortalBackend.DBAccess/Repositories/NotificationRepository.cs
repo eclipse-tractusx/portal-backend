@@ -51,6 +51,16 @@ public class NotificationRepository : INotificationRepository
         return _dbContext.Add(notification).Entity;
     }
 
+    public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameters = null)
+    {
+        var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
+        setOptionalParameters?.Invoke(notification);
+        return notification;
+    }
+
+    public Notification DeleteNotification(Guid notificationId) =>
+        _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
+
     /// <inheritdoc />
     public IAsyncEnumerable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId) =>
         _dbContext.Notifications
