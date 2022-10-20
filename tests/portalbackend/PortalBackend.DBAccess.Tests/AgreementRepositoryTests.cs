@@ -35,16 +35,15 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-    private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
     public AgreementRepositoryTests(TestDbFixture testDbFixture)
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
 
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -163,8 +162,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     private async Task<(AgreementRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        _fixture.Inject(context);
-        var sut = _fixture.Create<AgreementRepository>();
+        var sut = new AgreementRepository(context);
         return (sut, context);
     }
 }
