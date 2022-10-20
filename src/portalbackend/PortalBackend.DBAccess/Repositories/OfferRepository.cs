@@ -64,6 +64,16 @@ public class OfferRepository : IOfferRepository
         return app;
     }
 
+    public Offer AttachAndModifyOffer(Guid offerId, Action<Offer>? setOptionalParameters = null)
+    {
+        var offer = _context.Attach(new Offer(offerId, null!, default, default)).Entity;
+        setOptionalParameters?.Invoke(offer);
+        return offer;
+    }
+
+    public Offer DeleteOffer(Guid offerId) =>
+        _context.Remove(new Offer(offerId, null!, default, default)).Entity;
+
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
@@ -296,6 +306,17 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new ValueTuple<bool,Guid>(
                 true,
                 offer.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id
+            ))
+            .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool OfferStatus, bool IsProviderCompanyUser, bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId)
+            .Select(offer => new ValueTuple<bool, bool, bool>(
+                (offer.OfferStatusId == offerStatusId),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                offer.UserRoles.Any(userRole => userRole.Id == roleId)
             ))
             .SingleOrDefaultAsync();
 }

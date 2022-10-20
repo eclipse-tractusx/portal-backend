@@ -175,4 +175,23 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<OfferProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
+    
+    /// <summary>
+    /// Removes a role from persistence layer by appId and roleId.
+    /// </summary>
+    /// <param name="appId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the app to be deleted.</param>
+    /// <param name="roleId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the role to be deleted.</param>
+    /// <remarks>Example: DELETE: /api/apps/appreleaseprocess/{appId}/role/{roleId}</remarks>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">Record not found.</response>
+    [HttpDelete]
+    [Route("{appId}/role/{roleId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
+        return NoContent();
+    }
 }
