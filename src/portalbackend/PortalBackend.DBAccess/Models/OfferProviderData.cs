@@ -51,18 +51,9 @@ public record OfferProviderData(string? Title, string Provider, string? LeadPict
 public record OfferDescriptionData(string languageCode, string longDescription, string shortDescription);
 
 /// <summary>
-/// Model for Agreement and Consent Status
-/// </summary>
-/// <param name="Id"></param>
-/// <param name="Name"></param>
-/// <param name="ConsentStatus"></param>
-/// <returns></returns>
-public record OfferAgreement(Guid? Id, string? Name, string? ConsentStatus);
-
-/// <summary>
 /// 
 /// </summary>
-/// <param name="Id"></param>
-/// <param name="Name"></param>
+/// <param name="AgreementId"></param>
+/// <param name="AgreementName"></param>
 /// <returns></returns>
-public record AgreementAssignedOfferData(Guid Id, string? Name, ConsentStatusId?  ConsentStatus);
+public record AgreementAssignedOfferData(Guid AgreementId, string? AgreementName, ConsentStatusId? ConsentStatusId);
