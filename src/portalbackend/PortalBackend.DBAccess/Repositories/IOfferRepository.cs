@@ -202,7 +202,7 @@ public interface IOfferRepository
     /// <returns></returns>
     Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
-        /// <summary>
+    /// <summary>
     /// Return the Company User Id
     /// </summary>
     /// <param name="offerId"></param>
