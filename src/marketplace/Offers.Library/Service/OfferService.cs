@@ -280,7 +280,6 @@ public class OfferService : IOfferService
         {
             { "offerName", offerDetails.OfferName },
             { "url", basePortalAddress },
-            { "offerRequesterName", offerDetails.RequesterName }
         };
         await _mailingService.SendMails(offerDetails.RequesterEmail, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
 
