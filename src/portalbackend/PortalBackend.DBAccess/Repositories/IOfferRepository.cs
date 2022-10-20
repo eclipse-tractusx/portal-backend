@@ -52,6 +52,10 @@ public interface IOfferRepository
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
     Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
 
+    Offer AttachAndModifyOffer(Guid offerId, Action<Offer>? setOptionalParameters = null);
+
+    Offer DeleteOffer(Guid offerId);
+
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
     /// </summary>
@@ -205,4 +209,14 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Verify that user is linked to the appId ,offerstatus is in created state and roleId exist
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerStatusId"></param>
+    /// <param name="roleId"></param>
+    /// <returns></returns>
+    Task<(bool OfferStatus, bool IsProviderCompanyUser,bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
 }
