@@ -4270,6 +4270,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.HasIndex("OfferSubscriptionStatusId")
                         .HasDatabaseName("ix_offer_subscriptions_offer_subscription_status_id");
 
+                    b.HasIndex("RequesterId")
+                        .HasDatabaseName("ix_offer_subscriptions_requester_id");
+
                     b.ToTable("offer_subscriptions", "portal");
 
                     b
@@ -5347,11 +5350,19 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_offer_subscriptions_offer_subscription_statuses_offer_subsc");
 
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "Requester")
+                        .WithMany("RequestedSubscriptions")
+                        .HasForeignKey("RequesterId")
+                        .IsRequired()
+                        .HasConstraintName("fk_offer_subscriptions_company_users_requester_id");
+
                     b.Navigation("Company");
 
                     b.Navigation("Offer");
 
                     b.Navigation("OfferSubscriptionStatus");
+
+                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferTag", b =>
@@ -5511,6 +5522,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("Invitations");
 
                     b.Navigation("Notifications");
+
+                    b.Navigation("RequestedSubscriptions");
 
                     b.Navigation("SalesManagerOfOffers");
                 });
