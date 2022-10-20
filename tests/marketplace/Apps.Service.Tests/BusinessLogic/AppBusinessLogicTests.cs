@@ -43,7 +43,6 @@ public class AppBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
-    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly IUserRepository _userRepository;
 
     public AppBusinessLogicTests()
@@ -54,7 +53,6 @@ public class AppBusinessLogicTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
         _userRepository = A.Fake<IUserRepository>();
     }
@@ -140,7 +138,7 @@ public class AppBusinessLogicTests
         var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
         // Arrange
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 

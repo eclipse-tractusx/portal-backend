@@ -118,6 +118,11 @@ public class OfferSubscription : IAuditableV1
     public virtual Company? Company { get; private set; }
 
     /// <summary>
+    /// Requester
+    /// </summary>
+    public virtual CompanyUser? Requester { get; private set; }
+
+    /// <summary>
     /// Subscription status.
     /// </summary>
     public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }

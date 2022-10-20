@@ -85,6 +85,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums
         /// Email template for notifying service providers of subscription requests.
         /// </summary>
         [Path("serviceprovider_subscription_request.html")]
-        ServiceSubscriptionRequest
+        ServiceSubscriptionRequest,
+        
+        /// Email template for notifying requester of subscription activations.
+        /// </summary>
+        [Path("serviceprovider_subscription_activation.html")]
+        ServiceSubscriptionActivation
     }
 }
