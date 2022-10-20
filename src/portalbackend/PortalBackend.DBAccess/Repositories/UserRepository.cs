@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.RegularExpressions;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -405,4 +406,30 @@ public class UserRepository : IUserRepository
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Company.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
+    
+    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
+        Guid appId,
+        string iamUserId,
+        string? firstName = null,
+        string? lastName = null,
+        string? email = null,
+        string? roleName = null)
+    {
+        var regex = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace);
+
+        firstName = firstName == null ? null : regex.Replace(firstName, @"\"); 
+        lastName = lastName == null ? null : regex.Replace(lastName!, @"\"); 
+        email = email == null ? null : regex.Replace(email!, @"\"); 
+        roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
+
+        return _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) &&
+                                  companyUser.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser => 
+                (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&
+                (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName}%")) &&
+                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
+                (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))));
+    }
 }
