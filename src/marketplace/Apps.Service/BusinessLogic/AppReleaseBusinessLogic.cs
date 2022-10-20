@@ -300,13 +300,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         try
         {
-            _portalRepositories.Remove(new UserRole(roleId));
+            _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new NotFoundException("User Role with provided ID does not exist.");
+            throw new NotFoundException($"role {roleId} does not exist");
         }
-
     }
 }
