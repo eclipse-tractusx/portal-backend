@@ -76,20 +76,21 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             RequestorCompanyName = companyInformation.OrganizationName,
             UserEmail = userEmail,
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
-            AutoSetupError = autoSetupResult
+            AutoSetupError = autoSetupResult ?? string.Empty
         });
         await SendNotifications(offerId, offerTypeId, offerProviderDetails, companyUserId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(offerProviderDetails.ProviderContactEmail)) return offerSubscription.Id;
-
-        var mailParams = new Dictionary<string, string>
+        if (!string.IsNullOrEmpty(offerProviderDetails.ProviderContactEmail))
         {
-            { "offerProviderName", offerProviderDetails.ProviderName},
-            { "offerName", offerProviderDetails.OfferName! },
-            { "url", basePortalAddress },
-        };
-        await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerProviderName", offerProviderDetails.ProviderName},
+                { "offerName", offerProviderDetails.OfferName! },
+                { "url", basePortalAddress },
+            };
+            await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
+        }
         return offerSubscription.Id;
     }
 
@@ -116,7 +117,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerProviderDetails.ProviderContactEmail)}");
         }
 
-        throw new UnexpectedConditionException(
+        throw new ConflictException(
             $"The following fields of the offer '{offerProviderDetails}' have not been configured properly: {string.Join(", ", nullProperties)}");
 
     }
@@ -168,13 +169,16 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             }
 
             offerSubscription = offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
-                os => { os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING; });
+                os => {
+                    os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+                    os.LastEditorId = companyUserId;
+                });
         }
 
         return offerSubscription;
     }
 
-    private async Task<string> ExecuteAutoSetupAsync(
+    private async Task<string?> ExecuteAutoSetupAsync(
         Guid offerId, 
         string iamUserId, 
         string accessToken,
@@ -183,7 +187,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         string? userEmail,
         OfferSubscription offerSubscription)
     {
-        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl)) return string.Empty;
+        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl)) return null;
         
         try
         {
@@ -207,7 +211,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             return e.Message;
         }
 
-        return string.Empty;
+        return null;
     }
 
     private async Task SendNotifications(

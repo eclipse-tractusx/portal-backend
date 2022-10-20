@@ -248,7 +248,7 @@ public class OfferSubscriptionServiceTests
         async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Action);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         ex.Message.Should().Contain("The following fields of the offer");
     }
 
