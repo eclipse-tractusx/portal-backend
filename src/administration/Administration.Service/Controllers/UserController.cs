@@ -437,7 +437,7 @@ public class UserController : ControllerBase
     [Route("owncompany/user")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<int> DeleteUserOwnAccount() =>
-       this.WithIamUserId(adminUserId => _logic.DeleteUserOwnAccountAsync(adminUserId));
+    public Task DeleteUserOwnAccount() =>
+       this.WithIamUserId(adminUserId => _logic.DeleteUserOwnAccountAsync(Guid.Parse(adminUserId)));
 
 }

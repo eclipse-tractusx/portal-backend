@@ -632,8 +632,16 @@ public class UserBusinessLogic : IUserBusinessLogic
             new CompanyUserAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }
 
-    public Task<int> DeleteUserOwnAccountAsync(string userId)
+    public async Task DeleteUserOwnAccountAsync(Guid userId)
     {
-        
+        _portalRepositories.Attach(new CompanyUser(userId, Guid.Empty, default, default, Guid.Empty), companyUser =>
+        {
+            companyUser.CompanyUserStatusId = CompanyUserStatusId.DELETED;
+        });
+        _portalRepositories.Remove(new CompanyUserAssignedBusinessPartner(userId, string.Empty));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(Guid.Empty, userId));
+        _portalRepositories.Remove(new CompanyUserAssignedRole(userId, Guid.Empty));
+        _portalRepositories.Remove(new Invitation(Guid.Empty, Guid.Empty,userId,default,DateTimeOffset.UtcNow));
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
