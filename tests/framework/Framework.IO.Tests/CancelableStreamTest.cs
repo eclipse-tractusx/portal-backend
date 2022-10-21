@@ -24,7 +24,7 @@ using FakeItEasy;
 using FluentAssertions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;
 
 public class CancelableStreamTest
 {

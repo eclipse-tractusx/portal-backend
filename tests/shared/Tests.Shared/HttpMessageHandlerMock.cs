@@ -20,7 +20,7 @@
 
 using System.Net;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public class HttpMessageHandlerMock : HttpMessageHandler
 {

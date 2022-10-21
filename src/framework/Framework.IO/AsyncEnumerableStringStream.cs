@@ -20,7 +20,7 @@
 
 using System.Text;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 public sealed class AsyncEnumerableStringStream : Stream
 {
     public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()

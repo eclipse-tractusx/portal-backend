@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Async;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
 public static class AsyncGroupByExtensions
 {

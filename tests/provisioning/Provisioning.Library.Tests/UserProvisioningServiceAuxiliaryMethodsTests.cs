@@ -22,14 +22,14 @@ using AutoFixture;
 using AutoFixture.Dsl;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using FakeItEasy;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests;
 
 public class UserProvisioningServiceAuxiliaryMethodsTests
 {
