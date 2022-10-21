@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Text;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 
 public static class CsvParser
 {

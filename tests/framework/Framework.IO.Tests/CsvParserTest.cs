@@ -20,11 +20,11 @@
 
 using FakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Xunit;
 using System.Text;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;
 
 public class CsvParserTest
 {

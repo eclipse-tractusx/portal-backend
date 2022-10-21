@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 

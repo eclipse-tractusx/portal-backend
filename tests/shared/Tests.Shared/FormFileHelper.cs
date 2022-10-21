@@ -21,7 +21,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public static class FormFileHelper
 {

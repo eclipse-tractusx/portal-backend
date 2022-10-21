@@ -20,8 +20,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 

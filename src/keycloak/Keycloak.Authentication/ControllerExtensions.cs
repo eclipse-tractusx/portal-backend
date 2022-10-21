@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 

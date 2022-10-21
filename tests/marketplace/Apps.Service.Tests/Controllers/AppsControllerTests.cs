@@ -20,13 +20,13 @@
 
 using FakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.App.Service.Tests.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.App.Service.Tests.Controllers;
 
 public class AppsControllerTests
 {

@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Microsoft.Extensions.Options;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {

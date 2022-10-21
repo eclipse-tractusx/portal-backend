@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 /// <summary>
 /// Business logic for handling offer-related operations. Includes persistence layer access.
