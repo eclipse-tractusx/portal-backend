@@ -104,7 +104,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     {
         await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
 
-        _portalRepositories.Attach(new PortalBackend.PortalEntities.Entities.Notification(notificationId), notification =>
+        _portalRepositories.GetInstance<INotificationRepository>().AttachAndModifyNotification(notificationId, notification =>
         {
             notification.IsRead = isRead;
         });
@@ -116,7 +116,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     {
         await CheckNotificationExistsAndIamUserIsReceiver(notificationId, iamUserId).ConfigureAwait(false);
 
-        _portalRepositories.Remove(new PortalBackend.PortalEntities.Entities.Notification(notificationId));
+        _portalRepositories.GetInstance<INotificationRepository>().DeleteNotification(notificationId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

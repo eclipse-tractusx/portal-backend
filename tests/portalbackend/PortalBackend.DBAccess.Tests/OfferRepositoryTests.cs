@@ -83,7 +83,7 @@ public class OfferRepositoryTests
     public async Task GetAppDetails_ReturnsAppDetailsSuccessfully()
     {
         // Arrange
-        var apps = _fixture.CreateMany<Offer>(1);
+        var apps = Enumerable.Repeat(_fixture.Build<Offer>().With(x => x.OfferTypeId, OfferTypeId.APP).Create(),1);
         var appsDbSet = apps.AsFakeDbSet();
         var languagesDbSet = new List<Language>().AsFakeDbSet();
 
