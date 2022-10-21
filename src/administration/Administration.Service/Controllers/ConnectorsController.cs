@@ -87,6 +87,7 @@ public class ConnectorsController : ControllerBase
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
     /// </summary>
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>View model of the created connector.</returns>
     /// <remarks>Example: POST: /api/administration/connectors</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
@@ -94,13 +95,35 @@ public class ConnectorsController : ControllerBase
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
     [Route("")]
-    //[Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ActionResult<ConnectorData>), StatusCodes.Status201Created)]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<ConnectorData>> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel)
+    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorData = await this.WithBearerToken(token => _businessLogic.CreateConnectorAsync(connectorInputModel, token)).ConfigureAwait(false);
+        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, false, cancellationToken)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
+    }
+
+    /// <summary>
+    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
+    /// </summary>
+    /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>View model of the created connector.</returns>
+    /// <remarks>Example: POST: /api/administration/connectors/managed</remarks>
+    /// <response code="201">Returns a view model of the created connector.</response>
+    /// <response code="400">Input parameter are invalid.</response>
+    /// <response code="503">Access to SD factory failed with the given status code.</response>
+    [HttpPost]
+    [Route("managed")]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
+    {
+        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, true, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
 
@@ -121,4 +144,18 @@ public class ConnectorsController : ControllerBase
         await _businessLogic.DeleteConnectorAsync(connectorId);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retrieves company connector end point for the input bpn.
+    /// </summary>
+    /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
+    /// <remarks>Example: POST: /api/administration/connectors/discovery</remarks>
+    /// <response code="200">Returns connector end point along with bpn.</response>
+    [HttpPost]
+    [Route("discovery")]
+    [Authorize(Roles = "view_connectors")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
+        _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
+
 }

@@ -18,12 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -31,9 +30,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FakeItEasy;
-using FluentAssertions;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -45,13 +41,16 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid _companyWithoutBpnId = Guid.NewGuid();
     private static readonly Guid _invalidCompanyId = Guid.NewGuid();
     private static readonly Guid _invalidHostId = Guid.NewGuid();
+    private static readonly string _iamUserId = Guid.NewGuid().ToString();
+    private static readonly string _technicalUserId = Guid.NewGuid().ToString();
     private static readonly string _accessToken = "validToken";
     private static readonly List<Connector> _connectors = new();
     private readonly ICountryRepository _countryRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IConnectorsRepository _connectorsRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IConnectorsSdFactoryService _connectorsSdFactoryService;
+    private readonly ISdFactoryService _sdFactoryService;
     private readonly IFixture _fixture;
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IOptions<ConnectorsSettings> _options;
@@ -67,31 +66,36 @@ public class ConnectorsBusinessLogicTests
         _countryRepository = A.Fake<ICountryRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
+        _userRepository = A.Fake<IUserRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _connectorsSdFactoryService = A.Fake<IConnectorsSdFactoryService>();
+        _sdFactoryService = A.Fake<ISdFactoryService>();
         _options = A.Fake<IOptions<ConnectorsSettings>>();
         _settings = A.Fake<ConnectorsSettings>();
+        _settings = new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            SdFactoryUrl = "http://this-is-a-url.com",
+        };
 
         SetupRepositoryMethods();
 
-        A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
         A.CallTo(() => _options.Value).Returns(_settings);
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, _options, _connectorsSdFactoryService);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, _options, _sdFactoryService);
     }
 
+    #region Create Connector
+    
     [Fact]
     public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
             _validCompanyId);
         
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -101,12 +105,12 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "invalid", _validCompanyId,
             _validCompanyId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -117,12 +121,12 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalidCompany_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _invalidCompanyId,
             _invalidCompanyId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -133,12 +137,12 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithCompanyWithoutBpn_ThrowsUnexpectedConditionException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _companyWithoutBpnId,
             _companyWithoutBpnId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -149,18 +153,70 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithInvalid_ThrowsUnexpectedConditionException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "http://test.de",
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de",
             ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
             _invalidHostId);
         
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         exception.Message.Should().Be($"Company {_invalidHostId} does not exist (Parameter 'host')");
     }
 
+    #endregion
+    
+    #region CreateManagedConnectorAsync
+    
+    [Fact]
+    public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
+    {
+        // Arrange
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
+            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
+            _validCompanyId);
+        
+        // Act
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+    }
+    
+    [Fact]
+    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
+    {
+        // Arrange
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
+            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
+            _validCompanyId);
+        
+        // Act
+        var result = await _logic.CreateConnectorAsync(connectorInput, _accessToken, _technicalUserId, true, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateManagedConnectorAsync_WithDifferentCompanyIdThanUsersCompanyId_ThrowsException()
+    {
+        // Arrange
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de",
+            ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE, "de", _validCompanyId,
+            _validHostId);
+        
+        // Act
+        async Task Action() => await _logic.CreateConnectorAsync(connectorInput, _accessToken, _iamUserId, true, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action).ConfigureAwait(false);
+        ex.ParamName.Should().Be("Host");
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupRepositoryMethods()
@@ -218,14 +274,26 @@ public class ConnectorsBusinessLogicTests
                 _connectors.Add(connector);
             });
 
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Matches(x => x == _iamUserId)))
+            .ReturnsLazily(() => _validCompanyId);
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.Not.Matches(x => x == _iamUserId)))
+            .ReturnsLazily(() => Guid.Empty);
+
+        A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Matches(x => x == _technicalUserId)))
+            .ReturnsLazily(() => _validCompanyId);
+        A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Not.Matches(x => x == _technicalUserId)))
+            .ReturnsLazily(() => Guid.Empty);
+
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
+            .ReturnsLazily(Guid.NewGuid);
         A.CallTo(() =>
-                _connectorsSdFactoryService.RegisterConnector(A<ConnectorInputModel>._, A<string>.That.Matches(x => x == _accessToken),
-                    A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-        A.CallTo(() =>
-                _connectorsSdFactoryService.RegisterConnector(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken),
-                    A<string>._))
+                _sdFactoryService.RegisterConnectorAsync(A<ConnectorInputModel>._, A<string>.That.Not.Matches(x => x == _accessToken), A<string>._, A<CancellationToken>._))
             .Throws(() => new ServiceException("Access to SD factory failed with status code 401"));
+        
+        A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
     }
 
     #endregion

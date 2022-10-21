@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
@@ -25,25 +27,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class ConnectorsSettings
 {
-    public ConnectorsSettings() 
-    {
-        SdFactoryUrl = string.Empty;
-    }
-
-    public ConnectorsSettings(string sdFactoryUrl)
-    {
-        SdFactoryUrl = sdFactoryUrl;
-    }
-
     /// <summary>
     /// Maximum amount of entries per page in paginated connector lists.
     /// </summary>
+    [Required]
     public int MaxPageSize { get; set; }
 
     /// <summary>
     /// SD Factory endpoint for registering connectors.
     /// </summary>
-    public string SdFactoryUrl { get; set; }
+    [Required]
+    public string SdFactoryUrl { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions

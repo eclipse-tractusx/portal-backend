@@ -72,13 +72,18 @@ public class Company
 
     public Guid? AddressId { get; set; }
 
+    public Guid? SelfDescriptionDocumentId { get; set; }
+
     // Navigation properties
     public virtual Address? Address { get; set; }
+    
+    public virtual ServiceProviderCompanyDetail? ServiceProviderCompanyDetail { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
     public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
     public virtual CompanyStatus? CompanyStatus { get; set; }
+    public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }

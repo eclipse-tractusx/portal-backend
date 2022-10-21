@@ -24,7 +24,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notification.Service.Tests.EnpointSetup;
 

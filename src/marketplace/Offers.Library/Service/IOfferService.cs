@@ -104,5 +104,21 @@ public interface IOfferService
     /// <returns>Returns the response data</returns>
     Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId);
 
-    Task<OfferProviderData> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    /// <summary>
+    /// Creates a new service offering
+    /// </summary>
+    /// <param name="data">The data to create the service offering</param>
+    /// <param name="iamUserId">the iamUser id</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <returns>The id of the newly created service</returns>
+    Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
