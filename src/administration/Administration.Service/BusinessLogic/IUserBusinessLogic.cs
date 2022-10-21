@@ -55,5 +55,5 @@ public interface IUserBusinessLogic
 
     Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
 
-    Task<int> DeleteUserOwnAccountAsync(string userId);
+    Task DeleteUserOwnAccountAsync(Guid userId);
 }
