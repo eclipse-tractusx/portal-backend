@@ -68,8 +68,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
-    public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
+    public virtual DbSet<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections { get; set; } = default!;
     public virtual DbSet<CompanyRoleDescription> CompanyRoleDescriptions { get; set; } = default!;
+    public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountStatus> CompanyServiceAccountStatuses { get; set; } = default!;
@@ -114,6 +115,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ServiceProviderCompanyDetail> ServiceProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
+    public virtual DbSet<UserRoleAssignedCollection> UserRoleAssignedCollections { get; set; } = default!;
+    public virtual DbSet<UserRoleCollection> UserRoleCollections { get; set; } = default!;
+    public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -526,6 +530,7 @@ public class PortalDbContext : DbContext
             .WithMany(p => p.CompanyIdentityProviders)
             .HasForeignKey(d => d.IdentityProviderId);
 
+
         modelBuilder.Entity<CompanyRole>()
             .HasData(
                 Enum.GetValues(typeof(CompanyRoleId))
@@ -533,12 +538,20 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyRole(e))
             );
 
+        modelBuilder.Entity<CompanyRoleAssignedRoleCollection>(entity =>
+        {
+            entity.HasData(StaticPortalData.CompanyRoleAssignedRoleCollections);
+        });
+
         modelBuilder.Entity<CompanyRoleDescription>(entity =>
         {
             entity.HasKey(e => new { e.CompanyRoleId, e.LanguageShortName });
 
             entity.HasData(StaticPortalData.CompanyRoleDescriptions);
         });
+
+        modelBuilder.Entity<CompanyRoleRegistrationData>()
+            .HasData(StaticPortalData.CompanyRoleRegistrationDatas);
 
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
@@ -572,12 +585,41 @@ public class PortalDbContext : DbContext
             entity.HasMany(p => p.CompanyServiceAccountAssignedRoles)
                 .WithOne(d => d.CompanyServiceAccount!);
         });
-        
-        modelBuilder.Entity<UserRole>(entity =>
+
+        modelBuilder.Entity<UserRole>()
+            .HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+
+        modelBuilder.Entity<UserRoleCollection>(entity =>
         {
-            entity.HasAuditV1Triggers<UserRole, AuditUserRole20221017>();
+            entity.HasMany(p => p.UserRoles)
+                .WithMany(p => p.UserRoleCollections)
+                .UsingEntity<UserRoleAssignedCollection>(
+                    j => j
+                        .HasOne(d => d.UserRole)
+                        .WithMany()
+                        .HasForeignKey(d => d.UserRoleId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.UserRoleCollection)
+                        .WithMany()
+                        .HasForeignKey(d => d.UserRoleCollectionId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new { e.UserRoleId, e.UserRoleCollectionId });
+                    });
+
+            entity.HasData(StaticPortalData.UserRoleCollections);
         });
-        
+
+        modelBuilder.Entity<UserRoleCollectionDescription>(entity =>
+        {
+            entity.HasKey(e => new { e.UserRoleCollectionId, e.LanguageShortName });
+            entity.HasData(StaticPortalData.UserRoleCollectionDescriptions);
+        });
+
+        modelBuilder.Entity<UserRoleDescription>().HasKey(e => new { e.UserRoleId, e.LanguageShortName });
+
         modelBuilder.Entity<CompanyServiceAccountStatus>()
             .HasData(
                 Enum.GetValues(typeof(CompanyServiceAccountStatusId))
@@ -647,8 +689,6 @@ public class PortalDbContext : DbContext
         
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
             .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
-
-        modelBuilder.Entity<UserRoleDescription>().HasKey(e => new { e.UserRoleId, e.LanguageShortName });
 
         modelBuilder.Entity<CompanyUserStatus>()
             .HasData(

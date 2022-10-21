@@ -18,36 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyRole
+public class UserRoleCollectionDescription
 {
-    private CompanyRole()
+    public UserRoleCollectionDescription(Guid userRoleCollectionId, string languageShortName, string description)
     {
-        Label = null!;
-        Companies = new HashSet<Company>();
-        AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
-        CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
+        UserRoleCollectionId = userRoleCollectionId;
+        LanguageShortName = languageShortName;
+        Description = description;
     }
 
-    public CompanyRole(CompanyRoleId companyRoleId) : this()
-    {
-        Id = companyRoleId;
-        Label = companyRoleId.ToString();
-    }
+    public Guid UserRoleCollectionId { get; private set; }
 
-    public CompanyRoleId Id { get; private set; }
+    [StringLength(2, MinimumLength = 2)]
+    public string LanguageShortName { get; private set; }
 
     [MaxLength(255)]
-    public string Label { get; set; }
+    public string Description { get; set; }
 
-    // Navigation properties
-    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
-    public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
-    public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
-    public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
+    public virtual UserRoleCollection? UserRoleCollection { get; private set; }
+    public virtual Language? Language { get; private set; }
 }
