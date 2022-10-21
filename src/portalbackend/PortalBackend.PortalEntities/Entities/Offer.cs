@@ -19,11 +19,14 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Offer
+[AuditEntityV1(typeof(AuditOffer20221013))]
+public class Offer : IAuditableV1
 {
     private Offer()
     {
@@ -96,7 +99,9 @@ public class Offer
     public OfferStatusId OfferStatusId { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
-
+    
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
     // Navigation properties
     
     public virtual OfferType? OfferType { get; private set; }

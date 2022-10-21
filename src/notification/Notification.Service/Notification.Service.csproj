@@ -40,12 +40,13 @@
         <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
         <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
         <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+        <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-    <SonarQubeSetting Include="sonar.coverage.exclusions">
-    <Value>Program.cs</Value>
-    </SonarQubeSetting>
+        <SonarQubeSetting Include="sonar.coverage.exclusions">
+            <Value>Program.cs</Value>
+        </SonarQubeSetting>
     </ItemGroup>
 
 </Project>

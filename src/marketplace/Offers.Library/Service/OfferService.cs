@@ -219,7 +219,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException("Status of the offer subscription must be pending", nameof(offerDetails.Status));
         }
 
-        if (offerDetails.CompanyUserId == Guid.Empty)
+        if (offerDetails.CompanyUserId == Guid.Empty && offerDetails.TechnicalUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Only the providing company can setup the service", nameof(offerDetails.CompanyUserId));
         }
@@ -243,13 +243,13 @@ public class OfferService : IOfferService
             .ToListAsync()
             .ConfigureAwait(false);
         var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
-        var (_, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+        var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
-                clientId, 
-                description, 
+                clientId,
+                description,
                 IamClientAuthMethod.SECRET, 
                 serviceAccountUserRoles.Select(x => x.UserRoleId), 
-                offerDetails.CompanyId, 
+                offerDetails.CompanyId,
                 Enumerable.Repeat(offerDetails.Bpn, 1))
             .ConfigureAwait(false);
 
@@ -261,7 +261,7 @@ public class OfferService : IOfferService
         
         await _notificationService.CreateNotifications(
             companyAdminRoles,
-            offerDetails.CompanyUserId,
+            offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
             new (string?, NotificationTypeId)[]
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
@@ -272,10 +272,50 @@ public class OfferService : IOfferService
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
-        return new OfferAutoSetupResponseData(serviceAccountId, serviceAccountData.AuthData.Secret);
+        return new OfferAutoSetupResponseData(
+            new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId),
+            new ClientInfoData(clientId));
     }
 
-    public async Task<OfferProviderData> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
+    /// <inheritdoc />
+    public async Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var results = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUserId, data.SalesManager)
+            .ToListAsync().ConfigureAwait(false);
+
+        if (!results.Any(x => x.IsIamUser))
+            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
+
+        if (string.IsNullOrWhiteSpace(results.Single(x => x.IsIamUser).CompanyShortName))
+            throw new ControllerArgumentException($"No matching company found for user {iamUserId}", nameof(iamUserId));
+
+        if (results.All(x => x.CompanyUserId != data.SalesManager))
+            throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
+
+        await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
+
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var service = offerRepository.CreateOffer(string.Empty, offerTypeId, service =>
+        {
+            service.ContactEmail = data.ContactEmail;
+            service.Name = data.Title;
+            service.SalesManagerId = data.SalesManager;
+            service.ThumbnailUrl = data.ThumbnailUrl;
+            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
+            service.OfferStatusId = OfferStatusId.CREATED;
+            service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
+        });
+        var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
+        offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
+        offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
+            new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, string.Empty, d.Description)));
+
+        await _portalRepositories.SaveAsync();
+        return service.Id;
+    }
+
+    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
     {
         var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, userId, offerTypeId).ConfigureAwait(false);
         if (offerDetail == default)
@@ -286,6 +326,38 @@ public class OfferService : IOfferService
         {
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
-        return offerDetail.OfferProviderData;
+        return new OfferProviderResponse(
+            offerDetail.OfferProviderData.Title,
+            offerDetail.OfferProviderData.Provider,
+            offerDetail.OfferProviderData.LeadPictureUri,
+            offerDetail.OfferProviderData.ProviderName,
+            offerDetail.OfferProviderData.UseCase,
+            offerDetail.OfferProviderData.Descriptions,
+            offerDetail.OfferProviderData.Agreements,
+            offerDetail.OfferProviderData.SupportedLanguageCodes,
+            offerDetail.OfferProviderData.Price,
+            offerDetail.OfferProviderData.Images,
+            offerDetail.OfferProviderData.ProviderUri,
+            offerDetail.OfferProviderData.ContactEmail,
+            offerDetail.OfferProviderData.ContactNumber,
+            offerDetail.OfferProviderData.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))));
+    }
+    
+    private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
+    {
+        if (languageCodes.Any())
+        {
+            var foundLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>()
+                .GetLanguageCodesUntrackedAsync(languageCodes)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes).ToList();
+            if (notFoundLanguageCodes.Any())
+            {
+                throw new ControllerArgumentException(
+                    $"Language code(s) {string.Join(",", notFoundLanguageCodes)} do(es) not exist",
+                    nameof(languageCodes));
+            }
+        }
     }
 }

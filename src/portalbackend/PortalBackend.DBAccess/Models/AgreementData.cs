@@ -30,3 +30,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record AgreementData(
     [property: JsonPropertyName("agreementId")] Guid AgreementId,
     [property: JsonPropertyName("name")] string AgreementName);
+
+/// <summary>
+/// Agreement Assigned Document Data
+/// </summary>
+/// <param name="AgreementId">Id of the agreement</param>
+/// <param name="AgreementName">Name of the agreement</param>
+/// <param name="DocumentIds">Ids of the documents</param>
+public record AgreementDocumentData(
+    [property: JsonPropertyName("agreementId")] Guid AgreementId,
+    [property: JsonPropertyName("name")] string AgreementName,
+    [property: JsonPropertyName("documentIds")] IEnumerable<Guid> DocumentIds);

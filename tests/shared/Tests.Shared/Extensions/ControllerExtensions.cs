@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 public static class ControllerExtensions
 {
     /// <summary>
-    /// Creates a claum for the identity user and adds it to the controller context
+    /// Creates a claim for the identity user and adds it to the controller context
+    /// </summary>
+    /// <param name="controller">The controller that should be enriched</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="accessToken">Access Token for the authorization header</param>
+    public static void AddControllerContextWithClaimAndBearerTokenX(this ControllerBase controller, string iamUserId, string accessToken)
+    {
+        var claimsIdentity = new ClaimsIdentity();
+        claimsIdentity.AddClaims(new[] {new Claim("sub", iamUserId)});
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(claimsIdentity)
+        };
+
+        httpContext.Request.Headers.Authorization = $"Bearer {accessToken}";
+        var controllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        controller.ControllerContext = controllerContext;
+    }
+    
+    /// <summary>
+    /// Creates a claim for the identity user and adds it to the controller context
     /// </summary>
     /// <param name="controller">The controller that should be enriched</param>
     /// <param name="iamUserId">Id of the iamUser</param>
@@ -43,6 +68,29 @@ public static class ControllerExtensions
             User = new ClaimsPrincipal(claimsIdentity)
         };
 
+        var controllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        controller.ControllerContext = controllerContext;
+    }
+
+    /// <summary>
+    /// Creates a claum for the identity user and adds it to the controller context
+    /// </summary>
+    /// <param name="controller">The controller that should be enriched</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string iamUserId, string accessToken)
+    {
+        var claimsIdentity = new ClaimsIdentity();
+        claimsIdentity.AddClaims(new[] {new Claim("sub", iamUserId)});
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(claimsIdentity)
+        };
+
+        httpContext.Request.Headers.Authorization = $"Bearer {accessToken}";
         var controllerContext = new ControllerContext
         {
             HttpContext = httpContext
