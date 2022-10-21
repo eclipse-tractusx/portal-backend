@@ -120,7 +120,7 @@ public class OfferServiceTests
                 action?.Invoke(app);
                 apps.Add(app);
             })
-            .Returns(new Offer(serviceId)
+            .Returns(new Offer(serviceId, null!, default, default)
             {
                 OfferTypeId = OfferTypeId.SERVICE 
             });
@@ -152,7 +152,7 @@ public class OfferServiceTests
                 action?.Invoke(app);
                 apps.Add(app);
             })
-            .Returns(new Offer(serviceId)
+            .Returns(new Offer(serviceId, null!, default, default)
             {
                 OfferTypeId = OfferTypeId.SERVICE 
             });

@@ -48,16 +48,6 @@ public class Offer : IAuditableV1
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
     }
 
-    /// <summary>
-    /// construtor used for the Attach case
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public Offer(Guid id) : this()
-    {
-        Id = id;
-    }
-    
     public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
     {
         Id = id;

@@ -64,6 +64,16 @@ public class OfferRepository : IOfferRepository
         return app;
     }
 
+    public Offer AttachAndModifyOffer(Guid offerId, Action<Offer>? setOptionalParameters = null)
+    {
+        var offer = _context.Attach(new Offer(offerId, null!, default, default)).Entity;
+        setOptionalParameters?.Invoke(offer);
+        return offer;
+    }
+
+    public Offer DeleteOffer(Guid offerId) =>
+        _context.Remove(new Offer(offerId, null!, default, default)).Entity;
+
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
@@ -254,31 +264,32 @@ public class OfferRepository : IOfferRepository
             .AsNoTracking()
             .AsSplitQuery() 
             .Where(a => a.Id == offerId && a.OfferTypeId == offerTypeId)
-            .Select(a => new ValueTuple<OfferProviderData,bool>(
+            .Select(offer => new ValueTuple<OfferProviderData,bool>(
                 new OfferProviderData(
-                    a.Name,
-                    a.Provider,
-                    a.ThumbnailUrl,
-                    a.ProviderCompany!.Name,
-                    a.UseCases.Select(uc => uc.Name),
-                    a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.ConsentAssignedOffers.Select(consentAssignedOffer => new OfferAgreement(
-                        consentAssignedOffer.Consent!.AgreementId,
-                        consentAssignedOffer.Consent.Agreement!.Name,
-                        consentAssignedOffer.Consent.ConsentStatusId)),
-                    a.SupportedLanguages.Select(l => l.ShortName),
-                    a.OfferLicenses
+                    offer.Name,
+                    offer.Provider,
+                    offer.ThumbnailUrl,
+                    offer.ProviderCompany!.Name,
+                    offer.UseCases.Select(uc => uc.Name),
+                    offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                    offer.OfferType!.AgreementAssignedOfferTypes
+                    .Select(aaot => aaot.Agreement)
+                    .Select(agreement => new AgreementAssignedOfferData(
+                        agreement!.Id, 
+                        agreement.Name,
+                        agreement.Consents.SingleOrDefault(consent => consent.ConsentAssignedOffers.Any(cao => cao.OfferId == offer.Id))!.ConsentStatusId)),
+                    offer.SupportedLanguages.Select(l => l.ShortName),
+                    offer.OfferLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault(),
-                    a.OfferDetailImages.Select(image => image.ImageUrl),
-                    a.MarketingUrl,
-                    a.ContactEmail,
-                    a.ContactNumber,
-                    a.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
-                a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
+                    offer.OfferDetailImages.Select(image => image.ImageUrl),
+                    offer.MarketingUrl,
+                    offer.ContactEmail,
+                    offer.ContactNumber,
+                    offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
-
     ///<inheritdoc/>
     public Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
@@ -296,6 +307,17 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new ValueTuple<bool,Guid>(
                 true,
                 offer.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == userId).Id
+            ))
+            .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool OfferStatus, bool IsProviderCompanyUser, bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId)
+            .Select(offer => new ValueTuple<bool, bool, bool>(
+                (offer.OfferStatusId == offerStatusId),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                offer.UserRoles.Any(userRole => userRole.Id == roleId)
             ))
             .SingleOrDefaultAsync();
 }

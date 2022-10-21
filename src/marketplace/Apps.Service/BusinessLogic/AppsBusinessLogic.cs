@@ -395,7 +395,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
     {
-        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appDetails = await offerRepository.GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
         if (appDetails == null)
         {
             throw new NotFoundException($"App {appId} does not exist");
@@ -435,7 +436,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             }
             throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
         }
-        _portalRepositories.Attach(new Offer(appId), app =>
+        offerRepository.AttachAndModifyOffer(appId, app =>
         {
             app.OfferStatusId = OfferStatusId.IN_REVIEW;
             app.DateLastChanged = DateTimeOffset.UtcNow;
