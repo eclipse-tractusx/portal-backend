@@ -23,31 +23,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyRole
+public class CompanyRoleAssignedRoleCollection
 {
-    private CompanyRole()
+    public CompanyRoleAssignedRoleCollection(CompanyRoleId companyRoleId, Guid userRoleCollectionId)
     {
-        Label = null!;
-        Companies = new HashSet<Company>();
-        AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
-        CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
+        CompanyRoleId = companyRoleId;
+        UserRoleCollectionId = userRoleCollectionId;
     }
 
-    public CompanyRole(CompanyRoleId companyRoleId) : this()
-    {
-        Id = companyRoleId;
-        Label = companyRoleId.ToString();
-    }
+    [Key]
+    public CompanyRoleId CompanyRoleId { get; private set; }
 
-    public CompanyRoleId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; set; }
+    public Guid UserRoleCollectionId { get; private set; }
 
     // Navigation properties
-    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
-    public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
-    public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
-    public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
+    public virtual CompanyRole CompanyRole { get; set; } = null!;
+    public virtual UserRoleCollection UserRoleCollection { get; set; } = null!;
 }

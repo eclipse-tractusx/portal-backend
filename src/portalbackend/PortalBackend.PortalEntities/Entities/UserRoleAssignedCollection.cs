@@ -18,12 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public enum CompanyRoleId : int
+public class UserRoleAssignedCollection
 {
-    ACTIVE_PARTICIPANT = 1,
-    APP_PROVIDER = 2,
-    SERVICE_PROVIDER = 3,
-    OPERATOR = 4,
+    public UserRoleAssignedCollection(Guid userRoleId, Guid userRoleCollectionId)
+    {
+        UserRoleId = userRoleId;
+        UserRoleCollectionId = userRoleCollectionId;
+    }
+
+    public Guid UserRoleId { get; private set; }
+    public Guid UserRoleCollectionId { get; private set; }
+
+    // Navigation properties
+    public virtual UserRoleCollection UserRoleCollection { get; private set; } = null!;
+    public virtual UserRole UserRole{ get; private set; } = null!;
 }

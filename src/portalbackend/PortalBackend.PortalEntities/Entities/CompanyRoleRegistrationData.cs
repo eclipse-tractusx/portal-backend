@@ -23,31 +23,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyRole
+public class CompanyRoleRegistrationData
 {
-    private CompanyRole()
+    public CompanyRoleRegistrationData(CompanyRoleId companyRoleId, bool isRegistrationRole)
     {
-        Label = null!;
-        Companies = new HashSet<Company>();
-        AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
-        CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
+        CompanyRoleId = companyRoleId;
+        IsRegistrationRole = isRegistrationRole;
     }
 
-    public CompanyRole(CompanyRoleId companyRoleId) : this()
-    {
-        Id = companyRoleId;
-        Label = companyRoleId.ToString();
-    }
+    [Key]
+    public CompanyRoleId CompanyRoleId { get; private set; }
 
-    public CompanyRoleId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; set; }
+    public bool IsRegistrationRole { get; private set; }
 
     // Navigation properties
-    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
-    public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
-    public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
-    public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
+    public virtual CompanyRole CompanyRole { get; set; } = null!;
 }
