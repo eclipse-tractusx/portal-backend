@@ -82,12 +82,16 @@ public class UserBusinessLogic : IUserBusinessLogic
     {
         var (companyNameIdpAliasData, nameCreatedBy) = await GetCompanyNameSharedIdpAliasCreatorData(iamUserId).ConfigureAwait(false);
 
+        var distinctRoles = userList.SelectMany(user => user.Roles).Distinct().ToList();
+
+        var roleDatas = await GetOwnCompanyUserRoleData(distinctRoles, iamUserId).ConfigureAwait(false);
+
         var userCreationInfoIdps = userList.Select(user =>
-            new UserCreationInfoIdp(
+            new UserCreationRoleDataIdpInfo(
                 user.firstName ?? "",
                 user.lastName ?? "",
                 user.eMail,
-                user.Roles,
+                roleDatas?.IntersectBy(user.Roles, roleData => roleData.UserRoleText) ?? Enumerable.Empty<UserRoleData>(),
                 user.userName ?? user.eMail,
                 ""
             )).ToAsyncEnumerable();
@@ -96,9 +100,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             user => user.userName ?? user.eMail,
             user => (user.eMail, user.Message));
 
-        var clientId = _settings.Portal.KeyCloakClientID;
-
-        await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).ConfigureAwait(false))
+        await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
             var (email, message) = emailData[userName];
 
@@ -133,6 +135,15 @@ public class UserBusinessLogic : IUserBusinessLogic
 
             yield return email;
         }
+    }
+
+    private Task<IEnumerable<UserRoleData>> GetOwnCompanyUserRoleData(IEnumerable<string> roles, string iamUserId)
+    {
+        if (!roles.Any())
+        {
+            Task.FromResult(Enumerable.Empty<UserRoleData>());
+        }
+        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeyCloakClientID, roles, iamUserId);
     }
 
     private async Task<(CompanyNameIdpAliasData CompanyNameIdpAliasData, string CreatedByName)> GetCompanyNameSharedIdpAliasCreatorData(string iamUserId)
@@ -183,12 +194,23 @@ public class UserBusinessLogic : IUserBusinessLogic
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
     {
         var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+
+        var roleDatas = await GetOwnCompanyUserRoleData(userCreationInfo.Roles, iamUserId).ConfigureAwait(false);
+
         var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
                 companyNameIdpAliasData,
-                _settings.Portal.KeyCloakClientID,
-                Enumerable.Repeat(userCreationInfo, 1).ToAsyncEnumerable())
+                Enumerable.Repeat(
+                    new UserCreationRoleDataIdpInfo(
+                    userCreationInfo.FirstName,
+                    userCreationInfo.LastName,
+                    userCreationInfo.Email,
+                    roleDatas ?? Enumerable.Empty<UserRoleData>(),
+                    userCreationInfo.UserName,
+                    userCreationInfo.UserId
+                ),1).ToAsyncEnumerable())
             .FirstAsync()
             .ConfigureAwait(false);
+
         if(result.Error != null)
         {
             throw result.Error;
@@ -609,14 +631,13 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             {iamClientId, rolesToAdd.Select(x => x.CompanyUserRoleText)}
         };
-        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames)
-            .ConfigureAwait(false);
-        var rolesAdded = rolesToAdd.IntersectBy(assignedRoles[iamClientId],role => role.CompanyUserRoleText).ToList();
+        var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames).SingleAsync().ConfigureAwait(false);
+
+        var rolesAdded = rolesToAdd.IntersectBy(assignedRoles.Roles, role => role.CompanyUserRoleText).ToList();
         foreach (var roleWithId in rolesAdded)
         {
             userRoleRepository.CreateCompanyUserAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
-
         return rolesAdded;
     }
 

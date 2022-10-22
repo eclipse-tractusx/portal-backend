@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -117,16 +117,6 @@ public class UserRolesRepository : IUserRolesRepository
             ))
             .ToAsyncEnumerable();
 
-    public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
-        _dbContext.UserRoles
-            .AsNoTracking()
-            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientClientId) && userRoles.Contains(userRole.UserRoleText))
-            .Select(userRole => new UserRoleWithId(
-                userRole.UserRoleText,
-                userRole.Id
-            ))
-            .AsAsyncEnumerable();
-
     public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
     {
         foreach (var clientRole in clientRoles)
@@ -134,23 +124,31 @@ public class UserRolesRepository : IUserRolesRepository
             await foreach (var userRoleData in _dbContext.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(userRole.UserRoleText))
-                .Select(userRole => new UserRoleData(
-                    userRole.Id,
-                    userRole.Offer!.AppInstances.Single(ai => ai.IamClient!.ClientClientId == clientRole.Key).IamClient!.ClientClientId,
-                    userRole.UserRoleText
-                ))
+                .Select(userRole => new {
+                    Id = userRole.Id,
+                    Text = userRole.UserRoleText
+                })
                 .AsAsyncEnumerable())
             {
-                yield return userRoleData;
+                yield return new UserRoleData(
+                    userRoleData.Id,
+                    clientRole.Key,
+                    userRoleData.Text
+                );
             }
         }
     }
 
-    public IAsyncEnumerable<(string Role,Guid Id)> GetUserRolesWithIdAsync(string keyCloakClientId) =>
+    public IAsyncEnumerable<UserRoleData> GetOwnCompanyPortalUserRoleDataUntrackedAsync(string clientId, IEnumerable<string> roles, string iamUserId) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
-            .Select(userRole => new ValueTuple<string,Guid>(userRole.UserRoleText, userRole.Id))
+            .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientId) &&
+                roles.Contains(userRole.UserRoleText) &&
+                userRole.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole.Companies.Any(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
+            .Select(userRole => new UserRoleData(
+                userRole.Id,
+                clientId,
+                userRole.UserRoleText))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
