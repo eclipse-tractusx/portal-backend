@@ -18,27 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 
-public record UserCreationInfoIdp(
-
-    [property: JsonPropertyName("firstName")]
+public record UserCreationRoleDataIdpInfo(
     string FirstName,
-    
-    [property: JsonPropertyName("lastName")]
     string LastName,
-
-    [property: JsonPropertyName("email")]
     string Email,
-
-    [property: JsonPropertyName("roles")]
-    IEnumerable<string> Roles,
-
-    [property: JsonPropertyName("userName")]
+    IEnumerable<UserRoleData> RoleDatas,
     string UserName,
-
-    [property: JsonPropertyName("userId")]
     string UserId
 );

@@ -23,6 +23,7 @@ using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -89,7 +90,6 @@ public class UserProvisioningServiceCreateUsersTests
         
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
-            _clientId,
             userCreationInfoIdp,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
@@ -111,7 +111,6 @@ public class UserProvisioningServiceCreateUsersTests
         
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasDataSharedIdp,
-            _clientId,
             userCreationInfoIdp,
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
@@ -133,7 +132,6 @@ public class UserProvisioningServiceCreateUsersTests
         
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
-            _clientId,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
@@ -144,39 +142,14 @@ public class UserProvisioningServiceCreateUsersTests
     }
 
     [Fact]
-    public async void TestCreateUsersInvalidRolesError()
-    {
-        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
-
-        var userWithInvalidRoles = _fixture.Create<UserCreationInfoIdp>();
-        var userCreationInfoIdp = CreateUserCreationInfoIdp(
-            () => userWithInvalidRoles).ToList();
-
-        var result = await sut.CreateOwnCompanyIdpUsersAsync(
-            _companyNameIdpAliasData,
-            _clientId,
-            userCreationInfoIdp.ToAsyncEnumerable(),
-            _cancellationTokenSource.Token
-        ).ToListAsync().ConfigureAwait(false);
-
-        result.Should().HaveCount(_numUsers);
-        result.Where((r,index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
-
-        var error = result.ElementAt(_indexSpecialUser).Error;
-        error.Should().NotBeNull();
-        error.Should().BeOfType(typeof(ControllerArgumentException));
-        error!.Message.Should().Be($"invalid Roles: [{string.Join(", ",userWithInvalidRoles.Roles)}]");
-    }
-
-    [Fact]
     public async void TestCreateUsersRolesAssignmentError()
     {
         var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
 
-        var roles = userCreationInfoIdp.ElementAt(_indexSpecialUser).Roles;
-        var assignedRoles = roles.Take(roles.Count()-1);
+        var roleDatas = userCreationInfoIdp.ElementAt(_indexSpecialUser).RoleDatas;
+        var assignedRoles = roleDatas.Take(roleDatas.Count()-1).Select(d => d.UserRoleText).ToList().AsEnumerable();
         var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + userCreationInfoIdp.ElementAt(_indexSpecialUser).UserId;
         var iamUserId = _fixture.Create<string>();
 
@@ -184,11 +157,10 @@ public class UserProvisioningServiceCreateUsersTests
             .Returns(iamUserId);
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new [] { (_clientId, assignedRoles) }.ToDictionary(x => x._clientId, x => x.assignedRoles));
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new [] { (Client: _clientId, Roles: assignedRoles) }.ToAsyncEnumerable());
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
-            _clientId,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
@@ -199,7 +171,7 @@ public class UserProvisioningServiceCreateUsersTests
         var error = result.ElementAt(_indexSpecialUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
-        error!.Message.Should().Be($"invalid role data, client: {_clientId}, [{String.Join(", ", roles.Except(assignedRoles))}] has not been assigned in keycloak");
+        error!.Message.Should().Be($"invalid role data [{String.Join(", ", roleDatas.ExceptBy(assignedRoles, roleData => roleData.UserRoleText).Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
     }
 
     [Fact]
@@ -220,7 +192,6 @@ public class UserProvisioningServiceCreateUsersTests
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
-            _clientId,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
@@ -251,7 +222,6 @@ public class UserProvisioningServiceCreateUsersTests
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
-            _clientId,
             userCreationInfoIdp.ToAsyncEnumerable(),
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
@@ -262,6 +232,80 @@ public class UserProvisioningServiceCreateUsersTests
 
         result.Should().HaveCount(_numUsers);
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
+
+    #endregion
+
+    #region GetRoleDatas
+
+    [Fact]
+    public async void TestGetRoleDatasSuccess()
+    {
+        var clientRoles = _fixture.Create<IDictionary<string,IEnumerable<string>>>();
+
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var result = await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveSameCount(clientRoles.SelectMany(r => r.Value));
+    }
+
+    [Fact]
+    public async void TestGetRoleDatasThrows()
+    {
+        var clientRoles = _fixture.Create<IDictionary<string,IEnumerable<string>>>();
+
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((IDictionary<string,IEnumerable<string>> clientRoles) =>
+                clientRoles.SelectMany(r => r.Value.Take(r.Value.Count()-1).Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, r.Key)
+                    .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
+
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        async Task Act() => await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith("invalid roles: clientId:");
+    }
+
+    #endregion
+
+    #region GetOwnCompanyPortalRoleDatas
+
+    [Fact]
+    public async void TestGetOwnCompanyPortalRoleDatasSuccess()
+    {
+        var client = _fixture.Create<string>();
+        var roles = _fixture.CreateMany<string>();
+        var iamUserId = _fixture.Create<string>();
+
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles,iamUserId).ConfigureAwait(false);
+
+        result.Should().HaveSameCount(roles);
+    }
+
+    [Fact]
+    public async void TestGetOwnCompanyPortalRoleDatasThrows()
+    {
+        var client = _fixture.Create<string>();
+        var roles = _fixture.CreateMany<string>();
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
+            .ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
+                roles.Take(roles.Count()-1).Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, clientId)
+                    .With(x => x.UserRoleText, role).Create()).ToAsyncEnumerable());
+
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith("invalid roles: clientId:");
     }
 
     #endregion
@@ -280,7 +324,17 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._))
             .ReturnsLazily((Guid companyUserId, string iamUserId) => new IamUser(iamUserId, companyUserId));
 
-        A.CallTo(() => _userRolesRepository.GetUserRolesWithIdAsync(A<string>.Ignored)).Returns(_userRolesWithId.ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((IDictionary<string,IEnumerable<string>> clientRoles) =>
+                clientRoles.SelectMany(r => r.Value.Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, r.Key)
+                    .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
+
+        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
+            .ReturnsLazily((string client, IEnumerable<string> roles, string _) =>
+                roles.Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, client)
+                    .With(x => x.UserRoleText, role).Create()).ToAsyncEnumerable());
     }
 
     private void SetupProvisioningManager()
@@ -289,28 +343,29 @@ public class UserProvisioningServiceCreateUsersTests
             .ReturnsLazily(() => _fixture.Create<string>());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles);
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
     }
 
-    private IEnumerable<UserCreationInfoIdp> CreateUserCreationInfoIdp(Func<UserCreationInfoIdp>? createInvalidUser = null)
+    private IEnumerable<UserCreationRoleDataIdpInfo> CreateUserCreationInfoIdp(Func<UserCreationRoleDataIdpInfo>? createInvalidUser = null)
     {
         var indexUser = 0;
         while (indexUser < _numUsers)
         {
             yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
                 ? createInvalidUser()
-                : _fixture.Build<UserCreationInfoIdp>().With(x => x.Roles, PickValidRoles().ToList()).Create();
+                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().ToList()).Create();
             indexUser++;
         }
     }
 
-    private IEnumerable<string> PickValidRoles()
+    private IEnumerable<UserRoleData> PickValidRoles()
     {
         var maxRoles = _userRolesWithId.Count();
         var numRoles = _random.Next(1,maxRoles);
         while(numRoles > 0)
         {
-            yield return _userRolesWithId.ElementAt(_random.Next(maxRoles)).Role;
+            var roleWithId = _userRolesWithId.ElementAt(_random.Next(maxRoles));
+            yield return new UserRoleData(roleWithId.Id, _clientId, roleWithId.Role);
             numRoles--;
         }
     }
