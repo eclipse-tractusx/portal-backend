@@ -631,17 +631,42 @@ public class UserBusinessLogic : IUserBusinessLogic
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
             new CompanyUserAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }
-
-    public async Task DeleteUserOwnAccountAsync(Guid userId)
+    
+    
+    public async Task DeleteUserOwnAccountAsync(string userId)
     {
-        _portalRepositories.Attach(new CompanyUser(userId, Guid.Empty, default, default, Guid.Empty), companyUser =>
+        var iamIdpAliasData = await _portalRepositories.GetInstance<IUserRepository>().GetSharedIdentityProviderIamUserAliasDataUntrackedAsync(userId);
+        if (iamIdpAliasData == default)
+        {
+            throw new ConflictException($"iamUser {userId} is not assigned to any companyUser");
+        }
+        var (iamIdpAlias, companyUserId, userEntityId, Bpns, RoleIds, offerIds, invitationId) = iamIdpAliasData;
+        _portalRepositories.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default, Guid.Empty), companyUser =>
         {
             companyUser.CompanyUserStatusId = CompanyUserStatusId.DELETED;
         });
-        _portalRepositories.Remove(new CompanyUserAssignedBusinessPartner(userId, string.Empty));
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(Guid.Empty, userId));
-        _portalRepositories.Remove(new CompanyUserAssignedRole(userId, Guid.Empty));
-        _portalRepositories.Remove(new Invitation(Guid.Empty, Guid.Empty,userId,default,DateTimeOffset.UtcNow));
+        foreach (var bpn in Bpns)
+        {
+            _portalRepositories.Remove(new CompanyUserAssignedBusinessPartner(companyUserId, bpn));
+        }
+        foreach (var offerId in offerIds)
+        {
+            _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(offerId, companyUserId));
+        }
+        foreach (var assignedRole in RoleIds)
+        {
+            _portalRepositories.Remove(new CompanyUserAssignedRole(companyUserId, assignedRole));
+        }
+        _portalRepositories.Remove(new Invitation(invitationId, Guid.Empty, companyUserId, default, default));
+        if (iamIdpAlias != null)
+        {
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, userEntityId!).ConfigureAwait(false);
+            if (userIdShared != null)
+            {
+                await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
+            }
+        }
+        await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId!).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

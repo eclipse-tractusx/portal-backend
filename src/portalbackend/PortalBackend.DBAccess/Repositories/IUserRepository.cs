@@ -116,4 +116,17 @@ public interface IUserRepository
     Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
+    
+    /// <summary>
+    /// Delete User Own Account using UserId
+    /// </summary>
+    /// <param name="SharedIdpAlias"></param>
+    /// <param name="CompanyUserId"></param>
+    /// <param name="UserEntityId"></param>
+    /// <param name="Bpns"></param>
+    /// <param name="RoleIds"></param>
+    /// <param name="offerIds"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task<(string? SharedIdpAlias, Guid CompanyUserId, string? UserEntityId, IEnumerable<string> Bpns, IEnumerable<Guid> RoleIds, IEnumerable<Guid> offerIds, Guid InvitationId)> GetSharedIdentityProviderIamUserAliasDataUntrackedAsync(string iamUserId);
 }
