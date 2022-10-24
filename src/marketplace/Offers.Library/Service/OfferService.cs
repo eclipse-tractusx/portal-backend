@@ -216,7 +216,8 @@ public class OfferService : IOfferService
 
     public async Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
     {
-        var offerDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerDetails = await offerSubscriptionsRepository
             .GetOfferDetailsAndCheckUser(data.RequestId, iamUserId, offerTypeId).ConfigureAwait(false);
         if (offerDetails == null)
         {
@@ -262,27 +263,24 @@ public class OfferService : IOfferService
                 Enumerable.Repeat(offerDetails.Bpn, 1))
             .ConfigureAwait(false);
 
-        var offerSubscription = new OfferSubscription(data.RequestId);
-        _portalRepositories.Attach(offerSubscription, (subscription =>
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
         {
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-        }));
+            subscription.LastEditorId = offerDetails.CompanyUserId;
+        });
 
         await CreateNotifications(companyAdminRoles, offerTypeId, offerDetails);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
-            return new OfferAutoSetupResponseData(
-                new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId),
-                new ClientInfoData(clientId));
-
-        var mailParams = new Dictionary<string, string>
+        if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
-            { "offerName", offerDetails.OfferName },
-            { "url", basePortalAddress },
-        };
-        await _mailingService.SendMails(offerDetails.RequesterEmail, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
-
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerName", offerDetails.OfferName },
+                { "url", basePortalAddress },
+            };
+            await _mailingService.SendMails(offerDetails.RequesterEmail, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
+        }
         return new OfferAutoSetupResponseData(
             new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId),
             new ClientInfoData(clientId));
