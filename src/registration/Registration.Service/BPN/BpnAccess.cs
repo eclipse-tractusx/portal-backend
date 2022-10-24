@@ -25,13 +25,15 @@ using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
 {
-    public class BPNAccess : IBPNAccess
+    public class BpnAccess : IBpnAccess
     {
+        private readonly ILogger<BpnAccess> _logger;
         private readonly HttpClient _httpClient;
 
-        public BPNAccess(IHttpClientFactory httpFactory)
+        public BpnAccess(IHttpClientFactory httpFactory, ILogger<BpnAccess> logger)
         {
             _httpClient = httpFactory.CreateClient("bpn");
+            _logger = logger;
         }
 
         public async Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token)
@@ -39,6 +41,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
             var response = new List<FetchBusinessPartnerDto>();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}");
+            _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", result.StatusCode, await result.Content.ReadAsStringAsync());
             if (result.IsSuccessStatusCode)
             {
                 var body = JsonSerializer.Deserialize<FetchBusinessPartnerDto>(await result.Content.ReadAsStringAsync());

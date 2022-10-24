@@ -48,14 +48,18 @@ public class OfferSetupService : IOfferSetupService
 
         try
         {
-            // TODO: Remove the autosetupdata from logging after testing.
-            _logger.LogInformation("OfferSetupService was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", serviceDetailsAutoSetupUrl, JsonSerializer.Serialize(autoSetupData));
+            _logger.LogDebug("OfferSetupService was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", serviceDetailsAutoSetupUrl, JsonSerializer.Serialize(autoSetupData));
             var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", response.StatusCode, responseContent);
 
             if (!response.IsSuccessStatusCode)
+            {
+                
                 throw new ServiceException(
-                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {await response.Content.ReadAsStringAsync()}",
+                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {responseContent}",
                     response.StatusCode);
+            }
 
             _logger.LogInformation("OfferSetupService AutoSetup was successfully executed.");
         }

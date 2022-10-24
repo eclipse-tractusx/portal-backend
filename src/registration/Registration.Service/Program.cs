@@ -49,7 +49,7 @@ builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IBPNAccess, BPNAccess>();
+builder.Services.AddTransient<IBpnAccess, BpnAccess>();
 builder.Services.AddHttpClient("bpn", c =>
 {
     c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");

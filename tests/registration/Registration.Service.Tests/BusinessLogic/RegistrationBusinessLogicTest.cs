@@ -80,7 +80,7 @@ public class RegistrationBusinessLogicTest
         });
         _fixture.Inject(options);
         _fixture.Inject(A.Fake<IMailingService>());
-        _fixture.Inject(A.Fake<IBPNAccess>());
+        _fixture.Inject(A.Fake<IBpnAccess>());
         _fixture.Inject(A.Fake<ILogger<RegistrationBusinessLogic>>());
 
         _options = _fixture.Create<IOptions<RegistrationSettings>>();
