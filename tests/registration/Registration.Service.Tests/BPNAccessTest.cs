@@ -64,7 +64,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             });
 
             var httpClient = _fixture.Create<HttpClient>();
-            var sut = _fixture.Create<BPNAccess>();
+            var sut = _fixture.Create<BpnAccess>();
 
             var result = await sut.FetchBusinessPartner("testpbn", "token");
             Assert.Equal(resultSet.bpn, result.First().bpn);
@@ -77,7 +77,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             ConfigureHttpClientFactoryFixture(new HttpResponseMessage { StatusCode = HttpStatusCode.InternalServerError });
 
             var httpClient = _fixture.Create<HttpClient>();
-            var sut = _fixture.Create<BPNAccess>();
+            var sut = _fixture.Create<BpnAccess>();
 
             await Assert.ThrowsAsync<ServiceException>(async () => await sut.FetchBusinessPartner("testpbn", "token"));
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);

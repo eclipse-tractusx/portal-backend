@@ -41,7 +41,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private readonly RegistrationSettings _settings;
     private readonly IMailingService _mailingService;
-    private readonly IBPNAccess _bpnAccess;
+    private readonly IBpnAccess _bpnAccess;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
@@ -50,7 +50,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
         IMailingService mailingService,
-        IBPNAccess bpnAccess,
+        IBpnAccess bpnAccess,
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,

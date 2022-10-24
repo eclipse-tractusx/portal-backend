@@ -22,7 +22,7 @@ using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
 {
-    public interface IBPNAccess
+    public interface IBpnAccess
     {
         Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token);
     }

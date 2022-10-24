@@ -73,6 +73,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
+        _logger.LogDebug("SdFactory RegisterConnectorAsync was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", _settings.SdFactoryUrl, JsonSerializer.Serialize(requestModel));
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
@@ -93,15 +94,15 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        // TODO: Please remove after testing
-        _logger.LogInformation("SdFactory RegisterSelfDescriptionAsync was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", _settings.SdFactoryUrl, JsonSerializer.Serialize(requestModel));
+        _logger.LogDebug("SdFactory RegisterSelfDescriptionAsync was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", _settings.SdFactoryUrl, JsonSerializer.Serialize(requestModel));
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
-
+        
         return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Guid> ProcessResponse(SdFactoryResponseModelTitle docTitle, HttpResponseMessage response, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("SdFactory responded with {StatusCode} and the following content {Content}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         if (!response.IsSuccessStatusCode)
         {
             throw new ServiceException($"Access to SD factory failed with status code {response.StatusCode}",
