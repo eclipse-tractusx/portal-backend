@@ -431,13 +431,20 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
         this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
-
+    
+    /// <summary>
+    /// Delete My User Account using UserId
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>Example: DELETE: /api/administration/user/owncompany/user</remarks>
+    /// <response code="200">Empty response on success.</response>
+    /// <response code="404">Record not found.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_user_account")]
     [Route("owncompany/user")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task DeleteUserOwnAccount() =>
-       this.WithIamUserId(adminUserId => _logic.DeleteUserOwnAccountAsync(Guid.Parse(adminUserId)));
+       this.WithIamUserId(adminUserId => _logic.DeleteUserOwnAccountAsync(adminUserId));
 
 }

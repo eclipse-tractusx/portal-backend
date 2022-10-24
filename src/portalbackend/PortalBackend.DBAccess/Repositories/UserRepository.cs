@@ -432,4 +432,22 @@ public class UserRepository : IUserRepository
                 (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
                 (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))));
     }
+
+    /// <inheritdoc />
+    public Task<(string? SharedIdpAlias, Guid CompanyUserId, string? UserEntityId, IEnumerable<string> Bpns, IEnumerable<Guid> RoleIds, IEnumerable<Guid> offerIds, Guid InvitationId)> GetSharedIdentityProviderIamUserAliasDataUntrackedAsync(string iamUserId) =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .Select(companyUser => new ValueTuple<string?, Guid, string?, IEnumerable<string>, IEnumerable<Guid>, IEnumerable<Guid>, Guid>(
+                companyUser.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias,
+                companyUser.Id,
+                companyUser.IamUser!.UserEntityId,
+                companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                    assignedPartner.BusinessPartnerNumber),
+                companyUser.CompanyUserAssignedRoles.Select(assignedRole =>
+                    assignedRole.UserRoleId),
+                companyUser.Offers.Select(offer => offer.Id),
+                companyUser.Invitations.Select(invitation=>invitation.Id).SingleOrDefault()
+            ))
+            .SingleOrDefaultAsync();
+    
 }
