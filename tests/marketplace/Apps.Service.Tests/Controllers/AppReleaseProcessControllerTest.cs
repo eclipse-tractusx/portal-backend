@@ -20,10 +20,7 @@
 
 using AutoFixture;
 using FakeItEasy;
-using Microsoft.Extensions.Logging;
 using Xunit;
-using System;
-using System.Threading.Tasks;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
@@ -35,16 +32,15 @@ public class AppReleaseProcessControllerTest
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private readonly IFixture _fixture;
-    private readonly AppReleaseProcessController controller;
-    private readonly IAppReleaseBusinessLogic appReleaseBusineesLogicFake;
-    private readonly ILogger<AppReleaseProcessController> appReleaseLoggerFake;
+    private readonly AppReleaseProcessController _controller;
+    private readonly IAppReleaseBusinessLogic _appReleaseBusineesLogicFake;
+
     public AppReleaseProcessControllerTest()
     {
         _fixture = new Fixture();
-        appReleaseBusineesLogicFake = A.Fake<IAppReleaseBusinessLogic>();
-        appReleaseLoggerFake = A.Fake<ILogger<AppReleaseProcessController>>();
-        this.controller = new AppReleaseProcessController(appReleaseBusineesLogicFake);
-        controller.AddControllerContextWithClaim(IamUserId);
+        _appReleaseBusineesLogicFake = A.Fake<IAppReleaseBusinessLogic>();
+        this._controller = new AppReleaseProcessController(_appReleaseBusineesLogicFake);
+        _controller.AddControllerContextWithClaim(IamUserId);
     }
 
     [Fact]
@@ -55,15 +51,15 @@ public class AppReleaseProcessControllerTest
         Guid userId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => appReleaseBusineesLogicFake.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString()))
+        A.CallTo(() => _appReleaseBusineesLogicFake.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString()))
             .Returns(appRoleData);
 
         //Act
-        var result =await this.controller.AddAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        var result =await this._controller.AddAppUserRole(appId, appUserRoles).ConfigureAwait(false);
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => appReleaseBusineesLogicFake.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString())).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _appReleaseBusineesLogicFake.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString())).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }

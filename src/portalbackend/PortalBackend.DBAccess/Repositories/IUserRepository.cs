@@ -84,14 +84,6 @@ public interface IUserRepository
         Guid companyUserId);
 
     /// <summary>
-    /// Gets the company user id and email for the given iam user
-    /// </summary>
-    /// <remarks><b>Returns as UNTRACKED</b></remarks>
-    /// <param name="userId">id of the iamUser</param>
-    /// <returns>Returns the userId and email</returns>
-    Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId);
-
-    /// <summary>
     /// Gets the company user ids and checks if its the given iamUser
     /// </summary>
     /// <param name="iamUserId">Id of the iamUser</param>
@@ -114,6 +106,8 @@ public interface IUserRepository
     Task<Guid> GetServiceAccountCompany(string iamUserId);
 
     Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    
+    IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
 }

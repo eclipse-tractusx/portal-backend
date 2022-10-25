@@ -92,7 +92,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddServiceSubscription(serviceId, iamUserId, accessToken, OfferTypeId.SERVICE);
+        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
     public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
@@ -141,5 +141,5 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.SERVICE);
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 }

@@ -40,16 +40,6 @@ public class OfferSubscription : IAuditableV1
     }
 
     /// <summary>
-    /// Please only use to attach the entity!
-    /// </summary>
-    /// <param name="id">Id of the offer subscription</param>
-    public OfferSubscription(Guid id)
-        : this()
-    {
-        Id = id;
-    }
-
-    /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="id">Id of the entity..</param>
@@ -59,8 +49,9 @@ public class OfferSubscription : IAuditableV1
     /// <param name="requesterId">Id of the requester</param>
     /// <param name="lastEditorId">Id of the editor</param>
     public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
-        : this(id)
+        : this()
     {
+        Id = id;
         OfferId = offerId;
         CompanyId = companyId;
         OfferSubscriptionStatusId = offerSubscriptionStatusId;
@@ -116,6 +107,11 @@ public class OfferSubscription : IAuditableV1
     /// Subscribing company.
     /// </summary>
     public virtual Company? Company { get; private set; }
+
+    /// <summary>
+    /// Requester
+    /// </summary>
+    public virtual CompanyUser? Requester { get; private set; }
 
     /// <summary>
     /// Subscription status.
