@@ -522,7 +522,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return registrationData;
     }
 
-    public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
+    public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null) =>
         _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
 
     private static void ValidateCompanyApplicationStatus(CompanyApplicationStatusId status,
