@@ -73,6 +73,5 @@ public class NotificationService : INotificationService
                     });
             }
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
