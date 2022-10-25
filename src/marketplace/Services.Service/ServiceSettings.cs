@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
 
@@ -27,20 +28,23 @@ namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
 /// </summary>
 public class ServiceSettings
 {
-    public ServiceSettings()
-    {
-        this.CompanyAdminRoles = null!;
-        this.ServiceAccountRoles = null!;
-    }
-    
     [Required]
     public int ApplicationsMaxPageSize { get; set; }
 
     [Required]
-    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
+    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
     
     [Required]
-    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; }
+    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
+
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+
+    /// <summary>
+    /// BasePortalAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
 }
 
 public static class ServiceSettingsExtension

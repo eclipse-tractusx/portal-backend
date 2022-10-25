@@ -23,7 +23,6 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -33,18 +32,16 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 
 public class AppReleaseBusinessLogicTest
 {
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IOfferService _offerService;
     private readonly IOfferRepository _offerRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly AppReleaseBusinessLogic _logic;
-    private readonly IOptions<AppsSettings> _options;
     private readonly CompanyUser _companyUser;
     private readonly IamUser _iamUser;
 
@@ -56,11 +53,11 @@ public class AppReleaseBusinessLogicTest
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _offerService = A.Fake<IOfferService>();
         _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
-        _options = A.Fake<IOptions<AppsSettings>>();
+        var offerService = A.Fake<IOfferService>();
+        var options = A.Fake<IOptions<AppsSettings>>();
         
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
@@ -72,7 +69,7 @@ public class AppReleaseBusinessLogicTest
         
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-         _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
+         _logic = new AppReleaseBusinessLogic(_portalRepositories, options, offerService);
     }
 
     [Fact]

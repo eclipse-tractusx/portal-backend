@@ -42,9 +42,12 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddMailingAndTemplateManager(builder.Configuration)
                 .AddPortalRepositories(builder.Configuration)
-                .AddProvisioningManager(builder.Configuration);
+                .AddProvisioningManager(builder.Configuration)
+                .AddHttpClient();
 
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .AddTransient<IOfferSetupService, OfferSetupService>()
+                .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
