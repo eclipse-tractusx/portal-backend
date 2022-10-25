@@ -168,19 +168,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (string.IsNullOrWhiteSpace(companyWithAddress.Name))
         {
-            throw new ArgumentException("Name must not be empty");
+            throw new ControllerArgumentException("Name must not be empty", nameof(companyWithAddress.Name));
         }
         if (string.IsNullOrWhiteSpace(companyWithAddress.City))
         {
-            throw new ArgumentException("City must not be empty");
+            throw new ControllerArgumentException("City must not be empty", nameof(companyWithAddress.City));
         }
         if (string.IsNullOrWhiteSpace(companyWithAddress.StreetName))
         {
-            throw new ArgumentException("Streetname must not be empty");
+            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyWithAddress.StreetName));
         }
         if (companyWithAddress.CountryAlpha2Code.Length != 2)
         {
-            throw new ArgumentException("CountryAlpha2Code must be 2 chars");
+            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyWithAddress.CountryAlpha2Code));
         }
         return SetCompanyWithAddressInternal(applicationId, companyWithAddress, iamUserId);
     }
@@ -537,8 +537,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             new(CompanyApplicationStatusId.SELECT_COMPANY_ROLE, CompanyApplicationStatusId.UPLOAD_DOCUMENTS),
             new(CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY),
             new(CompanyApplicationStatusId.VERIFY, CompanyApplicationStatusId.SUBMITTED),
-            new(CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA),
-            new(CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA),
         };
 
         if (!allowedCombination.Any(x =>
