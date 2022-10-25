@@ -60,8 +60,8 @@ public class CustodianService : ICustodianService
 
         if (!result.IsSuccessStatusCode)
         {
-            _logger.LogError($"Error on creating Wallet HTTP Response Code {result.StatusCode}");
-            throw new ServiceException($"Access to Custodian Failed with Status Code {result.StatusCode}", result.StatusCode);
+            _logger.LogError("Error on creating Wallet HTTP Response Code {StatusCode}", result.StatusCode);
+            throw new ServiceException("Access to Custodian Failed with Status Code {StatusCode}", result.StatusCode);
         }
     }
 
@@ -87,7 +87,7 @@ public class CustodianService : ICustodianService
         }
         else
         {
-            _logger.LogInformation($"Error on retrieveing Wallets HTTP Response Code {result.StatusCode}");
+            _logger.LogInformation("Error on retrieveing Wallets HTTP Response Code {StatusCode}", result.StatusCode);
         }
         return response;
     }

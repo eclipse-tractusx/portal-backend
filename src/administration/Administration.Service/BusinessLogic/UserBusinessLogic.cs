@@ -437,7 +437,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error while adding BPN attribute to {user.UserId}");
+                _logger.LogError(e, "Error while adding BPN attribute to {UserId}", user.UserId);
             }
         }
         return true;

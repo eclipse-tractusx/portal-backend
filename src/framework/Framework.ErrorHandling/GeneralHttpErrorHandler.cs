@@ -103,7 +103,7 @@ public class GeneralHttpErrorHandler
                 statusCode = HttpStatusCode.InternalServerError;
                 logLevel = LogLevel.Error;
             }
-            _logger.Log(logLevel, error, "GeneralErrorHandler caught {error} resulting in response status code {statusCode}, message '{message}'", error.GetType().Name, (int)statusCode, error.Message);
+            _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, (int)statusCode, error.Message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
             await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, messageFunc))).ConfigureAwait(false);
