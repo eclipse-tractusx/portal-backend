@@ -45,9 +45,9 @@ public class CustodianService : ICustodianService
     }
 
 
-    public async Task CreateWallet(string bpn, string name, CancellationToken cancellationToken)
+    public async Task CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
     {
-        var token = await GetToken();
+        var token = await GetTokenAsync();
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var requestBody = new { name = name, bpn = bpn };
         var json = JsonSerializer.Serialize(requestBody);
@@ -68,7 +68,7 @@ public class CustodianService : ICustodianService
     public async Task<List<GetWallets>> GetWallets()
     {
         var response = new List<GetWallets>();
-        var token = await GetToken().ConfigureAwait(false);
+        var token = await GetTokenAsync().ConfigureAwait(false);
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         const string url = "/api/wallets";
         _logger.LogDebug("GetWallets was called with the following url: {Url}", url);
@@ -92,7 +92,7 @@ public class CustodianService : ICustodianService
         return response;
     }
 
-    public async Task<string?> GetToken()
+    public async Task<string?> GetTokenAsync()
     {
         var parameters = new Dictionary<string, string>
         {
@@ -112,6 +112,7 @@ public class CustodianService : ICustodianService
         {
             throw new ServiceException("Token could not be retrieved");
         }
+
         var responseObject = JsonSerializer.Deserialize<AuthResponse>(responseContent);
         return responseObject?.access_token;
     }

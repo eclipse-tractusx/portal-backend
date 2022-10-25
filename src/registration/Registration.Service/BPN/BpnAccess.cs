@@ -45,7 +45,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
             if (result.IsSuccessStatusCode)
             {
                 var body = JsonSerializer.Deserialize<FetchBusinessPartnerDto>(await result.Content.ReadAsStringAsync());
-                response.Add(body);
+                if(body != null)
+                    response.Add(body);
             }
             else
             {
