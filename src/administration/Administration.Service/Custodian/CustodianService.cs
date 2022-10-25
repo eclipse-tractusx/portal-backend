@@ -47,7 +47,7 @@ public class CustodianService : ICustodianService
 
     public async Task CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
     {
-        var token = await GetTokenAsync();
+        var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var requestBody = new { name = name, bpn = bpn };
         var json = JsonSerializer.Serialize(requestBody);
@@ -55,7 +55,7 @@ public class CustodianService : ICustodianService
         const string walletUrl = "/api/wallets";
 
         _logger.LogDebug("CreateWallet was called with the following url: {Url} and following data: {Data}", walletUrl, json);
-        var result = await _custodianHttpClient.PostAsync(walletUrl, stringContent, cancellationToken);
+        var result = await _custodianHttpClient.PostAsync(walletUrl, stringContent, cancellationToken).ConfigureAwait(false);
         _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", result.StatusCode, await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
 
         if (!result.IsSuccessStatusCode)
@@ -65,16 +65,16 @@ public class CustodianService : ICustodianService
         }
     }
 
-    public async Task<List<GetWallets>> GetWallets()
+    public async Task<List<GetWallets>> GetWalletsAsync(CancellationToken cancellationToken)
     {
         var response = new List<GetWallets>();
-        var token = await GetTokenAsync().ConfigureAwait(false);
+        var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         const string url = "/api/wallets";
         _logger.LogDebug("GetWallets was called with the following url: {Url}", url);
-        var result = await _custodianHttpClient.GetAsync(url).ConfigureAwait(false);
+        var result = await _custodianHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         
-        var responseContent = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var responseContent = await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", result.StatusCode, responseContent);
 
         if (result.IsSuccessStatusCode)
@@ -92,7 +92,7 @@ public class CustodianService : ICustodianService
         return response;
     }
 
-    public async Task<string?> GetTokenAsync()
+    public async Task<string?> GetTokenAsync(CancellationToken cancellationToken)
     {
         var parameters = new Dictionary<string, string>
         {
@@ -105,8 +105,8 @@ public class CustodianService : ICustodianService
         };
         var content = new FormUrlEncodedContent(parameters);
         _logger.LogDebug("GetToken for Wallet was called with the following data: {Data}", JsonSerializer.Serialize(parameters));
-        var response = await _custodianAuthHttpClient.PostAsync("", content);
-        var responseContent = await response.Content.ReadAsStringAsync();
+        var response = await _custodianAuthHttpClient.PostAsync("", content, cancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
         _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", response.StatusCode, responseContent);
         if (!response.IsSuccessStatusCode)
         {
