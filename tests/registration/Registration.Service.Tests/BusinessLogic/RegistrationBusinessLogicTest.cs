@@ -248,7 +248,7 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
 
-        var result = await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId).ConfigureAwait(false);
+        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId).ConfigureAwait(false);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<string>._, A<IAsyncEnumerable<UserCreationInfoIdp>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId),A<Guid>._)).MustHaveHappened();
@@ -314,13 +314,13 @@ public class RegistrationBusinessLogicTest
     public async Task TestInviteNewUserNoSharedIdpThrows()
     {
         SetupFakesForInvitation();
-
+        
         A.CallTo(() => _companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
             (
                 CompanyId: _fixture.Create<Guid>(),
                 CompanyName: _fixture.Create<string>(),
                 Alias: (string?)null,
-                CompanyUserId: _fixture.Create<Guid>()
+                CompanyUserId: Guid.NewGuid() // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
             ));
 
         var userCreationInfo = _fixture.Create<UserCreationInfo>();
@@ -429,7 +429,14 @@ public class RegistrationBusinessLogicTest
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, (Exception?)null)
                 .Create());
-
+        
+        A.CallTo(() => _companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
+            (
+                CompanyId: _fixture.Create<Guid>(),
+                CompanyName: _fixture.Create<string>(),
+                Alias: _fixture.Create<string>(),
+                CompanyUserId: Guid.NewGuid() // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
+            ));
     }
 
     #endregion
