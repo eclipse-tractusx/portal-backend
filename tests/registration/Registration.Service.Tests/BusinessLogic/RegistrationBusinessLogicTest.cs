@@ -551,6 +551,35 @@ public class RegistrationBusinessLogicTest
 
     #endregion
     
+    #region GetCompanyRoles
+    
+    [Fact]
+    public async Task GetCompanyRolesAsync_()
+    {
+        //Arrange
+        var companyRolesRepository = A.Fake<ICompanyRolesRepository>();
+        A.CallTo(() => companyRolesRepository.GetCompanyRolesAsync(A<string?>._))
+            .Returns(_fixture.CreateMany<CompanyRolesDetails>(2).ToAsyncEnumerable());
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>())
+            .Returns(companyRolesRepository);
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+        // Act
+        var result = await sut.GetCompanyRoles().ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeEmpty();
+        result.Should().HaveCount(2);
+    }
+    
+    #endregion
+    
     #region GetInvitedUser
     
     [Fact]

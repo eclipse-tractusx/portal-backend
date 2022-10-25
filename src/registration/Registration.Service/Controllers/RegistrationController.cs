@@ -370,6 +370,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [Route("company/companyRoles")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
-            _registrationBusinessLogic.GetCompanyRolesAsync(languageShortName);
+            _registrationBusinessLogic.GetCompanyRoles(languageShortName);
     }
 }
