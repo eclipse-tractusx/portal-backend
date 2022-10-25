@@ -20,7 +20,6 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -37,7 +36,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-    private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
@@ -45,11 +43,11 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     
     public CompanyRepositoryTests(TestDbFixture testDbFixture)
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
 
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -298,8 +296,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     private async Task<(CompanyRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        _fixture.Inject(context);
-        var sut = _fixture.Create<CompanyRepository>();
+        var sut = new CompanyRepository(context);
         return (sut, context);
     }
 

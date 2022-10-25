@@ -60,6 +60,12 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Roles to notify when a new subscription was created
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
 }
 
 /// <summary>

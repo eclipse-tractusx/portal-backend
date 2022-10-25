@@ -39,7 +39,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
-    private readonly IFixture _fixture;
     private readonly ICollection<Notification> _readNotifications;
     private readonly ICollection<Notification> _unreadNotifications;
     private readonly ICollection<Notification> _notifications;
@@ -48,11 +47,11 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public NotificationRepositoryTests(TestDbFixture testDbFixture)
     {
         var companyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001");
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
 
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _readNotifications = new List<Notification>();
         _unreadNotifications = new List<Notification>();
@@ -175,6 +174,8 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Count.Should().Be(_notifications.Count);
     }
 
+    #endregion
+    
     private async Task<NotificationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext(dbContext =>
@@ -183,10 +184,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             },
             SeedExtensions.SeedNotification(_notifications.ToArray())
         ).ConfigureAwait(false);
-        _fixture.Inject(context);
-        var sut = _fixture.Create<NotificationRepository>();
+        var sut = new NotificationRepository(context);
         return sut;
     }
-
-    #endregion
 }
