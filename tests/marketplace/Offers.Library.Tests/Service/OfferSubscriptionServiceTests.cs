@@ -249,7 +249,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Contain("The following fields of the offer");
+        ex.Message.Should().Be("The offer name has not been configured properly");
     }
 
     [Theory]

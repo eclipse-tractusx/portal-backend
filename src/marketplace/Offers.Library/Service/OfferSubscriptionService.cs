@@ -81,16 +81,16 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         await SendNotifications(offerId, offerTypeId, offerProviderDetails, companyUserId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (!string.IsNullOrEmpty(offerProviderDetails.ProviderContactEmail))
+        if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail)) 
+            return offerSubscription.Id;
+        
+        var mailParams = new Dictionary<string, string>
         {
-            var mailParams = new Dictionary<string, string>
-            {
-                { "offerProviderName", offerProviderDetails.ProviderName},
-                { "offerName", offerProviderDetails.OfferName! },
-                { "url", basePortalAddress },
-            };
-            await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
-        }
+            { "offerProviderName", offerProviderDetails.ProviderName},
+            { "offerName", offerProviderDetails.OfferName! },
+            { "url", basePortalAddress },
+        };
+        await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
         return offerSubscription.Id;
     }
 
@@ -103,23 +103,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             throw new NotFoundException($"Offer {offerId} does not exist");
         }
 
-        if (offerProviderDetails.OfferName is not null && offerProviderDetails.ProviderContactEmail is not null)
+        if (offerProviderDetails.OfferName is not null)
             return offerProviderDetails;
 
-        var nullProperties = new List<string>();
-        if (offerProviderDetails.OfferName is null)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerProviderDetails.OfferName)}");
-        }
-
-        if (offerProviderDetails.ProviderContactEmail is null)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerProviderDetails.ProviderContactEmail)}");
-        }
-
-        throw new ConflictException(
-            $"The following fields of the offer '{offerProviderDetails}' have not been configured properly: {string.Join(", ", nullProperties)}");
-
+        throw new ConflictException($"The offer name has not been configured properly");
     }
 
     private async Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> ValidateCompanyInformationAsync(string iamUserId)
