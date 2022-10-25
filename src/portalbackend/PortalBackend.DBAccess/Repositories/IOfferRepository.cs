@@ -132,6 +132,7 @@ public interface IOfferRepository
     /// <param name="appId">id of the app to get the client roles for</param>
     /// <param name="languageShortName">The language short names</param>
     /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
+    [Obsolete("only referenced by code that is marked as obsolte")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>

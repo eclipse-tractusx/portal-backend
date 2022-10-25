@@ -18,21 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    [Obsolete("only referenced by code that is marked as obsolte")]
-    public class ClientRoles
-    {
-        public ClientRoles(Guid roleId, string role, string description)
-        {
-            RoleId = roleId;
-            Role = role;
-            Description = description;
-        }
-
-        public Guid RoleId { get; set; }
-        public string Role { get; set; }
-        public string Description { get; set; }
-    }
-}
+public record OfferIamUserData(string? IamClientId, string IamUserId, bool IsSameCompany);

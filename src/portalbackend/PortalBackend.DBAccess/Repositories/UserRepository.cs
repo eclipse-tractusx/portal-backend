@@ -391,13 +391,28 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
+    public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<string?, string, bool>( 
+            .Select(companyUser => new OfferIamUserData( 
                 companyUser.Company!.OfferSubscriptions.SingleOrDefault(subscription => subscription.OfferId == offerId)!.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId, 
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Company.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser => new OfferIamUserData( 
+                companyUser.Company!.CompanyRoles
+                    .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection.UserRoles.Where(role => role.OfferId == offerId))
+                    .SelectMany(userrole => userrole.Offer!.AppInstances)
+                    .Select(instance => instance.IamClient!.ClientClientId)
+                    .Distinct()
+                    .SingleOrDefault(),
+                companyUser.IamUser!.UserEntityId,
+                companyUser.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
