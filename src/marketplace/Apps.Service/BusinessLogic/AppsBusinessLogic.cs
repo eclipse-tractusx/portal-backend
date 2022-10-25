@@ -369,6 +369,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
      /// <inheritdoc/>
