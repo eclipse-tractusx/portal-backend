@@ -34,6 +34,13 @@ public interface IUserRolesRepository
     UserRole CreateAppUserRole(Guid appId, string role);
 
     /// <summary>
+    /// Delete an existing User Role
+    /// </summary>
+    /// <param name="roleId"></param>
+    /// <returns></returns>
+    UserRole DeleteUserRole(Guid roleId);
+
+    /// <summary>
     /// Add User Role for App Description
     /// </summary>
     /// <param name="roleId"></param>
