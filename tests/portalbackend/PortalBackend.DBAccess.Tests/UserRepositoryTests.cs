@@ -35,18 +35,17 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-    private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
     private const string ValidIamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
     private readonly Guid _validOfferId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
 
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -144,11 +143,65 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetServiceProviderCompanyUserWithRoleId
+
+    [Fact]
+    public async Task GetServiceProviderCompanyUserWithRoleIdAsync_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
+            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new List<Guid>
+            {
+                new ("7410693c-c893-409e-852f-9ee886ce94a6") // Company Admin
+            }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetServiceProviderCompanyUserWithRoleIdAsync_WithMultipleUsers_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
+            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new List<Guid>
+            {
+                new ("58f897ec-0aad-4588-8ffa-5f45d6638632") // CX Admin
+            }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetServiceProviderCompanyUserWithRoleIdAsync_WithNotExistingRole_ReturnsEmptyList()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
+            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new List<Guid>
+            {
+                Guid.NewGuid()
+            }).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
     private async Task<(UserRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        _fixture.Inject(context);
-        var sut = _fixture.Create<UserRepository>();
+        var sut = new UserRepository(context);
         return (sut, context);
     }
 }

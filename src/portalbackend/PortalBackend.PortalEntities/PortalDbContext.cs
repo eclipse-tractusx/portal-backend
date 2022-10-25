@@ -256,6 +256,10 @@ public class PortalDbContext : DbContext
                             .WithMany(e => e.OfferSubscriptions)
                             .HasForeignKey(e => e.OfferSubscriptionStatusId)
                             .OnDelete(DeleteBehavior.ClientSetNull);
+                        j.HasOne(e => e.Requester)
+                            .WithMany(e => e.RequestedSubscriptions)
+                            .HasForeignKey(e => e.RequesterId)
+                            .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
                         j.HasAuditV1Triggers<OfferSubscription,AuditOfferSubscription20221005>();

@@ -26,6 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 using Microsoft.Extensions.FileProviders;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 var VERSION = "v2";
 
@@ -40,6 +41,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 }
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+    .AddMailingAndTemplateManager(builder.Configuration)
     .AddPortalRepositories(builder.Configuration)
     .AddProvisioningManager(builder.Configuration)
     .AddHttpClient();

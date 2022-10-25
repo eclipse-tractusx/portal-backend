@@ -170,13 +170,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 c.CompanyStatusId = CompanyStatusId.ACTIVE;
                 c.SelfDescriptionDocumentId = documentId;
             });
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (assignedRoles == null) return true;
         

@@ -18,7 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -38,20 +40,27 @@ public class OfferService : IOfferService
     private readonly IProvisioningManager _provisioningManager;
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly INotificationService _notificationService;
+    private readonly IMailingService _mailingService;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
+    /// <param name="provisioningManager">Access to the provisioning manager</param>
+    /// <param name="serviceAccountCreation">Access to the service account creation</param>
+    /// <param name="notificationService">Creates notifications for the user</param>
+    /// <param name="mailingService">Mailing service to send mails to the user</param>
     public OfferService(IPortalRepositories portalRepositories,
         IProvisioningManager provisioningManager,
         IServiceAccountCreation serviceAccountCreation,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
         _serviceAccountCreation = serviceAccountCreation;
         _notificationService = notificationService;
+        _mailingService = mailingService;
     }
 
     /// <inheritdoc />
@@ -205,9 +214,10 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsentUpdate;
     }
 
-    public async Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
     {
-        var offerDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerDetails = await offerSubscriptionsRepository
             .GetOfferDetailsAndCheckUser(data.RequestId, iamUserId, offerTypeId).ConfigureAwait(false);
         if (offerDetails == null)
         {
@@ -253,28 +263,54 @@ public class OfferService : IOfferService
                 Enumerable.Repeat(offerDetails.Bpn, 1))
             .ConfigureAwait(false);
 
-        var offerSubscription = new OfferSubscription(data.RequestId);
-        _portalRepositories.Attach(offerSubscription, (subscription =>
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
         {
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-        }));
-        
+            subscription.LastEditorId = offerDetails.CompanyUserId;
+        });
+
+        await CreateNotifications(companyAdminRoles, offerTypeId, offerDetails);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
+        {
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerName", offerDetails.OfferName },
+                { "url", basePortalAddress },
+            };
+            await _mailingService.SendMails(offerDetails.RequesterEmail, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
+        }
+        return new OfferAutoSetupResponseData(
+            new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId),
+            new ClientInfoData(clientId));
+    }
+
+    private async Task CreateNotifications(IDictionary<string, IEnumerable<string>> companyAdminRoles, OfferTypeId offerTypeId,
+        OfferSubscriptionTransferData offerDetails)
+    {
+        var appSubscriptionActivation = offerTypeId == OfferTypeId.APP
+            ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
+            : NotificationTypeId.SERVICE_ACTIVATION;
+        var notificationContent = JsonSerializer.Serialize(new
+        {
+            offerDetails.OfferId,
+            offerDetails.CompanyName,
+            offerDetails.OfferName
+        });
         await _notificationService.CreateNotifications(
             companyAdminRoles,
             offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
             new (string?, NotificationTypeId)[]
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
-                (null, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION)
+                (notificationContent, appSubscriptionActivation)
             }).ConfigureAwait(false);
-        
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId,
-            NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        
-        return new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId),
-            new ClientInfoData(clientId));
+
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
+            {
+                notification.Content = notificationContent;
+            });
     }
 
     /// <inheritdoc />

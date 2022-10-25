@@ -158,13 +158,6 @@ public interface IOfferRepository
     Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId);
 
     /// <summary>
-    /// Checks if an service with the given id exists in the persistence layer. 
-    /// </summary>
-    /// <param name="serviceId">Id of the service.</param>
-    /// <returns><c>true</c> if an service exists on the persistence layer with the given id, <c>false</c> if not.</returns>
-    public Task<bool> CheckServiceExistsById(Guid serviceId);
-
-    /// <summary>
     /// Gets all service detail data from the persistence storage as queryable 
     /// </summary>
     /// <returns>Returns an <see cref="IQueryable{ServiceDetailData}"/></returns>
