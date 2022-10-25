@@ -23,6 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -103,11 +104,26 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
+    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingAppRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(role =>
                 role.OfferId == offerId &&
+                (userRoles.Contains(role.UserRoleText) || 
+                role.CompanyUsers.Any(user => user.Id == companyUserId)))
+            .Select(userRole => new UserRoleModificationData(
+                userRole.UserRoleText,
+                userRole.Id,
+                userRole.CompanyUsers.Any(user => user.Id == companyUserId)
+            ))
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(role =>
+                role.OfferId == offerId &&
+                role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole.Companies.Any(company => company.CompanyUsers.Any(user => user.Id == companyUserId))) &&
                 (userRoles.Contains(role.UserRoleText) || 
                 role.CompanyUsers.Any(user => user.Id == companyUserId)))
             .Select(userRole => new UserRoleModificationData(
@@ -150,6 +166,28 @@ public class UserRolesRepository : IUserRolesRepository
                 clientId,
                 userRole.UserRoleText))
             .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid OfferId, Guid RoleId, string RoleText, string Description)> GetCoreOfferRolesAsync(string iamUserId, string languageShortName) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(role => role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole.Companies.Any(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))))
+            .OrderBy(role => role.OfferId)
+            .Select(role => new ValueTuple<Guid,Guid,string,string>(
+                role.OfferId,
+                role.Id,
+                role.UserRoleText,
+                role.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description))
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid offerId, string iamUserid, string languageShortName) =>
+        _dbContext.UserRoles
+            .Where(role => role.OfferId == offerId &&
+                role.Offer!.OfferSubscriptions.Any(subscription => subscription.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserid)))
+            .Select(role => new OfferRoleInfo(
+                role.Id,
+                role.UserRoleText,
+                role.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+            )).AsAsyncEnumerable();
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
         _dbContext.UserRoles

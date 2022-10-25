@@ -18,21 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    [Obsolete("only referenced by code that is marked as obsolte")]
-    public class ClientRoles
-    {
-        public ClientRoles(Guid roleId, string role, string description)
-        {
-            RoleId = roleId;
-            Role = role;
-            Description = description;
-        }
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-        public Guid RoleId { get; set; }
-        public string Role { get; set; }
-        public string Description { get; set; }
-    }
-}
+public record OfferRoleInfo(
+    [property: JsonPropertyName("roleId")] Guid RoleId,
+    [property: JsonPropertyName("role")] string RoleText,
+    [property: JsonPropertyName("description")] string RoleDescription);
+public record OfferRoleInfos(
+    [property: JsonPropertyName("offerId")] Guid OfferId,
+    [property: JsonPropertyName("roles")] IEnumerable<OfferRoleInfo> RoleInfos);

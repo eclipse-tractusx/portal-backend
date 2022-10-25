@@ -602,14 +602,9 @@ public class UserBusinessLogicTests
         // Arrange
         SetupFakesForUserRoleModification();
 
-        var sut = new UserBusinessLogic(
-            _provisioningManager,
-            null!,
-            null!,
+        var sut = new UserRolesBusinessLogic(
             _portalRepositories,
-            null!,
-            _logger,
-            _options
+            _provisioningManager
         );
 
         // Act
@@ -632,14 +627,9 @@ public class UserBusinessLogicTests
         // Arrange
         SetupFakesForUserRoleModification();
 
-        var sut = new UserBusinessLogic(
-            _provisioningManager,
-            null!,
-            null!,
+        var sut = new UserRolesBusinessLogic(
             _portalRepositories,
-            null!,
-            _logger,
-            _options
+            _provisioningManager
         );
 
         // Act
@@ -659,14 +649,9 @@ public class UserBusinessLogicTests
         // Arrange
         SetupFakesForUserRoleModification();
 
-        var sut = new UserBusinessLogic(
-            _provisioningManager,
-            null!,
-            null!,
+        var sut = new UserRolesBusinessLogic(
             _portalRepositories,
-            null!,
-            _logger,
-            _options
+            _provisioningManager
         );
 
         // Act
@@ -679,7 +664,7 @@ public class UserBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("Roles");
+        ex.ParamName.Should().Be("roles");
     }
 
     [Fact]
@@ -688,14 +673,9 @@ public class UserBusinessLogicTests
         // Arrange
         SetupFakesForUserRoleModification();
 
-        var sut = new UserBusinessLogic(
-            _provisioningManager,
-            null!,
-            null!,
+        var sut = new UserRolesBusinessLogic(
             _portalRepositories,
-            null!,
-            _logger,
-            _options
+            _provisioningManager
         );
 
         // Act
@@ -708,7 +688,7 @@ public class UserBusinessLogicTests
         async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
         
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
         ex.Message.Should().Be($"CompanyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {_adminIamUser}");
     }
 
@@ -718,14 +698,9 @@ public class UserBusinessLogicTests
         // Arrange
         SetupFakesForUserRoleModification();
 
-        var sut = new UserBusinessLogic(
-            _provisioningManager,
-            null!,
-            null!,
+        var sut = new UserRolesBusinessLogic(
             _portalRepositories,
-            null!,
-            _logger,
-            _options
+            _provisioningManager
         );
         var invalidAppId = Guid.NewGuid();
 
@@ -739,8 +714,8 @@ public class UserBusinessLogicTests
         async Task Action() => await sut.ModifyUserRoleAsync(invalidAppId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
         
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Action);
-        ex.ParamName.Should().Be("appId");
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        ex.Message.Should().StartWith("offerId");
     }
 
     #endregion
@@ -1034,20 +1009,19 @@ public class UserBusinessLogicTests
         var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
         var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser || x == _createdCentralUserId)))
-            .ReturnsLazily(() => new ValueTuple<string?, string, bool>(iamClientId, _iamUserId, true));
+            .ReturnsLazily(() => new OfferIamUserData(iamClientId, _iamUserId, true));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser)))
-            .ReturnsLazily(() => new ValueTuple<string?, string, bool>(null, _iamUserId, true));
+            .ReturnsLazily(() => new OfferIamUserData(null, _iamUserId, true));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Not.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser)))
-            .ReturnsLazily(() => new ValueTuple<string?, string, bool>(iamClientId, _iamUserId, false));
+            .ReturnsLazily(() => new OfferIamUserData(iamClientId, _iamUserId, false));
         
-        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
+        A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
             .ReturnsLazily(() => new List<UserRoleModificationData>
             {
                 new("Existing Role", Guid.NewGuid(), false), 
                 new("Buyer", buyerRoleId, true), 
                 new("Company Admin", adminRoleId, true),
                 new("Supplier", supplierRoleId, false),
-
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.CreateCompanyUserAssignedRole(A<Guid>._, A<Guid>._))
@@ -1068,7 +1042,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(
                 A<string>.That.Not.Matches(x => x == _createdCentralUserId || x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily(() => Enumerable.Empty<(string Client, IEnumerable<string> Roles)>().ToAsyncEnumerable());
+            .ReturnsLazily(() => new [] { (Client: iamClientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
 
         _fixture.Inject(_provisioningManager);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
