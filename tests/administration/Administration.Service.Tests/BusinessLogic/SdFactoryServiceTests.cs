@@ -34,6 +34,7 @@ using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -108,7 +109,7 @@ public class SdFactoryServiceTests
             'jws': 'this-is-a-super-secret-secret-not'
           }
         }";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
@@ -181,7 +182,7 @@ public class SdFactoryServiceTests
             'jws': 'this-is-a-super-secret-secret-not'
           }
         }";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
         var httpClient = new HttpClient(httpMessageHandlerMock);
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
@@ -217,13 +218,6 @@ public class SdFactoryServiceTests
     #endregion
     
     #region Setup
-    
-    private static HttpContent FormContent(string s, string contentType)
-    {
-        HttpContent content = new StringContent(s);
-        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-        return content;
-    }
 
     private void SetupRepositoryMethods()
     { 
