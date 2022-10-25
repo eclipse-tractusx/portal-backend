@@ -60,7 +60,7 @@ public class ServicesController : ControllerBase
     /// <response code="200">Returns the list of all active services.</response>
     [HttpGet]
     [Route("active")]
-    [Authorize(Roles = "view_service_offering")]
+    // [Authorize(Roles = "view_service_offering")]
     [ProducesResponseType(typeof(Pagination.Response<ServiceOverviewData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         _serviceBusinessLogic.GetAllActiveServicesAsync(page, size);
@@ -93,7 +93,7 @@ public class ServicesController : ControllerBase
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
     [Route("{serviceId}/subscribe")]
-    [Authorize(Roles = "subscribe_service")]
+    // [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
