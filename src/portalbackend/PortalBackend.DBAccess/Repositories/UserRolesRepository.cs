@@ -44,6 +44,10 @@ public class UserRolesRepository : IUserRolesRepository
                 appId
             ))
             .Entity;
+    
+    ///<inheritdoc/>
+    public UserRole DeleteUserRole(Guid roleId) =>
+        _dbContext.Remove(new UserRole(roleId,null!,Guid.Empty)).Entity;
 
     ///<inheritdoc/>
     public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>

@@ -29,6 +29,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -87,7 +88,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ConflictException($"app {appId} is not in status CREATED");
         }
-        _portalRepositories.Attach(new Offer(appId), app =>
+        appRepository.AttachAndModifyOffer(appId, app =>
         {
             if (appResult.ContactEmail != updateModel.ContactEmail)
             {
@@ -280,4 +281,31 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
         _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
+
+    /// <inheritdoc/>
+    public async Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId)
+    {
+        var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRoleUntrackedAsync(appId, iamUserId, OfferStatusId.CREATED, roleId).ConfigureAwait(false);
+        if (!appUserRole.IsProviderCompanyUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
+        }
+        if (!appUserRole.OfferStatus)
+        {
+            throw new ControllerArgumentException($"AppId must be in Created State");
+        }
+        if (!appUserRole.IsRoleIdExist)
+        {
+            throw new NotFoundException($"role {roleId} does not exist");
+        }
+        try
+        {
+            _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new NotFoundException($"role {roleId} does not exist");
+        }
+    }
 }

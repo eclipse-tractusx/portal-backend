@@ -40,9 +40,17 @@ public record OfferProviderResponse(
 );
 
 /// <summary>
+/// Model for Agreement and Consent Status
+/// </summary>
+/// <param name="Id"></param>
+/// <param name="Name"></param>
+/// <param name="ConsentStatus"></param>
+/// <returns></returns>
+public record OfferAgreement(Guid? Id, string? Name, string? ConsentStatus);
+
+/// <summary>
 /// Model for Document
 /// </summary>
 /// <param name="documentId"></param>
 /// <param name="documentName"></param>
 public record DocumentData(Guid documentId, string documentName);
-
