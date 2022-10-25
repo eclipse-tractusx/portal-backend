@@ -79,7 +79,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_logger, _httpClientFactory, _options);
         
         // Act
-        var token = await sut.GetTokenAsync().ConfigureAwait(false);
+        var token = await sut.GetTokenAsync(CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         token.Should().NotBeNull();
@@ -99,11 +99,121 @@ public class CustodianServiceTests
         var sut = new CustodianService(_logger, _httpClientFactory, _options);
 
         // Act
-        async Task Act() => await sut.GetTokenAsync().ConfigureAwait(false);
+        async Task Act() => await sut.GetTokenAsync(CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("Token could not be retrieved");
+    }
+
+    #endregion
+
+    #region Create Wallet
+
+    [Fact]
+    public async Task CreateWallet_WithValidData_DoesNotThrowException()
+    {
+        // Arrange
+        var bpn = "123";
+        var name = "test";
+        SetupAuthClient();
+        var httpMessageHandlerMock =
+            new HttpMessageHandlerMock(HttpStatusCode.OK);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
+            .Returns(httpClient);
+        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        
+        // Act
+        await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+    }
+
+    [Fact]
+    public async Task CreateWallet_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        var bpn = "123";
+        var name = "test";
+        SetupAuthClient();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
+        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+
+        // Act
+        async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Contain("Access to Custodian Failed with Status");
+    }
+
+    #endregion
+
+    #region GetWallets
+
+    [Fact]
+    public async Task GetWallets_WithValidData_ReturnsWallets()
+    {
+        // Arrange
+        var data = JsonSerializer.Serialize(new List<GetWallets>
+        {
+            new()
+            {
+                bpn = "abc",
+                name = "test",
+                wallet = new Wallet
+                {
+                    did = "123",
+                    createdAt = DateTime.Now,
+                    publicKey = "key"
+                }
+            }
+        });
+        SetupAuthClient();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/vc+ld+json"));
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
+            .Returns(httpClient);
+        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        
+        // Act
+        var result = await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetWallets_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        SetupAuthClient();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
+        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+
+        // Act
+        var result = await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
     }
 
     #endregion
