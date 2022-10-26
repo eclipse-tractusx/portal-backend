@@ -98,4 +98,11 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
+    
+    /// <summary>
+    /// Get Sales Manager Data
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId);
 }

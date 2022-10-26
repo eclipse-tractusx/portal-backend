@@ -60,6 +60,12 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Sales Manager roles
+    /// </summary>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
 }
 
 /// <summary>

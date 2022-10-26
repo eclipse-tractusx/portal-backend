@@ -116,4 +116,12 @@ public interface IUserRepository
     Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
+    
+    /// <summary>
+    /// Get App Provider Sales Manager
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="salesManagerRoles"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
 }
