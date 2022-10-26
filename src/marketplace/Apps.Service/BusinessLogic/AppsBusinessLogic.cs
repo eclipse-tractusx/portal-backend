@@ -77,7 +77,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) =>
-        _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null)

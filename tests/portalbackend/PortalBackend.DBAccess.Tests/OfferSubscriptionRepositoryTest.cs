@@ -113,6 +113,25 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
+    #region GetAllBusinessAppDataForUserId
+
+    [Fact]
+    public async Task GetAllBusinessAppDataForUserIdAsync_WithValidUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync("3d8142f1-860b-48aa-8c2b-1ccb18699f65").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNullOrEmpty();
+        result.Should().HaveCount(1);
+        result.First().Uri.Should().Be("https://url.test-app.com");
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
