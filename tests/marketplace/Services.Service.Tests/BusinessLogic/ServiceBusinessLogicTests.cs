@@ -58,7 +58,6 @@ public class ServiceBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IOfferSetupService _offerSetupService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
 
     public ServiceBusinessLogicTests()
@@ -81,7 +80,6 @@ public class ServiceBusinessLogicTests
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
 
-        _offerSetupService = A.Fake<IOfferSetupService>();
         _offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
 
         SetupRepositories();
@@ -96,7 +94,6 @@ public class ServiceBusinessLogicTests
             {"CatenaX", new[] {"Company Admin"}}
         };
         _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15, ServiceAccountRoles = serviceAccountRoles, CompanyAdminRoles = companyAdminRoles}));
-        _fixture.Inject(_offerSetupService);
     }
 
     #region Create Service
@@ -158,7 +155,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionService.AddServiceSubscription(A<Guid>._, A<string>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerSubscriptionId);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferService>(), _offerSubscriptionService, Options.Create(new ServiceSettings()));
 
@@ -167,6 +164,14 @@ public class ServiceBusinessLogicTests
 
         // Assert
         result.Should().Be(offerSubscriptionId);
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(
+            A<Guid>._,
+            A<string>._,
+            A<string>._,
+            A<IDictionary<string, IEnumerable<string>>>._,
+            A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE),
+            A<string>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -343,7 +348,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), "abcSecret", "sa1"), new ClientInfoData(Guid.NewGuid().ToString())));
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var sut = _fixture.Create<ServiceBusinessLogic>();
@@ -407,11 +412,6 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId || x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
-
-        A.CallTo(() => _offerRepository.CheckServiceExistsById(_existingServiceId))
-            .Returns(true);
-        A.CallTo(() => _offerRepository.CheckServiceExistsById(A<Guid>.That.Not.Matches(x => x == _existingServiceId)))
-            .Returns(false);
 
         var agreementData = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => _agreementRepository.GetOfferAgreementDataForOfferId(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))

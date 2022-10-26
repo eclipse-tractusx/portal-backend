@@ -28,6 +28,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\notification\Notification.Library\Notification.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />

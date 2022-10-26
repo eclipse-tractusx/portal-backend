@@ -130,9 +130,25 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.RequesterId,
                     x.OfferId,
                     x.Offer!.Name!,
-                    x.Company.BusinessPartnerNumber!
+                    x.Company.BusinessPartnerNumber!,
+                    x.Requester!.Email
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
+        _context.OfferSubscriptions.AsNoTracking()
+            .Where(x => x.OfferId == offerId && x.CompanyId == companyId && x.Offer!.OfferTypeId == offerTypeId)
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId>(x.Id, x.OfferSubscriptionStatusId))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription>? setOptionalParameters = null)
+    {
+        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty)).Entity;
+        setOptionalParameters?.Invoke(offerSubscription);
+        return offerSubscription;
+    }
 
     /// <inheritdoc />
     public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
