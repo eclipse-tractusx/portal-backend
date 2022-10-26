@@ -194,4 +194,16 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
         return NoContent();
     }
+    
+    /// <summary>
+    /// Get All Users with Role of Sales Manager
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/ownCompany/salesManager/remarks>
+    /// <response code="200">Return the Users with Role of Sales Manager.</response>
+    [HttpGet]
+    [Route("ownCompany/salesManager")]
+    [Authorize(Roles = "add_app")]  
+    [ProducesResponseType(typeof(IAsyncEnumerable<SalesManagerData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync() =>
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagerAsync(iamUserId));
 }

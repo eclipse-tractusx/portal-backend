@@ -308,4 +308,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new NotFoundException($"role {roleId} does not exist");
         }
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId) =>
+       _portalRepositories.GetInstance<IUserRepository>().GetAppProviderSalesManagerAsync(iamUserId,_settings.SalesManagerRoles);
 }
