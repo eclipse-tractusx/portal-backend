@@ -307,6 +307,7 @@ public class UserController : ControllerBase
     /// <response code="200">Returns the company user details.</response>
     /// <response code="404">User is not existing/found.</response>
     [HttpGet]
+    [Authorize(Roles = "view_own_user_account")]
     [Route("ownUser")]
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -324,6 +325,7 @@ public class UserController : ControllerBase
     /// <response code="403">Invalid companyUserId for user.</response>
     /// <response code="404">No shared realm userid found for the id in realm</response>
     [HttpPut]
+    [Authorize(Roles = "change_own_user_account")]
     [Route("ownUser/{companyUserId}")]
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -341,6 +343,7 @@ public class UserController : ControllerBase
     /// <response code="403">Invalid or not existing user id.</response>
     /// <response code="404">User is not existing/found.</response>
     [HttpDelete]
+    [Authorize(Roles = "delete_own_user_account")]
     [Route("ownUser/{companyUserId}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -431,20 +434,4 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
         this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
-    
-    /// <summary>
-    /// Delete My User Account using UserId
-    /// </summary>
-    /// <returns></returns>
-    /// <remarks>Example: DELETE: /api/administration/user/owncompany/user</remarks>
-    /// <response code="200">Empty response on success.</response>
-    /// <response code="404">Record not found.</response>
-    [HttpDelete]
-    [Authorize(Roles = "delete_user_account")]
-    [Route("owncompany/user")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task DeleteUserOwnAccount() =>
-       this.WithIamUserId(adminUserId => _logic.DeleteUserOwnAccountAsync(adminUserId));
-
 }
