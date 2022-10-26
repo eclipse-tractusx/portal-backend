@@ -23,7 +23,6 @@ using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
@@ -42,7 +41,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
+    private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly INotificationService _notificationService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
@@ -51,14 +50,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
-    /// <param name="mailingService">Mail service.</param>
+    /// <param name="offerSubscriptionService">OfferSubscription Service.</param>
     /// <param name="notificationService">Notification service.</param>
     /// <param name="offerService">Offer service</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOfferService offerService, IOptions<AppsSettings> settings)
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, INotificationService notificationService, IOfferService offerService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
+        _offerSubscriptionService = offerSubscriptionService;
         _notificationService = notificationService;
         _offerService = offerService;
         _settings = settings.Value;
@@ -159,58 +158,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(iamUserId);
 
     /// <inheritdoc/>
-    public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
-    {
-        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
-        if (appDetails == null)
-        {
-            throw new NotFoundException($"App {appId} does not exist");
-        }
-        
-        var (requesterId, requesterEmail) = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdAndEmailForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        var companyName = await GetOrCreateCompanyAppSubscriptionData(appId, iamUserId, requesterId);
-
-        if(appDetails.AppName is null || appDetails.ProviderContactEmail is null)
-        {
-            var nullProperties = new List<string>();
-            if (appDetails.AppName is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.AppName)}");
-            }
-            if(appDetails.ProviderContactEmail is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.ProviderContactEmail)}");
-            }
-            throw new UnexpectedConditionException($"The following fields of app '{appId}' have not been configured properly: {string.Join(", ", nullProperties)}");
-        }
-
-        if (appDetails.SalesManagerId.HasValue)
-        {
-            var notificationContent = new
-            {
-                appDetails.AppName,
-                RequestorCompanyName = companyName,
-                UserEmail = requesterEmail,
-            };
-            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(appDetails.SalesManagerId.Value, NotificationTypeId.APP_SUBSCRIPTION_REQUEST, false,
-                notification =>
-                {
-                    notification.CreatorUserId = requesterId;
-                    notification.Content = JsonSerializer.Serialize(notificationContent);
-                });
-        }
-        
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-        var mailParams = new Dictionary<string, string>
-            {
-                { "appProviderName", appDetails.ProviderName},
-                { "appName", appDetails.AppName },
-                { "url", _settings.BasePortalAddress },
-            };
-        await _mailingService.SendMails(appDetails.ProviderContactEmail, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
-    }
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
@@ -361,37 +310,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"language code or UseCaseId does not exist");
         }
     }
-    
-    private async Task<string> GetOrCreateCompanyAppSubscriptionData(Guid appId, string iamUserId, Guid requesterId)
-    {
-        var companyAssignedAppRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var companyAppSubscriptionData = await companyAssignedAppRepository
-            .GetCompanyIdWithAssignedOfferForCompanyUserAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
-        if (companyAppSubscriptionData == default)
-        {
-            throw new ControllerArgumentException($"user {iamUserId} is not assigned with a company");
-        }
 
-        var (companyId, offerSubscription, companyName, companyUserId) = companyAppSubscriptionData;
-        if (offerSubscription == null)
-        {
-            companyAssignedAppRepository.CreateOfferSubscription(appId, companyId, OfferSubscriptionStatusId.PENDING,
-                requesterId, companyUserId);
-        }
-        else
-        {
-            if (offerSubscription.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE
-                or OfferSubscriptionStatusId.PENDING)
-            {
-                throw new ConflictException($"company {companyId} is already subscribed to {appId}");
-            }
-
-            offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-        }
-
-        return companyName;
-    }
-    
     /// <inheritdoc/>
     public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
     {
@@ -451,6 +370,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
      /// <inheritdoc/>
@@ -477,5 +397,5 @@ public class AppsBusinessLogic : IAppsBusinessLogic
      
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);
 }

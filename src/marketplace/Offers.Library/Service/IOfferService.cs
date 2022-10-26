@@ -101,8 +101,9 @@ public interface IOfferService
     /// <param name="companyAdminRoles">Roles that will be assigned to the company admin</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
+    /// <param name="basePortalAddress">Address of the portal</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId);
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
 
     /// <summary>
     /// Creates a new service offering
