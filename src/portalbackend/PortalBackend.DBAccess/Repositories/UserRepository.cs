@@ -112,8 +112,8 @@ public class UserRepository : IUserRepository
                 iamUserId,
                 companyUserId)).Entity;
 
-    public IamUser RemoveIamUser(IamUser iamUser) =>
-        _dbContext.Remove(iamUser).Entity;
+    public IamUser DeleteIamUser(string iamUserId) =>
+        _dbContext.Remove(new IamUser(iamUserId, Guid.Empty)).Entity;
 
     public IQueryable<CompanyUser> GetOwnCompanyUserQuery(
         string adminUserId,
@@ -307,17 +307,6 @@ public class UserRepository : IUserRepository
                     ))))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserWithIdpData?> GetUserWithSharedIdpDataAsync(string iamUserId) =>
-        _dbContext.CompanyUsers
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-            .Include(companyUser => companyUser.CompanyUserAssignedRoles)
-            .Include(companyUser => companyUser.IamUser)
-            .Select(companyUser => new CompanyUserWithIdpData(
-                companyUser,
-                companyUser.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias
-            ))
-            .SingleOrDefaultAsync();
-
     public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId) =>
         _dbContext.IamUsers
             .AsNoTracking()
@@ -434,11 +423,28 @@ public class UserRepository : IUserRepository
     }
 
     /// <inheritdoc />
-    public Task<(string? SharedIdpAlias, Guid CompanyUserId, string? UserEntityId, IEnumerable<string> Bpns, IEnumerable<Guid> RoleIds, IEnumerable<Guid> offerIds, Guid InvitationId)> GetSharedIdentityProviderIamUserAliasDataUntrackedAsync(string iamUserId) =>
-        _dbContext.CompanyUsers.AsNoTracking()
+    public Task<(string? SharedIdpAlias, CompanyUserAccountData AccountData)> GetSharedIdentityProviderUserAccountDataUntrackedAsync(string iamUserId) =>
+        _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-            .Select(companyUser => new ValueTuple<string?, Guid, string?, IEnumerable<string>, IEnumerable<Guid>, IEnumerable<Guid>, Guid>(
+            .Select(companyUser => new ValueTuple<string?,CompanyUserAccountData>(
                 companyUser.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)!.IamIdentityProvider!.IamIdpAlias,
+                new CompanyUserAccountData(
+                    companyUser.Id,
+                    companyUser.IamUser!.UserEntityId,
+                    companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
+                        assignedPartner.BusinessPartnerNumber),
+                    companyUser.CompanyUserAssignedRoles.Select(assignedRole =>
+                        assignedRole.UserRoleId),
+                    companyUser.Offers.Select(offer => offer.Id),
+                    companyUser.Invitations.Select(invitation=>invitation.Id))
+            ))
+            .SingleOrDefaultAsync();
+
+     public IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId) =>
+        _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
+            .Where(companyUser => companyUserIds.Contains(companyUser.Id) &&
+                companyUser.Company!.CompanyUsers.Any(user => user.Id == companyUserId))
+            .Select(companyUser => new CompanyUserAccountData(
                 companyUser.Id,
                 companyUser.IamUser!.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
@@ -446,8 +452,7 @@ public class UserRepository : IUserRepository
                 companyUser.CompanyUserAssignedRoles.Select(assignedRole =>
                     assignedRole.UserRoleId),
                 companyUser.Offers.Select(offer => offer.Id),
-                companyUser.Invitations.Select(invitation=>invitation.Id).SingleOrDefault()
+                companyUser.Invitations.Select(invitation=>invitation.Id)
             ))
-            .SingleOrDefaultAsync();
-    
+            .AsAsyncEnumerable();
 }

@@ -59,6 +59,15 @@ public class ApplicationRepository : IApplicationRepository
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
 
+    public Invitation DeleteInvitation(Guid invitationId) =>
+        _dbContext.Invitations.Remove(
+            new Invitation(
+                invitationId,
+                Guid.Empty,
+                Guid.Empty,
+                default,
+                default)).Entity;
+
     public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications
             .Where(application => application.Id == applicationId)
