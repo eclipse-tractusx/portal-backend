@@ -23,6 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -149,6 +150,21 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         setOptionalParameters?.Invoke(offerSubscription);
         return offerSubscription;
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId) =>
+        _context.OfferSubscriptions.Where(x => 
+                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == userId) &&
+                x.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == userId)) &&
+                x.AppSubscriptionDetail!.AppInstance != null
+            )
+            .Select(offerSubscription => new BusinessAppData(
+                offerSubscription.Id,
+                offerSubscription.Offer!.Name ?? Constants.ErrorString,
+                offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl ?? Constants.ErrorString,
+                offerSubscription.Offer!.ThumbnailUrl ?? Constants.ErrorString,
+                offerSubscription.Offer!.Provider
+            )).AsAsyncEnumerable();
 
     /// <inheritdoc />
     public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>

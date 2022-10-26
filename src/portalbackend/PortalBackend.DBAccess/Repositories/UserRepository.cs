@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using System.Text.RegularExpressions;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -338,24 +337,6 @@ public class UserRepository : IUserRepository
             .Where(u => u.UserEntityId == userId) // Id is unique, so single user
             .SelectMany(u => u.CompanyUser!.Offers.Select(a => a.Id))
             .ToAsyncEnumerable();
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId) =>
-        _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
-            .SelectMany(u => u.CompanyUser!.Company!.BoughtOffers)
-            .Intersect(
-                _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
-                    .SelectMany(u => u.CompanyUser!.UserRoles.Select(r => r.Offer))
-                    .Where(x => x != null)
-                    .Select(x => x!)
-            )
-            .Select(app => new BusinessAppData(
-                app!.Id,
-                app.Name ?? Constants.ErrorString,
-                app.OfferSubscriptions.FirstOrDefault(x => x.OfferId == app.Id) == null ? Constants.ErrorString : app.OfferSubscriptions.First(x => x.OfferId == app.Id).AppSubscriptionDetail!.AppSubscriptionUrl ?? Constants.ErrorString,
-                app.ThumbnailUrl ?? Constants.ErrorString,
-                app.Provider
-            )).AsAsyncEnumerable();
 
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId) =>

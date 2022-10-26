@@ -81,4 +81,11 @@ public interface IOfferSubscriptionsRepository
     public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
     
     OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription>? setOptionalParameters = null);
+
+    /// <summary>
+    /// Gets all business app data for the given userId
+    /// </summary>
+    /// <param name="userId">Id of the user to get the app data for.</param>
+    /// <returns>Returns an IAsyncEnumerable of <see cref="BusinessAppData"/></returns>
+    IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
 }
