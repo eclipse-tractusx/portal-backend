@@ -53,6 +53,7 @@ public class UserBusinessLogicTests
     private readonly IMockLogger<UserBusinessLogic> _mockLogger;
     private readonly ILogger<UserBusinessLogic> _logger;
     private readonly IOptions<UserSettings> _options;
+    private readonly CompanyUser _companyUser;
     private readonly Guid _identityProviderId;
     private readonly string _iamUserId;
     private readonly string _adminIamUser;
@@ -81,6 +82,7 @@ public class UserBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
+        _companyUser = A.Fake<CompanyUser>();
         _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _mailingService = A.Fake<IMailingService>();
@@ -505,6 +507,9 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
+
+        _companyUser.CompanyUserStatusId.Should().Be(CompanyUserStatusId.DELETED);
+        _companyUser.LastEditorId.Should().Be(_companyUserId);
     }
 
     [Fact]
@@ -1030,6 +1035,14 @@ public class UserBusinessLogicTests
                 companyUserIds.Select(id => _fixture.Build<CompanyUserAccountData>().With(x => x.CompanyUserId, id).Create())
                     .Select(u => _companyUserSelectFunction(u))
                     .ToAsyncEnumerable());
+
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._))
+            .ReturnsLazily((Guid companyUserId, Action<CompanyUser> setOptionalParameters) =>
+            {
+                setOptionalParameters.Invoke(_companyUser);
+                return _companyUser;
+            });
+
         A.CallTo(() => _companyUserSelectFunction(A<CompanyUserAccountData>._)).ReturnsLazily((CompanyUserAccountData u) => u);
 
         A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).Returns(_fixture.Create<string>());
