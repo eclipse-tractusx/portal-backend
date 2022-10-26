@@ -18,18 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class CompanyUserWithIdpData
-{
-    public CompanyUserWithIdpData(CompanyUser companyUser, string iamIdpAlias)
-    {
-        CompanyUser = companyUser;
-        IamIdpAlias = iamIdpAlias;
-    }
-
-    public CompanyUser CompanyUser { get; }
-    public string IamIdpAlias { get; }
-}
+public record CompanyUserAccountData(Guid CompanyUserId, string? UserEntityId, IEnumerable<string> BusinessPartnerNumbers, IEnumerable<Guid> RoleIds, IEnumerable<Guid> OfferIds, IEnumerable<Guid> InvitationIds);
