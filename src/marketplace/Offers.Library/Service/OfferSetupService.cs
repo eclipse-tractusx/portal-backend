@@ -18,12 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
@@ -31,27 +28,22 @@ namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 public class OfferSetupService : IOfferSetupService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<OfferSetupService> _logger;
 
-    public OfferSetupService(IHttpClientFactory httpClientFactory, ILogger<OfferSetupService> logger)
+    public OfferSetupService(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _logger = logger;
     }
     
     /// <inheritdoc />
     public async Task AutoSetupOffer(OfferThirdPartyAutoSetupData autoSetupData, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl)
     {
-        _logger.LogInformation("AutoSetup started");
         using var httpClient = _httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         try
         {
-            _logger.LogDebug("OfferSetupService was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", serviceDetailsAutoSetupUrl, JsonSerializer.Serialize(autoSetupData));
             var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync();
-            _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", response.StatusCode, responseContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -60,8 +52,6 @@ public class OfferSetupService : IOfferSetupService
                     response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {responseContent}",
                     response.StatusCode);
             }
-
-            _logger.LogInformation("OfferSetupService AutoSetup was successfully executed.");
         }
         catch (InvalidOperationException e)
         {

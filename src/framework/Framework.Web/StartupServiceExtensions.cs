@@ -29,6 +29,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Http;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
@@ -66,6 +67,22 @@ public static class StartupServiceExtensions
             .AddOptions<JwtBearerOptions>()
             .Bind(configuration.GetSection("JwtBearerOptions"))
             .ValidateOnStart();
+
+        return services;
+    }
+
+    public static IServiceCollection AddCustomHttpClient(this IServiceCollection services)
+    {
+        services
+            .AddTransient<LoggingHandler>()
+            .AddHttpClient()
+            .ConfigureAll<HttpClientFactoryOptions>(options =>
+                {
+                    options.HttpMessageHandlerBuilderActions.Add(x =>
+                    {
+                        x.AdditionalHandlers.Add(x.Services.GetRequiredService<LoggingHandler>());
+                    });
+                });
 
         return services;
     }

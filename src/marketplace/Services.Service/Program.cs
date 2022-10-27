@@ -26,6 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Http;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 var VERSION = "v2";
@@ -44,7 +45,7 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddMailingAndTemplateManager(builder.Configuration)
     .AddPortalRepositories(builder.Configuration)
     .AddProvisioningManager(builder.Configuration)
-    .AddHttpClient();
+    .AddCustomHttpClient();
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()

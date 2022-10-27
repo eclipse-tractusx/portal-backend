@@ -20,6 +20,7 @@
 
 
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 
@@ -30,16 +31,18 @@ public static class CustodianServiceCollectionExtension
         services.AddOptions<CustodianSettings>()
             .Bind(section)
             .ValidateOnStart();
+        services.AddTransient<LoggingHandler>();
+
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
         services.AddHttpClient("custodian", c =>
         {
             c.BaseAddress = new Uri(settings.Value.BaseAdress);
-        }); 
+        }).AddHttpMessageHandler<LoggingHandler>();
         services.AddHttpClient("custodianAuth", c =>
         {
             c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
-        });
+        }).AddHttpMessageHandler<LoggingHandler>();
         services.AddTransient<ICustodianService, CustodianService>();
 
         return services;

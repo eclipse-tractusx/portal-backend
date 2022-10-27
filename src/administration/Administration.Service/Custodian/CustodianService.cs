@@ -34,14 +34,12 @@ public class CustodianService : ICustodianService
     private readonly CustodianSettings _settings;
     private readonly HttpClient _custodianHttpClient;
     private readonly HttpClient _custodianAuthHttpClient;
-    private readonly ILogger<CustodianService> _logger;
 
-    public CustodianService(ILogger<CustodianService> logger, IHttpClientFactory httpFactory, IOptions<CustodianSettings> settings)
+    public CustodianService(IHttpClientFactory httpFactory, IOptions<CustodianSettings> settings)
     {
         _settings = settings.Value;
         _custodianHttpClient = httpFactory.CreateClient("custodian");
         _custodianAuthHttpClient = httpFactory.CreateClient("custodianAuth");
-        _logger = logger;
     }
 
 
@@ -54,13 +52,10 @@ public class CustodianService : ICustodianService
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
         const string walletUrl = "/api/wallets";
 
-        _logger.LogDebug("CreateWallet was called with the following url: {Url} and following data: {Data}", walletUrl, json);
         var result = await _custodianHttpClient.PostAsync(walletUrl, stringContent, cancellationToken).ConfigureAwait(false);
-        _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", result.StatusCode, await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
 
         if (!result.IsSuccessStatusCode)
         {
-            _logger.LogError("Error on creating Wallet HTTP Response Code {StatusCode}", result.StatusCode);
             throw new ServiceException("Access to Custodian Failed with Status Code {StatusCode}", result.StatusCode);
         }
     }
@@ -71,11 +66,9 @@ public class CustodianService : ICustodianService
         var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         const string url = "/api/wallets";
-        _logger.LogDebug("GetWallets was called with the following url: {Url}", url);
         var result = await _custodianHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         
         var responseContent = await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", result.StatusCode, responseContent);
 
         if (result.IsSuccessStatusCode)
         {
@@ -87,7 +80,7 @@ public class CustodianService : ICustodianService
         }
         else
         {
-            _logger.LogInformation("Error on retrieveing Wallets HTTP Response Code {StatusCode}", result.StatusCode);
+            throw new ServiceException("Error on retrieving Wallets HTTP Response Code {StatusCode}", result.StatusCode);
         }
         return response;
     }
@@ -104,10 +97,8 @@ public class CustodianService : ICustodianService
             {"scope", _settings.Scope}
         };
         var content = new FormUrlEncodedContent(parameters);
-        _logger.LogDebug("GetToken for Wallet was called with the following data: {Data}", JsonSerializer.Serialize(parameters));
         var response = await _custodianAuthHttpClient.PostAsync("", content, cancellationToken);
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-        _logger.LogDebug("Responded with StatusCode: {StatusCode} and the following content {Content}", response.StatusCode, responseContent);
         if (!response.IsSuccessStatusCode)
         {
             throw new ServiceException("Token could not be retrieved");

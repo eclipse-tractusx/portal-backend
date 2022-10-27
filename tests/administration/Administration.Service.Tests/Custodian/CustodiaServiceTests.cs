@@ -42,7 +42,6 @@ public class CustodianServiceTests
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _accessToken;
     private readonly IOptions<CustodianSettings> _options;
-    private readonly ILogger<CustodianService> _logger;
 
     public CustodianServiceTests()
     {
@@ -52,7 +51,6 @@ public class CustodianServiceTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _accessToken = "this-is-a-super-secret-secret-not";
-        _logger = A.Fake<ILogger<CustodianService>>();
         _options = Options.Create(new CustodianSettings
         {
             Password = "passWord",
@@ -76,7 +74,7 @@ public class CustodianServiceTests
     {
         // Arrange
         SetupAuthClient();
-        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _options);
         
         // Act
         var token = await sut.GetTokenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -96,7 +94,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _httpClientFactory.CreateClient("custodianAuth")).Returns(httpClient);
-        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _options);
 
         // Act
         async Task Act() => await sut.GetTokenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -125,7 +123,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
             .Returns(httpClient);
-        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _options);
         
         // Act
         await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
@@ -147,7 +145,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
-        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _options);
 
         // Act
         async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
@@ -187,7 +185,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
             .Returns(httpClient);
-        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _options);
         
         // Act
         var result = await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
@@ -207,7 +205,7 @@ public class CustodianServiceTests
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
-        var sut = new CustodianService(_logger, _httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _options);
 
         // Act
         var result = await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
