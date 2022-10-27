@@ -89,7 +89,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn);
 
         var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
-        
+
         return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }
 
