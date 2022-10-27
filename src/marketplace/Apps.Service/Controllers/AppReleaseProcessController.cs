@@ -198,7 +198,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <summary>
     /// Get All Users with Role of Sales Manager
     /// </summary>
-    /// <remarks>Example: GET: /api/apps/appreleaseprocess/ownCompany/salesManager/remarks>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/ownCompany/salesManager</remarks>
     /// <response code="200">Return the Users with Role of Sales Manager.</response>
     [HttpGet]
     [Route("ownCompany/salesManager")]
