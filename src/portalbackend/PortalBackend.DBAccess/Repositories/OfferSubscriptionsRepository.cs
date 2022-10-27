@@ -87,18 +87,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, OfferSubscription? offerSubscription, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
-        _context.IamUsers
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new ValueTuple<Guid, OfferSubscription?, string, Guid>(
-                company!.Id,
-                company.OfferSubscriptions.SingleOrDefault(os => os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId),
-                company!.Name,
-                company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
-            ))
-            .SingleOrDefaultAsync();
-
     public Task<(Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.IamUsers
             .Where(iamUser => iamUser.UserEntityId == iamUserId)

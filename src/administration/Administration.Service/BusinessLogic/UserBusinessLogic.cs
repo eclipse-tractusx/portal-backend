@@ -436,10 +436,18 @@ public class UserBusinessLogic : IUserBusinessLogic
             companyUser.CompanyUserStatusId = CompanyUserStatusId.DELETED;
             companyUser.LastEditorId = administratorId;
         });
-        DeleteAssignedBusinessPartnerNumbers(businessPartnerNumbers, companyUserId);
-        DeleteAssignedOffers(offerIds, companyUserId);
-        DeleteAssignedUserRoles(roleIds, companyUserId);
-        DeleteAssignedInvitations(invitationIds);
+
+        _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()
+            .DeleteCompanyUserAssignedBusinessPartners(businessPartnerNumbers.Select(bpn => (companyUserId, bpn)));
+
+        _portalRepositories.GetInstance<IOfferRepository>()
+            .DeleteAppFavourites(offerIds.Select(offerId => (offerId, companyUserId)));
+
+        _portalRepositories.GetInstance<IUserRolesRepository>()
+            .DeleteCompanyUserAssignedRoles(roleIds.Select(userRoleId => (companyUserId, userRoleId)));
+
+        _portalRepositories.GetInstance<IApplicationRepository>()
+            .DeleteInvitations(invitationIds);
     }
 
     private async Task DeleteIamUserAsync(string? sharedIdpAlias, string userEntityId, IUserRepository userRepository)
@@ -454,54 +462,6 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
         await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
         userRepository.DeleteIamUser(userEntityId);
-    }
-
-    private void DeleteAssignedBusinessPartnerNumbers(IEnumerable<string> businessPartnerNumbers, Guid companyUserId)
-    {
-        if (businessPartnerNumbers.Any())
-        {
-            var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-            foreach (var businessPartnerNumber in businessPartnerNumbers)
-            {
-                userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
-            }
-        }
-    }
-
-    private void DeleteAssignedOffers(IEnumerable<Guid>offerIds, Guid companyUserId)
-    {
-        if (offerIds.Any())
-        {
-            var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-            foreach (var offerId in offerIds)
-            {
-                offerRepository.DeleteAppFavourite(offerId, companyUserId);
-            }
-        }
-    }
-
-    private void DeleteAssignedUserRoles(IEnumerable<Guid> userRoleIds, Guid companyUserId)
-    {
-        if (userRoleIds.Any())
-        {
-            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-            foreach (var assignedRole in userRoleIds)
-            {
-                userRolesRepository.DeleteCompanyUserAssignedRole(companyUserId, assignedRole);
-            }
-        }
-    }
-
-    private void DeleteAssignedInvitations(IEnumerable<Guid> invitationIds)
-    {   
-        if (invitationIds.Any())
-        {
-            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-            foreach (var invitationId in invitationIds)
-            {
-                applicationRepository.DeleteInvitation(invitationId);
-            }
-        }
     }
 
     private async Task<bool> CanResetPassword(string userId)
