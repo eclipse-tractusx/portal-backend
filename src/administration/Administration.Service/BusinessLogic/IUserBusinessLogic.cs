@@ -39,6 +39,13 @@ public interface IUserBusinessLogic
     Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
     Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId);
     Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId);
+
+    /// <summary>
+    /// Delete User Own Account using userId
+    /// </summary>
+    /// <param name="companyUserId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
     Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId);
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, string adminUserId);

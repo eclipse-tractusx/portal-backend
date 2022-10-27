@@ -92,7 +92,7 @@ public interface IOfferRepository
     /// <param name="appId">Id of the app</param>
     /// <param name="companyUserId">Id of the company User</param>
     CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId);
-
+    CompanyUserAssignedAppFavourite DeleteAppFavourite(Guid appId, Guid companyUserId);
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
     /// </summary>
