@@ -111,6 +111,7 @@ public interface IUserRepository
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
     
+    /// <summary>
     /// User account data for deletion of own userId
     /// </summary>
     /// <param name="iamUserId"></param>
