@@ -2,9 +2,8 @@ nuget/nuget/-/PasswordGenerator/2.1.0
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Flurl.Http.Signed/3.2.4
 nuget/nuget/-/Flurl.Signed/3.0.6
-nuget/nuget/-/JetBrains.Annotations/2021.3.0
-nuget/nuget/-/Laraue.EfCoreTriggers.Common/6.3.4
-nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/6.3.4
+nuget/nuget/-/Laraue.EfCoreTriggers.Common/6.3.6
+nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/6.3.6
 nuget/nuget/-/MailKit/2.15.0
 nuget/nuget/-/MimeKit/2.15.1
 nuget/nuget/-/Newtonsoft.Json/13.0.1
