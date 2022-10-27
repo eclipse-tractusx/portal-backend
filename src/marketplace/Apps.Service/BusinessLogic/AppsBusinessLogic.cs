@@ -73,8 +73,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.VendorCompanyName,
                     app.LicenseText ?? Constants.ErrorString,
                     app.ThumbnailUrl ?? Constants.ErrorString,
-                    app.UseCaseNames.Select(name => name).ToList()
-                    ));
+                    app.UseCaseNames));
 
     /// <inheritdoc/>
     public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) =>
