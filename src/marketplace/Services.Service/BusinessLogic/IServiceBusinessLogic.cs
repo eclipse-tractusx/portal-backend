@@ -48,10 +48,11 @@ public interface IServiceBusinessLogic
     /// Adds a subscription to the given service
     /// </summary>
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
+    /// <param name="offerAgreementConsentData">The agreement consent data</param>
     /// <param name="iamUserId">Id of the user</param>
     /// <param name="accessToken">The access token of the user</param>
     /// <returns></returns>
-    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken);
+    Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken);
 
     /// <summary>
     /// Gets the service detail data for the given service
@@ -74,9 +75,9 @@ public interface IServiceBusinessLogic
     /// Creates new service agreement consents with the given data for the given service
     /// </summary>
     /// <param name="subscriptionId">Id of the service subscription to create the consents for.</param>
-    /// <param name="serviceAgreementConsentData">service agreement consents</param>
+    /// <param name="offerAgreementConsentData">service agreement consents</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId, ServiceAgreementConsentData serviceAgreementConsentData,
+    Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId, OfferAgreementConsentData offerAgreementConsentData,
         string iamUserId);
 
     /// <summary>
@@ -99,7 +100,7 @@ public interface IServiceBusinessLogic
     /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="serviceAgreementConsentDatas">Service Agreement Consent Data</param>
     /// <param name="iamUserId">id of the iam user</param>
-    Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas, string iamUserId);
+    Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<OfferAgreementConsentData> serviceAgreementConsentDatas, string iamUserId);
 
     /// <summary>
     /// Auto setup the service.

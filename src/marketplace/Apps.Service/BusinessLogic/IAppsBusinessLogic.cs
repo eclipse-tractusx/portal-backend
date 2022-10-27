@@ -92,9 +92,10 @@ public interface IAppsBusinessLogic
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
+    /// <param name="offerAgreementConsentData">The agreement consent data</param>
     /// <param name="iamUserId">ID of the user that initiated app subscription for their company.</param>
     /// <param name="accessToken">Access token of the current User</param>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId, string accessToken);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.

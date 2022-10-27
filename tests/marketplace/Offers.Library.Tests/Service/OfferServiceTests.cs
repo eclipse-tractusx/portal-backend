@@ -359,7 +359,7 @@ public class OfferServiceTests
         // Arrange
         var consentId = Guid.NewGuid();
         var statusId = ConsentStatusId.ACTIVE;
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, statusId)
         };
@@ -396,7 +396,7 @@ public class OfferServiceTests
     {
         // Arrange
         var nonExistingAgreementId = Guid.NewGuid();
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(nonExistingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -414,7 +414,7 @@ public class OfferServiceTests
     public async Task CreateOrUpdateServiceAgreementConsentAsync_WithWrongUser_ThrowsException()
     {
         // Arrange
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -433,7 +433,7 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingServiceId = Guid.NewGuid();
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -452,7 +452,7 @@ public class OfferServiceTests
     public async Task CreateOrUpdateServiceAgreementConsentAsync_WithInvalidOfferType_ThrowsException()
     {
         // Arrange
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };

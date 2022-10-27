@@ -130,17 +130,19 @@ public class AppBusinessLogicTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
-        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerSubscriptionId);
         var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService, A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
 
         // Act
-        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), "44638c72-690c-42e8-bd5e-c8ac3047ff82", "THISISAACCESSTOKEN").ConfigureAwait(false);
+        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData, "44638c72-690c-42e8-bd5e-c8ac3047ff82", "THISISAACCESSTOKEN").ConfigureAwait(false);
 
         // Assert
         result.Should().Be(offerSubscriptionId);
         A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(
                 A<Guid>._,
+                A<IEnumerable<OfferAgreementConsentData>>._,
                 A<string>._,
                 A<string>._,
                 A<IDictionary<string, IEnumerable<string>>>._,

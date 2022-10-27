@@ -155,8 +155,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(iamUserId);
 
     /// <inheritdoc/>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
