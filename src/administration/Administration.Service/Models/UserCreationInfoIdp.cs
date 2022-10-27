@@ -18,16 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public interface IUserProvisioningService
-{
-    IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken = default);
-    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
-    Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId);
-    IAsyncEnumerable<UserRoleData> GetRoleDatas(IDictionary<string,IEnumerable<string>> clientRoles);
-    Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, string iamUserId);
-}
+public record UserCreationInfoIdp(
+
+    [property: JsonPropertyName("firstName")]
+    string FirstName,
+    
+    [property: JsonPropertyName("lastName")]
+    string LastName,
+
+    [property: JsonPropertyName("email")]
+    string Email,
+
+    [property: JsonPropertyName("roles")]
+    IEnumerable<string> Roles,
+
+    [property: JsonPropertyName("userName")]
+    string UserName,
+
+    [property: JsonPropertyName("userId")]
+    string UserId
+);

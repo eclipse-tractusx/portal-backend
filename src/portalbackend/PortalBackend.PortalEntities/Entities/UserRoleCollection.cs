@@ -18,27 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+public class UserRoleCollection
+{
+    private UserRoleCollection()
+    {
+        Name = null!;
+        UserRoles = new HashSet<UserRole>();
+        UserRoleCollectionDescriptions = new HashSet<UserRoleCollectionDescription>();
+    }
 
-public record UserCreationInfoIdp(
+    public UserRoleCollection(Guid id, string label) : this()
+    {
+        Id = id;
+        Name = label;
+    }
 
-    [property: JsonPropertyName("firstName")]
-    string FirstName,
-    
-    [property: JsonPropertyName("lastName")]
-    string LastName,
+    public Guid Id { get; set; }
 
-    [property: JsonPropertyName("email")]
-    string Email,
+    public string Name { get; set; }
 
-    [property: JsonPropertyName("roles")]
-    IEnumerable<string> Roles,
-
-    [property: JsonPropertyName("userName")]
-    string UserName,
-
-    [property: JsonPropertyName("userId")]
-    string UserId
-);
+    // Navigation properties
+    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; private set; }
+}
