@@ -82,11 +82,12 @@ public class ServicesController : ControllerBase
         var id = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOfferingAsync(data, iamUserId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetServiceDetails), new { serviceId = id }, id);
     }
-    
+
     /// <summary>
     /// Adds a new service subscription.
     /// </summary>
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
+    /// <param name="offerAgreementConsentData">The agreement consent data</param>
     /// <remarks>Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
     /// <response code="201">Returns success</response>
     /// <response code="400">Company or company user wasn't assigned to the user.</response>
@@ -97,9 +98,9 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId)
+    public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        var serviceSubscriptionId = await this.WithIamUserAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, auth.iamUserId, auth.bearerToken)).ConfigureAwait(false);
+        var serviceSubscriptionId = await this.WithIamUserAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData, auth.iamUserId, auth.bearerToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 
@@ -147,9 +148,9 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> CreateOrUpdateServiceAgreementConsents([FromRoute] Guid subscriptionId, [FromBody] IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas)
+    public async Task<NoContentResult> CreateOrUpdateServiceAgreementConsents([FromRoute] Guid subscriptionId, [FromBody] IEnumerable<OfferAgreementConsentData> serviceAgreementConsentData)
     {
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateOrUpdateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId).ConfigureAwait(false));
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateOrUpdateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentData, iamUserId).ConfigureAwait(false));
         return this.NoContent();
     }
 
@@ -157,7 +158,7 @@ public class ServicesController : ControllerBase
     /// Creates new service agreement consents 
     /// </summary>
     /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service subscription the consent should get set for.</param>
-    /// <param name="serviceAgreementConsentData">the service agreement consent.</param>
+    /// <param name="offerAgreementConsentData">the service agreement consent.</param>
     /// <remarks>Example: Post: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/serviceAgreementConsent</remarks>
     /// <response code="201">Returns the id of the created consent.</response>
     /// <response code="400">Company or company user wasn't assigned to the user.</response>
@@ -168,10 +169,10 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> CreateServiceAgreementConsent([FromRoute] Guid subscriptionId, [FromBody] ServiceAgreementConsentData serviceAgreementConsentData)
+    public async Task<CreatedAtRouteResult> CreateServiceAgreementConsent([FromRoute] Guid subscriptionId, [FromBody] OfferAgreementConsentData offerAgreementConsentData)
     {
         var consentId = await this.WithIamUserId(iamUserId =>
-            _serviceBusinessLogic.CreateServiceAgreementConsentAsync(subscriptionId, serviceAgreementConsentData, iamUserId)
+            _serviceBusinessLogic.CreateServiceAgreementConsentAsync(subscriptionId, offerAgreementConsentData, iamUserId)
                 .ConfigureAwait(false));
         return CreatedAtRoute(nameof(GetServiceAgreementConsentDetail), new { serviceConsentId = consentId }, consentId);
     }

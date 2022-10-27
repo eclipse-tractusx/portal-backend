@@ -155,17 +155,19 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerSubscriptionId);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), A.Fake<IOfferService>(), _offerSubscriptionService, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.AddServiceSubscription(_existingServiceId, _iamUser.UserEntityId, "THISISAACCESSTOKEN");
+        var result = await sut.AddServiceSubscription(_existingServiceId, consentData, _iamUser.UserEntityId, "THISISAACCESSTOKEN");
 
         // Assert
         result.Should().Be(offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(
             A<Guid>._,
+            A<IEnumerable<OfferAgreementConsentData>>._,
             A<string>._,
             A<string>._,
             A<IDictionary<string, IEnumerable<string>>>._,
@@ -274,7 +276,7 @@ public class ServiceBusinessLogicTests
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
+        var serviceAgreementConsentData = new OfferAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
         var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, serviceAgreementConsentData, _iamUser.UserEntityId);
 
         // Assert
@@ -286,12 +288,12 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<ServiceAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(), offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
-        await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<ServiceAgreementConsentData>
+        await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         }, _iamUser.UserEntityId);

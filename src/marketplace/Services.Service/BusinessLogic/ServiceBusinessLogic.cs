@@ -91,8 +91,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.SERVICE, _settings.BasePortalAddress);
+    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> serviceAgreementConsentData, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, serviceAgreementConsentData, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
     public async Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
@@ -121,9 +121,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId,
-        ServiceAgreementConsentData serviceAgreementConsentData, string iamUserId) =>
-        _offerService.CreateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentData.AgreementId,
-            serviceAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
+        OfferAgreementConsentData offerAgreementConsentData, string iamUserId) =>
+        _offerService.CreateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentData.AgreementId,
+            offerAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) => 
@@ -135,7 +135,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<ServiceAgreementConsentData> serviceAgreementConsentDatas,
+        IEnumerable<OfferAgreementConsentData> serviceAgreementConsentDatas,
         string iamUserId) =>
         _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, serviceAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
 

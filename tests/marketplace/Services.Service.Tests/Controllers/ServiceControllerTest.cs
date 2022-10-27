@@ -91,15 +91,16 @@ public class ServiceControllerTest
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, IamUserId, _accessToken))
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
             .Returns(offerSubscriptionId);
 
         //Act
         var serviceId = Guid.NewGuid();
-        var result = await this._controller.AddServiceSubscription(serviceId).ConfigureAwait(false);
+        var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }
@@ -146,8 +147,8 @@ public class ServiceControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var consentId = Guid.NewGuid();
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<ServiceAgreementConsentData>._, A<string>._))
+        var serviceAgreementConsentData = new OfferAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
+        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<OfferAgreementConsentData>._, A<string>._))
             .ReturnsLazily(() => consentId);
 
         //Act

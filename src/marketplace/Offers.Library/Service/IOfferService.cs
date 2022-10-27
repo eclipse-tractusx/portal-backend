@@ -49,7 +49,7 @@ public interface IOfferService
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<ServiceAgreementConsentData> offerAgreementConsentDatas,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentDatas,
         string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
