@@ -23,7 +23,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -152,7 +151,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-        public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
+    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
         _context.CompanyUsers.AsNoTracking()
             .Where(user => user.IamUser!.UserEntityId == iamUserId)
             .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription => 
@@ -166,21 +165,4 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 offerSubscription.Offer!.ThumbnailUrl,
                 offerSubscription.Offer!.Provider
             )).ToAsyncEnumerable();
-
-    /// <inheritdoc />
-    public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
-        _context.OfferSubscriptions
-            .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<OfferThirdPartyAutoSetupData,bool>(
-                new OfferThirdPartyAutoSetupData(
-                    new OfferThirdPartyAutoSetupCustomerData(
-                        x.Company!.Name,
-                        x.Company!.Address!.CountryAlpha2Code,
-                        x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email),
-                    new OfferThirdPartyAutoSetupPropertyData(
-                        x.Company!.BusinessPartnerNumber,
-                        offerSubscriptionId,
-                        x.OfferId)),
-                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
-            .SingleOrDefaultAsync();
 }
