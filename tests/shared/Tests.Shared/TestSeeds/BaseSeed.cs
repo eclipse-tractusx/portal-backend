@@ -56,17 +56,12 @@ public static class BaseSeed
                 Shortname = "Test",
             },
         });
-        
+
         dbContext.ServiceProviderCompanyDetails.AddRange(new List<ServiceProviderCompanyDetail>
         {
             new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
         });
-        
-        dbContext.CompanyRoles.AddRange(new List<CompanyRole>
-        {
-            new(CompanyRoleId.SERVICE_PROVIDER)
-        }); 
-        
+
         dbContext.CompanyAssignedRoles.AddRange(new List<CompanyAssignedRole>
         {
             new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.SERVICE_PROVIDER),
