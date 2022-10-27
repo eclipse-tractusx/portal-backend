@@ -406,7 +406,7 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new OfferIamUserData( 
                 companyUser.Company!.CompanyRoles
-                    .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection.UserRoles.Where(role => role.OfferId == offerId))
+                    .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
                     .SelectMany(userrole => userrole.Offer!.AppInstances)
                     .Select(instance => instance.IamClient!.ClientClientId)
                     .Distinct()

@@ -361,7 +361,7 @@ public class UserController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_client_roles")]
     [Route("app/{appId}/roles")]
-    [ProducesResponseType(typeof(IEnumerable<ClientRoles>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IAsyncEnumerable<ClientRoles>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId, string? languageShortName = null) =>
@@ -414,13 +414,6 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
         this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
-
-    [Obsolete("doesn't update the database. Replaced by endpoint owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}. remove as soon frontend is adjusted")]
-    [HttpPut]
-    [Authorize(Roles = "modify_user_account")]
-    [Route("bpn")]
-    public Task BpnAttributeAdding([FromBody] IEnumerable<UserUpdateBpn> usersToAddBpn) =>
-        _logic.AddBpnAttributeAsync(usersToAddBpn);
 
     [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/resetPassword. remove as soon frontend is adjusted")]
     [HttpPut]

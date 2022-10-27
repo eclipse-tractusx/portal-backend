@@ -32,6 +32,6 @@ public class UserRoleAssignedCollection
     public Guid UserRoleCollectionId { get; private set; }
 
     // Navigation properties
-    public virtual UserRoleCollection UserRoleCollection { get; private set; } = null!;
-    public virtual UserRole UserRole{ get; private set; } = null!;
+    public virtual UserRoleCollection? UserRoleCollection { get; private set; }
+    public virtual UserRole? UserRole{ get; private set; }
 }

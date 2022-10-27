@@ -41,13 +41,13 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
     }
 
     public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string iamUserId, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(iamUserId, languageShortName == null ? IUserRolesBusinessLogic.DEFAULT_LANGUAGE : languageShortName)
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(iamUserId, languageShortName ?? IUserRolesBusinessLogic.DEFAULT_LANGUAGE)
             .PreSortedGroupBy(x => x.OfferId)
             .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId,s.RoleText,s.Description))));
 
     public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, string iamUserId, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetAppRolesAsync(appId, iamUserId, languageShortName == null ? IUserRolesBusinessLogic.DEFAULT_LANGUAGE : languageShortName);
+            .GetAppRolesAsync(appId, iamUserId, languageShortName ?? IUserRolesBusinessLogic.DEFAULT_LANGUAGE);
 
     public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, string iamUserId) =>
         ModifyUserRolesInternal(
