@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Offers.Library.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
 /// <summary>
 /// Basic model for data needed in business application display.

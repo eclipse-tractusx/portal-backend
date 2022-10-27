@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;

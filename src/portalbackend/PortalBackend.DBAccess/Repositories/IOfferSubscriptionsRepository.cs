@@ -56,8 +56,6 @@ public interface IOfferSubscriptionsRepository
 
     Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
-    Task<(Guid companyId, OfferSubscription? offerSubscription, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
-    
     Task<(Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>

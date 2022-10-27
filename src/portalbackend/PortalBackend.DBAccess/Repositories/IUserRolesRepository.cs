@@ -51,6 +51,7 @@ public interface IUserRolesRepository
     UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
     CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     CompanyUserAssignedRole DeleteCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId);
+    void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds);
     IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
     IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
