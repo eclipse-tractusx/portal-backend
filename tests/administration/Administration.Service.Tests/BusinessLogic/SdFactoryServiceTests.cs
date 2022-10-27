@@ -68,7 +68,7 @@ public class SdFactoryServiceTests
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
 
-        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories, A.Fake<ILogger<SdFactoryService>>());
+        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories);
     }
 
     #endregion
