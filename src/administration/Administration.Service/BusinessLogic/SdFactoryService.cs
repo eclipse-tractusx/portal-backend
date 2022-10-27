@@ -44,7 +44,6 @@ public class SdFactoryService : ISdFactoryService
     /// <param name="httpClientFactory">Factory to create httpClients</param>
     /// <param name="options">The options</param>
     /// <param name="portalRepositories">Access to the portalRepositories</param>
-    /// <param name="logger"></param>
     public SdFactoryService(IOptions<SdFactorySettings> options, IHttpClientFactory httpClientFactory,
         IPortalRepositories portalRepositories)
     {
