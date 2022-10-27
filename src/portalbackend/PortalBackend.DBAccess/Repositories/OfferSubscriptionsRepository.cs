@@ -152,18 +152,18 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId) =>
-        _context.OfferSubscriptions.Where(x => 
-                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == userId) &&
-                x.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == userId)) &&
-                x.AppSubscriptionDetail!.AppInstance != null &&
-                x.AppSubscriptionDetail!.AppSubscriptionUrl != null
-            )
-            .Select(offerSubscription => new BusinessAppData(
+        public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
+        _context.CompanyUsers.AsNoTracking()
+            .Where(user => user.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription => 
+                subscription.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.Id == user.Id)) &&
+                subscription.AppSubscriptionDetail!.AppInstance != null &&
+                subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
+            .Select(offerSubscription => new ValueTuple<Guid,string?,string,string?,string>(
                 offerSubscription.Id,
-                offerSubscription.Offer!.Name ?? Constants.ErrorString,
+                offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
-                offerSubscription.Offer!.ThumbnailUrl ?? Constants.ErrorString,
+                offerSubscription.Offer!.ThumbnailUrl,
                 offerSubscription.Offer!.Provider
             )).ToAsyncEnumerable();
 

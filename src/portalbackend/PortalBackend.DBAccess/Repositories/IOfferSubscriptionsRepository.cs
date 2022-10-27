@@ -85,7 +85,7 @@ public interface IOfferSubscriptionsRepository
     /// <summary>
     /// Gets all business app data for the given userId
     /// </summary>
-    /// <param name="userId">Id of the user to get the app data for.</param>
-    /// <returns>Returns an IAsyncEnumerable of <see cref="BusinessAppData"/></returns>
-    IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
+    /// <param name="iamUserId">Id of the user to get the app data for.</param>
+    /// <returns>Returns an IAsyncEnumerable of app data</returns>
+    IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId);
 }
