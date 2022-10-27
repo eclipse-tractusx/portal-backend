@@ -43,6 +43,7 @@ public class AppBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
+    private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IUserRepository _userRepository;
 
     public AppBusinessLogicTests()
@@ -54,7 +55,12 @@ public class AppBusinessLogicTests
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
+        _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _userRepository = A.Fake<IUserRepository>();
+
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
     }
 
     [Fact]
@@ -65,11 +71,8 @@ public class AppBusinessLogicTests
         var (companyUser, iamUser) = CreateTestUserPair();
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        _fixture.Inject(_portalRepositories);
 
-        var sut = _fixture.Create<AppsBusinessLogic>();
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
 
         // Act
         await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
@@ -88,10 +91,9 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        _fixture.Inject(_portalRepositories);
 
-        var sut = _fixture.Create<AppsBusinessLogic>();
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
+
 
         // Act
         await sut.RemoveFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
@@ -109,7 +111,6 @@ public class AppBusinessLogicTests
         // Arrange
         var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, string?, string?, string?>>(5);
         A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, A.Fake<IOptions<AppsSettings>>());
 
@@ -122,6 +123,26 @@ public class AppBusinessLogicTests
     
     #endregion
 
+    #region GetAllUserUserBusinessApps
+
+    [Fact]
+    public async Task GetAllUserUserBusinessAppsAsync_WithValidData_ReturnsExpectedData()
+    {
+        // Arrange
+        var appData = _fixture.CreateMany<BusinessAppData>(5);
+        A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
+
+        // Act
+        var result = await sut.GetAllUserUserBusinessAppsAsync(_fixture.Create<string>()).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNullOrEmpty();
+        result.Should().HaveCount(5);
+    }
+
+    #endregion
+    
     #region Add Service Subscription
 
     [Fact]
