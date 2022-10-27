@@ -104,5 +104,5 @@ public interface IAppReleaseBusinessLogic
     /// </summary>
     /// <param name="iamUserId"></param>
     /// <returns></returns>
-    IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId);
+    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
 }

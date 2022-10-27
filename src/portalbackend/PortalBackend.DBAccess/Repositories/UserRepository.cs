@@ -442,28 +442,6 @@ public class UserRepository : IUserRepository
     }
     
     /// <inheritdoc />
-    public async IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles)
-    {
-        foreach (var salesManagerData in salesManagerRoles)
-        {
-            await foreach (var companyUserData in _dbContext.CompanyUserAssignedRoles
-                .AsNoTracking()
-                .Where(companyAssignedUserRole => companyAssignedUserRole.UserRole!.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == salesManagerData.Key) && salesManagerData.Value.Contains(companyAssignedUserRole.UserRole.UserRoleText)
-                 && companyAssignedUserRole.CompanyUser!.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-                .Select(companyAssignedUserRole => new SalesManagerData(
-                    companyAssignedUserRole.CompanyUser!.Id,
-                    companyAssignedUserRole.CompanyUser!.Firstname,
-                    companyAssignedUserRole.CompanyUser!.Lastname
-                ))
-                .AsAsyncEnumerable())
-            {
-                yield return companyUserData;
-            }
-        }
-    }
-    
-
-    /// <inheritdoc />
     public Task<(string? SharedIdpAlias, CompanyUserAccountData AccountData)> GetSharedIdentityProviderUserAccountDataUntrackedAsync(string iamUserId) =>
         _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)

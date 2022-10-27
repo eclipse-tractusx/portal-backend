@@ -203,7 +203,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("ownCompany/salesManager")]
     [Authorize(Roles = "add_app")]  
-    [ProducesResponseType(typeof(IAsyncEnumerable<SalesManagerData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync() =>
-        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagerAsync(iamUserId));
+    [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(iamUserId));
 }

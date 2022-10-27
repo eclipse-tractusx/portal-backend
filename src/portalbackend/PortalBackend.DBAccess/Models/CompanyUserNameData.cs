@@ -21,10 +21,10 @@
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Model For Sales Manager
+/// Company User name data
 /// </summary>
 /// <param name="UserId"></param>
 /// <param name="FirstName"></param>
 /// <param name="LastName"></param>
 /// <returns></returns>
-public record SalesManagerData(Guid UserId, string? FirstName, string? LastName);
+public record CompanyUserNameData(Guid UserId, string? FirstName, string? LastName);
