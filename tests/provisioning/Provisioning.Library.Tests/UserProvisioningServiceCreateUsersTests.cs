@@ -146,11 +146,12 @@ public class UserProvisioningServiceCreateUsersTests
     {
         var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
 
-        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+        var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles(2).ToList()).Create();
 
-        var roleDatas = userCreationInfoIdp.ElementAt(_indexSpecialUser).RoleDatas;
-        var assignedRoles = roleDatas.Take(roleDatas.Count()-1).Select(d => d.UserRoleText).ToList().AsEnumerable();
-        var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + userCreationInfoIdp.ElementAt(_indexSpecialUser).UserId;
+        var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
+
+        var assignedRoles = specialUser.RoleDatas.Take(specialUser.RoleDatas.Count()-1).Select(d => d.UserRoleText).ToList().AsEnumerable();
+        var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + specialUser.UserId;
         var iamUserId = _fixture.Create<string>();
 
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName ==  centralUserName), A<IEnumerable<(string,IEnumerable<string>)>>._))
@@ -171,7 +172,7 @@ public class UserProvisioningServiceCreateUsersTests
         var error = result.ElementAt(_indexSpecialUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
-        error!.Message.Should().Be($"invalid role data [{String.Join(", ", roleDatas.ExceptBy(assignedRoles, roleData => roleData.UserRoleText).Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
+        error!.Message.Should().Be($"invalid role data [{String.Join(", ", specialUser.RoleDatas.ExceptBy(assignedRoles, roleData => roleData.UserRoleText).Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
     }
 
     [Fact]
@@ -353,15 +354,15 @@ public class UserProvisioningServiceCreateUsersTests
         {
             yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
                 ? createInvalidUser()
-                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().ToList()).Create();
+                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles(1).ToList()).Create();
             indexUser++;
         }
     }
 
-    private IEnumerable<UserRoleData> PickValidRoles()
+    private IEnumerable<UserRoleData> PickValidRoles(int minRoles)
     {
         var maxRoles = _userRolesWithId.Count();
-        var numRoles = _random.Next(1,maxRoles);
+        var numRoles = _random.Next(minRoles,maxRoles);
         while(numRoles > 0)
         {
             var roleWithId = _userRolesWithId.ElementAt(_random.Next(maxRoles));
