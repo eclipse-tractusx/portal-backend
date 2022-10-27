@@ -176,6 +176,33 @@ public class UserProvisioningServiceCreateUsersTests
     }
 
     [Fact]
+    public async void TestCreateUsersRolesAssignmentNoRolesAssignedSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>().ToList()).Create();
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
+
+        var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + specialUser.UserId;
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName ==  centralUserName), A<IEnumerable<(string,IEnumerable<string>)>>._))
+            .Returns(iamUserId);
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
+
+        result.Should().HaveCount(_numUsers);
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
+
+    [Fact]
     public async void TestCreateUsersDuplicateKeycloakUserError()
     {
         var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
