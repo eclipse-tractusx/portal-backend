@@ -91,7 +91,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 user.firstName ?? "",
                 user.lastName ?? "",
                 user.eMail,
-                roleDatas?.IntersectBy(user.Roles, roleData => roleData.UserRoleText) ?? Enumerable.Empty<UserRoleData>(),
+                roleDatas.IntersectBy(user.Roles, roleData => roleData.UserRoleText),
                 user.userName ?? user.eMail,
                 ""
             )).ToAsyncEnumerable();
@@ -443,27 +443,6 @@ public class UserBusinessLogic : IUserBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().RemoveIamUser(companyUser.IamUser);
         companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
         companyUser.LastEditorId = administratorId;
-    }
-
-    [Obsolete("doesn't update the database. Replaced by UserBusinessLogic.AddOwnCompanyUsersBusinessPartnerNumberAsync. remove as soon frontend is adjusted")]
-    public async Task<bool> AddBpnAttributeAsync(IEnumerable<UserUpdateBpn>? usersToUdpateWithBpn)
-    {
-        if (usersToUdpateWithBpn == null)
-        {
-            throw new ArgumentNullException(nameof(usersToUdpateWithBpn), "usersToUpdatewithBpn must not be null");
-        }
-        foreach (UserUpdateBpn user in usersToUdpateWithBpn)
-        {
-            try
-            {
-                await _provisioningManager.AddBpnAttributetoUserAsync(user.UserId, user.BusinessPartnerNumbers).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Error while adding BPN attribute to {user.UserId}");
-            }
-        }
-        return true;
     }
 
     private async Task<bool> CanResetPassword(string userId)

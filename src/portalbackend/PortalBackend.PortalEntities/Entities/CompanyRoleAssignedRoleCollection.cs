@@ -37,6 +37,6 @@ public class CompanyRoleAssignedRoleCollection
     public Guid UserRoleCollectionId { get; private set; }
 
     // Navigation properties
-    public virtual CompanyRole CompanyRole { get; set; } = null!;
-    public virtual UserRoleCollection UserRoleCollection { get; set; } = null!;
+    public virtual CompanyRole? CompanyRole { get; private set; }
+    public virtual UserRoleCollection? UserRoleCollection { get; set; }
 }

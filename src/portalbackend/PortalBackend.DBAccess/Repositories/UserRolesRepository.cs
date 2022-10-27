@@ -23,7 +23,6 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -123,7 +122,7 @@ public class UserRolesRepository : IUserRolesRepository
             .AsNoTracking()
             .Where(role =>
                 role.OfferId == offerId &&
-                role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole.Companies.Any(company => company.CompanyUsers.Any(user => user.Id == companyUserId))) &&
+                role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.Companies.Any(company => company.CompanyUsers.Any(user => user.Id == companyUserId))) &&
                 (userRoles.Contains(role.UserRoleText) || 
                 role.CompanyUsers.Any(user => user.Id == companyUserId)))
             .Select(userRole => new UserRoleModificationData(
@@ -160,7 +159,7 @@ public class UserRolesRepository : IUserRolesRepository
             .AsNoTracking()
             .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientId) &&
                 roles.Contains(userRole.UserRoleText) &&
-                userRole.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole.Companies.Any(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
+                userRole.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.Companies.Any(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))))
             .Select(userRole => new UserRoleData(
                 userRole.Id,
                 clientId,
@@ -170,7 +169,7 @@ public class UserRolesRepository : IUserRolesRepository
     public IAsyncEnumerable<(Guid OfferId, Guid RoleId, string RoleText, string Description)> GetCoreOfferRolesAsync(string iamUserId, string languageShortName) =>
         _dbContext.UserRoles
             .AsNoTracking()
-            .Where(role => role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole.Companies.Any(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))))
+            .Where(role => role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.Companies.Any(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))))
             .OrderBy(role => role.OfferId)
             .Select(role => new ValueTuple<Guid,Guid,string,string>(
                 role.OfferId,

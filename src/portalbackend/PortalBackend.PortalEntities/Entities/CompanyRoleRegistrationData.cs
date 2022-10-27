@@ -37,5 +37,5 @@ public class CompanyRoleRegistrationData
     public bool IsRegistrationRole { get; private set; }
 
     // Navigation properties
-    public virtual CompanyRole CompanyRole { get; set; } = null!;
+    public virtual CompanyRole? CompanyRole { get; private set; }
 }
