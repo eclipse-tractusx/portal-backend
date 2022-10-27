@@ -165,7 +165,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
                 offerSubscription.Offer!.ThumbnailUrl ?? Constants.ErrorString,
                 offerSubscription.Offer!.Provider
-            )).AsAsyncEnumerable();
+            )).ToAsyncEnumerable();
 
     /// <inheritdoc />
     public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
