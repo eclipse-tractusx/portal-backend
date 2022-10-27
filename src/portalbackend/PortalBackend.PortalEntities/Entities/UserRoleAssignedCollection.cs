@@ -18,13 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-
-public interface IUserBusinessPartnerRepository
+public class UserRoleAssignedCollection
 {
-    CompanyUserAssignedBusinessPartner CreateCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber);
-    CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber);
-    Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber);
+    public UserRoleAssignedCollection(Guid userRoleId, Guid userRoleCollectionId)
+    {
+        UserRoleId = userRoleId;
+        UserRoleCollectionId = userRoleCollectionId;
+    }
+
+    public Guid UserRoleId { get; private set; }
+    public Guid UserRoleCollectionId { get; private set; }
+
+    // Navigation properties
+    public virtual UserRoleCollection? UserRoleCollection { get; private set; }
+    public virtual UserRole? UserRole{ get; private set; }
 }

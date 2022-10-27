@@ -45,6 +45,8 @@ public class CompanyRole
     public string Label { get; set; }
 
     // Navigation properties
+    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
+    public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
     public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }

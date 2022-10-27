@@ -18,18 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public class CompanyUserWithIdpData
+public class UserRoleCollection
 {
-    public CompanyUserWithIdpData(CompanyUser companyUser, string iamIdpAlias)
+    private UserRoleCollection()
     {
-        CompanyUser = companyUser;
-        IamIdpAlias = iamIdpAlias;
+        Name = null!;
+        UserRoles = new HashSet<UserRole>();
+        UserRoleCollectionDescriptions = new HashSet<UserRoleCollectionDescription>();
     }
 
-    public CompanyUser CompanyUser { get; }
-    public string IamIdpAlias { get; }
+    public UserRoleCollection(Guid id, string label) : this()
+    {
+        Id = id;
+        Name = label;
+    }
+
+    public Guid Id { get; set; }
+
+    public string Name { get; set; }
+
+    // Navigation properties
+    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; private set; }
 }
