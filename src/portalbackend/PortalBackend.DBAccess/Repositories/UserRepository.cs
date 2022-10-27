@@ -440,7 +440,7 @@ public class UserRepository : IUserRepository
                 (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
                 (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))));
     }
-    
+
     /// <inheritdoc />
     public Task<(string? SharedIdpAlias, CompanyUserAccountData AccountData)> GetSharedIdentityProviderUserAccountDataUntrackedAsync(string iamUserId) =>
         _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
