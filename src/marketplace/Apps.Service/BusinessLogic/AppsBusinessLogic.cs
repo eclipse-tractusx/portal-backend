@@ -32,6 +32,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
+using Offers.Library.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -77,7 +78,15 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetAllBusinessAppDataForUserIdAsync(userId)
+            .Select(x => 
+                new BusinessAppData(
+                    x.SubscriptionId,
+                    x.OfferName ?? Constants.ErrorString,
+                    x.SubscriptionUrl,
+                    x.ThumbnailUrl ?? Constants.ErrorString,
+                    x.Provider));
 
     /// <inheritdoc/>
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null)

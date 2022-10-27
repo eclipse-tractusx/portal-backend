@@ -127,7 +127,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(1);
-        result.First().Uri.Should().Be("https://url.test-app.com");
+        result.First().SubscriptionUrl.Should().Be("https://url.test-app.com");
     }
 
     #endregion
