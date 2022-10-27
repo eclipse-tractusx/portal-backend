@@ -64,25 +64,29 @@ public partial class ProvisioningManager
             }
         )).ConfigureAwait(false);
 
-    public async Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames) =>
-        (await Task.WhenAll(clientRoleNames.Select(async x =>
+    public async IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames)
+    {
+        foreach (var (client, roleNames) in clientRoleNames)
+        {
+            var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
+            if (clientId == null || !roles.Any())
             {
-                var (client, roleNames) = x;
-                var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
-                if (clientId == null || !roles.Any()) return (client: client, rolesList: Enumerable.Empty<string>());
-                
-                try
-                {
-                    await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
-                    return (client: client, rolesList: roles.Select(role => role.Name));
-                }
-                catch (Exception)
-                {
-                    return (client: client, rolesList: Enumerable.Empty<string>());
-                }
+                yield return (Client: client, Roles: Enumerable.Empty<string>());
             }
-        )).ConfigureAwait(false))
-        .ToDictionary(clientRole => clientRole.client, clientRole => clientRole.rolesList);
+            
+            IEnumerable<string> assigned;
+            try
+            {
+                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId!, roles).ConfigureAwait(false);
+                assigned = roles.Select(role => role.Name);
+            }
+            catch (Exception)
+            {
+                assigned = Enumerable.Empty<string>();
+            }
+            yield return (Client: client, Roles: assigned);
+        }
+    }
 
     private Task AssignClientRolesToClient(string clientId, IEnumerable<string> clientRoleNames) =>
         Task.WhenAll(clientRoleNames.Select(x => new Role

@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
@@ -30,12 +31,50 @@ public static class StaticPortalData
         new Language("en", "englisch", "english")
     };
 
+    public static ICollection<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections => new []
+    {
+        new CompanyRoleAssignedRoleCollection(CompanyRoleId.ACTIVE_PARTICIPANT, new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2")),
+        new CompanyRoleAssignedRoleCollection(CompanyRoleId.APP_PROVIDER, new Guid("ec428950-8b64-4646-b336-28af869b5d73")),
+        new CompanyRoleAssignedRoleCollection(CompanyRoleId.SERVICE_PROVIDER, new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc")),
+        new CompanyRoleAssignedRoleCollection(CompanyRoleId.OPERATOR, new Guid("1a24eca5-901f-4191-84a7-4ef09a894575")),
+    };
+
+    public static ICollection<CompanyRoleRegistrationData> CompanyRoleRegistrationDatas => new []
+    {
+        new CompanyRoleRegistrationData(CompanyRoleId.ACTIVE_PARTICIPANT, true),
+        new CompanyRoleRegistrationData(CompanyRoleId.APP_PROVIDER, true),
+        new CompanyRoleRegistrationData(CompanyRoleId.SERVICE_PROVIDER, true),
+        new CompanyRoleRegistrationData(CompanyRoleId.OPERATOR, false),
+    };
+
     public static ICollection<CompanyRoleDescription> CompanyRoleDescriptions => new[]
     {
-        new CompanyRoleDescription(Enums.CompanyRoleId.ACTIVE_PARTICIPANT, "de", "Netzwerkteilnehmer"),
-        new CompanyRoleDescription(Enums.CompanyRoleId.ACTIVE_PARTICIPANT, "en", "Participant"),
-        new CompanyRoleDescription(Enums.CompanyRoleId.APP_PROVIDER, "de", "Softwareanbieter"),
-        new CompanyRoleDescription(Enums.CompanyRoleId.APP_PROVIDER, "en", "Application Provider"),
+        new CompanyRoleDescription(CompanyRoleId.ACTIVE_PARTICIPANT, "de", "Netzwerkteilnehmer"),
+        new CompanyRoleDescription(CompanyRoleId.ACTIVE_PARTICIPANT, "en", "Participant"),
+        new CompanyRoleDescription(CompanyRoleId.APP_PROVIDER, "de", "Softwareanbieter"),
+        new CompanyRoleDescription(CompanyRoleId.APP_PROVIDER, "en", "Application Provider"),
+        new CompanyRoleDescription(CompanyRoleId.SERVICE_PROVIDER, "de", "Dienstanbieter"),
+        new CompanyRoleDescription(CompanyRoleId.SERVICE_PROVIDER, "en", "Service Provider"),
+        new CompanyRoleDescription(CompanyRoleId.OPERATOR, "de", "Betreiber"),
+        new CompanyRoleDescription(CompanyRoleId.OPERATOR, "en", "Operator"),
+    };
+
+    public static ICollection<UserRoleCollection> UserRoleCollections => new [] {
+        new UserRoleCollection(new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"), "CX Participant"),
+        new UserRoleCollection(new Guid("ec428950-8b64-4646-b336-28af869b5d73"), "App Provider"),
+        new UserRoleCollection(new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"), "Service Provider"),
+        new UserRoleCollection(new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"), "Operator"),
+    };
+
+    public static ICollection<UserRoleCollectionDescription> UserRoleCollectionDescriptions => new [] {
+        new UserRoleCollectionDescription(new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),"de","CX Netzwerkteilnehmer"),
+        new UserRoleCollectionDescription(new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),"en","CX Participant"),
+        new UserRoleCollectionDescription(new Guid("ec428950-8b64-4646-b336-28af869b5d73"),"de","Softwareanbieter"),
+        new UserRoleCollectionDescription(new Guid("ec428950-8b64-4646-b336-28af869b5d73"),"en","App Provider"),
+        new UserRoleCollectionDescription(new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),"de","Dienstanbieter"),
+        new UserRoleCollectionDescription(new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),"en","Service Provider"),
+        new UserRoleCollectionDescription(new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),"de","Betreiber"),
+        new UserRoleCollectionDescription(new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),"en","Operator"),
     };
 
     public static ICollection<UseCase> UseCases => new[]
