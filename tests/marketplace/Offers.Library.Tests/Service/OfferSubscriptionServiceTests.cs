@@ -59,7 +59,6 @@ public class OfferSubscriptionServiceTests
     private readonly Guid _validSubscriptionId;
     private readonly Guid _newOfferSubscriptionId;
     private readonly Guid _userRoleId;
-    private readonly Guid _agreementId;
     private readonly IFixture _fixture;
     private readonly IAgreementRepository _agreementRepository;
     private readonly IConsentRepository _consentRepository;
@@ -73,7 +72,6 @@ public class OfferSubscriptionServiceTests
     private readonly IOfferSetupService _offerSetupService;
     private readonly IMailingService _mailingService;
     private readonly Dictionary<string,IEnumerable<string>> _serviceManagerRoles;
-    private readonly IEnumerable<OfferAgreementConsentData> _validConsentData;
 
     public OfferSubscriptionServiceTests()
     {
@@ -82,7 +80,6 @@ public class OfferSubscriptionServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _agreementId = _fixture.Create<Guid>();
         _iamUserId = _fixture.Create<string>();
         _existingActiveSubscriptionUserId = _fixture.Create<string>();
         _existingInactiveSubscriptionUserId = _fixture.Create<string>();
@@ -101,10 +98,6 @@ public class OfferSubscriptionServiceTests
         _serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, new[] { "Service Manager" } }
-        };
-        _validConsentData = new List<OfferAgreementConsentData>
-        {
-            new (_agreementId, ConsentStatusId.ACTIVE)
         };
 
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -163,7 +156,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -194,7 +187,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        await sut.AddOfferSubscriptionAsync(_existingOfferWithFailingAutoSetupId, _validConsentData, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await sut.AddOfferSubscriptionAsync(_existingOfferWithFailingAutoSetupId, new List<OfferAgreementConsentData>(), _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         notifications.Should().ContainSingle();
@@ -210,7 +203,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _notAssignedCompanyIdUser, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _notAssignedCompanyIdUser, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -227,7 +220,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        async Task Action() => await sut.AddOfferSubscriptionAsync(notExistingServiceId, _validConsentData, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(notExistingServiceId, new List<OfferAgreementConsentData>(), _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -243,7 +236,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, Guid.NewGuid().ToString(), AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), Guid.NewGuid().ToString(), AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -259,11 +252,31 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, _validConsentData, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, new List<OfferAgreementConsentData>(), _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         ex.Message.Should().Be("The offer name has not been configured properly");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task AddOfferSubscription_WithoutInvalidConsentData_ThrowsControllerArgumentException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var consentData = new List<OfferAgreementConsentData>
+        {
+            new(_fixture.Create<Guid>(), ConsentStatusId.ACTIVE)
+        };
+        var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
+
+        // Act
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.ParamName.Should().Be("offerAgreementConsentData");
     }
 
     [Theory]
@@ -275,7 +288,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _noBpnSetUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _noBpnSetUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -295,7 +308,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        async Task Act() => await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _existingActiveSubscriptionUserId, AccessToken, _serviceManagerRoles, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
+        async Task Act() => await sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _existingActiveSubscriptionUserId, AccessToken, _serviceManagerRoles, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -311,7 +324,7 @@ public class OfferSubscriptionServiceTests
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _existingInactiveSubscriptionUserId, AccessToken, _serviceManagerRoles, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
+        await sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _existingInactiveSubscriptionUserId, AccessToken, _serviceManagerRoles, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
@@ -410,10 +423,10 @@ public class OfferSubscriptionServiceTests
             .ReturnsLazily(() => ((Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId))default);
 
         A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>().CheckAgreementsExistsForOfferAsync(
-            A<IEnumerable<Guid>>.That.Matches(x =>
-                x == _validConsentData.Select(cd => cd.AgreementId)),
+            A<IEnumerable<Guid>>._,
             A<Guid>._,
-            A<OfferTypeId>._)).ReturnsLazily(() => true);
+            A<OfferTypeId>._))
+            .ReturnsLazily(() => true);
 
         A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);

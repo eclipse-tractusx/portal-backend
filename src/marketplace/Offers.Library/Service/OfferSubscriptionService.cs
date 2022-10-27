@@ -116,12 +116,16 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
     private async Task ValidateConsent(IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid offerId, OfferTypeId offerTypeId)
     {
-        if (!await _portalRepositories
-                .GetInstance<IAgreementRepository>()
-                .CheckAgreementsExistsForOfferAsync(offerAgreementConsentData.Select(x => x.AgreementId), offerId, offerTypeId)
-                .ConfigureAwait(false))
+        if (offerAgreementConsentData.Any())
         {
-            throw new ControllerArgumentException($"Invalid Agreements for offer {offerId}", nameof(offerAgreementConsentData));
+            var agreementRepository = _portalRepositories
+                .GetInstance<IAgreementRepository>();
+            if (!await agreementRepository
+                    .CheckAgreementsExistsForOfferAsync(offerAgreementConsentData.Select(x => x.AgreementId), offerId, offerTypeId)
+                    .ConfigureAwait(false))
+            {
+                throw new ControllerArgumentException($"Invalid Agreements for offer {offerId}", nameof(offerAgreementConsentData));
+            }
         }
     }
 
