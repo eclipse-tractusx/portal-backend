@@ -276,8 +276,8 @@ public class ServiceBusinessLogicTests
         var sut = new ServiceBusinessLogic(A.Fake<IPortalRepositories>(),offerService, A.Fake<IOfferSubscriptionService>(), Options.Create(new ServiceSettings()));
 
         // Act
-        var serviceAgreementConsentData = new OfferAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
-        var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, serviceAgreementConsentData, _iamUser.UserEntityId);
+        var offerAgreementConsentData = new OfferAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
+        var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, offerAgreementConsentData, _iamUser.UserEntityId);
 
         // Assert
         result.Should().Be(consentId);
