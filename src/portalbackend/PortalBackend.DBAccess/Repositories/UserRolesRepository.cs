@@ -66,16 +66,12 @@ public class UserRolesRepository : IUserRolesRepository
                 userRoleId
             )).Entity;
 
-    public IAsyncEnumerable<CompanyUser> GetCompanyUserRolesIamUsersAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId) =>
-        _dbContext.Companies
-            .Where(company => company.CompanyUsers.Any(cu => cu.Id == companyUserId))
-            .SelectMany(company => company.CompanyUsers.Where(companyUser => companyUserIds.Contains(companyUser.Id)))
-            .Include(companyUser => companyUser.CompanyUserAssignedRoles)
-            .Include(companyUser => companyUser.IamUser)
-            .AsAsyncEnumerable();
-
-    public CompanyUserAssignedRole RemoveCompanyUserAssignedRole(CompanyUserAssignedRole companyUserAssignedRole) =>
-        _dbContext.Remove(companyUserAssignedRole).Entity;
+    public CompanyUserAssignedRole DeleteCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId) =>
+        _dbContext.CompanyUserAssignedRoles.Remove(
+            new CompanyUserAssignedRole(
+                companyUserId,
+                userRoleId
+            )).Entity;
 
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
@@ -116,16 +112,6 @@ public class UserRolesRepository : IUserRolesRepository
                 userRole.CompanyUsers.Any(user => user.Id == companyUserId)
             ))
             .ToAsyncEnumerable();
-
-    public IAsyncEnumerable<UserRoleWithId> GetUserRoleWithIdsUntrackedAsync(string clientClientId, IEnumerable<string> userRoles) =>
-        _dbContext.UserRoles
-            .AsNoTracking()
-            .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientClientId) && userRoles.Contains(userRole.UserRoleText))
-            .Select(userRole => new UserRoleWithId(
-                userRole.UserRoleText,
-                userRole.Id
-            ))
-            .AsAsyncEnumerable();
 
     public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles)
     {

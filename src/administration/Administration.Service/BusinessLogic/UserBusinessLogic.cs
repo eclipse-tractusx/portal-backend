@@ -350,17 +350,17 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId)
     {
-        var userIdpData = await _portalRepositories.GetInstance<IUserRepository>().GetUserWithSharedIdpDataAsync(iamUserId).ConfigureAwait(false);
-        if (userIdpData == null)
+        var iamIdpAliasAccountData = await _portalRepositories.GetInstance<IUserRepository>().GetSharedIdentityProviderUserAccountDataUntrackedAsync(iamUserId);
+        if (iamIdpAliasAccountData == default)
         {
-            throw new ConflictException($"iamUser {iamUserId} is not associated to any companyUser");
+            throw new ConflictException($"iamUser {iamUserId} is not associated with any companyUser");
         }
-        if (userIdpData.CompanyUser.Id != companyUserId)
+        var (sharedIdpAlias, accountData) = iamIdpAliasAccountData;
+        if (accountData.CompanyUserId != companyUserId)
         {
             throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
         }
-        await DeleteUserInternalAsync(userIdpData.CompanyUser, userIdpData.IamIdpAlias, userIdpData.CompanyUser.CompanyId).ConfigureAwait(false);
-
+        await DeleteUserInternalAsync(sharedIdpAlias,accountData,companyUserId).ConfigureAwait(false);
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -369,57 +369,116 @@ public class UserBusinessLogic : IUserBusinessLogic
         var iamIdpAliasData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(iamUserId);
         if (iamIdpAliasData == default)
         {
-            throw new ConflictException($"iamUser {iamUserId} is not assigned to any companyUser");
+            throw new ConflictException($"iamUser {iamUserId} is not associated with any companyUser");
         }
         var (iamIdpAlias, adminUserId) = iamIdpAliasData;
 
-        await foreach (var companyUser in _portalRepositories.GetInstance<IUserRolesRepository>().GetCompanyUserRolesIamUsersAsync(companyUserIds, adminUserId).ConfigureAwait(false))
+        await foreach (var accountData in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserAccountDataUntrackedAsync(companyUserIds, adminUserId).ConfigureAwait(false))
         {
             var success = false;
             try
             {
-                await DeleteUserInternalAsync(companyUser, iamIdpAlias, adminUserId).ConfigureAwait(false);
+                await DeleteUserInternalAsync(iamIdpAlias, accountData, adminUserId).ConfigureAwait(false);
                 success = true;
             }
             catch (Exception e)
             {
                 if (iamIdpAlias == null)
                 {
-                    _logger.LogError(e, "Error while deleting companyUser {companyUserId}",companyUser.Id);
+                    _logger.LogError(e, "Error while deleting companyUser {companyUserId}", accountData.CompanyUserId);
                 }
                 else
                 {
-                    _logger.LogError(e, "Error while deleting companyUser {companyUserId} from shared idp {iamIdpAlias}",companyUser.Id,iamIdpAlias);
+                    _logger.LogError(e, "Error while deleting companyUser {companyUserId} from shared idp {iamIdpAlias}", accountData.CompanyUserId, iamIdpAlias);
                 }
             }
             if (success)
             {
-                yield return companyUser.Id;
+                yield return accountData.CompanyUserId;
             }
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async Task DeleteUserInternalAsync(CompanyUser companyUser, string? iamIdpAlias, Guid administratorId)
+    private async Task DeleteUserInternalAsync(string? sharedIdpAlias, CompanyUserAccountData accountData, Guid administratorId)
     {
-        if (iamIdpAlias != null)
+        var (companyUserId, userEntityId, businessPartnerNumbers, roleIds, offerIds, invitationIds) = accountData;
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        if (userEntityId != null)
         {
-            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+            await DeleteIamUserAsync(sharedIdpAlias, userEntityId, userRepository).ConfigureAwait(false);
+        }
+        userRepository.AttachAndModifyCompanyUser(companyUserId, companyUser =>
+        {
+            companyUser.CompanyUserStatusId = CompanyUserStatusId.DELETED;
+            companyUser.LastEditorId = administratorId;
+        });
+        DeleteAssignedBusinessPartnerNumbers(businessPartnerNumbers, companyUserId);
+        DeleteAssignedOffers(offerIds, companyUserId);
+        DeleteAssignedUserRoles(roleIds, companyUserId);
+        DeleteAssignedInvitations(invitationIds);
+    }
+
+    private async Task DeleteIamUserAsync(string? sharedIdpAlias, string userEntityId, IUserRepository userRepository)
+    {
+        if (sharedIdpAlias != null)
+        {
+            var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(sharedIdpAlias, userEntityId).ConfigureAwait(false);
             if (userIdShared != null)
             {
-                await _provisioningManager.DeleteSharedRealmUserAsync(iamIdpAlias, userIdShared).ConfigureAwait(false);
+                await _provisioningManager.DeleteSharedRealmUserAsync(sharedIdpAlias, userIdShared).ConfigureAwait(false);
             }
         }
-        await _provisioningManager.DeleteCentralRealmUserAsync(companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+        await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
+        userRepository.DeleteIamUser(userEntityId);
+    }
 
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        foreach (var assignedRole in companyUser.CompanyUserAssignedRoles)
+    private void DeleteAssignedBusinessPartnerNumbers(IEnumerable<string> businessPartnerNumbers, Guid companyUserId)
+    {
+        if (businessPartnerNumbers.Any())
         {
-            userRolesRepository.RemoveCompanyUserAssignedRole(assignedRole);
+            var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+            foreach (var businessPartnerNumber in businessPartnerNumbers)
+            {
+                userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
+            }
         }
-        _portalRepositories.GetInstance<IUserRepository>().RemoveIamUser(companyUser.IamUser);
-        companyUser.CompanyUserStatusId = CompanyUserStatusId.INACTIVE;
-        companyUser.LastEditorId = administratorId;
+    }
+
+    private void DeleteAssignedOffers(IEnumerable<Guid>offerIds, Guid companyUserId)
+    {
+        if (offerIds.Any())
+        {
+            var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+            foreach (var offerId in offerIds)
+            {
+                offerRepository.DeleteAppFavourite(offerId, companyUserId);
+            }
+        }
+    }
+
+    private void DeleteAssignedUserRoles(IEnumerable<Guid> userRoleIds, Guid companyUserId)
+    {
+        if (userRoleIds.Any())
+        {
+            var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+            foreach (var assignedRole in userRoleIds)
+            {
+                userRolesRepository.DeleteCompanyUserAssignedRole(companyUserId, assignedRole);
+            }
+        }
+    }
+
+    private void DeleteAssignedInvitations(IEnumerable<Guid> invitationIds)
+    {   
+        if (invitationIds.Any())
+        {
+            var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+            foreach (var invitationId in invitationIds)
+            {
+                applicationRepository.DeleteInvitation(invitationId);
+            }
+        }
     }
 
     [Obsolete]
@@ -581,7 +640,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new NotFoundException($"user {companyUserId} does not exist");
         }
 
-        if (userWithBpn.AssignedBusinessPartner == null)
+        if (!userWithBpn.IsAssignedBusinessPartner)
         {
             throw new ForbiddenException($"businessPartnerNumber {businessPartnerNumber} is not assigned to user {companyUserId}");
         }
@@ -596,9 +655,9 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new ForbiddenException($"companyUserId {companyUserId} and adminUserId {adminUserId} do not belong to same company");
         }
 
-        userBusinessPartnerRepository.RemoveCompanyUserAssignedBusinessPartner(userWithBpn.AssignedBusinessPartner);
+        userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
         
-        await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, userWithBpn.AssignedBusinessPartner.BusinessPartnerNumber).ConfigureAwait(false);
+        await _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(userWithBpn.UserEntityId, businessPartnerNumber).ConfigureAwait(false);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
