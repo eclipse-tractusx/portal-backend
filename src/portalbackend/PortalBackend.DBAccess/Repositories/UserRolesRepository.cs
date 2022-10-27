@@ -73,6 +73,9 @@ public class UserRolesRepository : IUserRolesRepository
                 userRoleId
             )).Entity;
 
+    public void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds) =>
+        _dbContext.CompanyUserAssignedRoles.RemoveRange(companyUserAssignedRoleIds.Select(ids => new CompanyUserAssignedRole(ids.CompanyUserId, ids.UserRoleId)));
+
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
             .AsNoTracking()
