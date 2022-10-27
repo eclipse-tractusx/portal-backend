@@ -156,12 +156,13 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions.Where(x => 
                 x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == userId) &&
                 x.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == userId)) &&
-                x.AppSubscriptionDetail!.AppInstance != null
+                x.AppSubscriptionDetail!.AppInstance != null &&
+                x.AppSubscriptionDetail!.AppSubscriptionUrl != null
             )
             .Select(offerSubscription => new BusinessAppData(
                 offerSubscription.Id,
                 offerSubscription.Offer!.Name ?? Constants.ErrorString,
-                offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl ?? Constants.ErrorString,
+                offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
                 offerSubscription.Offer!.ThumbnailUrl ?? Constants.ErrorString,
                 offerSubscription.Offer!.Provider
             )).AsAsyncEnumerable();
