@@ -196,6 +196,7 @@ public class UserProvisioningServiceCreateUsersTests
             _cancellationTokenSource.Token
         ).ToListAsync().ConfigureAwait(false);
 
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
 
         result.Should().HaveCount(_numUsers);
