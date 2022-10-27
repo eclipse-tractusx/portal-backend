@@ -49,6 +49,8 @@ public class UserBusinessLogicTests
     private readonly IOfferRepository _offerRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
+    private readonly IUserBusinessPartnerRepository _userBusinessPartnerRepository;
+    private readonly IApplicationRepository _applicationRepository;
     private readonly IMailingService _mailingService;
     private readonly IMockLogger<UserBusinessLogic> _mockLogger;
     private readonly ILogger<UserBusinessLogic> _logger;
@@ -85,6 +87,9 @@ public class UserBusinessLogicTests
         _companyUser = A.Fake<CompanyUser>();
         _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
+        _userBusinessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
+        _applicationRepository = A.Fake<IApplicationRepository>();
+
         _mailingService = A.Fake<IMailingService>();
         _mockLogger = A.Fake<IMockLogger<UserBusinessLogic>>();
         _logger = new MockLogger<UserBusinessLogic>(_mockLogger);
@@ -500,7 +505,10 @@ public class UserBusinessLogicTests
         A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartners(A<IEnumerable<(Guid,string)>>._)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.DeleteAppFavourites(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.DeleteInvitations(A<IEnumerable<Guid>>._)).MustHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
@@ -534,7 +542,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -563,7 +571,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();        
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -592,7 +600,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();        
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -879,7 +887,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * expectedCount);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
     }
@@ -914,7 +922,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
 
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * expectedCount);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
     }
@@ -946,7 +954,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1002,7 +1010,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * (companyUserIds.Length-1));
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
@@ -1059,7 +1067,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
 
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRole(A<Guid>._,A<Guid>._)).MustHaveHappenedANumberOfTimesMatching(n => n == 3 * (companyUserIds.Length-1));
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
@@ -1107,6 +1115,9 @@ public class UserBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
 
         A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<string>._)).Returns(_fixture.Create<(string? SharedIdpAlias, CompanyUserAccountData AccountData)>());
         A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<string>.That.IsEqualTo(_iamUserId))).ReturnsLazily(() =>
