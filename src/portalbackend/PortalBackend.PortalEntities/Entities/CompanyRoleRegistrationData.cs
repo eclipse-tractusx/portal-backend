@@ -18,16 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public interface IUserProvisioningService
+public class CompanyRoleRegistrationData
 {
-    IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken = default);
-    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
-    Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId);
-    IAsyncEnumerable<UserRoleData> GetRoleDatas(IDictionary<string,IEnumerable<string>> clientRoles);
-    Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, string iamUserId);
+    public CompanyRoleRegistrationData(CompanyRoleId companyRoleId, bool isRegistrationRole)
+    {
+        CompanyRoleId = companyRoleId;
+        IsRegistrationRole = isRegistrationRole;
+    }
+
+    [Key]
+    public CompanyRoleId CompanyRoleId { get; private set; }
+
+    public bool IsRegistrationRole { get; private set; }
+
+    // Navigation properties
+    public virtual CompanyRole? CompanyRole { get; private set; }
 }

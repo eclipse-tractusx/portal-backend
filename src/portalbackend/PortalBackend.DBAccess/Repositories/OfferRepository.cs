@@ -194,6 +194,7 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
        
     /// <inheritdoc />
+    [Obsolete("only referenced by code that is marked as obsolte")]
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
         _context.Offers
             .Where(app => app.Id == appId)
