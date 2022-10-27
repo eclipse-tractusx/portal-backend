@@ -53,6 +53,9 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
                 businessPartnerNumber
             )).Entity;
 
+    public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
+        _dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
+
     public Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
