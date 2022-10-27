@@ -8,6 +8,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Feature - Service provider notification & email for service subscriptions
 * Feature - User Management: Modification of Roles of one specific user under an app
 * Feature - Managed/Own connector registration endpoint refactoring
+* Feature - Add user-role-collections restricting the assignable user-roles per CompanyRole
 * Feature - Enhance Logging for external Service calls
 
 ### 0.6.0

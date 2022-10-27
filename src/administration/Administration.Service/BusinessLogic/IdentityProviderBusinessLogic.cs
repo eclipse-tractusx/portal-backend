@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
@@ -29,7 +30,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -687,7 +687,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return numIdps;
     }
 
-    private (Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks) ParseCSVLine(string line, int numIdps, IEnumerable<string> existingAliase)
+    private ValueTask<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> ParseCSVLine(string line, int numIdps, IEnumerable<string> existingAliase)
     {
         var items = line.Split(_settings.CsvSettings.Separator).AsEnumerable().GetEnumerator();
         if(!items.MoveNext())
@@ -714,7 +714,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         var email = items.Current;
         var identityProviderLinks = ParseCSVIdentityProviderLinks(items, numIdps, existingAliase).ToList();
-        return (companyUserId, new UserProfile(firstName, lastName, email), identityProviderLinks);
+        return ValueTask.FromResult((companyUserId, new UserProfile(firstName, lastName, email), identityProviderLinks.AsEnumerable()));
     }
 
     private IEnumerable<IdentityProviderLink> ParseCSVIdentityProviderLinks(IEnumerator<string> items, int numIdps, IEnumerable<string> existingAliase)
