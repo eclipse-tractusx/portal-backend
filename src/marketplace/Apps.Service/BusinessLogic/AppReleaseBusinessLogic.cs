@@ -310,6 +310,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId) =>
-       _portalRepositories.GetInstance<IUserRepository>().GetAppProviderSalesManagerAsync(iamUserId,_settings.SalesManagerRoles);
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId) =>
+       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
 }

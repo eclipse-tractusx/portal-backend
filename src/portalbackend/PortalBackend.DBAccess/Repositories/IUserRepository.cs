@@ -111,14 +111,6 @@ public interface IUserRepository
 
     IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
     
-    /// <summary>
-    /// Get App Provider Sales Manager
-    /// </summary>
-    /// <param name="iamUserId"></param>
-    /// <param name="salesManagerRoles"></param>
-    /// <returns></returns>
-    IAsyncEnumerable<SalesManagerData> GetAppProviderSalesManagerAsync(string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
-    
     /// User account data for deletion of own userId
     /// </summary>
     /// <param name="iamUserId"></param>
