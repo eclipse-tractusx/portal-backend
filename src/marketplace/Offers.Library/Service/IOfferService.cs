@@ -64,6 +64,7 @@ public interface IOfferService
     /// Gets the offer consent detail data
     /// </summary>
     /// <param name="consentId">Id of the offer consent</param>
+    /// <param name="offerTypeId"></param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
     
