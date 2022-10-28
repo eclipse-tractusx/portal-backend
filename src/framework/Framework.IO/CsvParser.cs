@@ -88,7 +88,7 @@ public static class CsvParser
     public static async ValueTask<(int Processed, int Lines, IEnumerable<(int Line, Exception Error)> Errors)> ProcessCsvAsync<TLineType>(
         Stream stream,
         Action<string>? validateHeaderLine,
-        Func<string,TLineType> parseLine,
+        Func<string,ValueTask<TLineType>> parseLineAsync,
         Func<IAsyncEnumerable<TLineType>,IAsyncEnumerable<(bool Processed, Exception? Error)>> processLines,
         CancellationToken cancellationToken)
     {
@@ -105,7 +105,7 @@ public static class CsvParser
 
         try
         {
-            await foreach (var (processed,error) in processLines(ParseCsvLinesAsync(reader, parseLine, error => { numLines++; errors.Add((numLines, error)); })))
+            await foreach (var (processed,error) in processLines(ParseCsvLinesAsync(reader, parseLineAsync, error => { numLines++; errors.Add((numLines, error)); })))
             {
                 if (error != null)
                 {
@@ -128,7 +128,7 @@ public static class CsvParser
 
     private static async IAsyncEnumerable<TLineType> ParseCsvLinesAsync<TLineType>(
         StreamReader reader,
-        Func<string,TLineType> parseLine,
+        Func<string,ValueTask<TLineType>> parseLineAsync,
         Action<Exception> onError)
     {
         var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
@@ -138,7 +138,7 @@ public static class CsvParser
             TLineType? result = default;
             try
             {
-                result = parseLine(nextLine);
+                result = await parseLineAsync(nextLine).ConfigureAwait(false);
             }
             catch(Exception e)
             {

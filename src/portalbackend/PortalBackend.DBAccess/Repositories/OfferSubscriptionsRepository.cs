@@ -87,18 +87,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, OfferSubscription? offerSubscription, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
-        _context.IamUsers
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new ValueTuple<Guid, OfferSubscription?, string, Guid>(
-                company!.Id,
-                company.OfferSubscriptions.SingleOrDefault(os => os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId),
-                company!.Name,
-                company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
-            ))
-            .SingleOrDefaultAsync();
-
     public Task<(Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.IamUsers
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
@@ -151,19 +139,18 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
-        _context.OfferSubscriptions
-            .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<OfferThirdPartyAutoSetupData,bool>(
-                new OfferThirdPartyAutoSetupData(
-                    new OfferThirdPartyAutoSetupCustomerData(
-                        x.Company!.Name,
-                        x.Company!.Address!.CountryAlpha2Code,
-                        x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email),
-                    new OfferThirdPartyAutoSetupPropertyData(
-                        x.Company!.BusinessPartnerNumber,
-                        offerSubscriptionId,
-                        x.OfferId)),
-                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
-            .SingleOrDefaultAsync();
+    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
+        _context.CompanyUsers.AsNoTracking()
+            .Where(user => user.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription => 
+                subscription.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.Id == user.Id)) &&
+                subscription.AppSubscriptionDetail!.AppInstance != null &&
+                subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
+            .Select(offerSubscription => new ValueTuple<Guid,string?,string,string?,string>(
+                offerSubscription.Id,
+                offerSubscription.Offer!.Name,
+                offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
+                offerSubscription.Offer!.ThumbnailUrl,
+                offerSubscription.Offer!.Provider
+            )).ToAsyncEnumerable();
 }
