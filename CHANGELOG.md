@@ -20,6 +20,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Administration/Connector: Register own and managed connectors, including self-description creation & storage (Gaia-X)
    * Interface Connection to SD-Factory enabled
    * Discovery Service of connector endpoints integrated
+   * API business logic updated to support connector registration for multiple companies ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 * Registration: Registration service got released to support the full company registration cycle inclduing workflow management
 * Marketplace: Marketplace servicess got released supporting the discovery of offers on the marketplace and enable subscription to those apps and services (incl. manual steps)
 
