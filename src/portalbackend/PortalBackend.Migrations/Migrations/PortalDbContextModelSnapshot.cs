@@ -1043,6 +1043,53 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         {
                             Id = 3,
                             Label = "SERVICE_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "OPERATOR"
+                        });
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", b =>
+                {
+                    b.Property<int>("CompanyRoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_role_id");
+
+                    b.Property<Guid>("UserRoleCollectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_collection_id");
+
+                    b.HasKey("CompanyRoleId")
+                        .HasName("pk_company_role_assigned_role_collections");
+
+                    b.HasIndex("UserRoleCollectionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_role_assigned_role_collections_user_role_collection");
+
+                    b.ToTable("company_role_assigned_role_collections", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            CompanyRoleId = 1,
+                            UserRoleCollectionId = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2")
+                        },
+                        new
+                        {
+                            CompanyRoleId = 2,
+                            UserRoleCollectionId = new Guid("ec428950-8b64-4646-b336-28af869b5d73")
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            UserRoleCollectionId = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc")
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            UserRoleCollectionId = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575")
                         });
                 });
 
@@ -1095,6 +1142,68 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                             CompanyRoleId = 2,
                             LanguageShortName = "en",
                             Description = "Application Provider"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            LanguageShortName = "de",
+                            Description = "Dienstanbieter"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            LanguageShortName = "en",
+                            Description = "Service Provider"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            LanguageShortName = "de",
+                            Description = "Betreiber"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            LanguageShortName = "en",
+                            Description = "Operator"
+                        });
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleRegistrationData", b =>
+                {
+                    b.Property<int>("CompanyRoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_role_id");
+
+                    b.Property<bool>("IsRegistrationRole")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_registration_role");
+
+                    b.HasKey("CompanyRoleId")
+                        .HasName("pk_company_role_registration_data");
+
+                    b.ToTable("company_role_registration_data", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            CompanyRoleId = 1,
+                            IsRegistrationRole = true
+                        },
+                        new
+                        {
+                            CompanyRoleId = 2,
+                            IsRegistrationRole = true
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            IsRegistrationRole = true
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            IsRegistrationRole = false
                         });
                 });
 
@@ -4540,6 +4649,141 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_USERROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_USERROLE() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_USERROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_user_role20221017 (\"id\", \"user_role\", \"offer_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.user_role, \r\n  NEW.offer_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_USERROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_USERROLE AFTER UPDATE\r\nON portal.user_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_USERROLE();");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleAssignedCollection", b =>
+                {
+                    b.Property<Guid>("UserRoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_id");
+
+                    b.Property<Guid>("UserRoleCollectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_collection_id");
+
+                    b.HasKey("UserRoleId", "UserRoleCollectionId")
+                        .HasName("pk_user_role_assigned_collections");
+
+                    b.HasIndex("UserRoleCollectionId")
+                        .HasDatabaseName("ix_user_role_assigned_collections_user_role_collection_id");
+
+                    b.ToTable("user_role_assigned_collections", "portal");
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_role_collections");
+
+                    b.ToTable("user_role_collections", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),
+                            Name = "CX Participant"
+                        },
+                        new
+                        {
+                            Id = new Guid("ec428950-8b64-4646-b336-28af869b5d73"),
+                            Name = "App Provider"
+                        },
+                        new
+                        {
+                            Id = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),
+                            Name = "Service Provider"
+                        },
+                        new
+                        {
+                            Id = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),
+                            Name = "Operator"
+                        });
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollectionDescription", b =>
+                {
+                    b.Property<Guid>("UserRoleCollectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_collection_id");
+
+                    b.Property<string>("LanguageShortName")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("language_short_name");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("description");
+
+                    b.HasKey("UserRoleCollectionId", "LanguageShortName")
+                        .HasName("pk_user_role_collection_descriptions");
+
+                    b.HasIndex("LanguageShortName")
+                        .HasDatabaseName("ix_user_role_collection_descriptions_language_short_name");
+
+                    b.ToTable("user_role_collection_descriptions", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),
+                            LanguageShortName = "de",
+                            Description = "CX Netzwerkteilnehmer"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),
+                            LanguageShortName = "en",
+                            Description = "CX Participant"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("ec428950-8b64-4646-b336-28af869b5d73"),
+                            LanguageShortName = "de",
+                            Description = "Softwareanbieter"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("ec428950-8b64-4646-b336-28af869b5d73"),
+                            LanguageShortName = "en",
+                            Description = "App Provider"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),
+                            LanguageShortName = "de",
+                            Description = "Dienstanbieter"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),
+                            LanguageShortName = "en",
+                            Description = "Service Provider"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),
+                            LanguageShortName = "de",
+                            Description = "Betreiber"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),
+                            LanguageShortName = "en",
+                            Description = "Operator"
+                        });
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
                 {
                     b.Property<Guid>("UserRoleId")
@@ -4860,6 +5104,27 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("IdentityProvider");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", b =>
+                {
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                        .WithOne("CompanyRoleAssignedRoleCollection")
+                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", "CompanyRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_role_assigned_role_collections_company_roles_compan");
+
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", "UserRoleCollection")
+                        .WithOne("CompanyRoleAssignedRoleCollection")
+                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", "UserRoleCollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_role_assigned_role_collections_user_role_collection");
+
+                    b.Navigation("CompanyRole");
+
+                    b.Navigation("UserRoleCollection");
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleDescription", b =>
                 {
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
@@ -4879,6 +5144,18 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("CompanyRole");
 
                     b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleRegistrationData", b =>
+                {
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                        .WithOne("CompanyRoleRegistrationData")
+                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleRegistrationData", "CompanyRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_role_registration_data_company_roles_company_role_id");
+
+                    b.Navigation("CompanyRole");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
@@ -5419,6 +5696,46 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("Offer");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleAssignedCollection", b =>
+                {
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", "UserRoleCollection")
+                        .WithMany()
+                        .HasForeignKey("UserRoleCollectionId")
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_assigned_collections_user_role_collections_user_r");
+
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
+                        .WithMany()
+                        .HasForeignKey("UserRoleId")
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_assigned_collections_user_roles_user_role_id");
+
+                    b.Navigation("UserRole");
+
+                    b.Navigation("UserRoleCollection");
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollectionDescription", b =>
+                {
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageShortName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_collection_descriptions_languages_language_short_");
+
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", "UserRoleCollection")
+                        .WithMany("UserRoleCollectionDescriptions")
+                        .HasForeignKey("UserRoleCollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_collection_descriptions_user_role_collections_use");
+
+                    b.Navigation("Language");
+
+                    b.Navigation("UserRoleCollection");
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
                 {
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
@@ -5505,7 +5822,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 {
                     b.Navigation("AgreementAssignedCompanyRoles");
 
+                    b.Navigation("CompanyRoleAssignedRoleCollection");
+
                     b.Navigation("CompanyRoleDescriptions");
+
+                    b.Navigation("CompanyRoleRegistrationData");
                 });
 
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
@@ -5688,6 +6009,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("UserRoleDescriptions");
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", b =>
+                {
+                    b.Navigation("CompanyRoleAssignedRoleCollection");
+
+                    b.Navigation("UserRoleCollectionDescriptions");
                 });
 #pragma warning restore 612, 618
         }

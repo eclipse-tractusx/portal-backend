@@ -320,6 +320,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
+                .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
                 .ConfigureAwait(false);
 
             foreach (var roleData in initialRolesData)
