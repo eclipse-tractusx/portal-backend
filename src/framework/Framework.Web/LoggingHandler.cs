@@ -34,15 +34,24 @@ public class LoggingHandler<TLogger> : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Request: {Request}", request.ToString());
-        if (request.Content is { } content)
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogInformation("Request: {Request}", request);
+        }
+        if (request.Content is { } content && _logger.IsEnabled(LogLevel.Debug))
         {
             _logger.LogDebug("Request Content: {Content}", await content.ReadAsStringAsync(cancellationToken));
         }
         var response = await base.SendAsync(request, cancellationToken);
 
-        _logger.LogInformation("Response: {Response}", response.ToString());
-        _logger.LogDebug("Responded with status code: {StatusCode} and data: {Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogInformation("Response: {Response}", response);
+        }
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug("Responded with status code: {StatusCode} and data: {Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
+        }
 
         return response;
     }
