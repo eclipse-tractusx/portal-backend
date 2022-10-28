@@ -147,7 +147,14 @@ public static class BaseSeed
             new (new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")),
             new (new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"))
         });
-
+        dbContext.AppSubscriptionDetails.AddRange(new List<AppSubscriptionDetail>
+        {
+            new(new Guid("c4e979f7-d62d-4705-9218-dea4a28d3369"), new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"))
+            {
+                AppInstanceId = new Guid("89FF0C72-052F-4B1D-B5D5-89F3D61BA0B1"),
+                AppSubscriptionUrl = "https://url.test-app.com"
+            }
+        });
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
             new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),

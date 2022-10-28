@@ -146,11 +146,10 @@ public class UserProvisioningServiceCreateUsersTests
     {
         var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
 
-        var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles(2).ToList()).Create();
+        var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList()).Create();
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
 
-        var assignedRoles = specialUser.RoleDatas.Take(specialUser.RoleDatas.Count()-1).Select(d => d.UserRoleText).ToList().AsEnumerable();
         var centralUserName = _companyNameIdpAliasData.IdpAlias + "." + specialUser.UserId;
         var iamUserId = _fixture.Create<string>();
 
@@ -158,7 +157,7 @@ public class UserProvisioningServiceCreateUsersTests
             .Returns(iamUserId);
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new [] { (Client: _clientId, Roles: assignedRoles) }.ToAsyncEnumerable());
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new [] { (Client: _clientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
@@ -172,7 +171,7 @@ public class UserProvisioningServiceCreateUsersTests
         var error = result.ElementAt(_indexSpecialUser).Error;
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
-        error!.Message.Should().Be($"invalid role data [{String.Join(", ", specialUser.RoleDatas.ExceptBy(assignedRoles, roleData => roleData.UserRoleText).Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
+        error!.Message.Should().Be($"invalid role data [{String.Join(", ", specialUser.RoleDatas.Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
     }
 
     [Fact]
@@ -382,15 +381,15 @@ public class UserProvisioningServiceCreateUsersTests
         {
             yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
                 ? createInvalidUser()
-                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles(1).ToList()).Create();
+                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList()).Create();
             indexUser++;
         }
     }
 
-    private IEnumerable<UserRoleData> PickValidRoles(int minRoles)
+    private IEnumerable<UserRoleData> PickValidRoles()
     {
         var maxRoles = _userRolesWithId.Count();
-        var numRoles = _random.Next(minRoles,maxRoles);
+        var numRoles = _random.Next(1,maxRoles);
         while(numRoles > 0)
         {
             var roleWithId = _userRolesWithId.ElementAt(_random.Next(maxRoles));
