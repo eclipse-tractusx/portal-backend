@@ -2,7 +2,7 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-### In Progess
+### In Progress
 
 * Feature - Service customer notification & email for service activation
 * Feature - Service provider notification & email for service subscriptions
@@ -21,11 +21,11 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
    * Interface Connection to SD-Factory enabled
    * Discovery Service of connector endpoints integrated
    * API business logic updated to support connector registration for multiple companies ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-* Registration: Registration service got released to support the full company registration cycle inclduing workflow management
-* Marketplace: Marketplace servicess got released supporting the discovery of offers on the marketplace and enable subscription to those apps and services (incl. manual steps)
+* Registration: Registration service got released to support the full company registration cycle including workflow management
+* Marketplace: Marketplace services got released supporting the discovery of offers on the marketplace and enable subscription to those apps and services (incl. manual steps)
 
 ### Technical Support
-* Database auditing. AuditId, DateLastChanged, AuditOperationId added inside the audit tables and removed from original table (if not needed)
+* Database auditing: AuditId, DateLastChanged, AuditOperationId added inside the audit tables and removed from original table (if not needed)
 
 ### Bugfix
 * Security findings
@@ -49,7 +49,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 * Feature - Service Provider Marketplace v1 microservice released (Get Services, Get Service Details, Post Services, Post Agreement, Get Agreement, etc.)
 * Feature - App Release Process Controller enhanced with additional endpoints to support the app release feature with "Put App Documents"
-* Update - Portal Db Refactoring by merging service and app table and recall them "offers". Additionally al related app tabled have been renamed where suitable to "offer" instead of "app"
+* Update - Portal Db Refactoring by merging service and app table and recall them "offers". Additionally, al related app tabled have been renamed where suitable to "offer" instead of "app"
 
 ## 0.5.2
 
