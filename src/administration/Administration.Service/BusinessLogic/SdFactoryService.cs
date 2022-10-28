@@ -34,7 +34,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 /// </summary>
 public class SdFactoryService : ISdFactoryService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly IPortalRepositories _portalRepositories;
     private readonly SdFactorySettings _settings;
 
@@ -48,15 +48,14 @@ public class SdFactoryService : ISdFactoryService
         IPortalRepositories portalRepositories)
     {
         _settings = options.Value;
-        _httpClientFactory = httpClientFactory;
+        _httpClient = httpClientFactory.CreateClient(nameof(SdFactoryService));
         _portalRepositories = portalRepositories;
     }
 
     /// <inheritdoc />
     public async Task<Guid> RegisterConnectorAsync(ConnectorRequestModel connectorRequestModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient =_httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(
@@ -68,7 +67,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync("", requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
     }
@@ -76,8 +75,7 @@ public class SdFactoryService : ISdFactoryService
     /// <inheritdoc />
     public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient =_httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         var requestModel = new SdFactoryRequestModel(
             applicationId.ToString(),
@@ -88,7 +86,7 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync("", requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }

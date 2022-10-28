@@ -50,12 +50,12 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IBpnAccess, BpnAccess>()
-    .AddTransient<LoggingHandler>();
+    .AddTransient<LoggingHandler<BpnAccess>>();
 builder.Services.AddHttpClient("bpn", c =>
     {
         c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");
     })
-    .AddHttpMessageHandler<LoggingHandler>();
+    .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
 
 builder.Build()
     .CreateApp<Program>("registration", VERSION)

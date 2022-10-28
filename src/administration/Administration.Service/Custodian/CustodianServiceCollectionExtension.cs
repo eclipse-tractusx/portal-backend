@@ -31,18 +31,18 @@ public static class CustodianServiceCollectionExtension
         services.AddOptions<CustodianSettings>()
             .Bind(section)
             .ValidateOnStart();
-        services.AddTransient<LoggingHandler>();
+        services.AddTransient<LoggingHandler<CustodianService>>();
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
         services.AddHttpClient("custodian", c =>
         {
             c.BaseAddress = new Uri(settings.Value.BaseAdress);
-        }).AddHttpMessageHandler<LoggingHandler>();
+        }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
         services.AddHttpClient("custodianAuth", c =>
         {
             c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
-        }).AddHttpMessageHandler<LoggingHandler>();
+        }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
         services.AddTransient<ICustodianService, CustodianService>();
 
         return services;

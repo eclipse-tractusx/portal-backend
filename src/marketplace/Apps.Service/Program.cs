@@ -25,6 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http;
+using Offers.Library.DependencyInjection;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
@@ -43,13 +44,13 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddMailingAndTemplateManager(builder.Configuration)
     .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration)
-    .AddCustomHttpClient();
+    .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
-                .AddTransient<IOfferSetupService, OfferSetupService>()
                 .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
+
+builder.Services.AddOfferSetupService();
 
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
