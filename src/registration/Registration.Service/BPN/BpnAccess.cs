@@ -37,9 +37,8 @@ public class BpnAccess : IBpnAccess
 
     public async IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var response = new List<FetchBusinessPartnerDto>();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}").ConfigureAwait(false);
+        var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}", cancellationToken).ConfigureAwait(false);
         if (result.IsSuccessStatusCode)
         {
             using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
