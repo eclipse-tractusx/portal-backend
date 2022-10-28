@@ -97,8 +97,8 @@ public class CustodianService : ICustodianService
             {"scope", _settings.Scope}
         };
         var content = new FormUrlEncodedContent(parameters);
-        var response = await _custodianAuthHttpClient.PostAsync("", content, cancellationToken);
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        var response = await _custodianAuthHttpClient.PostAsync("", content, cancellationToken).ConfigureAwait(false);
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new ServiceException("Token could not be retrieved");
