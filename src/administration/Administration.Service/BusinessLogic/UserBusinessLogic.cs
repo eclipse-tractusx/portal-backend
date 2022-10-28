@@ -247,6 +247,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 companyUsers.OrderByDescending(companyUser => companyUser.DateCreated)
                 .Skip(skip)
                 .Take(take)
+                .Where(companyUser =>_settings.CompanyUserStatusIds.Contains(companyUser.CompanyUserStatusId))
                 .Select(companyUser => new CompanyUserData(
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Id,
