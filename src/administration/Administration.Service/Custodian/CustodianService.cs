@@ -63,7 +63,6 @@ public class CustodianService : ICustodianService
 
     public async IAsyncEnumerable<GetWallets> GetWalletsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var response = new List<GetWallets>();
         var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
         _custodianHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         const string url = "/api/wallets";
