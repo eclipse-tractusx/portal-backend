@@ -110,7 +110,7 @@ public class AppBusinessLogicTests
         var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, string?, string?, string?>>(5);
         A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
 
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, A.Fake<IOptions<AppsSettings>>());
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, A.Fake<IOptions<AppsSettings>>());
 
         // Act
         var result = await sut.GetAllActiveAppsAsync().ToListAsync().ConfigureAwait(false);
@@ -151,7 +151,7 @@ public class AppBusinessLogicTests
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerSubscriptionId);
-        var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService, A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService ,A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
 
         // Act
         var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), "44638c72-690c-42e8-bd5e-c8ac3047ff82", "THISISAACCESSTOKEN").ConfigureAwait(false);
@@ -182,7 +182,7 @@ public class AppBusinessLogicTests
             .ReturnsLazily(() => offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 
-        var sut = new AppsBusinessLogic(null!, null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
+        var sut = new AppsBusinessLogic(null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
 
         // Act
         var result = await sut.AutoSetupAppAsync(data, IamUserId).ConfigureAwait(false);
