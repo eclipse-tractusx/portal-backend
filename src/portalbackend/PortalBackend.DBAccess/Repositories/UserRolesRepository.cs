@@ -73,6 +73,9 @@ public class UserRolesRepository : IUserRolesRepository
                 userRoleId
             )).Entity;
 
+    public void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds) =>
+        _dbContext.CompanyUserAssignedRoles.RemoveRange(companyUserAssignedRoleIds.Select(ids => new CompanyUserAssignedRole(ids.CompanyUserId, ids.UserRoleId)));
+
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
             .AsNoTracking()
@@ -208,4 +211,25 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(x => x.OfferId == offerId)
             .Select(x => x.UserRoleText)
             .ToListAsync();
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(string iamUserId, IDictionary<string, IEnumerable<string>> clientRoles)
+    {
+        foreach (var clientRole in clientRoles)
+        {
+            await foreach (var companyUserData in _dbContext.CompanyUserAssignedRoles
+                .AsNoTracking()
+                .Where(companyAssignedUserRole => companyAssignedUserRole.UserRole!.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.Key) && clientRole.Value.Contains(companyAssignedUserRole.UserRole.UserRoleText)
+                 && companyAssignedUserRole.CompanyUser!.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                .Select(companyAssignedUserRole => new CompanyUserNameData(
+                    companyAssignedUserRole.CompanyUser!.Id,
+                    companyAssignedUserRole.CompanyUser!.Firstname,
+                    companyAssignedUserRole.CompanyUser!.Lastname
+                ))
+                .AsAsyncEnumerable())
+            {
+                yield return companyUserData;
+            }
+        }
+    }
 }
