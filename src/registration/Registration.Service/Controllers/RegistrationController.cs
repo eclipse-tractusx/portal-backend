@@ -66,11 +66,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
-        [ProducesResponseType(typeof(List<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) => 
-            Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken).ConfigureAwait(false));
+        public IAsyncEnumerable<FetchBusinessPartnerDto> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) => 
+            _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken);
 
         /// <summary>
         /// Uploads a document

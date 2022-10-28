@@ -69,7 +69,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
-    public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
+    public IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
     {
         var regex = new Regex(@"(\w|\d){16}");
         if (!regex.IsMatch(companyIdentifier))

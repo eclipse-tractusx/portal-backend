@@ -20,10 +20,9 @@
 
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
+
+public interface IBpnAccess
 {
-    public interface IBpnAccess
-    {
-        Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
-    }
+    IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
 }

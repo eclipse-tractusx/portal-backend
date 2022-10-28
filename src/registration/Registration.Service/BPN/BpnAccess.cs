@@ -21,36 +21,37 @@
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
+
+public class BpnAccess : IBpnAccess
 {
-    public class BpnAccess : IBpnAccess
+    private readonly HttpClient _httpClient;
+
+    public BpnAccess(IHttpClientFactory httpFactory)
     {
-        private readonly HttpClient _httpClient;
+        _httpClient = httpFactory.CreateClient("bpn");
+    }
 
-        public BpnAccess(IHttpClientFactory httpFactory)
+    public async IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var response = new List<FetchBusinessPartnerDto>();
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}").ConfigureAwait(false);
+        if (result.IsSuccessStatusCode)
         {
-            _httpClient = httpFactory.CreateClient("bpn");
+            using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var businesPartnerDto = await JsonSerializer.DeserializeAsync<FetchBusinessPartnerDto>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if(businesPartnerDto != null)
+            {
+                yield return businesPartnerDto;
+            }
         }
-
-        public async Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken)
+        else
         {
-            var response = new List<FetchBusinessPartnerDto>();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}");
-            if (result.IsSuccessStatusCode)
-            {
-                var body = await JsonSerializer.DeserializeAsync<FetchBusinessPartnerDto>(await result.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken).ConfigureAwait(false);
-                if(body != null)
-                    response.Add(body);
-            }
-            else
-            {
-                throw new ServiceException($"Access to BPN Failed with Status Code {result.StatusCode}", result.StatusCode);
-            }
-
-            return response;
+            throw new ServiceException($"Access to BPN Failed with Status Code {result.StatusCode}", result.StatusCode);
         }
     }
 }
