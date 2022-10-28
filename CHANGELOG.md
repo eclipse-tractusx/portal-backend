@@ -16,8 +16,12 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * API Endpoint GET owncompany/user: enable fuzzy search via email
 
 ### Feature
-* Managed Connectors: endpoint for "managed connector" registration created incl. self description trigger and storage
-* User Management: enable bulk upload of SharedIdP users via csv file
+* Administration/User Service: Enables companies to invite, change and delete own users with bulk and single actions, as well as direct keycloak iam costumers as well as federated own company solutions
+* Administration/Connector: Register own and managed connectors, including self-description creation & storage (Gaia-X)
+   * Interface Connection to SD-Factory enabled
+   * Discovery Service of connector endpoints integrated
+* Registration: Registration service got released to support the full company registration cycle inclduing workflow management
+* Marketplace: Marketplace servicess got released supporting the discovery of offers on the marketplace and enable subscription to those apps and services (incl. manual steps)
 
 ### Technical Support
 * Database auditing. AuditId, DateLastChanged, AuditOperationId added inside the audit tables and removed from original table (if not needed)
