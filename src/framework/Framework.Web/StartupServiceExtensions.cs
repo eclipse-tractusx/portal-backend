@@ -71,22 +71,6 @@ public static class StartupServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddCustomHttpClient(this IServiceCollection services)
-    {
-        services
-            .AddTransient<LoggingHandler>()
-            .AddHttpClient()
-            .ConfigureAll<HttpClientFactoryOptions>(options =>
-                {
-                    options.HttpMessageHandlerBuilderActions.Add(x =>
-                    {
-                        x.AdditionalHandlers.Add(x.Services.GetRequiredService<LoggingHandler>());
-                    });
-                });
-
-        return services;
-    }
-
     public static IServiceCollection AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration) =>
         services.AddTransient<IAuthorizationHandler, ClaimRequestPathHandler>()
             .AddAuthorization(option =>

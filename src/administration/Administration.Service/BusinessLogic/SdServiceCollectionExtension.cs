@@ -18,24 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// Settings used in business logic concerning connectors.
-/// </summary>
-public class SdFactorySettings
+public static class SdServiceCollectionExtension
 {
-    /// <summary>
-    /// SD Factory endpoint for registering connectors.
-    /// </summary>
-    [Required]
-    public string SdFactoryUrl { get; set; } = null!;
+    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<SdFactoryService>>();
 
-    /// <summary>
-    /// BPN of the issuer for the sd factory
-    /// </summary>
-    [Required]
-    public string SdFactoryIssuerBpn { get; set; } = null!;
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<SdFactorySettings>>();
+        services.AddHttpClient(nameof(SdFactoryService), c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.SdFactoryUrl);
+        }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
+        services.AddTransient<ISdFactoryService, SdFactoryService>();
+
+        return services;
+    }
 }

@@ -26,7 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Http;
+using Offers.Library.DependencyInjection;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 var VERSION = "v2";
@@ -44,15 +44,15 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddMailingAndTemplateManager(builder.Configuration)
     .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration)
-    .AddCustomHttpClient();
+    .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .AddTransient<IOfferService, OfferService>()
-    .AddTransient<IOfferSetupService, OfferSetupService>()
     .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
+
+builder.Services.AddOfferSetupService();
 
 builder.Build()
     .CreateApp<Program>("services", VERSION)
