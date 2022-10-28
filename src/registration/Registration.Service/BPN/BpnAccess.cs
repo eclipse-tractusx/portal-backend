@@ -34,14 +34,14 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
             _httpClient = httpFactory.CreateClient("bpn");
         }
 
-        public async Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token)
+        public async Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken)
         {
             var response = new List<FetchBusinessPartnerDto>();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}");
             if (result.IsSuccessStatusCode)
             {
-                var body = JsonSerializer.Deserialize<FetchBusinessPartnerDto>(await result.Content.ReadAsStringAsync());
+                var body = await JsonSerializer.DeserializeAsync<FetchBusinessPartnerDto>(await result.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken).ConfigureAwait(false);
                 if(body != null)
                     response.Add(body);
             }

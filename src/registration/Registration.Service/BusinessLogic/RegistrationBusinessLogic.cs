@@ -69,7 +69,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
-    public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token)
+    public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
     {
         var regex = new Regex(@"(\w|\d){16}");
         if (!regex.IsMatch(companyIdentifier))
@@ -77,7 +77,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
         }
 
-        return _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
+        return _bpnAccess.FetchBusinessPartner(companyIdentifier, token, cancellationToken);
     }
 
     public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken)
