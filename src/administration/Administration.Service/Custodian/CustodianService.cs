@@ -68,11 +68,11 @@ public class CustodianService : ICustodianService
         const string url = "/api/wallets";
         var result = await _custodianHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         
-        var responseContent = await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccessStatusCode)
         {
-            var wallets = JsonSerializer.Deserialize<List<GetWallets>>(responseContent);
+            var wallets = await JsonSerializer.DeserializeAsync<List<GetWallets>>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (wallets != null)
             {
                 response.AddRange(wallets);
