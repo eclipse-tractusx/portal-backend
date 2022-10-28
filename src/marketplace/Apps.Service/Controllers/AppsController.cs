@@ -210,7 +210,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, new List<OfferAgreementConsentData>()2, auth.iamUserId, auth.bearerToken));
+        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, new List<OfferAgreementConsentData>(), auth.iamUserId, auth.bearerToken));
         return NoContent();
     }
 
