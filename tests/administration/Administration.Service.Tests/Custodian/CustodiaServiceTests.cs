@@ -23,14 +23,13 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using System.Net;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using System.Net;
+using System.Text.Json;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Custodian;
@@ -188,7 +187,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_httpClientFactory, _options);
         
         // Act
-        var result = await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetWalletsAsync(CancellationToken.None).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -208,7 +207,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_httpClientFactory, _options);
 
         // Act
-        async Task Act() => await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetWalletsAsync(CancellationToken.None).ToListAsync().ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

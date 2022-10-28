@@ -67,7 +67,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        var response = await _httpClient.PostAsJsonAsync("", requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
     }
@@ -86,7 +86,7 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        var response = await _httpClient.PostAsJsonAsync("", requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }

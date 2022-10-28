@@ -19,11 +19,10 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
-namespace Offers.Library.DependencyInjection;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.DependencyInjection;
 
 public static class OfferSetupServiceCollectionExtension
 {

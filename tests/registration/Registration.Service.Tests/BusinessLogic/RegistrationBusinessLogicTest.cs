@@ -152,7 +152,7 @@ public class RegistrationBusinessLogicTest
             null!);
 
         // Act
-        var result = await sut.GetCompanyByIdentifierAsync(bpn, token, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetCompanyByIdentifierAsync(bpn, token, CancellationToken.None).ToListAsync().ConfigureAwait(false);
 
         result.Should().NotBeNull();
         A.CallTo(() => bpnAccess.FetchBusinessPartner(bpn, token, CancellationToken.None)).MustHaveHappenedOnceExactly();
@@ -172,7 +172,7 @@ public class RegistrationBusinessLogicTest
             null!);
         
         // Act
-        async Task Act() => await sut.GetCompanyByIdentifierAsync("NotLongEnough", "justatoken", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyByIdentifierAsync("NotLongEnough", "justatoken", CancellationToken.None).ToListAsync().ConfigureAwait(false);
         
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);

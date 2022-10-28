@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
    
@@ -42,11 +42,9 @@ public class OfferSetupService : IOfferSetupService
         try
         {
             var response = await _httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
-            var responseContent = await response.Content.ReadAsStringAsync();
-
             if (!response.IsSuccessStatusCode)
             {
-                
+                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 throw new ServiceException(
                     response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {responseContent}",
                     response.StatusCode);

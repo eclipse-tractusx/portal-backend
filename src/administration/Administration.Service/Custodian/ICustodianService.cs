@@ -24,7 +24,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 
 public interface ICustodianService
 {
-    public Task<List<GetWallets>> GetWalletsAsync(CancellationToken cancellationToken);
+    public IAsyncEnumerable<GetWallets> GetWalletsAsync(CancellationToken cancellationToken);
 
     public Task CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

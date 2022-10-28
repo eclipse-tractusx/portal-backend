@@ -29,7 +29,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Http;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 

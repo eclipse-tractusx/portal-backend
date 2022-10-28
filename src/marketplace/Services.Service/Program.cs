@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.FileProviders;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using Offers.Library.DependencyInjection;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 var VERSION = "v2";
 

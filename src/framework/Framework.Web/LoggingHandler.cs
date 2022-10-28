@@ -32,27 +32,25 @@ public class LoggingHandler<TLogger> : DelegatingHandler
         _logger = loggerFactory.CreateLogger<TLogger>();
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (_logger.IsEnabled(LogLevel.Debug))
+        if (!_logger.IsEnabled(LogLevel.Debug))
         {
-            _logger.LogInformation("Request: {Request}", request);
+            return base.SendAsync(request, cancellationToken);
         }
-        if (request.Content is { } content && _logger.IsEnabled(LogLevel.Debug))
-        {
-            _logger.LogDebug("Request Content: {Content}", await content.ReadAsStringAsync(cancellationToken));
-        }
-        var response = await base.SendAsync(request, cancellationToken);
+        return SendAsyncInternal(request, cancellationToken);
+    }
 
-        if (_logger.IsEnabled(LogLevel.Debug))
+    private async Task<HttpResponseMessage> SendAsyncInternal(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Request: {Request}", request);
+        if (request.Content is { } content)
         {
-            _logger.LogInformation("Response: {Response}", response);
+            _logger.LogDebug("Request Content: {Content}", await content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         }
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            _logger.LogDebug("Responded with status code: {StatusCode} and data: {Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
-        }
-
+        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Response: {Response}", response);
+        _logger.LogDebug("Responded with status code: {StatusCode} and data: {Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         return response;
     }
 }

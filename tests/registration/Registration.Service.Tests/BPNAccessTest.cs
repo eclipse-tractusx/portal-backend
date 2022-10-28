@@ -20,10 +20,10 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using FakeItEasy;
 using System.Net;
 using System.Text.Json;
 using Xunit;
@@ -66,7 +66,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             var httpClient = _fixture.Create<HttpClient>();
             var sut = _fixture.Create<BpnAccess>();
 
-            var result = await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None);
+            var result = await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
             Assert.Equal(resultSet.bpn, result.First().bpn);
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
@@ -79,7 +79,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             var httpClient = _fixture.Create<HttpClient>();
             var sut = _fixture.Create<BpnAccess>();
 
-            await Assert.ThrowsAsync<ServiceException>(async () => await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None));
+            async Task Act() => await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
+
+            await Assert.ThrowsAsync<ServiceException>(Act);
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
     }

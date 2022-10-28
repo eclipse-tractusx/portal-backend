@@ -18,9 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;

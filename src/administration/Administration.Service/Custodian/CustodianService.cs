@@ -24,6 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.Extensions.Options;
 
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -60,7 +61,7 @@ public class CustodianService : ICustodianService
         }
     }
 
-    public async Task<List<GetWallets>> GetWalletsAsync(CancellationToken cancellationToken)
+    public async IAsyncEnumerable<GetWallets> GetWalletsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var response = new List<GetWallets>();
         var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
@@ -68,21 +69,21 @@ public class CustodianService : ICustodianService
         const string url = "/api/wallets";
         var result = await _custodianHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         
-        var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
         if (result.IsSuccessStatusCode)
         {
-            var wallets = await JsonSerializer.DeserializeAsync<List<GetWallets>>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (wallets != null)
+            using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await foreach (var wallet in JsonSerializer.DeserializeAsyncEnumerable<GetWallets>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false))
             {
-                response.AddRange(wallets);
+                if (wallet != null)
+                {
+                    yield return wallet;
+                }
             }
         }
         else
         {
             throw new ServiceException("Error on retrieving Wallets HTTP Response Code {StatusCode}", result.StatusCode);
         }
-        return response;
     }
 
     public async Task<string?> GetTokenAsync(CancellationToken cancellationToken)
@@ -98,12 +99,11 @@ public class CustodianService : ICustodianService
         };
         var content = new FormUrlEncodedContent(parameters);
         var response = await _custodianAuthHttpClient.PostAsync("", content, cancellationToken).ConfigureAwait(false);
-        var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new ServiceException("Token could not be retrieved");
         }
-
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return responseObject?.access_token;
     }
