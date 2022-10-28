@@ -45,11 +45,11 @@ public interface IOfferService
     /// Updates the existing consent offer subscriptions in the database and creates new entries for the non existing.
     /// </summary>
     /// <param name="subscriptionId">Id of the offer subscription</param>
-    /// <param name="offerAgreementConsentDatas">List of the agreement and status of the consent</param>
+    /// <param name="offerAgreementConsentData">List of the agreement and status of the consent</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<OfferAgreementConsentData> offerAgreementConsentDatas,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData,
         string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
