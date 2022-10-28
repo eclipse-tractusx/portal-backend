@@ -208,10 +208,11 @@ public class CustodianServiceTests
         var sut = new CustodianService(_httpClientFactory, _options);
 
         // Act
-        var result = await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetWalletsAsync(CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEmpty();
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     #endregion
