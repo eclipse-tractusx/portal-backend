@@ -135,9 +135,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<OfferAgreementConsentData> offerAgreementConsentDatas,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData,
         string iamUserId) =>
-        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentDatas, iamUserId, OfferTypeId.SERVICE);
+        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentData, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
