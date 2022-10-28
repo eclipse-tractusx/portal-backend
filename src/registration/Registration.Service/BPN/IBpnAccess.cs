@@ -24,6 +24,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
 {
     public interface IBpnAccess
     {
-        Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token);
+        Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
     }
 }

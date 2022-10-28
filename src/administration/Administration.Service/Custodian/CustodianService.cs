@@ -98,13 +98,13 @@ public class CustodianService : ICustodianService
         };
         var content = new FormUrlEncodedContent(parameters);
         var response = await _custodianAuthHttpClient.PostAsync("", content, cancellationToken).ConfigureAwait(false);
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new ServiceException("Token could not be retrieved");
         }
 
-        var responseObject = JsonSerializer.Deserialize<AuthResponse>(responseContent);
+        var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return responseObject?.access_token;
     }
 }

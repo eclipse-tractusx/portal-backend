@@ -66,7 +66,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             var httpClient = _fixture.Create<HttpClient>();
             var sut = _fixture.Create<BpnAccess>();
 
-            var result = await sut.FetchBusinessPartner("testpbn", "token");
+            var result = await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None);
             Assert.Equal(resultSet.bpn, result.First().bpn);
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
@@ -79,7 +79,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             var httpClient = _fixture.Create<HttpClient>();
             var sut = _fixture.Create<BpnAccess>();
 
-            await Assert.ThrowsAsync<ServiceException>(async () => await sut.FetchBusinessPartner("testpbn", "token"));
+            await Assert.ThrowsAsync<ServiceException>(async () => await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None));
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
     }
