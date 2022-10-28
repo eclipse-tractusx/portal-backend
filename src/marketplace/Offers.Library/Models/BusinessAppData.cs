@@ -18,16 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-
-public interface IUserProvisioningService
-{
-    IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken = default);
-    Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId);
-    Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId);
-    IAsyncEnumerable<UserRoleData> GetRoleDatas(IDictionary<string,IEnumerable<string>> clientRoles);
-    Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, string iamUserId);
-}
+/// <summary>
+/// Basic model for data needed in business application display.
+/// </summary>
+public record BusinessAppData(Guid Id, string Name, string Uri, string LeadPictureUri, string Provider);

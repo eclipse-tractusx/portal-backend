@@ -92,7 +92,7 @@ public interface IOfferRepository
     /// <param name="appId">Id of the app</param>
     /// <param name="companyUserId">Id of the company User</param>
     CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId);
-    CompanyUserAssignedAppFavourite DeleteAppFavourite(Guid appId, Guid companyUserId);
+    void DeleteAppFavourites(IEnumerable<(Guid AppId, Guid CompanyUserId)> appFavoriteIds);
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
     /// </summary>
@@ -132,6 +132,7 @@ public interface IOfferRepository
     /// <param name="appId">id of the app to get the client roles for</param>
     /// <param name="languageShortName">The language short names</param>
     /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
+    [Obsolete("only referenced by code that is marked as obsolte")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>

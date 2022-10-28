@@ -18,9 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-/// <summary>
-/// Basic model for data needed in business application display.
-/// </summary>
-public record BusinessAppData(Guid Id, string Name, string Uri, string LeadPictureUri, string Provider);
+public class UserRoleCollection
+{
+    private UserRoleCollection()
+    {
+        Name = null!;
+        UserRoles = new HashSet<UserRole>();
+        UserRoleCollectionDescriptions = new HashSet<UserRoleCollectionDescription>();
+    }
+
+    public UserRoleCollection(Guid id, string label) : this()
+    {
+        Id = id;
+        Name = label;
+    }
+
+    public Guid Id { get; set; }
+
+    public string Name { get; set; }
+
+    // Navigation properties
+    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; private set; }
+}

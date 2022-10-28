@@ -67,13 +67,6 @@ public interface IUserRepository
     IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId);
 
     /// <summary>
-    /// Gets all business app data for the given userId
-    /// </summary>
-    /// <param name="userId">Id of the user to get the app data for.</param>
-    /// <returns>Returns an IAsyncEnumerable of <see cref="BusinessAppData"/></returns>
-    IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
-
-    /// <summary>
     /// Gets the company user ids and checks if its the given iamUser
     /// </summary>
     /// <param name="iamUserId">Id of the iamUser</param>
@@ -104,7 +97,8 @@ public interface IUserRepository
     /// <returns>The Id of the company</returns>
     Task<Guid> GetServiceAccountCompany(string iamUserId);
 
-    Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
     
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 

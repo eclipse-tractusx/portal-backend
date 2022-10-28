@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using System.Text.RegularExpressions;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -340,24 +339,6 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId) =>
-        _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
-            .SelectMany(u => u.CompanyUser!.Company!.BoughtOffers)
-            .Intersect(
-                _dbContext.IamUsers.AsNoTracking().Where(u => u.UserEntityId == userId)
-                    .SelectMany(u => u.CompanyUser!.UserRoles.Select(r => r.Offer))
-                    .Where(x => x != null)
-                    .Select(x => x!)
-            )
-            .Select(app => new BusinessAppData(
-                app!.Id,
-                app.Name ?? Constants.ErrorString,
-                app.OfferSubscriptions.FirstOrDefault(x => x.OfferId == app.Id) == null ? Constants.ErrorString : app.OfferSubscriptions.First(x => x.OfferId == app.Id).AppSubscriptionDetail!.AppSubscriptionUrl ?? Constants.ErrorString,
-                app.ThumbnailUrl ?? Constants.ErrorString,
-                app.Provider
-            )).AsAsyncEnumerable();
-
-    /// <inheritdoc />
     public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId) =>
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == companyUserId)
             .Select(companyUser => new ValueTuple<Guid, bool>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId))
@@ -380,13 +361,28 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
+    public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<string?, string, bool>( 
+            .Select(companyUser => new OfferIamUserData( 
                 companyUser.Company!.OfferSubscriptions.SingleOrDefault(subscription => subscription.OfferId == offerId)!.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId, 
                 companyUser.IamUser!.UserEntityId,
                 companyUser.Company.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser => new OfferIamUserData( 
+                companyUser.Company!.CompanyRoles
+                    .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
+                    .SelectMany(userrole => userrole.Offer!.AppInstances)
+                    .Select(instance => instance.IamClient!.ClientClientId)
+                    .Distinct()
+                    .SingleOrDefault(),
+                companyUser.IamUser!.UserEntityId,
+                companyUser.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

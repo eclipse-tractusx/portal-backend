@@ -30,7 +30,7 @@ public class CsvParserTest
 {
     private readonly Stream _stream;
     private readonly Action<string> _validateHeaderLine;
-    private readonly Func<string,FakeLineType> _parseLine;
+    private readonly Func<string,ValueTask<FakeLineType>> _parseLine;
     private readonly FakeLineType _parseLineResult;
     private readonly Func<IAsyncEnumerable<FakeLineType>,IAsyncEnumerable<(bool Processed, Exception? Error)>> _processLines;
     private readonly CancellationToken _cancellationToken;
@@ -40,7 +40,7 @@ public class CsvParserTest
     {
         _stream = A.Fake<Stream>();
         _validateHeaderLine = A.Fake<Action<string>>();
-        _parseLine = A.Fake<Func<string,FakeLineType>>();
+        _parseLine = A.Fake<Func<string,ValueTask<FakeLineType>>>();
         _parseLineResult = A.Fake<FakeLineType>();
         _processLines = A.Fake<Func<IAsyncEnumerable<FakeLineType>,IAsyncEnumerable<(bool Processed, Exception? Error)>>>();
         _cancellationToken = new CancellationToken();
@@ -343,7 +343,7 @@ public class CsvParserTest
     private void SetupFakes()
     {
         A.CallTo(() => _stream.CanRead).Returns(true);
-        A.CallTo(() => _parseLine(A<string>.Ignored)).Returns(_parseLineResult);
+        A.CallTo(() => _parseLine(A<string>.Ignored)).ReturnsLazily(_ => ValueTask.FromResult(_parseLineResult));
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).ReturnsLazily<IAsyncEnumerable<(bool Processed, Exception? Error)>,IAsyncEnumerable<FakeLineType>>(lines => ProcessLinesSuccess(lines));
     }
 
