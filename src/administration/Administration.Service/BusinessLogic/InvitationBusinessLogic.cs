@@ -23,6 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
@@ -107,18 +108,26 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             true
         );
 
-        var (clientId, roles) = _settings.InvitedUserInitialRoles.Single();
+        IEnumerable<UserRoleData> roleDatas;
+        try
+        {
+            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
+        }
+        catch(Exception e)
+        {
+            throw new ConfigurationException($"{nameof(_settings.InvitedUserInitialRoles)}: {e.Message}");
+        }
 
-        var userCreationInfoIdps = new [] { new UserCreationInfoIdp(
+        var userCreationInfoIdps = new [] { new UserCreationRoleDataIdpInfo(
             invitationData.firstName,
             invitationData.lastName,
             invitationData.email,
-            roles,
+            roleDatas,
             string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
             ""
         )}.ToAsyncEnumerable();
 
-        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, clientId, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {

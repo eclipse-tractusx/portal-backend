@@ -139,6 +139,9 @@ public class OfferRepository : IOfferRepository
     public CompanyUserAssignedAppFavourite DeleteAppFavourite(Guid appId, Guid companyUserId) =>
         _context.CompanyUserAssignedAppFavourites.Remove(new CompanyUserAssignedAppFavourite(appId, companyUserId)).Entity;
 
+    public void DeleteAppFavourites(IEnumerable<(Guid AppId, Guid CompanyUserId)> appFavoriteIds) =>
+        _context.CompanyUserAssignedAppFavourites.RemoveRange(appFavoriteIds.Select(ids => new CompanyUserAssignedAppFavourite(ids.AppId, ids.CompanyUserId)));
+
     ///<inheritdoc/>
     public OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId) =>
         _context.OfferAssignedDocuments.Add(new OfferAssignedDocument(offerId, documentId)).Entity;
@@ -194,6 +197,7 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
        
     /// <inheritdoc />
+    [Obsolete("only referenced by code that is marked as obsolte")]
     public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
         _context.Offers
             .Where(app => app.Id == appId)

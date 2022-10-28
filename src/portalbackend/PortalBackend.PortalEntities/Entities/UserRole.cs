@@ -33,6 +33,7 @@ public class UserRole : IAuditableV1
         UserRoleText = null!;
         CompanyUsers = new HashSet<CompanyUser>();
         CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        UserRoleCollections = new HashSet<UserRoleCollection>();
         UserRoleDescriptions = new HashSet<UserRoleDescription>();
     }
 
@@ -57,5 +58,6 @@ public class UserRole : IAuditableV1
     public virtual Offer? Offer { get; set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }
     public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
 }

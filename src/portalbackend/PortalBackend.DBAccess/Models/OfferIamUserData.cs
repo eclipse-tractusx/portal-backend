@@ -18,18 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    public class AgreementsAssignedCompanyRoleData
-    {
-        public AgreementsAssignedCompanyRoleData(CompanyRoleId companyRoleId, IEnumerable<Guid> agreementIds)
-        {
-            CompanyRoleId = companyRoleId;
-            AgreementIds = agreementIds;
-        }
-        public CompanyRoleId CompanyRoleId  { get; }
-        public IEnumerable<Guid> AgreementIds { get; }
-    }
-}
+public record OfferIamUserData(string? IamClientId, string IamUserId, bool IsSameCompany);
