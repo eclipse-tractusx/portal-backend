@@ -2,13 +2,6 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-### In Progress
-
-* Feature - Service customer notification & email for service activation
-* Feature - Service provider notification & email for service subscriptions
-* Feature - User Management: Modification of Roles of one specific user under an app
-* Feature - Managed/Own connector registration endpoint refactoring
-
 ## 0.6.0
 
 ### Change
