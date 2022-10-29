@@ -30,8 +30,10 @@ public class Document
         DocumentHash = null!;
         DocumentName = null!;
         DocumentContent = null!;
+        Agreements = new HashSet<Agreement>();
         Consents = new HashSet<Consent>();
         Offers = new HashSet<Offer>();
+        Companies = new HashSet<Company>();
     }
     
     /// <summary>
@@ -43,7 +45,7 @@ public class Document
         Id = id;
     }
 
-    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId) : this()
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId) : this()
     {
         Id = id;
         DocumentContent = documentContent;
@@ -51,6 +53,7 @@ public class Document
         DocumentName = documentName;
         DateCreated = dateCreated;
         DocumentStatusId = documentStatusId;
+        DocumentTypeId = documentTypeId;
     }
 
     public Guid Id { get; private set; }
@@ -64,7 +67,7 @@ public class Document
     [MaxLength(255)]
     public string DocumentName { get; set; }
 
-    public DocumentTypeId? DocumentTypeId { get; set; }
+    public DocumentTypeId DocumentTypeId { get; set; }
 
     public DocumentStatusId DocumentStatusId { get; set; }
 
@@ -74,6 +77,14 @@ public class Document
     public virtual CompanyUser? CompanyUser { get; set; }
     public virtual DocumentType? DocumentType { get; set; }
     public virtual DocumentStatus? DocumentStatus { get; set; }
+
+    /// <summary>
+    /// Mapping to an optional the connector
+    /// </summary>
+    public virtual Connector? Connector { get; set; }
+
+    public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<Company> Companies { get; private set; }
 }

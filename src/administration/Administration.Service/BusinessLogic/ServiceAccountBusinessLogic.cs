@@ -66,13 +66,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnForIamUserUntrackedAsync(iamAdminId).ConfigureAwait(false);
-        if (result != default)
+        if (result == default)
         {
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
         var (name, description, iamClientAuthMethod, userRoleIds) = serviceAccountCreationInfos;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, result.CompanyId, Enumerable.Repeat(result.Bpn, 1));
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, result.CompanyId, Enumerable.Repeat(result.Bpn, 1)).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(

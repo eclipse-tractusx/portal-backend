@@ -20,10 +20,13 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UserRole
+[AuditEntityV1(typeof(AuditUserRole20221017))]
+public class UserRole : IAuditableV1
 {
     private UserRole()
     {
@@ -47,7 +50,9 @@ public class UserRole
     public string UserRoleText { get; set; }
 
     public Guid OfferId { get; set; }
-
+    
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
     // Navigation properties
     public virtual Offer? Offer { get; set; }
     public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }

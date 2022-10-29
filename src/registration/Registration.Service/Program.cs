@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 var VERSION = "v2";
 
@@ -42,6 +43,8 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddMailingAndTemplateManager(builder.Configuration)
                 .AddPortalRepositories(builder.Configuration)
                 .AddProvisioningManager(builder.Configuration);
+
+builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));

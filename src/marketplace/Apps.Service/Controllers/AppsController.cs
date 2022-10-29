@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
@@ -91,10 +92,10 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("{appId}", Name = nameof(GetAppDetailsByIdAsync))]
     [Authorize(Roles = "view_apps")]
-    [ProducesResponseType(typeof(AppDetailsData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<AppDetailsData> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
+    public Task<AppDetailResponse> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>
@@ -324,4 +325,20 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Auto setup the app
+    /// </summary>
+    /// <remarks>Example: POST: /api/apps/autoSetup</remarks>
+    /// <response code="200">Returns the app agreement data.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    [HttpPost]
+    [Route("autoSetup")]
+    [Authorize(Roles = "activate_subscription")]
+    [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data) =>
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.AutoSetupAppAsync(data, iamUserId));
 }
