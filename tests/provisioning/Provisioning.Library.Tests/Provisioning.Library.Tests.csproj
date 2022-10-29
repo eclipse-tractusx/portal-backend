@@ -17,9 +17,7 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
-
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Provisioning.Library.Tests</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
@@ -27,13 +25,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.17.0" />
     <PackageReference Include="FakeItEasy" Version="7.3.1" />
+    <PackageReference Include="FluentAssertions" Version="6.7.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-	  <PackageReference Include="AutoFixture" Version="4.17.0" />
+    <PackageReference Include="AutoFixture" Version="4.17.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -44,9 +42,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
+    <ProjectReference Include="..\..\..\src\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
   </ItemGroup>
-
 </Project>

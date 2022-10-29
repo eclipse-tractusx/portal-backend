@@ -18,25 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUserAssignedRole : IAuditable
+[AuditEntityV1(typeof(AuditCompanyUserAssignedRole20221018))]
+public class CompanyUserAssignedRole : IAuditableV1
 {
-    protected CompanyUserAssignedRole() {}
-
     public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
     {
         CompanyUserId = companyUserId;
         UserRoleId = userRoleId;
     }
     
-    public Guid Id { get; set; }
     public Guid CompanyUserId { get; private set; }
     public Guid UserRoleId { get; private set; }
-    
-    /// <inheritdoc />
+
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; private set; }

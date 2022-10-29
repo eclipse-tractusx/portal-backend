@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -41,6 +42,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
+    private readonly ISdFactoryService _sdFactoryService;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories, 
@@ -48,7 +50,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IProvisioningManager provisioningManager, 
         ICustodianService custodianService, 
         IMailingService mailingService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        ISdFactoryService sdFactoryService)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -56,6 +59,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _custodianService = custodianService;
         _mailingService = mailingService;
         _notificationService = notificationService;
+        _sdFactoryService = sdFactoryService;
     }
 
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
@@ -114,16 +118,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId)
+    public Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId, CancellationToken cancellationToken)
     {
         if (applicationId == Guid.Empty)
         {
             throw new ArgumentNullException(nameof(applicationId));
         }
-        return ApprovePartnerRequestInternal(iamUserId, applicationId);
+        return ApprovePartnerRequestInternal(iamUserId, accessToken, applicationId, cancellationToken);
     }
 
-    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, Guid applicationId)
+    private async Task<bool> ApprovePartnerRequestInternal(string iamUserId, string accessToken, Guid applicationId, CancellationToken cancellationToken)
     {
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (creatorId == Guid.Empty)
@@ -131,25 +135,43 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new UnexpectedConditionException($"user {iamUserId} is not associated with a companyuser");
         }
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var companyApplication = await applicationRepository.GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
-        if (companyApplication == null)
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
+        var (companyId, companyName, businessPartnerNumber, countryCode) = result;
 
-        var businessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyApplication.CompanyId} is empty", "bpn");
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty", "bpn");
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(applicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
-        companyApplication.Company!.CompanyStatusId = CompanyStatusId.ACTIVE;
-        companyApplication.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-        companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await _custodianService.CreateWallet(businessPartnerNumber, companyApplication.Company.Name).ConfigureAwait(false);
+
+        Guid? documentId = null;
+        try
+        {
+            await _custodianService.CreateWallet(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
+
+            documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+            {
+                ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+                ca.DateLastChanged = DateTimeOffset.UtcNow;    
+            });
+
+            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
+            {
+                c.CompanyStatusId = CompanyStatusId.ACTIVE;
+                c.SelfDescriptionDocumentId = documentId;
+            });
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        }
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
 
@@ -159,7 +181,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         if (assignedRoles == null) return true;
         
         var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-            .Select(initialClientRoles => (client: initialClientRoles.Key, roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+            .Select(initialClientRoles => (
+                client: initialClientRoles.Key,
+                roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
             .Where(clientRoles => clientRoles.roles.Any())
             .ToList();
 

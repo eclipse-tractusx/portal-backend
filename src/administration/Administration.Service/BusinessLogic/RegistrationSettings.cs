@@ -38,8 +38,10 @@ public class RegistrationSettings
     
     [Required]
     public IDictionary<string,IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
+    
     [Required]
     public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
+    
     [Required]
     public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
 

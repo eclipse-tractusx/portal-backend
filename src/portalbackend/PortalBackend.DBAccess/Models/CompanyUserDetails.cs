@@ -42,5 +42,5 @@ public record CompanyUserDetails(
 }
 
 public record CompanyUserAssignedRoleDetails(
-    [property: JsonPropertyName("appId")] Guid appId,
-    [property: JsonPropertyName("roles")] IEnumerable<string> userRoles);
+    [property: JsonPropertyName("appId")] Guid OfferId,
+    [property: JsonPropertyName("roles")] IEnumerable<string> UserRoles);

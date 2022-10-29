@@ -39,17 +39,10 @@ public interface IOfferRepository
     /// <summary>
     /// Retrieves app provider company details by app id.
     /// </summary>
-    /// <param name="appId">ID of the app.</param>
+    /// <param name="offerId">ID of the app.</param>
+    /// <param name="offerTypeId">Id of the offer type.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<AppProviderDetailsData?> GetAppProviderDetailsAsync(Guid appId);
-
-    /// <summary>
-    /// Get Client Name by App Id
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="companyId"></param>
-    /// <returns>Client Name</returns>
-    Task<string?> GetAppAssignedClientIdUntrackedAsync(Guid appId, Guid companyId);
+    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Adds an app to the database
@@ -69,11 +62,12 @@ public interface IOfferRepository
     /// <summary>
     /// Gets the details of an app by its id
     /// </summary>
-    /// <param name="appId">Id of the application to get details for</param>
+    /// <param name="offerId">Id of the offer to get details for</param>
     /// <param name="iamUserId">OPTIONAL: iamUserId of the company the calling user belongs to</param>
-    /// <param name="languageShortName">OPTIONAL: language shortName</param>
+    /// <param name="languageShortName">language shortName</param>
+    /// <param name="defaultLanguageShortName">default language shortName</param>
     /// <returns>Returns the details of the application</returns>
-    Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName);
+    Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Adds an <see cref="OfferLicense"/> to the database
@@ -94,6 +88,14 @@ public interface IOfferRepository
     /// <param name="appId">Id of the app</param>
     /// <param name="companyUserId">Id of the company User</param>
     CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId);
+
+    /// <summary>
+    /// Add app Id and Document Id in App Assigned Document table 
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="documentId"></param>
+    /// <returns></returns>
+    OfferAssignedDocument CreateOfferAssignedDocument(Guid offerId, Guid documentId);
 
     /// <summary>
     /// Adds <see cref="AppAssignedUseCase"/>s to the database
@@ -170,6 +172,7 @@ public interface IOfferRepository
     /// <param name="serviceId">the service to get from the persistence storage</param>
     /// <param name="languageShortName">the language short code for the descriptions</param>
     /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the ServiceDetailData or null</returns>
     Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId);
 
@@ -185,4 +188,21 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Verify that user is linked to the appId
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+
+        /// <summary>
+    /// Return the Company User Id
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
 }
