@@ -67,7 +67,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
             var sut = _fixture.Create<BpnAccess>();
 
             var result = await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
-            Assert.Equal(resultSet.bpn, result.First().bpn);
+            Assert.Equal(resultSet.Bpn, result.First().Bpn);
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
 
