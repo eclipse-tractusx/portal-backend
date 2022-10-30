@@ -32,12 +32,12 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using Registration.Service.Bpn;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests.BusinessLogic;

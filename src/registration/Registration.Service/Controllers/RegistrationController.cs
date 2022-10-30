@@ -29,7 +29,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Net;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+using Registration.Service.Bpn.Model;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
 {

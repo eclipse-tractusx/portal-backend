@@ -24,8 +24,8 @@ using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+using Registration.Service.Bpn;
 
 var VERSION = "v2";
 
@@ -49,13 +49,7 @@ builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IBpnAccess, BpnAccess>()
-    .AddTransient<LoggingHandler<BpnAccess>>();
-builder.Services.AddHttpClient("bpn", c =>
-    {
-        c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");
-    })
-    .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
+builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
 
 builder.Build()
     .CreateApp<Program>("registration", VERSION)

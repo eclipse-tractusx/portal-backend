@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model
+namespace Registration.Service.Bpn.Model
 {
     public class PaginatedFetchBusinessPartner
     {
