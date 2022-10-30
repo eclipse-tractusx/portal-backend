@@ -18,175 +18,336 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
+
 namespace Registration.Service.Bpn.Model
 {
     public class FetchBusinessPartnerDto
     {
-        public string bpn { get; set; }
-        public Identifier[] identifiers { get; set; }
-        public Name[] names { get; set; }
-        public Legalform? legalForm { get; set; }
-        public Status? status { get; set; }
-        public Address[] addresses { get; set; }
-        public object[] profileClassifications { get; set; }
-        public Type[] types { get; set; }
-        public Bankaccount[] bankAccounts { get; set; }
-        public string[] roles { get; set; }
-        public object[] relations { get; set; }
+        [JsonPropertyName("bpn")]
+        public string Bpn { get; set; } = null!;
+
+        [JsonPropertyName("identifiers")]
+        public Identifier[] Identifiers { get; set; } = null!;
+
+        [JsonPropertyName("names")]
+        public Name[] Names { get; set; } = null!;
+
+        [JsonPropertyName("legalForm")]
+        public Legalform? LegalForm { get; set; }
+
+        [JsonPropertyName("status")]
+        public Status? Status { get; set; }
+
+        [JsonPropertyName("addresses")]
+        public Address[] Addresses { get; set; } = null!;
+
+        [JsonPropertyName("profileClassifications")]
+        public object[] ProfileClassifications { get; set; } = null!;
+
+        [JsonPropertyName("types")] 
+        public Type[] Types { get; set; } = null!;
+
+        [JsonPropertyName("bankAccounts")]
+        public Bankaccount[] BankAccounts { get; set; } = null!;
+
+        [JsonPropertyName("roles")]
+        public string[] Roles { get; set; } = null!;
+
+        [JsonPropertyName("relations")]
+        public object[] Relations { get; set; } = null!;
     }
 
     public class Legalform
     {
-        public string technicalKey { get; set; }
-        public string name { get; set; }
-        public string url { get; set; }
-        public string mainAbbreviation { get; set; }
-        public Language? language { get; set; }
-        public Category[] category { get; set; }
+        [JsonPropertyName("technicalKey")]
+        public string TechnicalKey { get; set; } = null!;
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = null!;
+
+        [JsonPropertyName("mainAbbreviation")]
+        public string MainAbbreviation { get; set; } = null!;
+
+        [JsonPropertyName("language")]
+        public Language? Language { get; set; }
+
+        [JsonPropertyName("category")]
+        public Category[] Category { get; set; } = null!;
     }
 
     public class Bankaccount
     {
-        public double[] trustScores { get; set; }
-        public string currencyCode { get; set; }
-        public string internationalBankAccountIdentifier { get; set; }
-        public string internationalBankIdentifier { get; set; }
-        public string nationalBankAccountIdentifier { get; set; }
-        public string nationalBankIdentifier { get; set; }
+        [JsonPropertyName("trustScores")]
+        public double[] TrustScores { get; set; } = null!;
+        
+        [JsonPropertyName("currencyCode")]
+        public string CurrencyCode { get; set; } = null!;
+        
+        [JsonPropertyName("internationalBankAccountIdentifier")]
+        public string InternationalBankAccountIdentifier { get; set; } = null!;
+        
+        [JsonPropertyName("internationalBankIdentifier")]
+        public string InternationalBankIdentifier { get; set; } = null!;
+        
+        [JsonPropertyName("nationalBankAccountIdentifier")]
+        public string NationalBankAccountIdentifier { get; set; } = null!;
+        
+        [JsonPropertyName("nationalBankIdentifier")]
+        public string NationalBankIdentifier { get; set; } = null!;
     }
 
     public class Language
     {
-        public string technicalKey { get; set; }
-        public string name { get; set; }
+        [JsonPropertyName("technicalKey")]
+        public string TechnicalKey { get; set; } = null!;
+        
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
     }
 
     public class Category
     {
-        public string name { get; set; }
-        public string url { get; set; }
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
+        
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = null!;
     }
 
     public class Status
     {
-        public object officialDenotation { get; set; }
-        public DateTime? validFrom { get; set; }
-        public object validUntil { get; set; }
-        public Type type { get; set; }
+        [JsonPropertyName("officialDenotation")]
+        public object OfficialDenotation { get; set; } = null!;
+        
+        [JsonPropertyName("validFrom")]
+        public DateTime? ValidFrom { get; set; }
+        
+        [JsonPropertyName("validUntil")]
+        public object ValidUntil { get; set; } = null!;
+        
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
     }
 
     public class Type
     {
-        public string technicalKey { get; set; }
-        public string name { get; set; }
-        public string url { get; set; }
+        [JsonPropertyName("technicalKey")]
+        public string TechnicalKey { get; set; } = null!;
+        
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
+        
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = null!;
     }
 
     public class Identifier
     {
-        public string value { get; set; }
-        public Type type { get; set; }
-        public Issuingbody issuingBody { get; set; }
-        public Status status { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
+        
+        [JsonPropertyName("issuingBody")]
+        public Issuingbody IssuingBody { get; set; } = null!;
+        
+        [JsonPropertyName("status")]
+        public Status Status { get; set; } = null!;
     }
 
     public class Issuingbody
     {
-        public string technicalKey { get; set; }
-        public string name { get; set; }
-        public string url { get; set; }
+        [JsonPropertyName("technicalKey")]
+        public string TechnicalKey { get; set; } = null!;
+        
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
+        
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = null!;
     }
+
     public class Name
     {
-        public string value { get; set; }
-        public object shortName { get; set; }
-        public Type type { get; set; }
-        public Language language { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("shortName")]
+        public object ShortName { get; set; } = null!;
+        
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
+        
+        [JsonPropertyName("language")]
+        public Language Language { get; set; } = null!;
     }
-
-
+    
     public class Address
     {
-        public Versions versions { get; set; }
-        public object careOf { get; set; }
-        public object[] contexts { get; set; }
-        public Country country { get; set; }
-        public Administrativearea[] administrativeAreas { get; set; }
-        public Postcode[] postCodes { get; set; }
-        public Locality[] localities { get; set; }
-        public Thoroughfare[] thoroughfares { get; set; }
-        public Premis[] premises { get; set; }
-        public Postaldeliverypoint[] postalDeliveryPoints { get; set; }
-        public object geographicCoordinates { get; set; }
-        public Type[] types { get; set; }
+        [JsonPropertyName("versions")]
+        public Versions Versions { get; set; } = null!;
+        
+        [JsonPropertyName("careOf")]
+        public object CareOf { get; set; } = null!;
+        
+        [JsonPropertyName("contexts")]
+        public object[] Contexts { get; set; } = null!;
+        
+        [JsonPropertyName("country")]
+        public Country Country { get; set; } = null!;
+        
+        [JsonPropertyName("administrativeAreas")]
+        public Administrativearea[] AdministrativeAreas { get; set; } = null!;
+        
+        [JsonPropertyName("postCodes")]
+        public Postcode[] PostCodes { get; set; } = null!;
+        
+        [JsonPropertyName("localities")]
+        public Locality[] Localities { get; set; } = null!;
+        
+        [JsonPropertyName("thoroughfares")]
+        public Thoroughfare[] Thoroughfares { get; set; } = null!;
+        
+        [JsonPropertyName("premises")]
+        public Premis[] Premises { get; set; } = null!;
+        
+        [JsonPropertyName("postalDeliveryPoints")]
+        public Postaldeliverypoint[] PostalDeliveryPoints { get; set; } = null!;
+        
+        [JsonPropertyName("geographicCoordinates")]
+        public object GeographicCoordinates { get; set; } = null!;
+        
+        [JsonPropertyName("types")]
+        public Type[] Types { get; set; } = null!;
     }
+
     public class Postaldeliverypoint
     {
-        public string type { get; set; }
-        public string value { get; set; }
-        public string shortName { get; set; }
-        public int? number { get; set; }
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = null!;
+        
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("shortName")]
+        public string ShortName { get; set; } = null!;
+        
+        [JsonPropertyName("number")]
+        public int? Number { get; set; }
     }
+
     public class Premis
     {
-        public string type { get; set; }
-        public string value { get; set; }
-        public string shortName { get; set; }
-        public int? number { get; set; }
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = null!;
+        
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("shortName")]
+        public string ShortName { get; set; } = null!;
+        
+        [JsonPropertyName("number")]
+        public int? Number { get; set; }
     }
 
     public class Versions
     {
-        public Characterset characterSet { get; set; }
-        public Language language { get; set; }
+        [JsonPropertyName("characterSet")]
+        public Characterset CharacterSet { get; set; } = null!;
+        
+        [JsonPropertyName("language")]
+        public Language Language { get; set; } = null!;
     }
 
     public class Characterset
     {
-        public string technicalKey { get; set; }
-        public string name { get; set; }
+        [JsonPropertyName("technicalKey")]
+        public string TechnicalKey { get; set; } = null!;
+        
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
     }
 
     public class Country
     {
-        public string technicalKey { get; set; }
-        public string name { get; set; }
+        [JsonPropertyName("technicalKey")]
+        public string TechnicalKey { get; set; } = null!;
+        
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
     }
 
     public class Administrativearea
     {
-        public string value { get; set; }
-        public string shortName { get; set; }
-        public string fipsCode { get; set; }
-        public Type type { get; set; }
-        public Language language { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("shortName")]
+        public string ShortName { get; set; } = null!;
+        
+        [JsonPropertyName("fipsCode")]
+        public string FipsCode { get; set; } = null!;
+        
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
+        
+        [JsonPropertyName("language")]
+        public Language Language { get; set; } = null!;
     }
 
     public class Postcode
     {
-        public string value { get; set; }
-        public Type type { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
     }
+
     public class Locality
     {
-        public string value { get; set; }
-        public object shortName { get; set; }
-        public Type type { get; set; }
-        public Language language { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("shortName")]
+        public object ShortName { get; set; } = null!;
+        
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
+        
+        [JsonPropertyName("language")]
+        public Language Language { get; set; } = null!;
     }
-
-
+    
     public class Thoroughfare
     {
-        public string value { get; set; }
-        public object name { get; set; }
-        public object shortName { get; set; }
-        public string number { get; set; }
-        public object direction { get; set; }
-        public Type type { get; set; }
-        public Language language { get; set; }
-    }
+        [JsonPropertyName("value")]
+        public string Value { get; set; } = null!;
+        
+        [JsonPropertyName("name")]
+        public object Name { get; set; } = null!;
+        
+        [JsonPropertyName("shortName")]
+        public object ShortName { get; set; } = null!;
+        
+        [JsonPropertyName("number")]
+        public string Number { get; set; } = null!;
+        
+        [JsonPropertyName("direction")]
+        public object Direction { get; set; } = null!;
 
+        [JsonPropertyName("type")]
+        public Type Type { get; set; } = null!;
+
+        [JsonPropertyName("language")]
+        public Language Language { get; set; } = null!;
+    }
 }
 
 

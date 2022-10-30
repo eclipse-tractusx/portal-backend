@@ -18,14 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
+
 namespace Registration.Service.Bpn.Model
 {
     public class PaginatedFetchBusinessPartner
     {
-        public int pageSize { get; set; }
-        public int totals { get; set; }
-        public int page { get; set; }
-        public IEnumerable<FetchBusinessPartnerDto> values { get; set; }
+        [JsonPropertyName("pageSize")]
+        public int PageSize { get; set; }
+        
+        [JsonPropertyName("totals")]
+        public int Totals { get; set; }
+        
+        [JsonPropertyName("page")]
+        public int Page { get; set; }
+
+        [JsonPropertyName("values")] 
+        public IEnumerable<FetchBusinessPartnerDto> Values { get; set; } = default!;
     }
 }
 
