@@ -22,10 +22,10 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
 using System.Net;
 using System.Text.Json;
+using Registration.Service.Bpn;
+using Registration.Service.Bpn.Model;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests

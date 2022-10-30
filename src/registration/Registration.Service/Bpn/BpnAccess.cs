@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Registration.Service.Bpn.Model;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN;
+namespace Registration.Service.Bpn;
 
 public class BpnAccess : IBpnAccess
 {
@@ -32,18 +32,18 @@ public class BpnAccess : IBpnAccess
 
     public BpnAccess(IHttpClientFactory httpFactory)
     {
-        _httpClient = httpFactory.CreateClient("bpn");
+        _httpClient = httpFactory.CreateClient(nameof(BpnAccess));
     }
 
     public async IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var result = await _httpClient.GetAsync($"api/catena/business-partner/{bpn}", cancellationToken).ConfigureAwait(false);
+        var result = await _httpClient.GetAsync($"api/catena/business-partner/{Uri.EscapeDataString(bpn)}", cancellationToken).ConfigureAwait(false);
         if (result.IsSuccessStatusCode)
         {
-            using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var businesPartnerDto = await JsonSerializer.DeserializeAsync<FetchBusinessPartnerDto>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if(businesPartnerDto != null)
+            if (businesPartnerDto != null)
             {
                 yield return businesPartnerDto;
             }
