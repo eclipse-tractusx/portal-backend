@@ -27,10 +27,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Provider">Provider</param>
 /// <param name="LeadPictureUri">LeadPictureUri</param>
 /// <param name="ProviderCompanyId">ProviderCompanyId</param>
+/// <param name="SalesManagerId">SalesManagerId</param>
 /// <param name="UseCaseIds">UseCaseIds</param>
 /// <param name="Descriptions">Descriptions</param>
 /// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
 /// <param name="Price">Price</param>
 /// <returns></returns>
 
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, ICollection<string> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, Guid SalesManagerId, ICollection<string> UseCaseIds, ICollection<LocalizedDescription> Descriptions, ICollection<string> SupportedLanguageCodes, string Price);

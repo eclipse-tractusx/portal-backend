@@ -224,7 +224,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
-        var appId = await _appReleaseBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
+        var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
         return CreatedAtRoute("GetAppDetailsByIdAsync", new {controller = "Apps",appId = appId}, appId);
     }
 
