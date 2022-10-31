@@ -320,7 +320,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
        _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
     
     /// <inheritdoc/>
-    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
+    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
@@ -343,12 +343,26 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"Use Case does not exist");
         }
-        return  this.CreateAppAsync(appRequestModel);
+
+        return this.CreateAppAsync(appRequestModel, iamUserId);
     }
-    
-    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
+
+    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {   
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
         // Add app to db
+        var responseData =await _portalRepositories.GetInstance<IUserRepository>().GetSalesManagerUserIdUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId).ConfigureAwait(false);
+        
+        if(!responseData.IsIamUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
+        }
+        if(responseData.CompanyUserId == default)
+        {
+            throw new NotFoundException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
+        }
+        
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
@@ -356,6 +370,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
             app.OfferStatusId = OfferStatusId.CREATED;
+            app.SalesManagerId = appRequestModel.SalesManagerId;
         }).Id;
 
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>

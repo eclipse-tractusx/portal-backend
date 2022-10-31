@@ -111,8 +111,9 @@ public interface IAppReleaseBusinessLogic
     /// Creates an application and returns its generated ID.
     /// </summary>
     /// <param name="appRequestModel"></param>
+    /// <param name="iamUserId"></param>
     /// <returns>Guid of the created app.</returns>
-    Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
+    Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.

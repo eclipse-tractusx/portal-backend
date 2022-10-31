@@ -117,4 +117,14 @@ public interface IUserRepository
     /// <param name="iamUserId"></param>
     /// <returns>CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
     IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId);
+    
+    /// <summary>
+    /// Validate Sales ManagerId is Valid with role of Sales Manager and belong to same company as executing user 
+    /// </summary>
+    /// <param name="CompanyUserId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="roleIds"></param>
+    /// <param name="salesManagerId"></param>
+    /// <returns></returns>
+    Task<(Guid CompanyUserId, bool IsIamUser)> GetSalesManagerUserIdUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid salesManagerId);
 }
