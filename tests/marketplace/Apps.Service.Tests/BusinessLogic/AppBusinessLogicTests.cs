@@ -28,6 +28,7 @@ using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
