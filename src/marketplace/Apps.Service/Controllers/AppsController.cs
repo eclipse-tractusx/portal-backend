@@ -236,6 +236,19 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
+    /// Gets all agreements 
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the app consent to retrieve.</param>
+    /// <remarks>Example: GET: /api/apps/appAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <response code="200">Returns the app agreement data.</response>
+    [HttpGet]
+    [Route("appAgreementData/{appId}")]
+    [Authorize(Roles = "subscribe_apps")]
+    [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementData> GetAppAgreement([FromRoute] Guid appId) =>
+        _appsBusinessLogic.GetAppAgreement(appId);
+
+    /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to activate subscription for.</param>

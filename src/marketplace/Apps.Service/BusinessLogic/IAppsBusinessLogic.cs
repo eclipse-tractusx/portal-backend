@@ -153,4 +153,12 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the response data</returns>
     Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
+
+    /// <summary>
+    /// Gets the app agreement data
+    /// </summary>
+    /// <param name="appId">Id of the app to get the agreements for</param>
+    /// <returns>Returns IAsyncEnumerable of agreement data</returns>
+    IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId);
+
 }

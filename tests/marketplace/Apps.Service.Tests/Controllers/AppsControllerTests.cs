@@ -88,6 +88,23 @@ public class AppsControllerTests
     }
 
     [Fact]
+    public async Task GetServiceAgreement_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetAppAgreement(A<Guid>._))
+            .Returns(agreementData);
+
+        //Act
+        var result = await this._controller.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppAgreement(appId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
     public async Task AutoSetupService_ReturnsExpected()
     {
         //Arrange
