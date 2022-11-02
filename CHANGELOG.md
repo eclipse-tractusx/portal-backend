@@ -4,11 +4,32 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### In Progress
 
-* Feature - Service customer notification & email for service activation
-* Feature - Service provider notification & email for service subscriptions
-* Feature - User Management: Modification of Roles of one specific user under an app
-* Feature - Managed/Own connector registration endpoint refactoring
-* Feature - Add user-role-collections restricting the assignable user-roles per CompanyRole
+* ....
+* ....
+
+## 0.7.0
+
+### Change
+* Connector Registration - managed/own connector registration endpoint refactoring. Change request body content and enhancing backend business logic to validate the respective host and provider. Additionally technical user auth is now supported for managed connectors. ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App role assignment - assign and update app roles assigned to an user. Role assignment (add, delete) is managed by the PUT api/administration/user/app/{appId}/roles endpoint
+
+### Feature
+* Notifications
+   * Service Subscription: Enable prodiver notification creation and email trigger (if applicable) after subscription was triggered by a customer.
+   * Service Subscription Activation: Enable customer notification creation and email trigger (if applicable) after service subscription was triggered by the service provider.
+* Company Role / User Role connection
+   * Creation of new db tables and connections between company roles, roles collections (new) and user roles ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+   * Backend business logic enhancement of user invite endpoints by adding user-role-collection restriction of assignable user-roles based on the company role 
+* App Release Management Process
+   * released create and delete app roles endpoints
+   * enhanced GET app release status/details endpoint by addding consent agreement, documents and sales manager
+   * enhanced POST app release status/details endpoint by adding sales manager value
+
+### Technical Support
+n/a
+
+### Bugfix
+n/a
 
 ## 0.6.0
 
