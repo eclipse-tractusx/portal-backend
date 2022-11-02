@@ -629,4 +629,30 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
         _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
 
+    public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
+
+        if (details.DocumentId == Guid.Empty)
+        {
+            throw new NotFoundException("Document does not exist. Deletion unsuccessful");
+        }
+
+        if (!details.IsSameUser)
+        {
+            throw new ForbiddenException("User is not allowed to delete this document");
+        }
+
+        if (details.DocumentStatusId != DocumentStatusId.PENDING)
+        {
+            throw new ArgumentException("Incorrect document status");
+        }
+
+        documentRepository.Remove(new Document(details.DocumentId));
+
+        await this._portalRepositories.SaveAsync().ConfigureAwait(false);
+        return true;
+    }
+
 }

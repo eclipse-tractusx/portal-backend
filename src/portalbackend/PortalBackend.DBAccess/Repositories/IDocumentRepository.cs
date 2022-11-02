@@ -70,4 +70,11 @@ public interface IDocumentRepository
     /// </summary>
     /// <param name="document">The document that should be removed</param>
     void Remove(Document document);
+    
+    /// <summary>
+    /// Gets the documents and User by the document id
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameUser)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId);
 }
