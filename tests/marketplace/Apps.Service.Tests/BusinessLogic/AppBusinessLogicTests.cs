@@ -142,6 +142,28 @@ public class AppBusinessLogicTests
 
     #endregion
     
+    #region Get App Agreement
+
+    [Fact]
+    public async Task GetAppAgreement_WithUserId_ReturnsAgreementData()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerService = A.Fake<IOfferService>();
+        var data = _fixture.CreateMany<AgreementData>(1);
+        A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == appId), A<OfferTypeId>._))
+            .Returns(data.ToAsyncEnumerable());
+        var sut = new AppsBusinessLogic(null!, null!, null!, offerService, Options.Create(new AppsSettings()));
+
+        // Act
+        var result = await sut.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().ContainSingle();
+    }
+
+    #endregion
+
     #region Add Service Subscription
 
     [Fact]
