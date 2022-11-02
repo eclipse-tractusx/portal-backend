@@ -30,10 +30,10 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Registration.Service.Bpn;
-using Registration.Service.Bpn.Model;
 using CompanyApplicationUserData = Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models.CompanyApplicationUserData;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
