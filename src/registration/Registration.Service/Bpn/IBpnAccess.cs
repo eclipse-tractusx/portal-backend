@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Registration.Service.Bpn.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 
-namespace Registration.Service.Bpn;
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
 
 public interface IBpnAccess
 {

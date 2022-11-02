@@ -22,9 +22,9 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Registration.Service.Bpn.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 
-namespace Registration.Service.Bpn;
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
 
 public class BpnAccess : IBpnAccess
 {

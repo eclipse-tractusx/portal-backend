@@ -22,7 +22,7 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Registration.Service.Bpn.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic
 {

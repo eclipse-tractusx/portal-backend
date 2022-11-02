@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Registration.Service.Bpn.Model
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model
 {
     public class FetchBusinessPartnerDto
     {

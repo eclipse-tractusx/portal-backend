@@ -24,8 +24,8 @@ using FakeItEasy;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Net;
 using System.Text.Json;
-using Registration.Service.Bpn;
-using Registration.Service.Bpn.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests

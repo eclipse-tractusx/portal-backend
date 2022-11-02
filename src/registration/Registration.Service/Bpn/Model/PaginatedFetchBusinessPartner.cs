@@ -20,23 +20,19 @@
 
 using System.Text.Json.Serialization;
 
-namespace Registration.Service.Bpn.Model
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
+
+public class PaginatedFetchBusinessPartner
 {
-    public class PaginatedFetchBusinessPartner
-    {
-        [JsonPropertyName("pageSize")]
-        public int PageSize { get; set; }
+    [JsonPropertyName("pageSize")]
+    public int PageSize { get; set; }
         
-        [JsonPropertyName("totals")]
-        public int Totals { get; set; }
+    [JsonPropertyName("totals")]
+    public int Totals { get; set; }
         
-        [JsonPropertyName("page")]
-        public int Page { get; set; }
+    [JsonPropertyName("page")]
+    public int Page { get; set; }
 
-        [JsonPropertyName("values")] 
-        public IEnumerable<FetchBusinessPartnerDto> Values { get; set; } = default!;
-    }
+    [JsonPropertyName("values")] 
+    public IEnumerable<FetchBusinessPartnerDto> Values { get; set; } = default!;
 }
-
-
-

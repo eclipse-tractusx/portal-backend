@@ -24,8 +24,8 @@ using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
-using Registration.Service.Bpn;
 
 var VERSION = "v2";
 
