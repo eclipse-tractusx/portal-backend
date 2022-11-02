@@ -53,7 +53,24 @@ public class AppsControllerTests
     }
 
     [Fact]
-    public async Task AddServiceSubscription_ReturnsExpectedId()
+    public async Task AddAppSubscription_ReturnsExpectedId()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
+            .Returns(offerSubscriptionId);
+
+        //Act
+        var serviceId = Guid.NewGuid();
+        var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task AddAppSubscriptionWithConsent_ReturnsExpectedId()
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
