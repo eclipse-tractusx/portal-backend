@@ -513,7 +513,8 @@ public class UserBusinessLogic : IUserBusinessLogic
         string? firstName = null, 
         string? lastName = null, 
         string? email = null,
-        string? roleName = null)
+        string? roleName = null,
+        bool? hasRole = null)
     {
         var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
             appId, 
@@ -521,7 +522,8 @@ public class UserBusinessLogic : IUserBusinessLogic
             firstName,
             lastName,
             email,
-            roleName);
+            roleName,
+            hasRole);
 
         return Pagination.CreateResponseAsync(
             page,
