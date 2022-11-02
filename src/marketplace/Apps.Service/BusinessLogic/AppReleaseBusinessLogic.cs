@@ -358,7 +358,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"user {iamUserId} is not a member of the company");
         }
-        if(responseData.CompanyUserId == default)
+        if(responseData.CompanyUserId == Guid.Empty)
         {
             throw new NotFoundException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
         }
