@@ -448,7 +448,8 @@ public class UserController : ControllerBase
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,
         [FromQuery] string? email = null,
-        [FromQuery] string? roleName = null) =>
+        [FromQuery] string? roleName = null,
+        [FromQuery] bool? hasRole = null) =>
         this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
             appId,
             iamUserId,
@@ -457,7 +458,8 @@ public class UserController : ControllerBase
             firstName,
             lastName,
             email,
-            roleName));
+            roleName,
+            hasRole));
 
     /// <summary>
     /// Updates the roles for the user
