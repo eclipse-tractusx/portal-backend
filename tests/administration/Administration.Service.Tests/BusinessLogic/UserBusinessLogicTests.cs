@@ -1079,7 +1079,6 @@ public class UserBusinessLogicTests
 
     #region GetOwnCompanyAppUsers
 
-
     [Fact]
     public async Task GetOwnCompanyAppUsersAsync_ReturnsExpectedResult()
     {
@@ -1109,6 +1108,110 @@ public class UserBusinessLogicTests
         // Assert
         results.Should().NotBeNull();
         results.Content.Should().HaveCount(5);
+    }
+
+    #endregion
+    
+    #region DeleteOwnUserBusinessPartnerNumbers
+    
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_WithNonExistingCompanyUser_ThrowsNotFoundException()
+    {
+        // Arrange
+        var companyUserId = _fixture.Create<Guid>();
+        var businessPartnerNumber = _fixture.Create<string>();
+        var adminUserId = _fixture.Create<string>();
+        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber))
+            .ReturnsLazily(() => new ValueTuple<string?, bool, bool>());
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Contain("does not exist");
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_WithUnassignedBusinessPartner_ThrowsForbiddenEception()
+    {
+        // Arrange
+        var companyUserId = _fixture.Create<Guid>();
+        var businessPartnerNumber = _fixture.Create<string>();
+        var adminUserId = _fixture.Create<string>();
+        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber))
+            .ReturnsLazily(() => new ValueTuple<string?, bool, bool>(string.Empty, false, false));
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Contain("is not assigned to user");
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_WithoutUserForBpn_ThrowsArgumentException()
+    {
+        // Arrange
+        var companyUserId = _fixture.Create<Guid>();
+        var businessPartnerNumber = _fixture.Create<string>();
+        var adminUserId = _fixture.Create<string>();
+        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber))
+            .ReturnsLazily(() => new ValueTuple<string?, bool, bool>(null, true, false));
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.Message.Should().Contain("is not associated with a user in keycloak");
+    }
+    
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_WithInvalidUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        var companyUserId = _fixture.Create<Guid>();
+        var businessPartnerNumber = _fixture.Create<string>();
+        var adminUserId = _fixture.Create<string>();
+        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber))
+            .ReturnsLazily(() => new ValueTuple<string?, bool, bool>(Guid.NewGuid().ToString(), true, false));
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Contain("do not belong to same company");
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_WithValidData_ThrowsForbiddenException()
+    {
+        // Arrange
+        var companyUserId = _fixture.Create<Guid>();
+        var businessPartnerNumber = _fixture.Create<string>();
+        var adminUserId = _fixture.Create<string>();
+        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, adminUserId, businessPartnerNumber))
+            .ReturnsLazily(() => new ValueTuple<string?, bool, bool>(Guid.NewGuid().ToString(), true, true));
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     #endregion
