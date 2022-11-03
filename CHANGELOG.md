@@ -29,7 +29,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 n/a
 
 ### Bugfix
-n/a
+* App instance/tenant management fixed to ensure user app role assignment inside the correct client/tenant and "my business app" tenant connection updated
 
 ## 0.6.0
 
