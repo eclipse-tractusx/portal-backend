@@ -27,6 +27,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
