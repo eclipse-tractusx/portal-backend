@@ -18,7 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -30,14 +34,17 @@ namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly NotificationSettings _settings;
 
     /// <summary>
     ///     Creates a new instance of <see cref="NotificationBusinessLogic" />
     /// </summary>
     /// <param name="portalRepositories">Access to the repository factory.</param>
-    public NotificationBusinessLogic(IPortalRepositories portalRepositories)
+    /// <param name="notifcationSettings">Access to the notifications options</param>
+    public NotificationBusinessLogic(IPortalRepositories portalRepositories, IOptions<NotificationSettings> settings)
     {
         _portalRepositories = portalRepositories;
+        _settings = settings.Value;
     }
 
     /// <inheritdoc />
@@ -68,10 +75,31 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<NotificationDetailData> GetNotificationsAsync(string iamUserId,
-        bool? isRead, NotificationTypeId? typeId) =>
-        _portalRepositories.GetInstance<INotificationRepository>()
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting sorting)
+    {
+        var source =  _portalRepositories.GetInstance<INotificationRepository>()
             .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId);
+        return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
+            new Pagination.AsyncSource<NotificationDetailData>
+            (
+                source.CountAsync(),
+                GetNotificationOrderByQuery(source, sorting)
+                    .Skip(skip)
+                    .Take(take)
+                    .AsAsyncEnumerable()
+            )
+        );
+    }
+
+    private static IOrderedQueryable<NotificationDetailData> GetNotificationOrderByQuery(IQueryable<NotificationDetailData> source, NotificationSorting sorting) =>
+        sorting switch
+        {
+            NotificationSorting.DateAsc => source.OrderBy(notification => notification.Created),
+            NotificationSorting.ReadStatusAsc => source.OrderBy(notification => notification.IsRead),
+            NotificationSorting.ReadStatusDesc => source.OrderByDescending(notification => notification.IsRead),
+            NotificationSorting.DateDesc => source.OrderByDescending(notification => notification.Created),
+            _ => source.OrderByDescending(notification => notification.Created)
+        };
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId)
@@ -97,6 +125,13 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned");
         }
         return result.Count;
+    }
+
+    /// <inheritdoc />
+    public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync(string iamUserId)
+    {
+        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(iamUserId).ConfigureAwait(false);
+        return details ?? new NotificationCountDetails(0, 0,0,0, 0);
     }
 
     /// <inheritdoc />

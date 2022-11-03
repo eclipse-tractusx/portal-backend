@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Notification.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -40,12 +42,14 @@ public interface INotificationBusinessLogic
     /// <summary>
     ///     Gets all unread notification for the given user.
     /// </summary>
+    /// <param name="page">the requested page</param>
+    /// <param name="size">the requested size</param>
     /// <param name="iamUserId">The id of the current user</param>
     /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
+    /// <param name="sorting">Kind of sorting for the notifications</param>
     /// <returns>Returns a collection of the users notification</returns>
-    IAsyncEnumerable<NotificationDetailData> GetNotificationsAsync(string iamUserId,
-        bool? isRead, NotificationTypeId? typeId);
+    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting sorting);
 
     /// <summary>
     ///     Gets a specific notification for the given user.
@@ -62,6 +66,13 @@ public interface INotificationBusinessLogic
     /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
     Task<int> GetNotificationCountAsync(string iamUserId, bool? isRead);
+
+    /// <summary>
+    /// Gets the count details of the notifications for the given user
+    /// </summary>
+    /// <param name="iamUserId">Id of the current user</param>
+    /// <returns>Returns the count details of the notifications</returns>
+    Task<NotificationCountDetails> GetNotificationCountDetailsAsync(string iamUserId);
 
     /// <summary>
     /// Sets the status of the notification with the given id to read

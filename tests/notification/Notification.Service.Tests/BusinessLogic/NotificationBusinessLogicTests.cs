@@ -33,6 +33,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
+using Notification.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests;
@@ -43,10 +45,10 @@ public class NotificationBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
     private readonly NotificationDetailData _notificationDetail;
-    private readonly IAsyncEnumerable<NotificationDetailData> _notificationDetails;
+    private readonly IEnumerable<NotificationDetailData> _notificationDetails;
     private readonly INotificationRepository _notificationRepository;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IAsyncEnumerable<NotificationDetailData> _readNotificationDetails;
+    private readonly IEnumerable<NotificationDetailData> _readNotificationDetails;
     private readonly IEnumerable<NotificationDetailData> _unreadNotificationDetails;
     private readonly IUserRepository _userRepository;
 
@@ -67,11 +69,10 @@ public class NotificationBusinessLogicTests
         _userRepository = A.Fake<IUserRepository>();
 
         _readNotificationDetails = _fixture.Build<NotificationDetailData>()
-            .CreateMany(1)
-            .ToAsyncEnumerable();
+            .CreateMany(1);
         _unreadNotificationDetails = _fixture.Build<NotificationDetailData>()
             .CreateMany(3);
-        _notificationDetails = _readNotificationDetails.Concat(_unreadNotificationDetails.ToAsyncEnumerable()).AsAsyncEnumerable();
+        _notificationDetails = _readNotificationDetails.Concat(_unreadNotificationDetails);
         SetupRepositories(companyUser, iamUser);
     }
 
@@ -149,10 +150,10 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, false, null);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, false, null, NotificationSorting.DateDesc).ConfigureAwait(false);
 
         // Assert
-        (await result.CountAsync()).Should().Be(_unreadNotificationDetails.Count());
+        result.Content.Should().HaveCount(_unreadNotificationDetails.Count());
     }
 
     [Fact]
@@ -163,10 +164,10 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, true, null);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, true, null, NotificationSorting.DateDesc).ConfigureAwait(false);
 
         // Assert
-        (await result.CountAsync()).Should().Be(await _readNotificationDetails.CountAsync());
+        result.Content.Should().HaveCount(_readNotificationDetails.Count());
     }
 
     [Fact]
@@ -177,10 +178,10 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        var result = sut.GetNotificationsAsync(_iamUser.UserEntityId, null, null);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, null, null, NotificationSorting.DateDesc).ConfigureAwait(false);
 
         // Assert
-        (await result.CountAsync()).Should().Be(await _notificationDetails.CountAsync());
+        result.Content.Should().HaveCount(_notificationDetails.Count());
     }
 
     #endregion
@@ -428,6 +429,9 @@ public class NotificationBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
+        var unreadNotificationDetails = new AsyncEnumerableStub<NotificationDetailData>(_unreadNotificationDetails);
+        var readNotificationDetails = new AsyncEnumerableStub<NotificationDetailData>(_readNotificationDetails);
+        var notificationDetails = new AsyncEnumerableStub<NotificationDetailData>(_notificationDetails);
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamUser.UserEntityId, companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>{new (_companyUser.Id, true), new (_companyUser.Id, false)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
@@ -445,14 +449,14 @@ public class NotificationBusinessLogicTests
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false,
                     null))
-            .Returns(_unreadNotificationDetails.ToAsyncEnumerable());
+            .Returns(unreadNotificationDetails.AsQueryable());
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true,
                     null))
-            .Returns(_readNotificationDetails);
+            .Returns(readNotificationDetails);
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null))
-            .Returns(_notificationDetails);
+            .Returns(notificationDetails);
 
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id, _iamUser.UserEntityId))
