@@ -35,6 +35,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic.Tests;
@@ -1076,6 +1077,42 @@ public class UserBusinessLogicTests
 
     #endregion
 
+    #region GetOwnCompanyAppUsers
+
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+        var companyUsers = new AsyncEnumerableStub<CompanyUser>(_fixture.CreateMany<CompanyUser>(5));
+
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersUntrackedAsync(A<Guid>._, A<string>._, A<string?>._, A<string?>._, A<string?>._, A<string?>._, A<bool?>._))
+            .ReturnsLazily(() => companyUsers.AsQueryable());
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        var results = await sut.GetOwnCompanyAppUsersAsync(
+            appId,
+            iamUserId, 
+            new CompanyAppUsersFilter(
+                0, 
+                10,
+                null,
+                null,
+                null,
+                null,
+                null)).ConfigureAwait(false);
+        
+        // Assert
+        results.Should().NotBeNull();
+        results.Content.Should().HaveCount(5);
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakesForUserCreation(bool isBulkUserCreation)
