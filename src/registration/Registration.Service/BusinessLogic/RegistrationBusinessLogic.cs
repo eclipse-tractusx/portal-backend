@@ -650,6 +650,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         documentRepository.Remove(new Document(details.DocumentId));
+        if (details.OfferId != Guid.Empty)
+        {
+            _portalRepositories.Remove(new OfferAssignedDocument(details.OfferId, details.DocumentId));
+        }
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
