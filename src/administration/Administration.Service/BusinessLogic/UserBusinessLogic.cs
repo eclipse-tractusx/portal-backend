@@ -53,7 +53,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="provisioningManager">Provisioning Manager</param>
+    /// <param name="provisioningManager">Provisioning Manager</param>#
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="provisioningDbAccess">Provisioning DBAccess</param>
     /// <param name="mailingService">Mailing Service</param>
@@ -507,15 +507,10 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
         Guid appId, 
-        string iamUserId, 
-        int page, 
-        int size, 
-        string? firstName = null, 
-        string? lastName = null, 
-        string? email = null,
-        string? roleName = null,
-        bool? hasRole = null)
+        string iamUserId,
+        CompanyAppUsersFilter filter)
     {
+        var (page, size, firstName, lastName, email, roleName, hasRole) = filter; 
         var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
             appId, 
             iamUserId,
@@ -563,7 +558,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (userWithBpn.UserEntityId == null)
         {
-            throw new Exception($"user {companyUserId} is not associated with a user in keycloak");
+            throw new ArgumentException($"user {companyUserId} is not associated with a user in keycloak");
         }
 
         if (!userWithBpn.IsValidUser)
