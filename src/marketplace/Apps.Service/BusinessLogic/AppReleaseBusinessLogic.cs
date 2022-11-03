@@ -170,10 +170,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException("File name is must not be null");
         }
-        // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        if (!document.ContentType.Equals(_settings.ContentTypeSettings.ContentType, StringComparison.OrdinalIgnoreCase))
+        // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+        if (!_settings.ContentTypeSettings.Contains(document.ContentType))
         {
-            throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
+            throw new UnsupportedMediaTypeException($"Only contentType {_settings.ContentTypeSettings} files are allowed.");
         }
         return UploadAppDoc(appId, documentTypeId, document, iamUserId, cancellationToken);
     }

@@ -77,20 +77,10 @@ public class AppsSettings
     /// Document Content Type Settings
     /// </summary>
     /// <value></value>
-    public ContentTypeSetting ContentTypeSettings { get; init; } = null!;
+    [Required]
+    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
 }
 
-/// <summary>
-/// 
-/// </summary>
-public class ContentTypeSetting
-{
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <value></value>
-     public string ContentType { get; init; } = null!;
-}
 /// <summary>
 /// App Settings extension class.
 /// </summary>
