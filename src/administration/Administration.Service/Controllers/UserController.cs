@@ -435,6 +435,7 @@ public class UserController : ControllerBase
     /// <param name="lastName">Last Name of User</param>
     /// <param name="email">Email Id of User</param>
     /// <param name="roleName">User role name</param>
+    /// <param name="hasRole">Defines whether the users should be filtered with a app role</param>
     /// <returns>Returns the company users with assigned role for the requested app id</returns>
     /// <remarks>Example: GET: /api/administration/user/owncompany/apps/5cf74ef8-e0b7-4984-a872-474828beb5d3/users?page=0&amp;size=15</remarks>
     /// <response code="200">Result as a Company App Users Details</response>
@@ -442,7 +443,8 @@ public class UserController : ControllerBase
     [Authorize(Roles = "view_user_management")]
     [Route("owncompany/apps/{appId}/users")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,
+    public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(
+        [FromRoute] Guid appId,
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
         [FromQuery] string? firstName = null,
@@ -453,13 +455,14 @@ public class UserController : ControllerBase
         this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
             appId,
             iamUserId,
-            page,
-            size,
-            firstName,
-            lastName,
-            email,
-            roleName,
-            hasRole));
+            new CompanyAppUsersFilter(
+                page,
+                size,
+                firstName,
+                lastName,
+                email,
+                roleName,
+                hasRole)));
 
     /// <summary>
     /// Updates the roles for the user
