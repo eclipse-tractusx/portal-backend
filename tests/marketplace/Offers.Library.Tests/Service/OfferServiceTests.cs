@@ -556,7 +556,7 @@ public class OfferServiceTests
                 var isRead = x.Arguments.Get<bool>("isRead");
                 var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
 
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, NotificationTopicId.INFO, isRead);
                 action?.Invoke(notification);
                 notifications.Add(notification);
             });

@@ -14,12 +14,12 @@ public static class NotificationTopicExtensions
             NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION => NotificationTopicId.INFO,
             NotificationTypeId.WELCOME => NotificationTopicId.INFO,
             NotificationTypeId.WELCOME_USE_CASES => NotificationTopicId.INFO,
+            NotificationTypeId.WELCOME_APP_MARKETPLACE => NotificationTopicId.INFO,
             NotificationTypeId.ACTION => NotificationTopicId.ACTION,
-            NotificationTypeId.WELCOME_APP_MARKETPLACE => NotificationTopicId.OFFER,
-            NotificationTypeId.APP_SUBSCRIPTION_REQUEST => NotificationTopicId.OFFER,
+            NotificationTypeId.APP_SUBSCRIPTION_REQUEST => NotificationTopicId.ACTION,
+            NotificationTypeId.SERVICE_REQUEST => NotificationTopicId.ACTION,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION => NotificationTopicId.OFFER,
             NotificationTypeId.APP_RELEASE_REQUEST => NotificationTopicId.OFFER,
-            NotificationTypeId.SERVICE_REQUEST => NotificationTopicId.OFFER,
             NotificationTypeId.SERVICE_ACTIVATION => NotificationTopicId.OFFER,
             _ => throw new ArgumentOutOfRangeException(nameof(typeId), typeId, "No NotificationTopicId defined for the given type")
         };

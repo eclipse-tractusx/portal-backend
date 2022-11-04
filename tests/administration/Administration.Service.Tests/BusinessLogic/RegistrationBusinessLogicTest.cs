@@ -34,6 +34,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
@@ -317,20 +318,18 @@ public class RegistrationBusinessLogicTest
             {
                 var creatorId = x.Arguments.Get<Guid?>("creatorId");
                 var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
-                if(notifications is not null)
+                if (notifications is null) return;
+                foreach (var notificationData in notifications)
                 {
-                    foreach (var notificationData in notifications)
+                    var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
+                        DateTimeOffset.UtcNow, notificationData.notificationTypeId, notificationData.notificationTypeId.GetNotificationTopic(), false)
                     {
-                        var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
-                            DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
-                        {
-                            CreatorUserId = creatorId,
-                            Content = notificationData.content
-                        };
-                        _notifications.Add(notification);
-                    }
+                        CreatorUserId = creatorId,
+                        Content = notificationData.content
+                    };
+                    _notifications.Add(notification);
                 }
-                    
+
             });
     }
 

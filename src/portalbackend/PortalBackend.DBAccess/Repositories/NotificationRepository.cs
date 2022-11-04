@@ -23,6 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -45,7 +46,7 @@ public class NotificationRepository : INotificationRepository
         bool isRead, Action<Notification>? setOptionalParameter = null)
     {
         var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,
-            notificationTypeId, isRead);
+            notificationTypeId, notificationTypeId.GetNotificationTopic(), isRead);
         setOptionalParameter?.Invoke(notification);
 
         return _dbContext.Add(notification).Entity;
@@ -53,13 +54,13 @@ public class NotificationRepository : INotificationRepository
 
     public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameters = null)
     {
-        var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
+        var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default, default)).Entity;
         setOptionalParameters?.Invoke(notification);
         return notification;
     }
 
     public Notification DeleteNotification(Guid notificationId) =>
-        _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
+        _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default, default)).Entity;
 
     /// <inheritdoc />
     public IQueryable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId) =>
