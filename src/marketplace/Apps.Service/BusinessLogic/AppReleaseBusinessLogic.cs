@@ -45,6 +45,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
     private readonly INotificationService _notificationService;
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -339,7 +340,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ArgumentException($"Use Case does not exist");
         }
-        return  this.CreateAppAsync(appRequestModel);
+        return this.CreateAppAsync(appRequestModel);
     }
     
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
@@ -353,7 +354,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
             app.OfferStatusId = OfferStatusId.CREATED;
         }).Id;
-
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
