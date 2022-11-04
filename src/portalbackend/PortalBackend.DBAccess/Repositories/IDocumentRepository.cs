@@ -76,5 +76,5 @@ public interface IDocumentRepository
     /// </summary>
     /// <param name="documentId"></param>
     /// <param name="iamUserId"></param>
-    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameUser, Guid OfferId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId);
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameUser, DocumentTypeId documentTypeId, bool IsApplicationNotSubmitted)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId);
 }
