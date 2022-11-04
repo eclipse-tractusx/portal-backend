@@ -633,7 +633,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
-
+        if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
+        {
+            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+        }
+        if (details.IsApplicationNotSubmitted)
+        {
+            throw new ArgumentException("Application status must not be in submitted status");
+        }
         if (details.DocumentId == Guid.Empty)
         {
             throw new NotFoundException("Document does not exist. Deletion unsuccessful");
@@ -650,10 +657,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         documentRepository.Remove(new Document(details.DocumentId));
-        if (details.OfferId != Guid.Empty)
-        {
-            _portalRepositories.Remove(new OfferAssignedDocument(details.OfferId, details.DocumentId));
-        }
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
