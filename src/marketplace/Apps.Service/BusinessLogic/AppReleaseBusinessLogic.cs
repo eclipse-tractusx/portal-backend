@@ -458,4 +458,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
      
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId) =>
+       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
 }

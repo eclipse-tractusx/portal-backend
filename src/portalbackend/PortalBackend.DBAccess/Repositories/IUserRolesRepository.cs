@@ -70,4 +70,12 @@ public interface IUserRolesRepository
 
     IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingAppRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
     IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid companyUserId, IEnumerable<string> userRoles, Guid offerId);
+
+    /// <summary>
+    /// Get user name data by assinged roles
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="clientRoles"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(string iamUserId, IDictionary<string, IEnumerable<string>> clientRoles);
 }
