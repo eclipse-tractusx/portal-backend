@@ -70,7 +70,7 @@ public class AppBusinessLogicTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
 
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
 
         // Act
         await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
@@ -90,7 +90,7 @@ public class AppBusinessLogicTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
 
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
 
 
         // Act
@@ -129,7 +129,7 @@ public class AppBusinessLogicTests
         // Arrange
         var appData = _fixture.CreateMany<(Guid, string?, string, string?, string)>(5);
         A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<INotificationService>(),A.Fake<IOfferService>(),  Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
 
         // Act
         var result = await sut.GetAllUserUserBusinessAppsAsync(_fixture.Create<string>()).ToListAsync().ConfigureAwait(false);
