@@ -42,16 +42,16 @@ public class Notification
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="dateCreated">The creation date</param>
     /// <param name="notificationTypeId">id of the notification type</param>
+    /// <param name="notificationTopicId">id of the notification topic</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
+    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, NotificationTopicId notificationTopicId, bool isRead)
     {
         Id = id;
         ReceiverUserId = receiverUserId;
         DateCreated = dateCreated;
         NotificationTypeId = notificationTypeId;
+        NotificationTopicId = notificationTopicId;
         IsRead = isRead;
-
-        NotificationTopicId = notificationTypeId.GetNotificationTopic();
     }
 
     public Guid Id { get; private set; }

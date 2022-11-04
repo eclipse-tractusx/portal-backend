@@ -48,14 +48,14 @@ public class NotificationControllerIntegrationTests : IClassFixture<IntegrationT
         {
             readNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(),
                 CompanyUserId, DateTimeOffset.UtcNow,
-                i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true));
+                i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, true));
         }
 
         for (var i = 0; i < 2; i++)
         {
             unreadNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(),
                 CompanyUserId, DateTimeOffset.UtcNow,
-                i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false));
+                i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, false));
         }
 
         var notifications = readNotifications.Concat(unreadNotifications).ToList();

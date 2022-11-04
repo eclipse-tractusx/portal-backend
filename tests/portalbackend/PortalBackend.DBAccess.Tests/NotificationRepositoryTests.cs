@@ -58,12 +58,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         _unreadNotifications = new List<Notification>();
         for (var i = 0; i < 3; i++)
         {
-            _readNotifications.Add(new Notification(Guid.NewGuid(), companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, true));
+            _readNotifications.Add(new Notification(Guid.NewGuid(), companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, true));
         }
 
         for (var i = 0; i < 2; i++)
         {
-            _unreadNotifications.Add(new Notification(Guid.NewGuid(), companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, false));
+            _unreadNotifications.Add(new Notification(Guid.NewGuid(), companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, false));
         }
 
         _notifications = _readNotifications.Concat(_unreadNotifications).ToList();

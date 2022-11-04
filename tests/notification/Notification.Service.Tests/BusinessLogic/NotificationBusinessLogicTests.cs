@@ -89,7 +89,7 @@ public class NotificationBusinessLogicTests
                 var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
 
                 var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
-                    DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                    DateTimeOffset.UtcNow, notificationTypeId, NotificationTopicId.INFO, isRead);
                 action?.Invoke(notification);
                 notifications.Add(notification);
             });
@@ -99,8 +99,11 @@ public class NotificationBusinessLogicTests
 
         // Act
         var result = await sut.CreateNotificationAsync(_iamUser.UserEntityId,
-            new NotificationCreationData(content, NotificationTypeId.INFO,
-                false), _companyUser.Id);
+            new NotificationCreationData(
+                content,
+                NotificationTypeId.INFO,
+                false), _companyUser.Id)
+            .ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -117,21 +120,14 @@ public class NotificationBusinessLogicTests
         var sut = _fixture.Create<NotificationBusinessLogic>();
 
         // Act
-        try
-        {
-            await sut.CreateNotificationAsync(_iamUser.UserEntityId,
+        async Task Action() => await sut.CreateNotificationAsync(_iamUser.UserEntityId,
                 new NotificationCreationData("That's a title",
-                    NotificationTypeId.INFO, false), Guid.NewGuid());
-        }
-        catch (ArgumentException e)
-        {
-            // Assert
-            e.ParamName.Should().Be("receiverId");
-            return;
-        }
+                    NotificationTypeId.INFO, false), Guid.NewGuid())
+            .ConfigureAwait(false);
 
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Action);
+        ex.ParamName.Should().Be("receiverId");
     }
 
     #endregion

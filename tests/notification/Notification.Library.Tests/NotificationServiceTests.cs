@@ -209,7 +209,7 @@ public class NotificationServiceTests
                 var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
 
                 var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
-                    DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                    DateTimeOffset.UtcNow, notificationTypeId, NotificationTopicId.INFO, isRead);
                 action?.Invoke(notification);
                 _notifications.Add(notification);
             });
