@@ -73,6 +73,7 @@ public class NotificationRepository : INotificationRepository
                 notification.Id,
                 notification.DateCreated,
                 notification.NotificationTypeId,
+                notification.NotificationTopicId,
                 notification.IsRead,
                 notification.Content,
                 notification.DueDate))
@@ -89,6 +90,7 @@ public class NotificationRepository : INotificationRepository
                     notification.Id,
                     notification.DateCreated,
                     notification.NotificationTypeId,
+                    notification.NotificationTopicId,
                     notification.IsRead,
                     notification.Content,
                     notification.DueDate)))
@@ -105,19 +107,17 @@ public class NotificationRepository : INotificationRepository
                     .Count(notification => !isRead.HasValue || notification.IsRead == isRead.Value)))
             .SingleOrDefaultAsync();
 
-    /// <inheritdoc /> TODO (PS): rework count
-    public Task<NotificationCountDetails?> GetCountDetailsForUserAsync(string iamUserId) =>
-        _dbContext.Notifications
+    /// <inheritdoc />
+    public Task<Dictionary<(bool, NotificationTopicId), int>> GetCountDetailsForUserAsync(string iamUserId)
+    {
+        var countDetailsForUserAsync = _dbContext.Notifications
             .AsNoTracking()
             .Where(not => not.Receiver!.IamUser!.UserEntityId == iamUserId)
-            .Select(x => new NotificationCountDetails(
-                    1,
-                    1,
-                    1,
-                    1,
-                    1
-                ))
-            .SingleOrDefaultAsync();
+            .GroupBy(not => new {not.IsRead, not.NotificationTopicId})
+            .Select(not => new { Key = new ValueTuple<bool, NotificationTopicId>(not.Key.IsRead, not.Key.NotificationTopicId), Count = not.Count()})
+            .ToDictionaryAsync(x => x.Key, x => x.Count);
+        return countDetailsForUserAsync;
+    }
 
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndIamUserIdAsync(Guid notificationId, string iamUserId) =>

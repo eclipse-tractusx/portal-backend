@@ -18,16 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 /// <summary>
-/// Detail count data of the notifications for a specific user
+/// Possible topic of a notification
 /// </summary>
-/// <param name="Read">Count of all read messages</param>
-/// <param name="Unread">Count of all unread messages</param>
-/// <param name="InfoUnread">Count of all unread messages from type info</param>
-/// <param name="OfferUnread">Count of all unread messages from type offer</param>
-/// <param name="ActionRequired">Count of all unread messages from type action</param>
-public record NotificationCountDetails(int Read, int Unread, int InfoUnread, int OfferUnread, int ActionRequired);
+public enum NotificationTopicId
+{
+    /// <summary>
+    /// Notification is just an information for the user
+    /// </summary>
+    INFO = 1,
+    
+    /// <summary>
+    /// Notification that requires an action
+    /// </summary>
+    ACTION = 2,
+
+    /// <summary>
+    /// Offer related notification
+    /// </summary>
+    OFFER = 3,
+}

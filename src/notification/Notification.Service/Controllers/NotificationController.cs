@@ -138,19 +138,13 @@ public class NotificationController : ControllerBase
     /// <summary>
     /// Gets the notification count for the current logged in user
     /// </summary>
-    /// <param name="isRead" example="true">OPTIONAL: Filter for read or unread notifications</param>
     /// <returns>the count of unread notifications</returns>
-    /// <remarks>Example: Get: /api/notification/count</remarks>
-    /// <remarks>Example: Get: /api/notification/count?isRead=true</remarks>
+    /// <remarks>Example: Get: /api/notification/count-details</remarks>
     /// <response code="200">Count of the notifications.</response>
-    /// <response code="400">NotificationStatus does not exist.</response>
-    /// <response code="403">IamUserId is not assigned.</response>
     [HttpGet]
     [Route("count-details")]
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<NotificationCountDetails> NotificationCountDetails() =>
         this.WithIamUserId((iamUser) => _logic.GetNotificationCountDetailsAsync(iamUser));
 

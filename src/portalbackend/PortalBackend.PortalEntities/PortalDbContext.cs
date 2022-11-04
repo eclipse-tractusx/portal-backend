@@ -894,6 +894,11 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Notifications)
                 .HasForeignKey(d => d.NotificationTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.NotificationTopic)
+                .WithMany(p => p!.Notifications)
+                .HasForeignKey(d => d.NotificationTopicId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<NotificationType>()
@@ -901,6 +906,13 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(NotificationTypeId))
                     .Cast<NotificationTypeId>()
                     .Select(e => new NotificationType(e))
+            );
+
+        modelBuilder.Entity<NotificationTopic>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationTopicId))
+                    .Cast<NotificationTopicId>()
+                    .Select(e => new NotificationTopic(e))
             );
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);

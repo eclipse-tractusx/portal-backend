@@ -194,6 +194,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 notification.CreatorUserId = companyUserId;
                 notification.Content = JsonSerializer.Serialize(new
                 {
+                    AppId = appId,
                     AppName = appName
                 });
             });

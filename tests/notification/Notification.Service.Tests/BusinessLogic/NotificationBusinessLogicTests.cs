@@ -18,10 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
@@ -62,7 +58,7 @@ public class NotificationBusinessLogicTests
         var (companyUser, iamUser) = CreateTestUserPair();
         _companyUser = companyUser;
         _iamUser = iamUser;
-        _notificationDetail = new NotificationDetailData(Guid.NewGuid(),  DateTime.UtcNow, NotificationTypeId.INFO, false, "Test Message", null);
+        _notificationDetail = new NotificationDetailData(Guid.NewGuid(),  DateTime.UtcNow, NotificationTypeId.INFO, NotificationTopicId.INFO, false, "Test Message", null);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _notificationRepository = A.Fake<INotificationRepository>();
@@ -453,10 +449,10 @@ public class NotificationBusinessLogicTests
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true,
                     null))
-            .Returns(readNotificationDetails);
+            .Returns(readNotificationDetails.AsQueryable());
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null))
-            .Returns(notificationDetails);
+            .Returns(notificationDetails.AsQueryable());
 
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id, _iamUser.UserEntityId))
