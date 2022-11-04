@@ -101,11 +101,12 @@ public class DocumentRepository : IDocumentRepository
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
-            .Select(document => ((Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameUser, DocumentTypeId documentTypeId, bool IsApplicationNotSubmitted))
-                new(document.Id,
-                    document.DocumentStatusId,
-                    document.CompanyUser!.Company!.CompanyApplications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
-                    document.DocumentTypeId,
-                    document.CompanyUser!.Company!.CompanyApplications.Any(companyApplication => companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)))
+            .Select(document => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
+                document.Id,
+                document.DocumentStatusId,
+                document.CompanyUser!.Company!.CompanyApplications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
+                document.DocumentTypeId,
+                document.CompanyUser!.Company!.CompanyApplications.Any(companyApplication => companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+                ))
             .SingleOrDefaultAsync();
 }
