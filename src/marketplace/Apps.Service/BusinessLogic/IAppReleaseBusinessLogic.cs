@@ -119,5 +119,11 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
-
+    
+    /// <summary>
+    /// Get Sales Manager Data
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
 }
