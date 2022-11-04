@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -40,7 +41,6 @@ public class Notification
     /// <param name="id">Id of the notification</param>
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="dateCreated">The creation date</param>
-    /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
     public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
@@ -50,6 +50,8 @@ public class Notification
         DateCreated = dateCreated;
         NotificationTypeId = notificationTypeId;
         IsRead = isRead;
+
+        NotificationTopicId = notificationTypeId.GetNotificationTopic();
     }
 
     public Guid Id { get; private set; }
@@ -61,6 +63,8 @@ public class Notification
     public string? Content { get; set; }
 
     public NotificationTypeId NotificationTypeId { get; private set; }
+
+    public NotificationTopicId NotificationTopicId { get; private set; }
     
     public bool IsRead { get; set; }
 
@@ -71,5 +75,6 @@ public class Notification
     // Navigation properties
     public virtual CompanyUser? Receiver { get; set; }
     public virtual NotificationType? NotificationType { get; private set; }
+    public virtual NotificationTopic? NotificationTopic { get; private set; }
     public virtual CompanyUser? Creator { get; private set; }
 }

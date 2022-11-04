@@ -40,7 +40,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     ///     Creates a new instance of <see cref="NotificationBusinessLogic" />
     /// </summary>
     /// <param name="portalRepositories">Access to the repository factory.</param>
-    /// <param name="notifcationSettings">Access to the notifications options</param>
+    /// <param name="settings">Access to the notifications options</param>
     public NotificationBusinessLogic(IPortalRepositories portalRepositories, IOptions<NotificationSettings> settings)
     {
         _portalRepositories = portalRepositories;
@@ -71,7 +71,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notificationStatusId, content, dueDate);
+        return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notification.NotificationTopicId, notificationStatusId, content, dueDate);
     }
 
     /// <inheritdoc />
@@ -131,7 +131,13 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync(string iamUserId)
     {
         var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(iamUserId).ConfigureAwait(false);
-        return details ?? new NotificationCountDetails(0, 0,0,0, 0);
+        var unreadNotifications = details.Where(x => !x.Key.IsRead);
+        return new NotificationCountDetails(
+            details.Where(x => x.Key.IsRead).Sum(x => x.Value),
+            unreadNotifications.Sum(x => x.Value),
+            unreadNotifications.Where(x => x.Key.NotificationTopicId == NotificationTopicId.INFO).Sum(x => x.Value),
+            unreadNotifications.Where(x => x.Key.NotificationTopicId == NotificationTopicId.OFFER).Sum(x => x.Value),
+            unreadNotifications.Where(x => x.Key.NotificationTopicId == NotificationTopicId.ACTION).Sum(x => x.Value));
     }
 
     /// <inheritdoc />
