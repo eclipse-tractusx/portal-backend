@@ -117,4 +117,13 @@ public interface IUserRepository
     /// <param name="iamUserId"></param>
     /// <returns>CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
     IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId);
+    
+    /// <summary>
+    /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="roleIds"></param>
+    /// <param name="companyUserIdId"></param>
+    /// <returns></returns>
+    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
 }
