@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 
@@ -225,7 +225,7 @@ public class AppReleaseProcessController : ControllerBase
     public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
-        return CreatedAtRoute("GetAppDetailsByIdAsync", new {controller = "Apps",appId = appId}, appId);
+        return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new {controller = "Apps", appId = appId}, appId);
     }
 
     /// <summary>

@@ -26,8 +26,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using System.Text.Json;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -36,9 +34,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 /// </summary>
 public class SdFactoryService : ISdFactoryService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly ILogger<SdFactoryService> _logger;
     private readonly SdFactorySettings _settings;
 
     /// <summary>
@@ -47,21 +44,18 @@ public class SdFactoryService : ISdFactoryService
     /// <param name="httpClientFactory">Factory to create httpClients</param>
     /// <param name="options">The options</param>
     /// <param name="portalRepositories">Access to the portalRepositories</param>
-    /// <param name="logger"></param>
     public SdFactoryService(IOptions<SdFactorySettings> options, IHttpClientFactory httpClientFactory,
-        IPortalRepositories portalRepositories, ILogger<SdFactoryService> logger)
+        IPortalRepositories portalRepositories)
     {
         _settings = options.Value;
-        _httpClientFactory = httpClientFactory;
+        _httpClient = httpClientFactory.CreateClient(nameof(SdFactoryService));
         _portalRepositories = portalRepositories;
-        _logger = logger;
     }
 
     /// <inheritdoc />
     public async Task<Guid> RegisterConnectorAsync(ConnectorRequestModel connectorRequestModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient =_httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(
@@ -73,7 +67,7 @@ public class SdFactoryService : ISdFactoryService
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
     }
@@ -81,8 +75,7 @@ public class SdFactoryService : ISdFactoryService
     /// <inheritdoc />
     public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient =_httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         var requestModel = new SdFactoryRequestModel(
             applicationId.ToString(),
@@ -93,9 +86,7 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        // TODO: Please remove after testing
-        _logger.LogInformation("SdFactory RegisterSelfDescriptionAsync was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", _settings.SdFactoryUrl, JsonSerializer.Serialize(requestModel));
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }

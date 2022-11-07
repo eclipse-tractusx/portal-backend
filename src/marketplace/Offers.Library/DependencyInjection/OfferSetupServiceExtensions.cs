@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
+﻿/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,16 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model
+using Microsoft.Extensions.DependencyInjection;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.DependencyInjection;
+
+public static class OfferSetupServiceCollectionExtension
 {
-    public class PaginatedFetchBusinessPartner
+    public static IServiceCollection AddOfferSetupService(this IServiceCollection services)
     {
-        public int pageSize { get; set; }
-        public int totals { get; set; }
-        public int page { get; set; }
-        public IEnumerable<FetchBusinessPartnerDto> values { get; set; }
+        services.AddTransient<LoggingHandler<OfferSetupService>>();
+        services.AddHttpClient(nameof(OfferSetupService), c =>
+        {
+        }).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
+        services.AddTransient<IOfferSetupService, OfferSetupService>();
+
+        return services;
     }
 }
-
-
-
