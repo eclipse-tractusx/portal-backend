@@ -347,16 +347,20 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {   
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
-        // Add app to db
-        var responseData =await _portalRepositories.GetInstance<IUserRepository>().GetSalesManagerUserIdUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId).ConfigureAwait(false);
+
+        var responseData =await _portalRepositories.GetInstance<IUserRepository>().GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId).ConfigureAwait(false);
         
-        if(!responseData.IsIamUser)
+        if(responseData == default)
+        {
+            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}");
+        }
+        if(!responseData.IsSameCompany)
         {
             throw new ForbiddenException($"user {iamUserId} is not a member of the company");
         }
-        if(responseData.CompanyUserId == Guid.Empty)
+        if(userRoleIds.Except(responseData.RoleIds).Any())
         {
-            throw new NotFoundException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
+            throw new ControllerArgumentException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
         }
         
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();

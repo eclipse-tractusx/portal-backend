@@ -119,12 +119,11 @@ public interface IUserRepository
     IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId);
     
     /// <summary>
-    /// Validate Sales ManagerId is Valid with role of Sales Manager and belong to same company as executing user 
+    /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 
     /// </summary>
-    /// <param name="CompanyUserId"></param>
     /// <param name="iamUserId"></param>
     /// <param name="roleIds"></param>
-    /// <param name="salesManagerId"></param>
+    /// <param name="companyUserIdId"></param>
     /// <returns></returns>
-    Task<(Guid CompanyUserId, bool IsIamUser)> GetSalesManagerUserIdUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid salesManagerId);
+    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
 }
