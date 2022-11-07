@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
+ * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,18 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
 
-public class CompanyApplicationUserData
+public static class BpnAccessCollectionExtension
 {
-    public CompanyApplicationUserData(CompanyApplication companyApplication)
+    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
     {
-        CompanyApplication = companyApplication;
-    }
+        services.AddTransient<LoggingHandler<BpnAccess>>();
+        services.AddHttpClient(nameof(BpnAccess), c =>
+            {
+                c.BaseAddress = new Uri(baseAddress);
+            })
+            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
+        services.AddTransient<IBpnAccess, BpnAccess>();
 
-    public CompanyApplication CompanyApplication { get; }
-    public Guid CompanyUserId { get; set; }
-    public string? Email { get; set; }
+        return services;
+    }
 }

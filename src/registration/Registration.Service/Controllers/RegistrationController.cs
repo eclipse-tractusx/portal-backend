@@ -29,7 +29,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Net;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
 {
@@ -58,6 +58,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         /// </summary>
         /// <param name="bpn" example="CAXSDUMMYCATENAZZ">The bpn to get the company for</param>
         /// <param name="authorization">the authorization</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Returns a List with one company</returns>
         /// <remarks>Example: Get: /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">Returns the company</response>
@@ -65,11 +66,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
-        [ProducesResponseType(typeof(List<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization) => 
-            Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1]).ConfigureAwait(false));
+        public IAsyncEnumerable<FetchBusinessPartnerDto> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) => 
+            _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken);
 
         /// <summary>
         /// Uploads a document
@@ -370,6 +371,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [Route("company/companyRoles")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
-            _registrationBusinessLogic.GetCompanyRolesAsync(languageShortName);
+            _registrationBusinessLogic.GetCompanyRoles(languageShortName);
     }
 }

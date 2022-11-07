@@ -18,23 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Http.Headers;
-using System.Text.Json;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-public static class HttpExtensions
+public static class SdServiceCollectionExtension
 {
-    public static async Task<T> GetResultFromContent<T>(this HttpResponseMessage response)
+    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
     {
-        using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<T>(responseStream).ConfigureAwait(false) ?? throw new InvalidOperationException();
-    }
-    
-    public static HttpContent ToFormContent(this string stringContent, string contentType)
-    {
-        HttpContent content = new StringContent(stringContent);
-        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-        return content;
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<SdFactoryService>>();
+
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<SdFactorySettings>>();
+        services.AddHttpClient(nameof(SdFactoryService), c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.SdFactoryUrl);
+        }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
+        services.AddTransient<ISdFactoryService, SdFactoryService>();
+
+        return services;
     }
 }
