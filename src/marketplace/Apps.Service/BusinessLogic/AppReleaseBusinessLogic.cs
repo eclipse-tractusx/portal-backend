@@ -18,20 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
@@ -321,25 +321,21 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
-            throw new ArgumentException($"Company Id  does not exist"); 
+            throw new ControllerArgumentException($"Company Id must not be null or empty"); 
         }
 
-        var languageCodes = appRequestModel.SupportedLanguageCodes.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
-        if (!languageCodes.Any())
+        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
+        if (emptyLanguageCodes.Any())
         {
-            throw new ArgumentException($"Language Code does not exist"); 
+            throw new ControllerArgumentException($"Language Codes must not be null or empty"); 
         }
         
-        var useCaseIds = appRequestModel.UseCaseIds.Where(item => !string.IsNullOrWhiteSpace(item)).Distinct().ToList();
-        if (!useCaseIds.Any())
+        var emptyUseCaseIds = appRequestModel.UseCaseIds.Where(item => item == Guid.Empty);
+        if (emptyUseCaseIds.Any())
         {
-            throw new ArgumentException($"Use Case does not exist");
+            throw new ControllerArgumentException($"Use Case Ids must not be null or empty");
         }
         
-        if (useCaseIds.Any(item => !Guid.TryParse(item, out _)))
-        {
-            throw new ArgumentException($"Use Case does not exist");
-        }
         return this.CreateAppAsync(appRequestModel);
     }
     
@@ -359,7 +355,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
               (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-              (appId, Guid.Parse(uc))));
+              (appId, uc)));
         var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
         appRepository.CreateOfferAssignedLicense(appId, licenseId);
 
@@ -370,7 +366,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         catch(Exception exception)when (exception?.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
         {
-            throw new NotFoundException($"language code or UseCaseId does not exist");
+            throw new ControllerArgumentException($"invalid language code or UseCaseId specified");
         }
     }
 
