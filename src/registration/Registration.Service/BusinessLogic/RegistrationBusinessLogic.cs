@@ -635,15 +635,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId, _settings.ApplicationStatusIds).ConfigureAwait(false);
         if (details.DocumentId == Guid.Empty)
         {
-            throw new NotFoundException("Document does not exist. Deletion unsuccessful");
+            throw new NotFoundException("Document does not exist.");
         }
         if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
         {
-            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+            throw new ArgumentException($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
         }
         if (details.IsApplicationNotSubmittedConfirmedDeclined)
         {
-            throw new ArgumentException($"Application status must not be either :{string.Join(",", _settings.ApplicationStatusIds)}");
+            throw new ArgumentException("Document deletion is not allowed. Application is already closed.");
         }
         if (!details.IsSameApplicationUser)
         {
@@ -651,7 +651,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (details.DocumentStatusId != DocumentStatusId.PENDING)
         {
-            throw new ArgumentException("Incorrect document status");
+            throw new ArgumentException("Document deletion is not allowed. The document is locked.");
         }
 
         documentRepository.Remove(new Document(details.DocumentId));
