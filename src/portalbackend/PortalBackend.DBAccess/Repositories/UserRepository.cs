@@ -457,4 +457,13 @@ public class UserRepository : IUserRepository
                 companyUser.Invitations.Select(invitation=>invitation.Id)
             ))
             .AsAsyncEnumerable();
+    
+    /// <inheritdoc />
+    public Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId) =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser=>new ValueTuple<IEnumerable<Guid>,bool>(
+                companyUser.CompanyUserAssignedRoles.Where(assignedRole => roleIds.Contains(assignedRole.UserRoleId)).Select(assignedRole => assignedRole.UserRoleId),
+                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
 }

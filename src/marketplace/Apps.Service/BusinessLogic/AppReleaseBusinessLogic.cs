@@ -317,7 +317,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId) =>
+       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
+    
+    /// <inheritdoc/>
+    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
@@ -336,12 +340,29 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException($"Use Case Ids must not be null or empty");
         }
         
-        return this.CreateAppAsync(appRequestModel);
+        return this.CreateAppAsync(appRequestModel, iamUserId);
     }
-    
-    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
+
+    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {   
-        // Add app to db
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
+
+        var responseData =await _portalRepositories.GetInstance<IUserRepository>().GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId).ConfigureAwait(false);
+        
+        if(responseData == default)
+        {
+            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}");
+        }
+        if(!responseData.IsSameCompany)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
+        }
+        if(userRoleIds.Except(responseData.RoleIds).Any())
+        {
+            throw new ControllerArgumentException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
+        }
+        
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
@@ -349,6 +370,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
             app.OfferStatusId = OfferStatusId.CREATED;
+            app.SalesManagerId = appRequestModel.SalesManagerId;
         }).Id;
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
@@ -453,8 +475,4 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
-    
-    /// <inheritdoc/>
-    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId) =>
-       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
 }

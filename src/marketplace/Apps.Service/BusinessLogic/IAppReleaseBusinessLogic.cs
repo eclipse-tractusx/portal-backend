@@ -99,13 +99,21 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
+    
+    /// <summary>
+    /// Get Sales Manager Data
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
 
     /// <summary>
     /// Creates an application and returns its generated ID.
     /// </summary>
     /// <param name="appRequestModel"></param>
+    /// <param name="iamUserId"></param>
     /// <returns>Guid of the created app.</returns>
-    Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
+    Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
@@ -119,11 +127,4 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
-    
-    /// <summary>
-    /// Get Sales Manager Data
-    /// </summary>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
 }
