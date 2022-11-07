@@ -30,6 +30,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -57,6 +58,7 @@ public class AppReleaseBusinessLogicTest
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         var offerService = A.Fake<IOfferService>();
+        var notificationService = A.Fake<INotificationService>();
         var options = A.Fake<IOptions<AppsSettings>>();
         
         _companyUser = _fixture.Build<CompanyUser>()
@@ -69,7 +71,7 @@ public class AppReleaseBusinessLogicTest
         
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-         _logic = new AppReleaseBusinessLogic(_portalRepositories, options, offerService);
+         _logic = new AppReleaseBusinessLogic(_portalRepositories, options, offerService, notificationService);
     }
 
     [Fact]

@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -125,26 +124,6 @@ public interface IAppsBusinessLogic
     /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Async enumberable of company owned apps data</returns>
     IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId);
-    
-    /// <summary>
-    /// Creates an application and returns its generated ID.
-    /// </summary>
-    /// <param name="appRequestModel"></param>
-    /// <returns>Guid of the created app.</returns>
-    Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
-
-    /// <summary>
-    /// Retrieves all in review status apps in the marketplace.
-    /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
-    
-    /// <summary>
-    /// Update app status and create notification
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Auto setup the app.
