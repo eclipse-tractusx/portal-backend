@@ -25,9 +25,10 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -36,40 +37,151 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// <summary>
 /// Tests the functionality of the <see cref="NotificationRepository"/>
 /// </summary>
-/// [Collection("Database collection")]
 public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
-    private readonly ICollection<Notification> _readNotifications;
-    private readonly ICollection<Notification> _unreadNotifications;
-    private readonly ICollection<Notification> _notifications;
     private readonly TestDbFixture _dbTestDbFixture;
 
     public NotificationRepositoryTests(TestDbFixture testDbFixture)
     {
-        var companyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001");
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => fixture.Behaviors.Remove(b));
 
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-        _readNotifications = new List<Notification>();
-        _unreadNotifications = new List<Notification>();
-        for (var i = 0; i < 3; i++)
-        {
-            _readNotifications.Add(new Notification(Guid.NewGuid(), companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, true));
-        }
-
-        for (var i = 0; i < 2; i++)
-        {
-            _unreadNotifications.Add(new Notification(Guid.NewGuid(), companyUserId, DateTimeOffset.UtcNow, i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, false));
-        }
-
-        _notifications = _readNotifications.Concat(_unreadNotifications).ToList();
         _dbTestDbFixture = testDbFixture;
     }
 
+    #region GetNotificationTopic
+
+    [Theory]
+    [InlineData(NotificationTypeId.INFO, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.TECHNICAL_USER_CREATION, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.CONNECTOR_REGISTERED, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.WELCOME_SERVICE_PROVIDER, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.WELCOME, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.WELCOME_USE_CASES, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.WELCOME_APP_MARKETPLACE, NotificationTopicId.INFO)]
+    [InlineData(NotificationTypeId.ACTION, NotificationTopicId.ACTION)]
+    [InlineData(NotificationTypeId.APP_SUBSCRIPTION_REQUEST, NotificationTopicId.ACTION)]
+    [InlineData(NotificationTypeId.SERVICE_REQUEST, NotificationTopicId.ACTION)]
+    [InlineData(NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, NotificationTopicId.OFFER)]
+    [InlineData(NotificationTypeId.APP_RELEASE_REQUEST, NotificationTopicId.OFFER)]
+    [InlineData(NotificationTypeId.SERVICE_ACTIVATION, NotificationTopicId.OFFER)]
+    public void GetNotificationTopicId_GetsCorrectTopicId(NotificationTypeId type, NotificationTopicId expectedResult)
+    {
+        // Arrange
+        
+        // Act
+        var topic = type.GetNotificationTopic();
+        
+        // Assert
+        topic.Should().Be(expectedResult);
+    }
+    
+    [Fact]
+    public void GetNotificationTopicId_WithInvalidNotificationType_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var notificationTypeId = (NotificationTypeId)0;
+
+        // Act
+        try
+        {
+            notificationTypeId.GetNotificationTopic();
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            // Assert
+            ex.ParamName.Should().Be("typeId");
+            return;
+        }
+
+        // Should never been hit.
+        true.Should().BeFalse();
+    }
+
+    #endregion
+    
+    #region Create Notification
+
+    [Fact]
+    public async Task CreateNotification_ReturnsExpectedResult()
+    {
+        // Arrange
+        var notificationDueDate = DateTimeOffset.Now;
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateNotification(Guid.NewGuid(), NotificationTypeId.INFO, false, notification =>
+        {
+            notification.DueDate = notificationDueDate;
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.DueDate.Should().Be(notificationDueDate);
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<Notification>().Which.DueDate.Should().Be(notificationDueDate);
+    }
+
+    #endregion
+    
+    #region AttachAndModifyNotification
+    
+    
+    [Fact]
+    public async Task AttachAndModifyNotification_WithExistingNotification_UpdatesStatus()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
+        {
+            notification.IsRead = true;
+        });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Modified);
+        changedEntity.Entity.Should().BeOfType<Notification>().Which.IsRead.Should().Be(true);
+    }
+    
+    #endregion
+    
+    #region Delete Notification
+    
+    [Fact]
+    public async Task DeleteNotification_WithExistingNotification_RemovesNotification()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.DeleteNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"));
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+    
     #region GetAllAsDetailsByUserIdUntracked
 
     [Fact]
@@ -79,14 +191,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null).ToListAsync();
+        var results = await sut
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         // Assert
-        var unreadNotificationIds = _unreadNotifications.Select(notification => notification.Id).ToList();
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(_unreadNotifications.Count);
+        results.Should().HaveCount(3);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Select(x => x.Id).Should().BeEquivalentTo(unreadNotificationIds);
     }
 
     [Fact]
@@ -96,14 +209,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null).ToListAsync();
+        var results = await sut
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-        var readNotificationIds = _readNotifications.Select(notification => notification.Id).ToList();
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(_readNotifications.Count);
+        results.Should().HaveCount(3);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     [Fact]
@@ -116,14 +230,9 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO).ToListAsync();
 
         // Assert
-        var readNotificationIds = _readNotifications
-            .Where(x => x.NotificationTypeId == NotificationTypeId.INFO)
-            .Select(x => x.Id)
-            .ToList();
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(1);
+        results.Should().ContainSingle();
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     [Fact]
@@ -136,17 +245,34 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION).ToListAsync();
 
         // Assert
-        var readNotificationIds = _readNotifications
-            .Where(x => x.NotificationTypeId == NotificationTypeId.ACTION)
-            .Select(x => x.Id).ToList();
         results.Should().NotBeNullOrEmpty();
         results.Should().HaveCount(2);
         results.Should().AllBeOfType<NotificationDetailData>();
-        results.Select(x => x.Id).Should().BeEquivalentTo(readNotificationIds);
     }
 
     #endregion
 
+    #region GetNotificationByIdAndIamUserId
+
+    [Fact]
+    public async Task GetNotificationByIdAndIamUserId_ForExistingUser_GetsExpectedNotification()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut
+            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), IamUserId)
+            .ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.IsUserReceiver.Should().BeTrue();
+        result.NotificationDetailData.IsRead.Should().BeFalse();
+    }
+
+    #endregion
+    
     #region GetNotificationCount
 
     [Fact]
@@ -156,10 +282,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetNotificationCountForIamUserAsync(IamUserId, true);
+        var results = await sut
+            .GetNotificationCountForIamUserAsync(IamUserId, true)
+            .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(_readNotifications.Count);
+        results.Count.Should().Be(3);
     }
 
     [Fact]
@@ -169,23 +297,72 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetNotificationCountForIamUserAsync(IamUserId, null);
+        var results = await sut
+            .GetNotificationCountForIamUserAsync(IamUserId, null)
+            .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(_notifications.Count);
+        results.Count.Should().Be(6);
     }
 
     #endregion
     
+    #region GetCountDetailsForUser
+
+    [Fact]
+    public async Task GetCountDetailsForUser_ReturnsExpectedCount()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .GetCountDetailsForUserAsync(IamUserId)
+            .ConfigureAwait(false);
+
+        // Assert
+        results.Count.Should().Be(4);
+    }
+
+    #endregion
+
+    #region CheckNotificationExistsByIdAndIamUserId
+    
+    [Fact]
+    public async Task CheckNotificationExistsByIdAndIamUserId_ReturnsExpectedCount()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut
+            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), IamUserId)
+            .ConfigureAwait(false);
+
+        // Assert
+        results.IsUserReceiver.Should().BeTrue();
+        results.IsNotificationExisting.Should().BeTrue();
+    }
+
+    
+    
+    #endregion
+    
+    #region Setup
+    
     private async Task<NotificationRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext(dbContext =>
-            {
-                dbContext.Notifications.RemoveRange(dbContext.Notifications.ToList());
-            },
-            SeedExtensions.SeedNotification(_notifications.ToArray())
-        ).ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new NotificationRepository(context);
         return sut;
     }
+    
+    private async Task<(NotificationRepository repo, PortalDbContext context)> CreateSutWithContext()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new NotificationRepository(context);
+        return (sut, context);
+    }
+    
+    #endregion
 }

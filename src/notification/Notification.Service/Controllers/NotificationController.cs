@@ -65,7 +65,7 @@ public class NotificationController : ControllerBase
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromQuery] Guid companyUserId,
+    public async Task<CreatedAtRouteResult> CreateNotification([FromQuery] Guid companyUserId,
         [FromBody] NotificationCreationData data)
     {
         var notificationDetailData = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);

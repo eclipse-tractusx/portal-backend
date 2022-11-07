@@ -18,16 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.App.Service.Tests.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppsControllerTests
 {
@@ -35,16 +41,164 @@ public class AppsControllerTests
     private readonly string _accessToken = "THISISTHEACCESSTOKEN";
     private readonly IAppsBusinessLogic _logic;
     private readonly AppsController _controller;
+    private readonly IFixture _fixture;
 
     public AppsControllerTests()
     {
+        _fixture = new Fixture();
         _logic = A.Fake<IAppsBusinessLogic>();
         this._controller = new AppsController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(IamUserId, _accessToken);
     }
 
     [Fact]
-    public async Task AddServiceSubscription_ReturnsExpectedId()
+    public async Task GetAllActiveAppsAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AppData>(_fixture.CreateMany<AppData>(5));
+        A.CallTo(() => _logic.GetAllActiveAppsAsync(A<string?>._))
+            .Returns(data.AsAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetAllActiveAppsAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllActiveAppsAsync(null)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetAllBusinessAppsForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<BusinessAppData>(_fixture.CreateMany<BusinessAppData>(5));
+        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync(A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetAllBusinessAppsForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllUserUserBusinessAppsAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetAppDetailsByIdAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = _fixture.Create<AppDetailResponse>();
+        A.CallTo(() => _logic.GetAppDetailsByIdAsync(A<Guid>._, A<string>._, A<string?>._))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppDetailsByIdAsync(appId, IamUserId, null)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateApp_ReturnsExpectedId()
+    {
+        //Arrange
+        var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
+        var appInputModel = _fixture.Create<AppInputModel>();
+        A.CallTo(() => _logic.CreateAppAsync(A<AppInputModel>._))
+            .Returns(id);
+
+        //Act
+        var result = await this._controller.CreateAppAsync(appInputModel).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.CreateAppAsync(appInputModel)).MustHaveHappenedOnceExactly();
+        result.Value.Should().Be(id);
+    }
+
+    [Fact]
+    public async Task GetAllFavouriteAppsForCurrentUser_ReturnsExpectedCount()
+    {
+        //Arrange
+        var ids = new AsyncEnumerableStub<Guid>(_fixture.CreateMany<Guid>(5));
+        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(A<string>._))
+            .Returns(ids.AsAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetAllFavouriteAppsForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task AddFavouriteAppForCurrentUserAsync_ReturnsBusinessLogic()
+    {
+        //Arrange
+        var id = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.AddFavouriteAppForUserAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.AddFavouriteAppForCurrentUserAsync(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddFavouriteAppForUserAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task RemoveFavouriteAppForCurrentUserAsync_CallsBusinessLogic()
+    {
+        //Arrange
+        var id = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.RemoveFavouriteAppForUserAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.RemoveFavouriteAppForCurrentUserAsync(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.RemoveFavouriteAppForUserAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AppWithSubscriptionStatus>(_fixture.CreateMany<AppWithSubscriptionStatus>(5));
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AppCompanySubscriptionStatusData>(_fixture.CreateMany<AppCompanySubscriptionStatusData>(5));
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task AddCompanyAppSubscriptionAsync_ReturnsExpectedId()
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
@@ -57,6 +211,105 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+    
+    [Fact]
+    public async Task ActivateCompanyAppSubscriptionAsync_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var companyId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.ActivateOwnCompanyProvidedAppSubscriptionAsync(A<Guid>._, A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.ActivateCompanyAppSubscriptionAsync(appId, companyId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task UnsubscribeCompanyAppSubscription_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.UnsubscribeOwnCompanyAppSubscriptionAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.UnsubscribeCompanyAppSubscriptionAsync(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UnsubscribeOwnCompanyAppSubscriptionAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetAppDataAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AllAppData>(_fixture.CreateMany<AllAppData>(5));
+        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+
+        //Act
+        var result = await this._controller.GetAppDataAsync().ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+    
+    [Fact]
+    public async Task ExecuteAppCreation_ReturnsExpectedId()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = _fixture.Create<AppRequestModel>();
+        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._))
+            .ReturnsLazily(() => appId);
+
+        //Act
+        var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddAppAsync(data)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CreatedAtRouteResult>(result);
+        result.Value.Should().Be(appId);
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._))
+            .ReturnsLazily(() => paginationResponse);
+
+        //Act
+        var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task SubmitAppReleaseRequest_ReturnsExpectedCount()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

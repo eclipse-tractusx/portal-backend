@@ -109,10 +109,10 @@ public class AppsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
+    public async Task<CreatedAtRouteResult> CreateAppAsync([FromBody] AppInputModel appInputModel)
     {
         var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new { appId }, appId);
     }
 
     /// <summary>
@@ -285,7 +285,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
+    public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await _appsBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
