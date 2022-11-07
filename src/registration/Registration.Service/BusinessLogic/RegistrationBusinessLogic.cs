@@ -632,25 +632,23 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
-        if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
-        {
-            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
-        }
-        if (details.IsApplicationNotSubmitted)
-        {
-            throw new ArgumentException("Application status must not be in submitted status");
-        }
+        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId, _settings.ApplicationStatusIds).ConfigureAwait(false);
         if (details.DocumentId == Guid.Empty)
         {
             throw new NotFoundException("Document does not exist. Deletion unsuccessful");
         }
-
-        if (!details.IsSameUser)
+        if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
+        {
+            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+        }
+        if (details.IsApplicationNotSubmittedConfirmedDeclined)
+        {
+            throw new ArgumentException($"Application status must not be either :{string.Join(",", _settings.ApplicationStatusIds)}");
+        }
+        if (!details.IsSameApplicationUser)
         {
             throw new ForbiddenException("User is not allowed to delete this document");
         }
-
         if (details.DocumentStatusId != DocumentStatusId.PENDING)
         {
             throw new ArgumentException("Incorrect document status");
