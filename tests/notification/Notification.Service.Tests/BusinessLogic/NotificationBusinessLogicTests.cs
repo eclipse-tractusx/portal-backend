@@ -29,11 +29,12 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.BusinessLogic;
 
 public class NotificationBusinessLogicTests
 {
@@ -93,8 +94,10 @@ public class NotificationBusinessLogicTests
                 action?.Invoke(notification);
                 notifications.Add(notification);
             });
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
         const string content = "That's a title";
 
         // Act
@@ -116,8 +119,10 @@ public class NotificationBusinessLogicTests
     public async Task CreateNotification_WithNotExistingCompanyUser_ThrowsArgumentException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
         async Task Action() => await sut.CreateNotificationAsync(_iamUser.UserEntityId,
@@ -134,46 +139,62 @@ public class NotificationBusinessLogicTests
 
     #region Get Notifications
 
-    [Fact]
-    public async Task GetNotifications_WithUnreadStatus_ReturnsList()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetNotifications_WithStatus_ReturnsList(bool status)
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, false, null, NotificationSorting.DateDesc).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, status).ConfigureAwait(false);
 
         // Assert
-        result.Content.Should().HaveCount(_unreadNotificationDetails.Count());
+        var expectedCount = status ? 
+            _readNotificationDetails.Count() :
+            _unreadNotificationDetails.Count();
+        result.Content.Should().HaveCount(expectedCount);
     }
 
-    [Fact]
-    public async Task GetNotifications_WithReadStatus_ReturnsList()
+    [Theory]
+    [InlineData(NotificationSorting.DateAsc)]
+    [InlineData(NotificationSorting.DateDesc)]
+    [InlineData(NotificationSorting.ReadStatusAsc)]
+    [InlineData(NotificationSorting.ReadStatusDesc)]
+    public async Task GetNotifications_WithoutStatus_ReturnsList(NotificationSorting sorting)
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, true, null, NotificationSorting.DateDesc).ConfigureAwait(false);
-
-        // Assert
-        result.Content.Should().HaveCount(_readNotificationDetails.Count());
-    }
-
-    [Fact]
-    public async Task GetNotifications_WithoutStatus_ReturnsList()
-    {
-        // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
-
-        // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, null, null, NotificationSorting.DateDesc).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, sorting: sorting).ConfigureAwait(false);
 
         // Assert
         result.Content.Should().HaveCount(_notificationDetails.Count());
+    }
+
+    [Fact]
+    public async Task GetNotifications_WithInvalidSorting_ThrowsArgumentException()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
+
+        // Act
+        async Task Act() => await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, sorting: 0).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("sorting");
     }
 
     #endregion
@@ -184,11 +205,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationDetailDataAsync_WithIdAndUser_ReturnsCorrectResult()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        var result = await sut.GetNotificationDetailDataAsync(_iamUser.UserEntityId, _notificationDetail.Id);
+        var result = await sut.GetNotificationDetailDataAsync(_iamUser.UserEntityId, _notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         var notificationDetailData = _unreadNotificationDetails.First();
@@ -199,46 +222,36 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationDetailDataAsync_WithNotMatchingUser_ThrowsForbiddenException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
         var iamUserId = Guid.NewGuid().ToString();
-        try
-        {
-            await sut.GetNotificationDetailDataAsync(iamUserId, _notificationDetail.Id);
-        }
-        catch (ForbiddenException ex)
-        {
-            ex.Message.Should().Be($"iamUserId {iamUserId} is not the receiver of the notification");
-            return;
-        }
+        async Task Act() => await sut.GetNotificationDetailDataAsync(iamUserId, _notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
-        false.Should().BeTrue(); // Must not be hit, because we test the exception here
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"iamUserId {iamUserId} is not the receiver of the notification");
     }
 
     [Fact]
     public async Task GetNotificationDetailDataAsync_WithNotMatchingNotificationId_ThrowsNotFoundException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
         var notificationId = Guid.NewGuid();
-        try
-        {
-            await sut.GetNotificationDetailDataAsync(_iamUser.UserEntityId, notificationId);
-        }
-        catch (NotFoundException ex)
-        {
-            ex.Message.Should().Be($"Notification {notificationId} does not exist.");
-            return;
-        }
+        async Task Act() => await sut.GetNotificationDetailDataAsync(_iamUser.UserEntityId, notificationId).ConfigureAwait(false);
 
         // Assert
-        false.Should().BeTrue(); // Must not be hit, because we test the exception here
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Notification {notificationId} does not exist.");
     }
 
     #endregion
@@ -249,11 +262,13 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationCountAsync_WithIdAndUser_ReturnsCorrectResult()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        var result = await sut.GetNotificationCountAsync(_iamUser.UserEntityId, false);
+        var result = await sut.GetNotificationCountAsync(_iamUser.UserEntityId, false).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(5);
@@ -263,41 +278,82 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationCountAsync_WithNotMatchingUser_ThrowsForbiddenException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
         var iamUserId = Guid.NewGuid().ToString();
-        try
-        {
-            await sut.GetNotificationCountAsync(iamUserId, false);
-        }
-        catch (ForbiddenException ex)
-        {
-            ex.Message.Should().Be($"iamUserId {iamUserId} is not assigned");
-            return;
-        }
-
+        async Task Act() => await sut.GetNotificationCountAsync(iamUserId, false).ConfigureAwait(false);
+       
         // Assert
-        false.Should().BeTrue(); // Must not be hit, because we test the exception here
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"iamUserId {iamUserId} is not assigned");
     }
 
     #endregion
 
-    #region Set Notification To Read
+    #region Get Notification Count Detail
 
     [Fact]
-    public async Task SetNotificationToRead_WithMatchingId_ReturnsDetailData()
+    public async Task GetNotificationCountDetailsAsync()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var dict = new Dictionary<(bool IsRead, NotificationTopicId NotificationTopicId), int>
+        {
+            { (true, NotificationTopicId.INFO), 2},
+            { (false, NotificationTopicId.INFO), 3},
+            { (true, NotificationTopicId.OFFER), 6},
+            { (false, NotificationTopicId.OFFER), 4},
+            { (true, NotificationTopicId.ACTION), 1},
+            { (false, NotificationTopicId.ACTION), 5},
+        };
+        A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(_iamUser.UserEntityId)).ReturnsLazily(() => dict);
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
+        
+        // Act
+        var result = await sut.GetNotificationCountDetailsAsync(_iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        result.Read.Should().Be(9);
+        result.Unread.Should().Be(12);
+        result.InfoUnread.Should().Be(3);
+        result.OfferUnread.Should().Be(4);
+        result.ActionRequired.Should().Be(5);
+    }
+
+    #endregion
+    
+    #region Set Notification To Read
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SetNotificationStatus_WithMatchingId_ReturnsDetailData(bool isRead)
+    {
+        // Arrange
+        var notification = new PortalBackend.PortalEntities.Entities.Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, NotificationTopicId.INFO, !isRead);
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
+            .Invokes(x =>
+            {
+                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
+                action?.Invoke(notification);
+            });
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        await sut.SetNotificationStatusAsync(_iamUser.UserEntityId, _notificationDetail.Id, true);
+        await sut.SetNotificationStatusAsync(_iamUser.UserEntityId, _notificationDetail.Id, isRead).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        notification.IsRead.Should().Be(isRead);
     }
 
     [Fact]
@@ -305,24 +361,18 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var randomNotificationId = Guid.NewGuid();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
         var notExistingUserId = Guid.NewGuid().ToString();
 
         // Act
-        try
-        {
-            await sut.SetNotificationStatusAsync(notExistingUserId, randomNotificationId, true);
-        }
-        catch (NotFoundException e)
-        {
-            // Assert
-            e.Message.Should().Be($"Notification {randomNotificationId} does not exist.");
-            return;
-        }
+        async Task Act() => await sut.SetNotificationStatusAsync(notExistingUserId, randomNotificationId, true).ConfigureAwait(false);
 
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Notification {randomNotificationId} does not exist.");
     }
 
     [Fact]
@@ -330,23 +380,17 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var iamUserId = Guid.NewGuid().ToString();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        try
-        {
-            await sut.SetNotificationStatusAsync(iamUserId, _notificationDetail.Id, true);
-        }
-        catch (ForbiddenException e)
-        {
-            // Assert
-            e.Message.Should().Be($"iamUserId {iamUserId} is not the receiver of the notification");
-            return;
-        }
+        async Task Act() => await sut.SetNotificationStatusAsync(iamUserId, _notificationDetail.Id, true).ConfigureAwait(false);
 
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"iamUserId {iamUserId} is not the receiver of the notification");
     }
 
     #endregion
@@ -357,11 +401,13 @@ public class NotificationBusinessLogicTests
     public async Task DeleteNotification_WithValidData_ExecutesSuccessfully()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        await sut.DeleteNotificationAsync(_iamUser.UserEntityId, _notificationDetail.Id);
+        await sut.DeleteNotificationAsync(_iamUser.UserEntityId, _notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -372,47 +418,35 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var iamUserId = Guid.NewGuid().ToString();
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        try
-        {
-            await sut.DeleteNotificationAsync(iamUserId, _notificationDetail.Id);
-        }
-        catch (ForbiddenException e)
-        {
-            // Assert
-            e.Message.Should().Be($"iamUserId {iamUserId} is not the receiver of the notification");
-            return;
-        }
+        async Task Act() => await sut.DeleteNotificationAsync(iamUserId, _notificationDetail.Id).ConfigureAwait(false);
 
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"iamUserId {iamUserId} is not the receiver of the notification");
     }
 
     [Fact]
     public async Task DeleteNotification_WithNotExistingNotification_ThrowsNotFoundException()
     {
         // Arrange
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<NotificationBusinessLogic>();
         var randomNotificationId = Guid.NewGuid();
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
 
         // Act
-        try
-        {
-            await sut.DeleteNotificationAsync(_iamUser.UserEntityId, randomNotificationId);
-        }
-        catch (NotFoundException e)
-        {
-            // Assert
-            e.Message.Should().Be($"Notification {randomNotificationId} does not exist.");
-            return;
-        }
+        async Task Act() => await sut.DeleteNotificationAsync(_iamUser.UserEntityId, randomNotificationId);
 
-        // Must not reach that code because of the exception
-        false.Should().BeTrue();
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Notification {randomNotificationId} does not exist.");
     }
 
     #endregion

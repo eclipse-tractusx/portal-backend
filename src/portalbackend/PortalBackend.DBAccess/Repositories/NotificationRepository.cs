@@ -52,10 +52,10 @@ public class NotificationRepository : INotificationRepository
         return _dbContext.Add(notification).Entity;
     }
 
-    public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameters = null)
+    public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null)
     {
         var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default, default)).Entity;
-        setOptionalParameters?.Invoke(notification);
+        setOptionalParameter?.Invoke(notification);
         return notification;
     }
 
@@ -109,16 +109,12 @@ public class NotificationRepository : INotificationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<Dictionary<(bool, NotificationTopicId), int>> GetCountDetailsForUserAsync(string iamUserId)
-    {
-        var countDetailsForUserAsync = _dbContext.Notifications
+    public Task<Dictionary<(bool, NotificationTopicId), int>> GetCountDetailsForUserAsync(string iamUserId) => _dbContext.Notifications
             .AsNoTracking()
             .Where(not => not.Receiver!.IamUser!.UserEntityId == iamUserId)
             .GroupBy(not => new {not.IsRead, not.NotificationTopicId})
             .Select(not => new { Key = new ValueTuple<bool, NotificationTopicId>(not.Key.IsRead, not.Key.NotificationTopicId), Count = not.Count()})
             .ToDictionaryAsync(x => x.Key, x => x.Count);
-        return countDetailsForUserAsync;
-    }
 
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndIamUserIdAsync(Guid notificationId, string iamUserId) =>

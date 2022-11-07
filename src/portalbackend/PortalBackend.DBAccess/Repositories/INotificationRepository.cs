@@ -39,7 +39,7 @@ public interface INotificationRepository
     Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
         bool isRead, Action<Notification>? setOptionalParameter = null);
 
-    Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameters = null);
+    Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null);
 
     Notification DeleteNotification(Guid notificationId);
 

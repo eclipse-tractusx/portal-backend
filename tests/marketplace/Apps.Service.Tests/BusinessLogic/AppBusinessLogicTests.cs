@@ -33,7 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 
 public class AppBusinessLogicTests
 {

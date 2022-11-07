@@ -18,16 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
 using FluentAssertions;
 using Xunit;
 
@@ -36,34 +30,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.IntegrationTe
 public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<Program>>
 {
     private readonly IntegrationTestFactory<Program> _factory;
-    private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
 
     public NotificationControllerIntegrationTests(IntegrationTestFactory<Program> factory)
     {
         _factory = factory;
-        var readNotifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
-        var unreadNotifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
-
-        for (var i = 0; i < 3; i++)
-        {
-            readNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(),
-                CompanyUserId, DateTimeOffset.UtcNow,
-                i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, true));
-        }
-
-        for (var i = 0; i < 2; i++)
-        {
-            unreadNotifications.Add(new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(),
-                CompanyUserId, DateTimeOffset.UtcNow,
-                i % 2 == 0 ? NotificationTypeId.ACTION : NotificationTypeId.INFO, NotificationTopicId.INFO, false));
-        }
-
-        var notifications = readNotifications.Concat(unreadNotifications).ToList();
-
-        _factory.SetupDbActions = new[]
-        {
-            SeedExtensions.SeedNotification(notifications.ToArray())
-        };
     }
 
     [Fact]
@@ -79,6 +49,6 @@ public class NotificationControllerIntegrationTests : IClassFixture<IntegrationT
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var count = await response.GetResultFromContent<int>();
-        count.Should().Be(2);
+        count.Should().Be(3);
     }
 }

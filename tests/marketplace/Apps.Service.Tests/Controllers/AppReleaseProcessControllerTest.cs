@@ -26,7 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppReleaseProcessControllerTest
 {

@@ -75,7 +75,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting sorting)
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting sorting = NotificationSorting.DateDesc)
     {
         var source =  _portalRepositories.GetInstance<INotificationRepository>()
             .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId);
@@ -98,7 +98,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             NotificationSorting.ReadStatusAsc => source.OrderBy(notification => notification.IsRead),
             NotificationSorting.ReadStatusDesc => source.OrderByDescending(notification => notification.IsRead),
             NotificationSorting.DateDesc => source.OrderByDescending(notification => notification.Created),
-            _ => source.OrderByDescending(notification => notification.Created)
+            _ => throw new ControllerArgumentException("The sorting does not exists.", nameof(sorting))
         };
 
     /// <inheritdoc />
