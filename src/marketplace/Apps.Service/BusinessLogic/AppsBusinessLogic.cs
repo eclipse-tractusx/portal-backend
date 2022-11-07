@@ -23,7 +23,6 @@ using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -42,7 +41,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
-    private readonly INotificationService _notificationService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
 
@@ -51,14 +49,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSubscriptionService">OfferSubscription Service.</param>
-    /// <param name="notificationService">Notification service.</param>
     /// <param name="offerService">Offer service</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, INotificationService notificationService, IOfferService offerService, IOptions<AppsSettings> settings)
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
-        _notificationService = notificationService;
         _offerService = offerService;
         _settings = settings.Value;
     }
@@ -163,8 +159,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(iamUserId);
 
     /// <inheritdoc/>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
@@ -257,150 +253,16 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId)=>
         _portalRepositories.GetInstance<IOfferRepository>().GetProvidedAppsData(userId);
     
-    /// <inheritdoc/>
-    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel)
-    {
-        if(appRequestModel.ProviderCompanyId == Guid.Empty)
-        {
-            throw new ArgumentException($"Company Id  does not exist"); 
-        }
-
-        var languageCodes = appRequestModel.SupportedLanguageCodes.Where(item => !String.IsNullOrWhiteSpace(item)).Distinct();
-        if (!languageCodes.Any())
-        {
-            throw new ArgumentException($"Language Code does not exist"); 
-        }
-        
-        var useCaseIds = appRequestModel.UseCaseIds.Where(item => !string.IsNullOrWhiteSpace(item)).Distinct().ToList();
-        if (!useCaseIds.Any())
-        {
-            throw new ArgumentException($"Use Case does not exist");
-        }
-        
-        if (useCaseIds.Any(item => !Guid.TryParse(item, out _)))
-        {
-            throw new ArgumentException($"Use Case does not exist");
-        }
-        return  this.CreateAppAsync(appRequestModel);
-    }
     
-    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
-    {   
-        // Add app to db
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
-        {
-            app.Name = appRequestModel.Title;
-            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
-            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
-            app.OfferStatusId = OfferStatusId.CREATED;
-        }).Id;
 
-        appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
-              (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-        appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
-              (appId, c)));
-        appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-              (appId, Guid.Parse(uc))));
-        var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
-        appRepository.CreateOfferAssignedLicense(appId, licenseId);
+    
 
-        try
-        {
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            return appId;
-        }
-        catch(Exception exception)when (exception?.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
-        {
-            throw new NotFoundException($"language code or UseCaseId does not exist");
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appDetails = await offerRepository.GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
-        if (appDetails == null)
-        {
-            throw new NotFoundException($"App {appId} does not exist");
-        }
-        
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-
-        if(appDetails.name is null || appDetails.thumbnailUrl is null 
-            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
-            || appDetails.descriptionLongIsNullOrEmpty || appDetails.descriptionShortIsNullOrEmpty)
-        {
-            var nullProperties = new List<string>();
-            if (appDetails.name is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.name)}");
-            }
-            if(appDetails.thumbnailUrl is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.thumbnailUrl)}");
-            }
-            if(appDetails.salesManagerId is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.salesManagerId)}");
-            }
-            if(appDetails.providerCompanyId is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.providerCompanyId)}");
-            }
-            if(appDetails.descriptionLongIsNullOrEmpty)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
-            }
-            if(appDetails.descriptionShortIsNullOrEmpty)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
-            }
-            throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
-        }
-        offerRepository.AttachAndModifyOffer(appId, app =>
-        {
-            app.OfferStatusId = OfferStatusId.IN_REVIEW;
-            app.DateLastChanged = DateTimeOffset.UtcNow;
-        });
-
-        var notificationContent = new
-        {
-            appId,
-            RequestorCompanyName = appDetails.companyName
-        };
-        
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-     /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
-    {
-        var apps = _portalRepositories.GetInstance<IOfferRepository>().GetAllInReviewStatusAppsAsync();
-
-        return Pagination.CreateResponseAsync(
-            page,
-            size,
-            15,
-            (int skip, int take) => new Pagination.AsyncSource<InReviewAppData>(
-                apps.CountAsync(),
-                apps.OrderBy(app => app.Id)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(app => new InReviewAppData(
-                        app.Id,
-                        app.Name,
-                        app.ProviderCompany!.Name,
-                        app.ThumbnailUrl))
-                    .AsAsyncEnumerable()));
-    }
      
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
         _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
+        _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 }
