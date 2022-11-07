@@ -29,13 +29,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 public class Notification
 {
     /// <summary>
-    /// Only needed for ef core
-    /// </summary>
-    private Notification()
-    {
-    }
-
-    /// <summary>
     /// Creates a new instance of <see cref="Notification"/> and sets the required values.
     /// </summary>
     /// <param name="id">Id of the notification</param>
