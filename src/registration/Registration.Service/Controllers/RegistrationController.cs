@@ -105,7 +105,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">User does not have the relevant rights to request for the document.</response>
         /// <response code="404">No document with the given id was found.</response>
         [HttpGet]
-        [Authorize(Roles = "get_documents")]
+        [Authorize(Roles = "view_documents")]
         [Route("documents/{documentId}")]
         [Produces("application/pdf", "application/json")]
         [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
