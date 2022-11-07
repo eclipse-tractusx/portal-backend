@@ -159,8 +159,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(iamUserId);
 
     /// <inheritdoc/>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
@@ -261,4 +261,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
         _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
+        _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 }
