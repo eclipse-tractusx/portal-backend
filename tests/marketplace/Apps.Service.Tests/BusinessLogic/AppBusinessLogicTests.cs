@@ -152,7 +152,7 @@ public class AppBusinessLogicTests
         var data = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == appId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
-        var sut = new AppsBusinessLogic(null!, null!, null!, offerService, Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(null!, null!, offerService, Options.Create(new AppsSettings()));
 
         // Act
         var result = await sut.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
