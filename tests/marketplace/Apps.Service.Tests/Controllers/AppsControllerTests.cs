@@ -18,12 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using AutoFixture;
+using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
@@ -33,22 +36,28 @@ public class AppsControllerTests
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private readonly string _accessToken = "THISISTHEACCESSTOKEN";
+    private readonly IFixture _fixture;
     private readonly IAppsBusinessLogic _logic;
     private readonly AppsController _controller;
 
     public AppsControllerTests()
     {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
         _logic = A.Fake<IAppsBusinessLogic>();
         this._controller = new AppsController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(IamUserId, _accessToken);
     }
 
     [Fact]
-    public async Task AddServiceSubscription_ReturnsExpectedId()
+    public async Task AddAppSubscription_ReturnsExpectedId()
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, IamUserId, _accessToken))
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -56,8 +65,43 @@ public class AppsControllerTests
         var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task AddAppSubscriptionWithConsent_ReturnsExpectedId()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
+            .Returns(offerSubscriptionId);
+
+        //Act
+        var serviceId = Guid.NewGuid();
+        var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId, consentData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, consentData, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetServiceAgreement_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetAppAgreement(A<Guid>._))
+            .Returns(agreementData);
+
+        //Act
+        var result = await this._controller.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppAgreement(appId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
     }
 
     [Fact]

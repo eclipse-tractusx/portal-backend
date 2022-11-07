@@ -39,17 +39,3 @@ public class SdFactorySettings
     [Required]
     public string SdFactoryIssuerBpn { get; set; } = null!;
 }
-
-public static class SdFactorySettingsExtensions
-{
-    public static IServiceCollection ConfigureSdFactorySettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
-    {
-        services.AddOptions<SdFactorySettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        return services;
-    }
-}
