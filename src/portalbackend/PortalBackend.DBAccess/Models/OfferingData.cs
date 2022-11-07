@@ -51,4 +51,4 @@ public record OfferingDescription(string LanguageCode, string Description);
 /// </summary>
 /// <param name="AgreementId">Id of the agreement</param>
 /// <param name="ConsentStatusId">Id of the consent status</param>
-public record ServiceAgreementConsentData(Guid AgreementId, ConsentStatusId ConsentStatusId);
+public record OfferAgreementConsentData(Guid AgreementId, ConsentStatusId ConsentStatusId);
