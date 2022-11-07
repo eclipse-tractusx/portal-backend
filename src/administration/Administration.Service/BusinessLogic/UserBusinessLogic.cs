@@ -236,7 +236,8 @@ public class UserBusinessLogic : IUserBusinessLogic
             userEntityId,
             firstName,
             lastName,
-            email
+            email,
+            _settings.CompanyUserStatusIds
         );
         return Pagination.CreateResponseAsync<CompanyUserData>(
             page,
@@ -248,16 +249,16 @@ public class UserBusinessLogic : IUserBusinessLogic
                 .Skip(skip)
                 .Take(take)
                 .Select(companyUser => new CompanyUserData(
-                companyUser.IamUser!.UserEntityId,
-                companyUser.Id,
-                companyUser.CompanyUserStatusId,
-                companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            })
-            .AsAsyncEnumerable()));
+                    companyUser.IamUser!.UserEntityId,
+                    companyUser.Id,
+                    companyUser.CompanyUserStatusId,
+                    companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                    {
+                        FirstName = companyUser.Firstname,
+                        LastName = companyUser.Lastname,
+                        Email = companyUser.Email
+                    })
+                .AsAsyncEnumerable()));
     }
 
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
