@@ -213,7 +213,7 @@ public class AppReleaseProcessController : ControllerBase
     public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await _appReleaseBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
-        return CreatedAtRoute("GetAppDetailsByIdAsync", new {controller = "Apps",appId = appId}, appId);
+        return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new {controller = "Apps", appId = appId}, appId);
     }
 
     /// <summary>
