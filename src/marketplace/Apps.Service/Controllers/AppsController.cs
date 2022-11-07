@@ -210,9 +210,43 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, auth.iamUserId, auth.bearerToken));
+        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, Enumerable.Empty<OfferAgreementConsentData>(), auth.iamUserId, auth.bearerToken));
         return NoContent();
     }
+
+    /// <summary>
+    /// Adds an app to current user's company's subscriptions.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
+    /// <param name="offerAgreementConsentData">The agreement consent data</param>
+    /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
+    /// <response code="204">App was successfully subscribed to.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If appId does not exist.</response>
+    [HttpPost]
+    [Route("{appId}/subscribe-consent")]
+    [Authorize(Roles = "subscribe_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
+    {
+        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData, auth.iamUserId, auth.bearerToken));
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Gets all agreements 
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the app consent to retrieve.</param>
+    /// <remarks>Example: GET: /api/apps/appAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <response code="200">Returns the app agreement data.</response>
+    [HttpGet]
+    [Route("appAgreementData/{appId}")]
+    [Authorize(Roles = "subscribe_apps")]
+    [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementData> GetAppAgreement([FromRoute] Guid appId) =>
+        _appsBusinessLogic.GetAppAgreement(appId);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
