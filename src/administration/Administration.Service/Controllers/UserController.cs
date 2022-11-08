@@ -455,9 +455,9 @@ public class UserController : ControllerBase
         this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
             appId,
             iamUserId,
-            new CompanyAppUsersFilter(
-                page,
-                size,
+            page,
+            size,
+            new CompanyUserFilter(
                 firstName,
                 lastName,
                 email,

@@ -508,18 +508,16 @@ public class UserBusinessLogic : IUserBusinessLogic
     public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
         Guid appId, 
         string iamUserId,
-        CompanyAppUsersFilter filter)
+        int page,
+        int size,
+        CompanyUserFilter filter)
     {
-        var (page, size, firstName, lastName, email, roleName, hasRole) = filter;
         var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
             appId,
             iamUserId,
             Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1),
-            firstName,
-            lastName,
-            email,
-            roleName,
-            hasRole);
+            filter
+        );
 
         return Pagination.CreateResponseAsync(
             page,

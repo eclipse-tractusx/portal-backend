@@ -33,7 +33,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using PortalBackend.DBAccess.Models;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.BusinessLogic;

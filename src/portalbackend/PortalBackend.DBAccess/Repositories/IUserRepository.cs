@@ -18,10 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -102,7 +101,7 @@ public interface IUserRepository
     
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 
-    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, IEnumerable<OfferSubscriptionStatusId> statusIds, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null, bool? hasRole = null);
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, IEnumerable<OfferSubscriptionStatusId> statusIds, CompanyUserFilter filter);
     
     /// <summary>
     /// User account data for deletion of own userId
