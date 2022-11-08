@@ -415,10 +415,10 @@ public class UserRepository : IUserRepository
         roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
         return _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId && 
-                                  (!hasRole.HasValue || !hasRole.Value || companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId)) &&
-                                  (!hasRole.HasValue || hasRole.Value || companyUser.UserRoles.All(userRole => userRole.Offer!.Id != appId)))
-            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(companyUser => companyUser.Company!.CompanyUsers.Where(cu => 
+                (!hasRole.HasValue || !hasRole.Value || cu.UserRoles.Any(userRole => userRole.Offer!.Id == appId)) &&
+                (!hasRole.HasValue || hasRole.Value || cu.UserRoles.All(userRole => userRole.Offer!.Id != appId))))
             .Where(companyUser => 
                 (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&
                 (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName}%")) &&
