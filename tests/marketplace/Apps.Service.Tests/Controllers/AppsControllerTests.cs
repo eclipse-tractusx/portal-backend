@@ -19,16 +19,15 @@
  ********************************************************************************/
 
 using AutoFixture;
+using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
@@ -39,13 +38,17 @@ public class AppsControllerTests
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private readonly string _accessToken = "THISISTHEACCESSTOKEN";
+    private readonly IFixture _fixture;
     private readonly IAppsBusinessLogic _logic;
     private readonly AppsController _controller;
-    private readonly IFixture _fixture;
 
     public AppsControllerTests()
     {
-        _fixture = new Fixture();
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
         _logic = A.Fake<IAppsBusinessLogic>();
         this._controller = new AppsController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(IamUserId, _accessToken);
@@ -198,11 +201,11 @@ public class AppsControllerTests
     }
 
     [Fact]
-    public async Task AddCompanyAppSubscriptionAsync_ReturnsExpectedId()
+    public async Task AddAppSubscription_ReturnsExpectedId()
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, IamUserId, _accessToken))
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -210,7 +213,25 @@ public class AppsControllerTests
         var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task AddAppSubscriptionWithConsent_ReturnsExpectedId()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
+            .Returns(offerSubscriptionId);
+
+        //Act
+        var serviceId = Guid.NewGuid();
+        var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId, consentData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, consentData, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
     
@@ -264,53 +285,20 @@ public class AppsControllerTests
     }
     
     [Fact]
-    public async Task ExecuteAppCreation_ReturnsExpectedId()
+    public async Task GetServiceAgreement_ReturnsExpected()
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var data = _fixture.Create<AppRequestModel>();
-        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._))
-            .ReturnsLazily(() => appId);
+        var agreementData = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _logic.GetAppAgreement(A<Guid>._))
+            .Returns(agreementData);
 
         //Act
-        var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
+        var result = await this._controller.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddAppAsync(data)).MustHaveHappenedOnceExactly();
-        Assert.IsType<CreatedAtRouteResult>(result);
-        result.Value.Should().Be(appId);
-    }
-
-    [Fact]
-    public async Task GetAllInReviewStatusAppsAsync_ReturnsExpectedCount()
-    {
-        //Arrange
-        var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._))
-            .ReturnsLazily(() => paginationResponse);
-
-        //Act
-        var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15)).MustHaveHappenedOnceExactly();
-        result.Content.Should().HaveCount(5);
-    }
-
-    [Fact]
-    public async Task SubmitAppReleaseRequest_ReturnsExpectedCount()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.GetAppAgreement(appId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
     }
 
     [Fact]

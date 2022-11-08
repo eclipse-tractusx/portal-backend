@@ -20,10 +20,12 @@
 
 using AutoFixture;
 using FakeItEasy;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -33,13 +35,13 @@ public class AppReleaseProcessControllerTest
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private readonly IFixture _fixture;
     private readonly AppReleaseProcessController _controller;
-    private readonly IAppReleaseBusinessLogic _appReleaseBusineesLogicFake;
+    private readonly IAppReleaseBusinessLogic _logic;
 
     public AppReleaseProcessControllerTest()
     {
         _fixture = new Fixture();
-        _appReleaseBusineesLogicFake = A.Fake<IAppReleaseBusinessLogic>();
-        this._controller = new AppReleaseProcessController(_appReleaseBusineesLogicFake);
+        _logic = A.Fake<IAppReleaseBusinessLogic>();
+        this._controller = new AppReleaseProcessController(_logic);
         _controller.AddControllerContextWithClaim(IamUserId);
     }
 
@@ -51,18 +53,67 @@ public class AppReleaseProcessControllerTest
         Guid userId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _appReleaseBusineesLogicFake.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString()))
+        A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString()))
             .Returns(appRoleData);
 
         //Act
-        var result =await this._controller.AddAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        var result = await this._controller.AddAppUserRole(appId, appUserRoles).ConfigureAwait(false);
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => _appReleaseBusineesLogicFake.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString())).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString())).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
     }
+    
+    [Fact]
+    public async Task ExecuteAppCreation_ReturnsExpectedId()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = _fixture.Create<AppRequestModel>();
+        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._, A<string>._))
+            .ReturnsLazily(() => appId);
 
+        //Act
+        var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddAppAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CreatedAtRouteResult>(result);
+        result.Value.Should().Be(appId);
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._))
+            .ReturnsLazily(() => paginationResponse);
+
+        //Act
+        var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task SubmitAppReleaseRequest_ReturnsExpectedCount()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
 }
