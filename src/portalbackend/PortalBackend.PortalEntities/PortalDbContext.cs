@@ -530,7 +530,6 @@ public class PortalDbContext : DbContext
             .WithMany(p => p.CompanyIdentityProviders)
             .HasForeignKey(d => d.IdentityProviderId);
 
-
         modelBuilder.Entity<CompanyRole>()
             .HasData(
                 Enum.GetValues(typeof(CompanyRoleId))
@@ -875,45 +874,62 @@ public class PortalDbContext : DbContext
             entity.HasData(StaticPortalData.Languages);
         });
 
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.Property(x => x.DueDate)
-                .IsRequired(false);
-
-            entity.HasOne(d => d.Receiver)
-                .WithMany(p => p!.Notifications)
-                .HasForeignKey(d => d.ReceiverUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.Creator)
-                .WithMany(p => p!.CreatedNotifications)
-                .HasForeignKey(d => d.CreatorUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.NotificationType)
-                .WithMany(p => p!.Notifications)
-                .HasForeignKey(d => d.NotificationTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.NotificationTopic)
-                .WithMany(p => p!.Notifications)
-                .HasForeignKey(d => d.NotificationTopicId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
-
-        modelBuilder.Entity<NotificationType>()
-            .HasData(
-                Enum.GetValues(typeof(NotificationTypeId))
-                    .Cast<NotificationTypeId>()
-                    .Select(e => new NotificationType(e))
-            );
-
         modelBuilder.Entity<NotificationTopic>()
             .HasData(
                 Enum.GetValues(typeof(NotificationTopicId))
                     .Cast<NotificationTopicId>()
                     .Select(e => new NotificationTopic(e))
             );
+
+        modelBuilder.Entity<NotificationType>(entity =>
+        {
+            entity.HasData(
+                Enum.GetValues(typeof(NotificationTypeId))
+                    .Cast<NotificationTypeId>()
+                    .Select(e => new NotificationType(e))
+            );
+
+            entity.HasMany(x => x.NotificationTopics)
+                .WithMany(x => x.NotificationTypes)
+                .UsingEntity<NotificationTypeAssignedTopic>(
+
+                    j => j
+                        .HasOne(d => d.NotificationTopic!)
+                        .WithMany()
+                        .HasForeignKey(d => d.NotificationTopicId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j => j
+                        .HasOne(d => d.NotificationType!)
+                        .WithMany()
+                        .HasForeignKey(d => d.NotificationTypeId)
+                        .OnDelete(DeleteBehavior.ClientSetNull),
+                    j =>
+                    {
+                        j.HasKey(e => new {e.NotificationTypeId, e.NotificationTopicId});
+                        j.HasData(StaticPortalData.NotificationTypeAssignedTopics);
+                    });
+        });
+        
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(x => x.DueDate)
+                .IsRequired(false);
+
+            entity.HasOne(d => d.Receiver)
+                .WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.ReceiverUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Creator)
+                .WithMany(p => p.CreatedNotifications)
+                .HasForeignKey(d => d.CreatorUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.NotificationType)
+                .WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.NotificationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
 

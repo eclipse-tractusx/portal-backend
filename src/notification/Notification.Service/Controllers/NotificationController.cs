@@ -25,8 +25,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
 
@@ -68,8 +68,8 @@ public class NotificationController : ControllerBase
     public async Task<CreatedAtRouteResult> CreateNotification([FromQuery] Guid companyUserId,
         [FromBody] NotificationCreationData data)
     {
-        var notificationDetailData = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetNotification), new { notificationId = notificationDetailData.Id }, notificationDetailData);
+        var notificationId = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetNotification), new { notificationId }, notificationId);
     }
 
     /// <summary>

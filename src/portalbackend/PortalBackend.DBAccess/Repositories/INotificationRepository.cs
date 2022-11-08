@@ -81,5 +81,5 @@ public interface INotificationRepository
     /// </summary>
     /// <param name="iamUserId">id of the iam user</param>
     /// <returns>Returns the notification count details</returns>
-    Task<Dictionary<(bool IsRead, NotificationTopicId NotificationTopicId), int>> GetCountDetailsForUserAsync(string iamUserId);
+    IAsyncEnumerable<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId);
 }

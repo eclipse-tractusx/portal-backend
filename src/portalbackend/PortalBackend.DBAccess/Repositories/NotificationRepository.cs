@@ -23,7 +23,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -46,7 +45,7 @@ public class NotificationRepository : INotificationRepository
         bool isRead, Action<Notification>? setOptionalParameter = null)
     {
         var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,
-            notificationTypeId, notificationTypeId.GetNotificationTopic(), isRead);
+            notificationTypeId, isRead);
         setOptionalParameter?.Invoke(notification);
 
         return _dbContext.Add(notification).Entity;
@@ -54,13 +53,13 @@ public class NotificationRepository : INotificationRepository
 
     public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null)
     {
-        var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default, default)).Entity;
+        var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
         setOptionalParameter?.Invoke(notification);
         return notification;
     }
 
     public Notification DeleteNotification(Guid notificationId) =>
-        _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default, default)).Entity;
+        _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
     public IQueryable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId) =>
@@ -74,7 +73,7 @@ public class NotificationRepository : INotificationRepository
                 notification.Id,
                 notification.DateCreated,
                 notification.NotificationTypeId,
-                notification.NotificationTopicId,
+                notification.NotificationType!.NotificationTopics.Single().Id,
                 notification.IsRead,
                 notification.Content,
                 notification.DueDate))
@@ -91,7 +90,7 @@ public class NotificationRepository : INotificationRepository
                     notification.Id,
                     notification.DateCreated,
                     notification.NotificationTypeId,
-                    notification.NotificationTopicId,
+                    notification.NotificationType!.NotificationTopics.Single().Id,
                     notification.IsRead,
                     notification.Content,
                     notification.DueDate)))
@@ -109,12 +108,13 @@ public class NotificationRepository : INotificationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<Dictionary<(bool, NotificationTopicId), int>> GetCountDetailsForUserAsync(string iamUserId) => _dbContext.Notifications
+    public IAsyncEnumerable<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId) =>
+        _dbContext.Notifications
             .AsNoTracking()
             .Where(not => not.Receiver!.IamUser!.UserEntityId == iamUserId)
-            .GroupBy(not => new {not.IsRead, not.NotificationTopicId})
-            .Select(not => new { Key = new ValueTuple<bool, NotificationTopicId>(not.Key.IsRead, not.Key.NotificationTopicId), Count = not.Count()})
-            .ToDictionaryAsync(x => x.Key, x => x.Count);
+            .GroupBy(not => new { not.IsRead, NotificationTopicId = not.NotificationType!.NotificationTopics.Single().Id },
+                (key, element) => new ValueTuple<bool,NotificationTopicId,int>(key.IsRead, key.NotificationTopicId, element.Count()))
+            .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndIamUserIdAsync(Guid notificationId, string iamUserId) =>

@@ -147,7 +147,7 @@ public class OfferSubscriptionServiceTests
                 var isRead = x.Arguments.Get<bool>("isRead");
                 var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
 
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, NotificationTopicId.INFO, isRead);
+                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
                 setOptionalParameter?.Invoke(notification);
                 notifications.Add(notification);
             });        
@@ -178,7 +178,7 @@ public class OfferSubscriptionServiceTests
                 var isRead = x.Arguments.Get<bool>("isRead");
                 var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
 
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, NotificationTopicId.INFO, isRead);
+                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
                 setOptionalParameter?.Invoke(notification);
                 notifications.Add(notification);
             });

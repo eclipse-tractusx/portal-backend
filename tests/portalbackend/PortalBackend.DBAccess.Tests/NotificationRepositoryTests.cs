@@ -20,15 +20,14 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -52,58 +51,6 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetNotificationTopic
-
-    [Theory]
-    [InlineData(NotificationTypeId.INFO, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.TECHNICAL_USER_CREATION, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.CONNECTOR_REGISTERED, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.WELCOME_SERVICE_PROVIDER, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.WELCOME, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.WELCOME_USE_CASES, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.WELCOME_APP_MARKETPLACE, NotificationTopicId.INFO)]
-    [InlineData(NotificationTypeId.ACTION, NotificationTopicId.ACTION)]
-    [InlineData(NotificationTypeId.APP_SUBSCRIPTION_REQUEST, NotificationTopicId.ACTION)]
-    [InlineData(NotificationTypeId.SERVICE_REQUEST, NotificationTopicId.ACTION)]
-    [InlineData(NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, NotificationTopicId.OFFER)]
-    [InlineData(NotificationTypeId.APP_RELEASE_REQUEST, NotificationTopicId.OFFER)]
-    [InlineData(NotificationTypeId.SERVICE_ACTIVATION, NotificationTopicId.OFFER)]
-    public void GetNotificationTopicId_GetsCorrectTopicId(NotificationTypeId type, NotificationTopicId expectedResult)
-    {
-        // Arrange
-        
-        // Act
-        var topic = type.GetNotificationTopic();
-        
-        // Assert
-        topic.Should().Be(expectedResult);
-    }
-    
-    [Fact]
-    public void GetNotificationTopicId_WithInvalidNotificationType_ThrowsArgumentOutOfRangeException()
-    {
-        // Arrange
-        var notificationTypeId = (NotificationTypeId)0;
-
-        // Act
-        try
-        {
-            notificationTypeId.GetNotificationTopic();
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            // Assert
-            ex.ParamName.Should().Be("typeId");
-            return;
-        }
-
-        // Should never been hit.
-        true.Should().BeFalse();
-    }
-
-    #endregion
-    
     #region Create Notification
 
     [Fact]
@@ -317,7 +264,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetCountDetailsForUserAsync(IamUserId)
+            .GetCountDetailsForUserAsync(IamUserId).ToListAsync()
             .ConfigureAwait(false);
 
         // Assert

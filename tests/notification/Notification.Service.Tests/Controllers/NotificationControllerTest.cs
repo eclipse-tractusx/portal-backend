@@ -26,9 +26,9 @@ using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Xunit;
 
@@ -58,7 +58,7 @@ public class ServiceControllerTest
         var creationData = _fixture.Create<NotificationCreationData>();
         var companyUserId = Guid.NewGuid();
         A.CallTo(() => _logic.CreateNotificationAsync(IamUserId, A<NotificationCreationData>._, A<Guid>._))
-            .ReturnsLazily(() => data);
+            .ReturnsLazily(() => data.Id);
 
         //Act
         var result = await this._controller.CreateNotification(companyUserId, creationData).ConfigureAwait(false);
@@ -66,7 +66,7 @@ public class ServiceControllerTest
         //Assert
         A.CallTo(() => _logic.CreateNotificationAsync(IamUserId, creationData, companyUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
-        result.Value.Should().Be(data);
+        result.Value.Should().Be(data.Id);
     }
 
     [Fact]
