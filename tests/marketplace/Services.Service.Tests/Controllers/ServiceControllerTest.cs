@@ -91,7 +91,7 @@ public class ServiceControllerTest
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, IamUserId, _accessToken))
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -99,11 +99,30 @@ public class ServiceControllerTest
         var result = await this._controller.AddServiceSubscription(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }
         
+    [Fact]
+    public async Task AddServiceSubscriptionWithConsent_ReturnsExpectedId()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
+            .Returns(offerSubscriptionId);
+
+        //Act
+        var serviceId = Guid.NewGuid();
+        var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CreatedAtRouteResult>(result);
+        result.Value.Should().Be(offerSubscriptionId);
+    }
+
     [Fact]
     public async Task GetServiceDetails_ReturnsExpectedId()
     {
@@ -146,18 +165,35 @@ public class ServiceControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var consentId = Guid.NewGuid();
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<ServiceAgreementConsentData>._, A<string>._))
+        var offerAgreementConsentData = new OfferAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
+        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<OfferAgreementConsentData>._, A<string>._))
             .ReturnsLazily(() => consentId);
 
         //Act
-        var result = await this._controller.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData).ConfigureAwait(false);
+        var result = await this._controller.CreateServiceAgreementConsent(serviceId, offerAgreementConsentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, serviceAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         Assert.IsType<Guid>(result.Value);
         result.Value.Should().Be(consentId);
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateServiceAgreementConsents_ReturnsExpectedId()
+    {
+        //Arrange
+        var serviceId = Guid.NewGuid();
+        var offerAgreementConsentData = _fixture.Build<OfferAgreementConsentData>().With(x => x.ConsentStatusId, ConsentStatusId.ACTIVE).CreateMany(2);
+        A.CallTo(() => _logic.CreateOrUpdateServiceAgreementConsentAsync(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.CreateOrUpdateServiceAgreementConsents(serviceId, offerAgreementConsentData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOrUpdateServiceAgreementConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 
     [Fact]
