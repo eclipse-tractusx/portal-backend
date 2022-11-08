@@ -1087,7 +1087,7 @@ public class UserBusinessLogicTests
         var iamUserId = _fixture.Create<string>();
         var companyUsers = new AsyncEnumerableStub<CompanyUser>(_fixture.CreateMany<CompanyUser>(5));
 
-        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersUntrackedAsync(A<Guid>._, A<string>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<string?>._, A<string?>._, A<string?>._, A<string?>._, A<bool?>._))
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersUntrackedAsync(A<Guid>._, A<string>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<CompanyUserFilter>._))
             .ReturnsLazily(() => companyUsers.AsQueryable());
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
@@ -1096,14 +1096,9 @@ public class UserBusinessLogicTests
         var results = await sut.GetOwnCompanyAppUsersAsync(
             appId,
             iamUserId, 
-            new CompanyAppUsersFilter(
-                0, 
-                10,
-                null,
-                null,
-                null,
-                null,
-                null)).ConfigureAwait(false);
+            0,
+            10,
+            new CompanyUserFilter(null, null, null, null, null)).ConfigureAwait(false);
         
         // Assert
         results.Should().NotBeNull();

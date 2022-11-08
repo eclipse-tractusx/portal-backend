@@ -18,13 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.RegularExpressions;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Microsoft.EntityFrameworkCore;
-using PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.RegularExpressions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -402,13 +401,11 @@ public class UserRepository : IUserRepository
         Guid appId,
         string iamUserId,
         IEnumerable<OfferSubscriptionStatusId> statusIds,
-        string? firstName = null,
-        string? lastName = null,
-        string? email = null,
-        string? roleName = null,
-        bool? hasRole = null)
+        CompanyUserFilter filter)
     {
         var regex = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace);
+
+        var (firstName, lastName, email, roleName, hasRole) = filter;
 
         firstName = firstName == null ? null : regex.Replace(firstName, @"\"); 
         lastName = lastName == null ? null : regex.Replace(lastName!, @"\"); 
