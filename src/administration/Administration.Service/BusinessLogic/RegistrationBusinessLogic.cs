@@ -153,7 +153,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         Guid? documentId = null;
         try
         {
-            await _custodianService.CreateWallet(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
+            await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
 
             documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         }

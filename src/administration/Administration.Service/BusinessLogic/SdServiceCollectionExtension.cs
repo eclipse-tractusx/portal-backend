@@ -18,17 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
-/// <summary>
-/// Data Object for the App Release Details
-/// </summary>
-/// <param name="name"></param>
-/// <param name="thumbnailUrl"></param>
-/// <param name="salesManagerId"></param>
-/// <param name="providerCompanyId"></param>
-/// <param name="companyName"></param>
-/// <param name="descriptionLongIsNullOrEmpty"></param>
-/// <param name="descriptionShortIsNullOrEmpty"></param>
-/// <returns></returns>
-public record OfferReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, string companyName, bool descriptionLongIsNullOrEmpty, bool descriptionShortIsNullOrEmpty);
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+
+public static class SdServiceCollectionExtension
+{
+    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<SdFactoryService>>();
+
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<SdFactorySettings>>();
+        services.AddHttpClient(nameof(SdFactoryService), c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.SdFactoryUrl);
+        }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
+        services.AddTransient<ISdFactoryService, SdFactoryService>();
+
+        return services;
+    }
+}

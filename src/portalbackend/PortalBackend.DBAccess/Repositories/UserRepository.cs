@@ -120,7 +120,8 @@ public class UserRepository : IUserRepository
         string? userEntityId = null,
         string? firstName = null,
         string? lastName = null,
-        string? email = null)
+        string? email = null,
+        IEnumerable<CompanyUserStatusId>? statusIds = null)
         {
         char[] escapeChar = { '%', '_', '[', ']', '^' };
         return _dbContext.CompanyUsers.AsNoTracking()
@@ -131,7 +132,8 @@ public class UserRepository : IUserRepository
                 (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
                 (firstName == null || companyUser.Firstname == firstName) &&
                 (lastName == null || companyUser.Lastname == lastName) &&
-                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%")));
+                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%")) &&
+                (statusIds == null || statusIds.Contains(companyUser.CompanyUserStatusId)));
         }
 
     public Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId) =>
@@ -457,4 +459,13 @@ public class UserRepository : IUserRepository
                 companyUser.Invitations.Select(invitation=>invitation.Id)
             ))
             .AsAsyncEnumerable();
+    
+    /// <inheritdoc />
+    public Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId) =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.Id == companyUserId)
+            .Select(companyUser=>new ValueTuple<IEnumerable<Guid>,bool>(
+                companyUser.CompanyUserAssignedRoles.Where(assignedRole => roleIds.Contains(assignedRole.UserRoleId)).Select(assignedRole => assignedRole.UserRoleId),
+                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
 }
