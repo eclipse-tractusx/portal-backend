@@ -30,7 +30,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Notification.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
@@ -90,7 +90,7 @@ public class NotificationBusinessLogicTests
                 var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
 
                 var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
-                    DateTimeOffset.UtcNow, notificationTypeId, NotificationTopicId.INFO, isRead);
+                    DateTimeOffset.UtcNow, notificationTypeId, isRead);
                 action?.Invoke(notification);
                 notifications.Add(notification);
             });
@@ -109,7 +109,7 @@ public class NotificationBusinessLogicTests
             .ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
+        result.Should().BeEmpty();
         notifications.Should().HaveCount(1);
         var notification = notifications.Single();
         notification.Should().NotBeNull();
@@ -300,16 +300,16 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationCountDetailsAsync()
     {
         // Arrange
-        var dict = new Dictionary<(bool IsRead, NotificationTopicId NotificationTopicId), int>
+        var data = new AsyncEnumerableStub<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)>(new List<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)>
         {
-            { (true, NotificationTopicId.INFO), 2},
-            { (false, NotificationTopicId.INFO), 3},
-            { (true, NotificationTopicId.OFFER), 6},
-            { (false, NotificationTopicId.OFFER), 4},
-            { (true, NotificationTopicId.ACTION), 1},
-            { (false, NotificationTopicId.ACTION), 5},
-        };
-        A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(_iamUser.UserEntityId)).ReturnsLazily(() => dict);
+            new (true, NotificationTopicId.INFO, 2),
+            new (false, NotificationTopicId.INFO, 3),
+            new (true, NotificationTopicId.OFFER, 6),
+            new (false, NotificationTopicId.OFFER, 4),
+            new (true, NotificationTopicId.ACTION, 1),
+            new (false, NotificationTopicId.ACTION, 5),
+        });
+        A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(_iamUser.UserEntityId)).Returns(data.AsAsyncEnumerable());
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
@@ -336,7 +336,7 @@ public class NotificationBusinessLogicTests
     public async Task SetNotificationStatus_WithMatchingId_ReturnsDetailData(bool isRead)
     {
         // Arrange
-        var notification = new PortalBackend.PortalEntities.Entities.Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, NotificationTopicId.INFO, !isRead);
+        var notification = new PortalBackend.PortalEntities.Entities.Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, !isRead);
         A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
             .Invokes(x =>
             {

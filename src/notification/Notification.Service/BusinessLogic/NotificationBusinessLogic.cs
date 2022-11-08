@@ -20,9 +20,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -48,7 +48,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<NotificationDetailData> CreateNotificationAsync(string iamUserId,
+    public async Task<Guid> CreateNotificationAsync(string iamUserId,
         NotificationCreationData creationData, Guid receiverId)
     {
         var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(iamUserId, receiverId).ToListAsync().ConfigureAwait(false);
@@ -71,7 +71,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return new NotificationDetailData(notification.Id, notification.DateCreated, notificationTypeId, notification.NotificationTopicId, notificationStatusId, content, dueDate);
+        return notification.Id;
     }
 
     /// <inheritdoc />
@@ -130,14 +130,14 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync(string iamUserId)
     {
-        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(iamUserId).ConfigureAwait(false);
-        var unreadNotifications = details.Where(x => !x.Key.IsRead);
+        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(iamUserId).ToListAsync().ConfigureAwait(false);
+        var unreadNotifications = details.Where(x => !x.IsRead);
         return new NotificationCountDetails(
-            details.Where(x => x.Key.IsRead).Sum(x => x.Value),
-            unreadNotifications.Sum(x => x.Value),
-            unreadNotifications.Where(x => x.Key.NotificationTopicId == NotificationTopicId.INFO).Sum(x => x.Value),
-            unreadNotifications.Where(x => x.Key.NotificationTopicId == NotificationTopicId.OFFER).Sum(x => x.Value),
-            unreadNotifications.Where(x => x.Key.NotificationTopicId == NotificationTopicId.ACTION).Sum(x => x.Value));
+            details.Where(x => x.IsRead).Sum(x => x.Count),
+            unreadNotifications.Sum(x => x.Count),
+            unreadNotifications.SingleOrDefault(x => x.NotificationTopicId == NotificationTopicId.INFO).Count,
+            unreadNotifications.SingleOrDefault(x => x.NotificationTopicId == NotificationTopicId.OFFER).Count,
+            unreadNotifications.SingleOrDefault(x => x.NotificationTopicId == NotificationTopicId.ACTION).Count);
     }
 
     /// <inheritdoc />

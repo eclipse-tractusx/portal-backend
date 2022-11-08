@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -36,7 +36,7 @@ public interface INotificationBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="creationData">The data for the creation of the notification.</param>
     /// <param name="receiverId">Id of the company user the notification is intended for.</param>
-    Task<NotificationDetailData> CreateNotificationAsync(string iamUserId, NotificationCreationData creationData,
+    Task<Guid> CreateNotificationAsync(string iamUserId, NotificationCreationData creationData,
         Guid receiverId);
 
     /// <summary>

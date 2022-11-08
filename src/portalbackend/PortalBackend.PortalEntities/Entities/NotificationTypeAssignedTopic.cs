@@ -19,49 +19,51 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 /// <summary>
-/// Topic of a notification
+/// Value table for app subscription statuses.
 /// </summary>
-public class NotificationTopic
+public class NotificationTypeAssignedTopic
 {
     /// <summary>
-    /// Internal constructor, only for EF
+    /// Constructor.
     /// </summary>
-    private NotificationTopic()
+    private NotificationTypeAssignedTopic()
     {
-        Label = null!;
-        NotificationTypes = new HashSet<NotificationType>();
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="NotificationTopicId"/> and initializes the id and label 
+    /// Constructor.
     /// </summary>
-    /// <param name="notificationTopicId">The notification topic id</param>
-    public NotificationTopic(NotificationTopicId notificationTopicId) : this()
+    /// <param name="notificationTypeId">Id of the notification type.</param>
+    /// <param name="notificationTopicId">Id of the notification topic.</param>
+    public NotificationTypeAssignedTopic(NotificationTypeId notificationTypeId, NotificationTopicId notificationTopicId) : this()
     {
-        Id = notificationTopicId;
-        Label = notificationTopicId.ToString();
+        NotificationTypeId = notificationTypeId;
+        NotificationTopicId = notificationTopicId;
     }
 
     /// <summary>
-    /// Id of the type
+    /// Id of the notification type.
     /// </summary>
-    public NotificationTopicId Id { get; private set; }
+    public NotificationTypeId NotificationTypeId { get; private set; }
 
     /// <summary>
-    /// The type as string 
+    /// Id of the notification topic.
     /// </summary>
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    public NotificationTopicId NotificationTopicId { get; private set; }
 
     // Navigation properties
 
     /// <summary>
-    /// Mapped notification types
+    /// All AppSubscriptions currently with this status.
     /// </summary>
-    public virtual ICollection<NotificationType> NotificationTypes { get; private set; }
+    public virtual NotificationType? NotificationType { get; private set; }
+    
+    /// <summary>
+    /// All AppSubscriptions currently with this status.
+    /// </summary>
+    public virtual NotificationTopic? NotificationTopic { get; private set; }
 }
