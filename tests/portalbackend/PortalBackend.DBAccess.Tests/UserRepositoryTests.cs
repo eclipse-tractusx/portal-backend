@@ -25,6 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -121,7 +122,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, ValidIamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, ValidIamUserId, Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1)).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -135,7 +136,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, Guid.NewGuid().ToString()).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, Guid.NewGuid().ToString(), Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1)).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().BeEmpty();

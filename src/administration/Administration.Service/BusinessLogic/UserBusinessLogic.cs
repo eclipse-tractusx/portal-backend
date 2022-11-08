@@ -511,10 +511,11 @@ public class UserBusinessLogic : IUserBusinessLogic
         string iamUserId,
         CompanyAppUsersFilter filter)
     {
-        var (page, size, firstName, lastName, email, roleName, hasRole) = filter; 
+        var (page, size, firstName, lastName, email, roleName, hasRole) = filter;
         var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
-            appId, 
+            appId,
             iamUserId,
+            Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1),
             firstName,
             lastName,
             email,
@@ -559,7 +560,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (userWithBpn.UserEntityId == null)
         {
-            throw new ArgumentException($"user {companyUserId} is not associated with a user in keycloak");
+            throw new ConflictException($"user {companyUserId} is not associated with a user in keycloak");
         }
 
         if (!userWithBpn.IsValidUser)
