@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -20,8 +20,4 @@
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyInformationData(
-    Guid CompanyId,
-    string OrganizationName,
-    string Country,
-    string? BusinessPartnerNumber);
+public record CompanyUserFilter(string? firstName, string? lastName, string? email, string? roleName, bool? hasRole);

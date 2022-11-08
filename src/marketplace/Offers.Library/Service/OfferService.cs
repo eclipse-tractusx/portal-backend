@@ -275,6 +275,7 @@ public class OfferService : IOfferService
         {
             var mailParams = new Dictionary<string, string>
             {
+                { "offerRequesterName", offerDetails.RequesterFirstname ?? "User" },
                 { "offerName", offerDetails.OfferName },
                 { "url", basePortalAddress },
             };

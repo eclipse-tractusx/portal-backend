@@ -18,13 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.RegularExpressions;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.EntityFrameworkCore;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Microsoft.EntityFrameworkCore;
-using PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.RegularExpressions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -401,12 +400,12 @@ public class UserRepository : IUserRepository
     public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
         Guid appId,
         string iamUserId,
-        string? firstName = null,
-        string? lastName = null,
-        string? email = null,
-        string? roleName = null)
+        IEnumerable<OfferSubscriptionStatusId> statusIds,
+        CompanyUserFilter filter)
     {
         var regex = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace);
+
+        var (firstName, lastName, email, roleName, hasRole) = filter;
 
         firstName = firstName == null ? null : regex.Replace(firstName, @"\"); 
         lastName = lastName == null ? null : regex.Replace(lastName!, @"\"); 
@@ -414,14 +413,16 @@ public class UserRepository : IUserRepository
         roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
         return _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) &&
-                                  companyUser.IamUser!.UserEntityId == iamUserId)
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId && 
+                                  companyUser.Company!.OfferSubscriptions.Any(subscription => subscription.OfferId == appId && statusIds.Contains(subscription.OfferSubscriptionStatusId)))
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
             .Where(companyUser => 
                 (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&
                 (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName}%")) &&
                 (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
-                (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))));
+                (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))) &&
+                (!hasRole.HasValue || !hasRole.Value || companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId)) &&
+                (!hasRole.HasValue || hasRole.Value || companyUser.UserRoles.All(userRole => userRole.Offer!.Id != appId)));
     }
 
     /// <inheritdoc />
