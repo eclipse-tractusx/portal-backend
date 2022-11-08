@@ -173,7 +173,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         if (!_settings.ContentTypeSettings.Contains(document.ContentType))
         {
-            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType {_settings.ContentTypeSettings} are allowed.");
+            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", _settings.ContentTypeSettings)} are allowed.");
         }
         return UploadAppDoc(appId, documentTypeId, document, iamUserId, cancellationToken);
     }
