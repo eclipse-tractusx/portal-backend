@@ -401,6 +401,7 @@ public class UserRepository : IUserRepository
     public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
         Guid appId,
         string iamUserId,
+        IEnumerable<OfferSubscriptionStatusId> statusIds,
         string? firstName = null,
         string? lastName = null,
         string? email = null,
@@ -415,7 +416,8 @@ public class UserRepository : IUserRepository
         roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
         return _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId && 
+                                  companyUser.Company!.OfferSubscriptions.Any(subscription => subscription.OfferId == appId && statusIds.Contains(subscription.OfferSubscriptionStatusId)))
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
             .Where(companyUser => 
                 (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&

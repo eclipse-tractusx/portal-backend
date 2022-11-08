@@ -1087,7 +1087,7 @@ public class UserBusinessLogicTests
         var iamUserId = _fixture.Create<string>();
         var companyUsers = new AsyncEnumerableStub<CompanyUser>(_fixture.CreateMany<CompanyUser>(5));
 
-        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersUntrackedAsync(A<Guid>._, A<string>._, A<string?>._, A<string?>._, A<string?>._, A<string?>._, A<bool?>._))
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersUntrackedAsync(A<Guid>._, A<string>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<string?>._, A<string?>._, A<string?>._, A<string?>._, A<bool?>._))
             .ReturnsLazily(() => companyUsers.AsQueryable());
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
@@ -1170,7 +1170,7 @@ public class UserBusinessLogicTests
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
         
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Contain("is not associated with a user in keycloak");
     }
     

@@ -102,7 +102,7 @@ public interface IUserRepository
     
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 
-    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null, bool? hasRole = null);
+    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, IEnumerable<OfferSubscriptionStatusId> statusIds, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null, bool? hasRole = null);
     
     /// <summary>
     /// User account data for deletion of own userId
