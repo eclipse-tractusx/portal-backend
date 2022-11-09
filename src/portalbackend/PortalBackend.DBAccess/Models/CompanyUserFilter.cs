@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
+ * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
-{
-    public interface IBPNAccess
-    {
-        Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token);
-    }
-}
+public record CompanyUserFilter(string? firstName, string? lastName, string? email, string? roleName, bool? hasRole);

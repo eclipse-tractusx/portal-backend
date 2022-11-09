@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
@@ -25,14 +27,11 @@ using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
@@ -236,7 +235,8 @@ public class UserBusinessLogic : IUserBusinessLogic
             userEntityId,
             firstName,
             lastName,
-            email
+            email,
+            _settings.CompanyUserStatusIds
         );
         return Pagination.CreateResponseAsync<CompanyUserData>(
             page,
@@ -248,16 +248,16 @@ public class UserBusinessLogic : IUserBusinessLogic
                 .Skip(skip)
                 .Take(take)
                 .Select(companyUser => new CompanyUserData(
-                companyUser.IamUser!.UserEntityId,
-                companyUser.Id,
-                companyUser.CompanyUserStatusId,
-                companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
-            {
-                FirstName = companyUser.Firstname,
-                LastName = companyUser.Lastname,
-                Email = companyUser.Email
-            })
-            .AsAsyncEnumerable()));
+                    companyUser.IamUser!.UserEntityId,
+                    companyUser.Id,
+                    companyUser.CompanyUserStatusId,
+                    companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                    {
+                        FirstName = companyUser.Firstname,
+                        LastName = companyUser.Lastname,
+                        Email = companyUser.Email
+                    })
+                .AsAsyncEnumerable()));
     }
 
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
@@ -507,21 +507,17 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
         Guid appId, 
-        string iamUserId, 
-        int page, 
-        int size, 
-        string? firstName = null, 
-        string? lastName = null, 
-        string? email = null,
-        string? roleName = null)
+        string iamUserId,
+        int page,
+        int size,
+        CompanyUserFilter filter)
     {
         var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
-            appId, 
+            appId,
             iamUserId,
-            firstName,
-            lastName,
-            email,
-            roleName);
+            Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1),
+            filter
+        );
 
         return Pagination.CreateResponseAsync(
             page,
@@ -561,7 +557,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         if (userWithBpn.UserEntityId == null)
         {
-            throw new Exception($"user {companyUserId} is not associated with a user in keycloak");
+            throw new ConflictException($"user {companyUserId} is not associated with a user in keycloak");
         }
 
         if (!userWithBpn.IsValidUser)
