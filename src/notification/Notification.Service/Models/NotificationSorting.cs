@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,24 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 
 /// <summary>
-/// Detail data of a notification
+/// Possible sorting options for the notification pagination
 /// </summary>
-/// <param name="Id">The Id of the notification</param>
-/// <param name="Created">Date of the notification creation</param>
-/// <param name="TypeId">The notifications type id</param>
-/// <param name="IsRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-/// <param name="Content">The notifications content</param>
-/// <param name="DueDate">Optional: The notifications dueDate</param>
-public record NotificationDetailData(
-    Guid Id,
-    DateTimeOffset Created,
-    NotificationTypeId TypeId,
-    NotificationTopicId NotificationTopic,
-    bool IsRead,
-    string? Content,
-    DateTimeOffset? DueDate);
+public enum NotificationSorting
+{
+    /// <summary>
+    /// Ascending by date
+    /// </summary>
+    DateAsc = 1,
+    
+    /// <summary>
+    /// Descending by date
+    /// </summary>
+    DateDesc = 2,
+    
+    /// <summary>
+    /// Ascending by the read status
+    /// </summary>
+    ReadStatusAsc = 3,
+    
+    /// <summary>
+    /// Descending by read status
+    /// </summary>
+    ReadStatusDesc = 4,
+}

@@ -23,19 +23,11 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Detail data of a notification
+/// Detail count data of the notifications for a specific user
 /// </summary>
-/// <param name="Id">The Id of the notification</param>
-/// <param name="Created">Date of the notification creation</param>
-/// <param name="TypeId">The notifications type id</param>
-/// <param name="IsRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-/// <param name="Content">The notifications content</param>
-/// <param name="DueDate">Optional: The notifications dueDate</param>
-public record NotificationDetailData(
-    Guid Id,
-    DateTimeOffset Created,
-    NotificationTypeId TypeId,
-    NotificationTopicId NotificationTopic,
-    bool IsRead,
-    string? Content,
-    DateTimeOffset? DueDate);
+/// <param name="Read">Count of all read messages</param>
+/// <param name="Unread">Count of all unread messages</param>
+/// <param name="InfoUnread">Count of all unread messages from type info</param>
+/// <param name="OfferUnread">Count of all unread messages from type offer</param>
+/// <param name="ActionRequired">Count of all unread messages from type action</param>
+public record NotificationCountDetails(int Read, int Unread, int InfoUnread, int OfferUnread, int ActionRequired);

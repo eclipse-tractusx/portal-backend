@@ -18,24 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 /// <summary>
-/// Detail data of a notification
+/// Possible topic of a notification
 /// </summary>
-/// <param name="Id">The Id of the notification</param>
-/// <param name="Created">Date of the notification creation</param>
-/// <param name="TypeId">The notifications type id</param>
-/// <param name="IsRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-/// <param name="Content">The notifications content</param>
-/// <param name="DueDate">Optional: The notifications dueDate</param>
-public record NotificationDetailData(
-    Guid Id,
-    DateTimeOffset Created,
-    NotificationTypeId TypeId,
-    NotificationTopicId NotificationTopic,
-    bool IsRead,
-    string? Content,
-    DateTimeOffset? DueDate);
+public enum NotificationTopicId
+{
+    /// <summary>
+    /// Notification is just an information for the user
+    /// </summary>
+    INFO = 1,
+    
+    /// <summary>
+    /// Notification that requires an action
+    /// </summary>
+    ACTION = 2,
+
+    /// <summary>
+    /// Offer related notification
+    /// </summary>
+    OFFER = 3,
+}
