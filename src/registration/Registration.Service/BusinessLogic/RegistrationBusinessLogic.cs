@@ -34,7 +34,6 @@ using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using CompanyApplicationUserData = Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models.CompanyApplicationUserData;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -613,19 +612,23 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId)
     {
+        if (documentId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"documentId must not be empty");
+        }
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId, _settings.ApplicationStatusIds).ConfigureAwait(false);
-        if (details.DocumentId == Guid.Empty)
+        if (details == default)
         {
             throw new NotFoundException("Document does not exist.");
         }
         if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
         {
-            throw new ArgumentException($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+            throw new ConflictException($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
         }
         if (details.IsApplicationNotSubmittedConfirmedDeclined)
         {
-            throw new ArgumentException("Document deletion is not allowed. Application is already closed.");
+            throw new ConflictException("Document deletion is not allowed. Application is already closed.");
         }
         if (!details.IsSameApplicationUser)
         {
@@ -633,10 +636,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (details.DocumentStatusId != DocumentStatusId.PENDING)
         {
-            throw new ArgumentException("Document deletion is not allowed. The document is locked.");
+            throw new ConflictException("Document deletion is not allowed. The document is locked.");
         }
 
-        documentRepository.Remove(new Document(details.DocumentId));
+        documentRepository.RemoveDocument(details.DocumentId);
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
