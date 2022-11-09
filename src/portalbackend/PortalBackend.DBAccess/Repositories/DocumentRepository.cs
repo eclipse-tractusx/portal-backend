@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -89,8 +89,8 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void Remove(Document document) => 
-        _dbContext.Documents.Remove(document);
+    public void RemoveDocument(Guid documentId) => 
+        _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default));
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
@@ -101,12 +101,15 @@ public class DocumentRepository : IDocumentRepository
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
-            .Select(document => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
-                document.Id,
-                document.DocumentStatusId,
-                document.CompanyUser!.Company!.CompanyApplications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
-                document.DocumentTypeId,
-                document.CompanyUser!.Company!.CompanyApplications.Any(companyApplication => !applicationStatusIds.Contains(companyApplication.ApplicationStatusId))
-                ))
+            .Select(document => new {
+                Document = document,
+                Applications = document.CompanyUser!.Company!.CompanyApplications
+            })
+            .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
+                x.Document.Id,
+                x.Document.DocumentStatusId,
+                x.Applications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
+                x.Document.DocumentTypeId,
+                x.Applications.Any(companyApplication => !applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
             .SingleOrDefaultAsync();
 }

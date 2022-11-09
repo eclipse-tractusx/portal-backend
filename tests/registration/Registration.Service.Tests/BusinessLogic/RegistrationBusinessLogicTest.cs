@@ -456,7 +456,7 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => (PortalBackend.DBAccess.Models.CompanyApplicationUserData?) null);
+            .ReturnsLazily(() => (CompanyApplicationUserData?) null);
         
         // Act
         async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, _fixture.Create<string>()).ConfigureAwait(false);
@@ -480,7 +480,7 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => new PortalBackend.DBAccess.Models.CompanyApplicationUserData(_fixture.Create<CompanyApplication>()) );
+            .ReturnsLazily(() => new CompanyApplicationUserData(_fixture.Create<CompanyApplication>()) );
         
         // Act
         async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY, _fixture.Create<string>()).ConfigureAwait(false);
@@ -507,7 +507,7 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => new PortalBackend.DBAccess.Models.CompanyApplicationUserData(companyApplication)
+            .ReturnsLazily(() => new CompanyApplicationUserData(companyApplication)
             {
                 CompanyUserId = _fixture.Create<Guid>()
             });
@@ -537,7 +537,7 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserDataAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => new PortalBackend.DBAccess.Models.CompanyApplicationUserData(companyApplication)
+            .ReturnsLazily(() => new CompanyApplicationUserData(companyApplication)
             {
                 CompanyUserId = _fixture.Create<Guid>()
             });

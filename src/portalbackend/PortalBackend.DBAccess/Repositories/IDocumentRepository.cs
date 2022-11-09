@@ -68,8 +68,8 @@ public interface IDocumentRepository
     /// <summary>
     ///Deleting document record and document file from the portal db/document storage location
     /// </summary>
-    /// <param name="document">The document that should be removed</param>
-    void Remove(Document document);
+    /// <param name="documentId">The documentId that should be removed</param>
+    void RemoveDocument(Guid documentId);
     
     /// <summary>
     /// Gets the documents and User by the document id
