@@ -718,7 +718,7 @@ public class RegistrationBusinessLogicTest
     {
         SetupFakesForInvitation();
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -742,7 +742,7 @@ public class RegistrationBusinessLogicTest
     {
         SetupFakesForInvitation();
 
-        var userCreationInfo = _fixture.Build<UserCreationInfo>()
+        var userCreationInfo = _fixture.Build<UserCreationInfoWithMessage>()
             .With(x => x.eMail, "")
             .Create();
 
@@ -771,7 +771,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(A<string>._,A<string>._)).Returns(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -804,7 +804,7 @@ public class RegistrationBusinessLogicTest
                 CompanyUserId: Guid.NewGuid() // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
             ));
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
 
         var sut = new RegistrationBusinessLogic(
             _options,
@@ -835,7 +835,7 @@ public class RegistrationBusinessLogicTest
                 .With(x => x.Error, _error)
                 .Create());
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
 
         var sut = new RegistrationBusinessLogic(
             _options,
