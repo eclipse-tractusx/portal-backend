@@ -91,9 +91,14 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
                 $"CompanyUserId {companyUserId} is not associated with the same company as adminUserId {iamUserId}");
         }
 
-        if (string.IsNullOrWhiteSpace(result.IamClientId))
+        if (!result.IsValidOffer)
         {
             throw new NotFoundException($"offerId {offerId} not found for user {companyUserId}");
+        }
+
+        if (!result.IamClientIds.Any())
+        {
+            throw new ConflictException($"offerId {offerId} is not associated with any keycloak-client");
         }
 
         var distinctRoles = roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToList();
@@ -107,12 +112,12 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
         var rolesToDelete =  existingRoles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles, role => role.CompanyUserRoleText);
 
         var rolesNotAdded = rolesToAdd.Any()
-            ? rolesToAdd.Except(await AddRoles(companyUserId, result.IamClientId, rolesToAdd, result.IamUserId).ConfigureAwait(false))
+            ? rolesToAdd.Except(await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, result.IamUserId).ConfigureAwait(false))
             : Enumerable.Empty<UserRoleModificationData>();
 
         if (rolesToDelete.Any())
         {
-            await DeleteRoles(companyUserId, result.IamClientId, rolesToDelete, iamUserId).ConfigureAwait(false);
+            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, iamUserId).ConfigureAwait(false);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -120,13 +125,10 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
         return rolesNotAdded.Select(x => new UserRoleWithId(x.CompanyUserRoleText, x.CompanyUserRoleId));
     }
 
-    private async Task<IEnumerable<UserRoleModificationData>> AddRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToAdd, string iamUserId)
+    private async Task<IEnumerable<UserRoleModificationData>> AddRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToAdd, string iamUserId)
     {
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
-        {
-            {iamClientId, rolesToAdd.Select(x => x.CompanyUserRoleText)}
-        };
+        var clientRoleNames = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToAdd.Select(x => x.CompanyUserRoleText));
         var assignedRoles = await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, clientRoleNames).SingleAsync().ConfigureAwait(false);
 
         var rolesAdded = rolesToAdd.IntersectBy(assignedRoles.Roles, role => role.CompanyUserRoleText).ToList();
@@ -137,12 +139,9 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
         return rolesAdded;
     }
 
-    private async Task DeleteRoles(Guid companyUserId, string iamClientId, IEnumerable<UserRoleModificationData> rolesToDelete, string iamUserId)
+    private async Task DeleteRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToDelete, string iamUserId)
     {
-        var roleNamesToDelete = new Dictionary<string, IEnumerable<string>>
-        {
-            {iamClientId, rolesToDelete.Select(x => x.CompanyUserRoleText)}
-        };
+        var roleNamesToDelete = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToDelete.Select(x => x.CompanyUserRoleText));
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
             .ConfigureAwait(false);
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
