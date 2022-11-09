@@ -1299,11 +1299,11 @@ public class UserBusinessLogicTests
         var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
         var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser || x == _createdCentralUserId)))
-            .ReturnsLazily(() => new OfferIamUserData(iamClientId, _iamUserId, true));
+            .ReturnsLazily(() => new OfferIamUserData(true, Enumerable.Repeat(iamClientId,1), _iamUserId, true));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser)))
-            .ReturnsLazily(() => new OfferIamUserData(null, _iamUserId, true));
+            .ReturnsLazily(() => new OfferIamUserData(false, Enumerable.Empty<string>(), _iamUserId, true));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Not.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser)))
-            .ReturnsLazily(() => new OfferIamUserData(iamClientId, _iamUserId, false));
+            .ReturnsLazily(() => new OfferIamUserData(true, Enumerable.Repeat(iamClientId,1), _iamUserId, false));
         
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
             .ReturnsLazily(() => new List<UserRoleModificationData>

@@ -365,25 +365,32 @@ public class UserRepository : IUserRepository
     public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new OfferIamUserData( 
-                companyUser.Company!.OfferSubscriptions.SingleOrDefault(subscription => subscription.OfferId == offerId)!.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId, 
-                companyUser.IamUser!.UserEntityId,
-                companyUser.Company.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+            .Select(companyUser => new {
+                User = companyUser,
+                Subscriptions = companyUser.Company!.OfferSubscriptions.Where(subscription => subscription.OfferId == offerId)
+            })
+            .Select(x => new OfferIamUserData( 
+                x.Subscriptions.Any(),
+                x.Subscriptions.Select(subscription => subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId).Distinct(), 
+                x.User.IamUser!.UserEntityId,
+                x.User.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new OfferIamUserData( 
-                companyUser.Company!.CompanyRoles
+            .Select(companyUser => new {
+                User = companyUser,
+                Offers = companyUser.Company!.CompanyRoles
                     .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
-                    .SelectMany(userrole => userrole.Offer!.AppInstances)
-                    .Select(instance => instance.IamClient!.ClientClientId)
-                    .Distinct()
-                    .SingleOrDefault(),
-                companyUser.IamUser!.UserEntityId,
-                companyUser.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+                    .Select(userrole => userrole.Offer)
+            })
+            .Select(x => new OfferIamUserData(
+                x.Offers.Any(),
+                x.Offers.SelectMany(offer => offer!.AppInstances.Select(instance => instance.IamClient!.ClientClientId)).Distinct(),
+                x.User.IamUser!.UserEntityId,
+                x.User.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
