@@ -874,39 +874,6 @@ public class PortalDbContext : DbContext
             entity.HasData(StaticPortalData.Languages);
         });
 
-        modelBuilder.Entity<NotificationTopic>()
-            .HasData(
-                Enum.GetValues(typeof(NotificationTopicId))
-                    .Cast<NotificationTopicId>()
-                    .Select(e => new NotificationTopic(e))
-            );
-
-        modelBuilder.Entity<NotificationType>(entity =>
-        {
-            entity.HasData(
-                Enum.GetValues(typeof(NotificationTypeId))
-                    .Cast<NotificationTypeId>()
-                    .Select(e => new NotificationType(e))
-            );
-        });
-
-        modelBuilder.Entity<NotificationTypeAssignedTopic>(entity =>
-        {
-            entity.HasKey(e => new {e.NotificationTypeId, e.NotificationTopicId});
-            entity
-                .HasOne(d => d.NotificationTopic!)
-                .WithMany(x => x.NotificationTypeAssignedTopics)
-                .HasForeignKey(d => d.NotificationTopicId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            entity
-                .HasOne(d => d.NotificationType!)
-                .WithOne(x => x.NotificationTypeAssignedTopic!)
-                .HasForeignKey<NotificationTypeAssignedTopic>(d => d.NotificationTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasData(StaticPortalData.NotificationTypeAssignedTopics);
-        });
-
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.Property(x => x.DueDate)
@@ -926,6 +893,37 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.NotificationTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<NotificationTopic>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationTopicId))
+                    .Cast<NotificationTopicId>()
+                    .Select(e => new NotificationTopic(e))
+            );
+
+        modelBuilder.Entity<NotificationType>()
+            .HasData(
+                Enum.GetValues(typeof(NotificationTypeId))
+                    .Cast<NotificationTypeId>()
+                    .Select(e => new NotificationType(e))
+            );
+
+        modelBuilder.Entity<NotificationTypeAssignedTopic>(entity =>
+        {
+            entity.HasKey(e => new {e.NotificationTypeId, e.NotificationTopicId});
+
+            entity.HasOne(d => d.NotificationTopic)
+                .WithMany(x => x.NotificationTypeAssignedTopics)
+                .HasForeignKey(d => d.NotificationTopicId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.NotificationType)
+                .WithOne(x => x.NotificationTypeAssignedTopic)
+                .HasForeignKey<NotificationTypeAssignedTopic>(d => d.NotificationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasData(StaticPortalData.NotificationTypeAssignedTopics);
         });
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
