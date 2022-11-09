@@ -20,14 +20,13 @@
 
 using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using PortalBackend.DBAccess.Models;
+using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
@@ -58,9 +57,12 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken,
+        IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress)
     {
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
+        await ValidateConsent(offerAgreementConsentData, offerId, offerTypeId).ConfigureAwait(false);
         var (companyInformation, companyUserId, userEmail) = await ValidateCompanyInformationAsync(iamUserId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -68,6 +70,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, companyUserId).ConfigureAwait(false)
             : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
 
+        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
+        
         var autoSetupResult = await ExecuteAutoSetupAsync(offerId, iamUserId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscription).ConfigureAwait(false);
         var notificationContent = JsonSerializer.Serialize(new
         {
@@ -106,7 +110,22 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         if (offerProviderDetails.OfferName is not null)
             return offerProviderDetails;
 
-        throw new ConflictException($"The offer name has not been configured properly");
+        throw new ConflictException("The offer name has not been configured properly");
+    }
+
+    private async Task ValidateConsent(IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid offerId, OfferTypeId offerTypeId)
+    {
+        if (offerAgreementConsentData.Any())
+        {
+            var agreementRepository = _portalRepositories
+                .GetInstance<IAgreementRepository>();
+            if (!await agreementRepository
+                    .CheckAgreementsExistsForOfferAsync(offerAgreementConsentData.Select(x => x.AgreementId), offerId, offerTypeId)
+                    .ConfigureAwait(false))
+            {
+                throw new ControllerArgumentException($"Invalid Agreements for offer {offerId}", nameof(offerAgreementConsentData));
+            }
+        }
     }
 
     private async Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> ValidateCompanyInformationAsync(string iamUserId)
@@ -163,6 +182,17 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
 
         return offerSubscription;
+    }
+
+    private void CreateConsentsForSubscription(Guid offerSubscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid companyId, Guid companyUserId)
+    {
+        foreach (var consentData in offerAgreementConsentData)
+        {
+            var consent = _portalRepositories.GetInstance<IConsentRepository>()
+                .CreateConsent(consentData.AgreementId, companyId, companyUserId, consentData.ConsentStatusId);
+            _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>()
+                .CreateConsentAssignedOfferSubscription(consent.Id, offerSubscriptionId);
+        }
     }
 
     private async Task<string?> ExecuteAutoSetupAsync(
