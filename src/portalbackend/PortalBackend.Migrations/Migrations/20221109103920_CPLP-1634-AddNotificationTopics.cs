@@ -84,6 +84,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "notification_type_assigned_topic",
                 column: "notification_topic_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_notification_type_assigned_topic_notification_type_id",
+                schema: "portal",
+                table: "notification_type_assigned_topic",
+                column: "notification_type_id",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

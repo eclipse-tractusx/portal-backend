@@ -888,28 +888,25 @@ public class PortalDbContext : DbContext
                     .Cast<NotificationTypeId>()
                     .Select(e => new NotificationType(e))
             );
-
-            entity.HasMany(x => x.NotificationTopics)
-                .WithMany(x => x.NotificationTypes)
-                .UsingEntity<NotificationTypeAssignedTopic>(
-
-                    j => j
-                        .HasOne(d => d.NotificationTopic!)
-                        .WithMany()
-                        .HasForeignKey(d => d.NotificationTopicId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.NotificationType!)
-                        .WithMany()
-                        .HasForeignKey(d => d.NotificationTypeId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new {e.NotificationTypeId, e.NotificationTopicId});
-                        j.HasData(StaticPortalData.NotificationTypeAssignedTopics);
-                    });
         });
-        
+
+        modelBuilder.Entity<NotificationTypeAssignedTopic>(entity =>
+        {
+            entity.HasKey(e => new {e.NotificationTypeId, e.NotificationTopicId});
+            entity
+                .HasOne(d => d.NotificationTopic!)
+                .WithMany(x => x.NotificationTypeAssignedTopics)
+                .HasForeignKey(d => d.NotificationTopicId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity
+                .HasOne(d => d.NotificationType!)
+                .WithOne(x => x.NotificationTypeAssignedTopic!)
+                .HasForeignKey<NotificationTypeAssignedTopic>(d => d.NotificationTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasData(StaticPortalData.NotificationTypeAssignedTopics);
+        });
+
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.Property(x => x.DueDate)

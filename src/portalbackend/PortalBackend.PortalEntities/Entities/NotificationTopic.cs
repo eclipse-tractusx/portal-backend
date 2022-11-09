@@ -34,7 +34,7 @@ public class NotificationTopic
     private NotificationTopic()
     {
         Label = null!;
-        NotificationTypes = new HashSet<NotificationType>();
+        NotificationTypeAssignedTopics = new HashSet<NotificationTypeAssignedTopic>();
     }
 
     /// <summary>
@@ -63,5 +63,5 @@ public class NotificationTopic
     /// <summary>
     /// Mapped notification types
     /// </summary>
-    public virtual ICollection<NotificationType> NotificationTypes { get; private set; }
+    public virtual ICollection<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; private set; }
 }
