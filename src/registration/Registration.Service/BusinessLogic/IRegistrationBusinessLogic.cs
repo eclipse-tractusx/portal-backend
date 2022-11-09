@@ -54,6 +54,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
+        Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
         IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
     }
 }
