@@ -73,7 +73,7 @@ public class NotificationRepository : INotificationRepository
                 notification.Id,
                 notification.DateCreated,
                 notification.NotificationTypeId,
-                notification.NotificationType!.NotificationTopics.Single().Id,
+                notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
                 notification.IsRead,
                 notification.Content,
                 notification.DueDate))
@@ -90,7 +90,7 @@ public class NotificationRepository : INotificationRepository
                     notification.Id,
                     notification.DateCreated,
                     notification.NotificationTypeId,
-                    notification.NotificationType!.NotificationTopics.Single().Id,
+                    notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
                     notification.IsRead,
                     notification.Content,
                     notification.DueDate)))
@@ -112,7 +112,7 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Notifications
             .AsNoTracking()
             .Where(not => not.Receiver!.IamUser!.UserEntityId == iamUserId)
-            .GroupBy(not => new { not.IsRead, NotificationTopicId = not.NotificationType!.NotificationTopics.Single().Id },
+            .GroupBy(not => new { not.IsRead, not.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId },
                 (key, element) => new ValueTuple<bool,NotificationTopicId,int>(key.IsRead, key.NotificationTopicId, element.Count()))
             .AsAsyncEnumerable();
 

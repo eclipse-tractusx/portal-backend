@@ -4136,6 +4136,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.HasIndex("NotificationTopicId")
                         .HasDatabaseName("ix_notification_type_assigned_topic_notification_topic_id");
 
+                    b.HasIndex("NotificationTypeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_type_id");
+
                     b.ToTable("notification_type_assigned_topic", "portal");
 
                     b.HasData(
@@ -5638,14 +5642,14 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", b =>
                 {
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", "NotificationTopic")
-                        .WithMany()
+                        .WithMany("NotificationTypeAssignedTopics")
                         .HasForeignKey("NotificationTopicId")
                         .IsRequired()
                         .HasConstraintName("fk_notification_type_assigned_topic_notification_topic_notific");
 
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
-                        .WithMany()
-                        .HasForeignKey("NotificationTypeId")
+                        .WithOne("NotificationTypeAssignedTopic")
+                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", "NotificationTypeId")
                         .IsRequired()
                         .HasConstraintName("fk_notification_type_assigned_topic_notification_type_notifica");
 
@@ -6083,8 +6087,15 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("UserRoleDescriptions");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", b =>
+                {
+                    b.Navigation("NotificationTypeAssignedTopics");
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", b =>
                 {
+                    b.Navigation("NotificationTypeAssignedTopic");
+
                     b.Navigation("Notifications");
                 });
 

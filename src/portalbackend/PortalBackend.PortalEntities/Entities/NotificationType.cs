@@ -35,7 +35,6 @@ public class NotificationType
     {
         Label = null!;
         Notifications = new HashSet<Notification>();
-        NotificationTopics = new HashSet<NotificationTopic>();
     }
 
     /// <summary>
@@ -52,15 +51,15 @@ public class NotificationType
     /// Id of the type
     /// </summary>
     public NotificationTypeId Id { get; private set; }
-    
+
     /// <summary>
     /// The type as string 
     /// </summary>
     [MaxLength(255)]
     public string Label { get; private set; }
 
-    public virtual ICollection<NotificationTopic> NotificationTopics { get; private set; }
-
     // Navigation properties
+    public virtual NotificationTypeAssignedTopic? NotificationTypeAssignedTopic { get; private set; }
+
     public virtual ICollection<Notification> Notifications { get; private set; }
 }
