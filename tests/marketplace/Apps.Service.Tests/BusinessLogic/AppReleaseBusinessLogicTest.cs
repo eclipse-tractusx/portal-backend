@@ -42,6 +42,7 @@ public class AppReleaseBusinessLogicTest
     private readonly IOfferRepository _offerRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
+    private readonly IOptions<AppsSettings> _options;
     private readonly AppReleaseBusinessLogic _logic;
     private readonly CompanyUser _companyUser;
     private readonly IamUser _iamUser;
@@ -59,7 +60,7 @@ public class AppReleaseBusinessLogicTest
         _documentRepository = A.Fake<IDocumentRepository>();
         var offerService = A.Fake<IOfferService>();
         var notificationService = A.Fake<INotificationService>();
-        var options = A.Fake<IOptions<AppsSettings>>();
+        _options = A.Fake<IOptions<AppsSettings>>();
         
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
@@ -71,7 +72,7 @@ public class AppReleaseBusinessLogicTest
         
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-         _logic = new AppReleaseBusinessLogic(_portalRepositories, options, offerService, notificationService);
+        _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, offerService, notificationService);
     }
 
     [Fact]
@@ -142,8 +143,10 @@ public class AppReleaseBusinessLogicTest
                 offerAssignedDocuments.Add(offerAssignedDocument);
             });
 
-        _fixture.Inject(_portalRepositories);
-        var sut = _fixture.Create<AppReleaseBusinessLogic>();
+        var appSettings = _fixture.Build<AppsSettings>().With(x => x.DocumentTypeIds, new [] { DocumentTypeId.APP_CONTRACT }).Create();
+        A.CallTo(() => _options.Value).Returns(appSettings);
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, null!, null!);
 
         // Act
         await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None);

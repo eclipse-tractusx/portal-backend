@@ -372,5 +372,28 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
             _registrationBusinessLogic.GetCompanyRoles(languageShortName);
+        
+        /// <summary>
+        /// Deletes the document with the given id
+        /// </summary>
+        /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+        /// <returns></returns>
+        /// <remarks>Example: Delete: /api/registration/documents/{documentId}</remarks>
+        /// <response code="200">Successfully deleted the document</response>
+        /// <response code="400">Incorrect document state</response>
+        /// <response code="403">The user is not assigned with the Company Application.</response>
+        /// <response code="404">The document was not found.</response>
+        [HttpDelete]
+        [Route("documents/{documentId}")]
+        [Authorize(Roles = "delete_documents")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteRegistrationDocument([FromRoute] Guid documentId)
+        {
+            await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
+            return NoContent();
+        }
     }
 }
