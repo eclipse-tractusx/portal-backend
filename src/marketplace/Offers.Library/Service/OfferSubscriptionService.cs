@@ -76,7 +76,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var notificationContent = JsonSerializer.Serialize(new
         {
             AppName = offerProviderDetails.OfferName,
-            offerId,
+            OfferId = offerId,
             RequestorCompanyName = companyInformation.OrganizationName,
             UserEmail = userEmail,
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),

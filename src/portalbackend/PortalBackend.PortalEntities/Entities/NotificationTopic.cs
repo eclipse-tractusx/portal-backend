@@ -24,33 +24,33 @@ using System.ComponentModel.DataAnnotations;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 /// <summary>
-/// Type of a notification
+/// Topic of a notification
 /// </summary>
-public class NotificationType
+public class NotificationTopic
 {
     /// <summary>
     /// Internal constructor, only for EF
     /// </summary>
-    private NotificationType()
+    private NotificationTopic()
     {
         Label = null!;
-        Notifications = new HashSet<Notification>();
+        NotificationTypeAssignedTopics = new HashSet<NotificationTypeAssignedTopic>();
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="NotificationType"/> and initializes the id and label 
+    /// Creates a new instance of <see cref="NotificationTopicId"/> and initializes the id and label 
     /// </summary>
-    /// <param name="notificationTypeId">The NotificationTypesId</param>
-    public NotificationType(NotificationTypeId notificationTypeId) : this()
+    /// <param name="notificationTopicId">The notification topic id</param>
+    public NotificationTopic(NotificationTopicId notificationTopicId) : this()
     {
-        Id = notificationTypeId;
-        Label = notificationTypeId.ToString();
+        Id = notificationTopicId;
+        Label = notificationTopicId.ToString();
     }
 
     /// <summary>
     /// Id of the type
     /// </summary>
-    public NotificationTypeId Id { get; private set; }
+    public NotificationTopicId Id { get; private set; }
 
     /// <summary>
     /// The type as string 
@@ -59,7 +59,9 @@ public class NotificationType
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual NotificationTypeAssignedTopic? NotificationTypeAssignedTopic { get; private set; }
 
-    public virtual ICollection<Notification> Notifications { get; private set; }
+    /// <summary>
+    /// Mapped notification types
+    /// </summary>
+    public virtual ICollection<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; private set; }
 }

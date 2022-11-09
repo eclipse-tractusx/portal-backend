@@ -1082,4 +1082,22 @@ public static class StaticPortalData
             Alpha3Code = "ZMB"
         }
     };
+
+    public static IEnumerable<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics => new[]
+    {
+        new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.TECHNICAL_USER_CREATION, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.CONNECTOR_REGISTERED, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.WELCOME_SERVICE_PROVIDER, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.WELCOME, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.WELCOME_USE_CASES, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.WELCOME_APP_MARKETPLACE, NotificationTopicId.INFO),
+        new NotificationTypeAssignedTopic(NotificationTypeId.ACTION, NotificationTopicId.ACTION),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_SUBSCRIPTION_REQUEST, NotificationTopicId.ACTION),
+        new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_REQUEST, NotificationTopicId.ACTION),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_REQUEST, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_ACTIVATION, NotificationTopicId.OFFER),
+    };
 }
