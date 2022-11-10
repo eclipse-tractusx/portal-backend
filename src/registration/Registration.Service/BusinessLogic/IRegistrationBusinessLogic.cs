@@ -19,16 +19,16 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic
 {
     public interface IRegistrationBusinessLogic
     {
-        Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
+        IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken);
         IAsyncEnumerable<string> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken);
         
@@ -54,6 +54,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
-        IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null);
+        Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
+        IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
     }
 }

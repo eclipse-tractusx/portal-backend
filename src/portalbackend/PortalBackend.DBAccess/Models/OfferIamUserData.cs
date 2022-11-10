@@ -20,4 +20,4 @@
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record OfferIamUserData(string? IamClientId, string IamUserId, bool IsSameCompany);
+public record OfferIamUserData(bool IsValidOffer, IEnumerable<string> IamClientIds, string IamUserId, bool IsSameCompany);

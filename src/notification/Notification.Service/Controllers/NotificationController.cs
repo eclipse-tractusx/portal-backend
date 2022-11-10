@@ -18,13 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
 
@@ -63,30 +65,38 @@ public class NotificationController : ControllerBase
     [Authorize(Roles = "view_notifications")]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<NotificationDetailData>> CreateNotification([FromQuery] Guid companyUserId,
+    public async Task<CreatedAtRouteResult> CreateNotification([FromQuery] Guid companyUserId,
         [FromBody] NotificationCreationData data)
     {
-        var notificationDetailData = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetNotification), new { notificationId = notificationDetailData.Id }, notificationDetailData);
+        var notificationId = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetNotification), new { notificationId }, notificationId);
     }
 
     /// <summary>
     ///     Gets all notifications for the logged in user
     /// </summary>
+    /// <param name="page">The page to get</param>
+    /// <param name="size">Amount of entries</param>
     /// <param name="isRead">OPTIONAL: Filter for read or unread notifications</param>
     /// <param name="notificationTypeId">OPTIONAL: Type of the notifications</param>
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
+    /// <param name="sorting">Defines the sorting of the list</param>
     /// <remarks>Example: Get: /api/notification/</remarks>
     /// <response code="200">Collection of the unread notifications for the user.</response>
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     [HttpGet]
     [Authorize(Roles = "view_notifications")]
     [Route("", Name = nameof(GetNotifications))]
-    [ProducesResponseType(typeof(ICollection<NotificationDetailData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public IAsyncEnumerable<NotificationDetailData> GetNotifications(
-        [FromQuery] bool? isRead, [FromQuery] NotificationTypeId? notificationTypeId, [FromQuery] bool onlyDueDate = false) =>
-        this.WithIamUserId(userId => _logic.GetNotificationsAsync(userId, isRead, notificationTypeId));
+    public Task<Pagination.Response<NotificationDetailData>> GetNotifications(
+        [FromQuery] int page = 0,
+        [FromQuery] int size = 15, 
+        [FromQuery] bool? isRead = null,
+        [FromQuery] NotificationTypeId? notificationTypeId = null,
+        [FromQuery] bool onlyDueDate = false,
+        [FromQuery] NotificationSorting sorting = NotificationSorting.DateDesc) =>
+        this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, isRead, notificationTypeId, sorting));
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -124,6 +134,19 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> NotificationCount([FromQuery] bool? isRead) =>
         this.WithIamUserId((iamUser) => _logic.GetNotificationCountAsync(iamUser, isRead));
+
+    /// <summary>
+    /// Gets the notification count for the current logged in user
+    /// </summary>
+    /// <returns>the count of unread notifications</returns>
+    /// <remarks>Example: Get: /api/notification/count-details</remarks>
+    /// <response code="200">Count of the notifications.</response>
+    [HttpGet]
+    [Route("count-details")]
+    [Authorize(Roles = "view_notifications")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public Task<NotificationCountDetails> NotificationCountDetails() =>
+        this.WithIamUserId((iamUser) => _logic.GetNotificationCountDetailsAsync(iamUser));
 
     /// <summary>
     /// Changes the read status of a notification

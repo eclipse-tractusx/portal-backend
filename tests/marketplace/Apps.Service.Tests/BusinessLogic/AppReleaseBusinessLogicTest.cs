@@ -32,6 +32,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Http;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -43,13 +44,14 @@ public class AppReleaseBusinessLogicTest
     private readonly IOfferRepository _offerRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
+    private readonly IOptions<AppsSettings> _options;
     private readonly AppReleaseBusinessLogic _logic;
     private readonly CompanyUser _companyUser;
     private readonly IamUser _iamUser;
     private readonly AppsSettings _settings;
-    private readonly IOptions<AppsSettings> _options;
     private readonly IFormFile _document;
     private readonly IOfferService offerService;
+    private readonly INotificationService notificationService;
     public AppReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -62,9 +64,10 @@ public class AppReleaseBusinessLogicTest
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         offerService = A.Fake<IOfferService>();
+        notificationService = A.Fake<INotificationService>();
+        _settings = A.Fake<AppsSettings>();
         _document = A.Fake<IFormFile>();
         _options = A.Fake<IOptions<AppsSettings>>();
-        _settings = A.Fake<AppsSettings>();
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
             .Create();
@@ -80,7 +83,7 @@ public class AppReleaseBusinessLogicTest
         };
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-         _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, offerService);
+        _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, offerService, notificationService);
     }
 
     [Fact]
@@ -154,7 +157,7 @@ public class AppReleaseBusinessLogicTest
         appSetting.ContentTypeSettings = new List<string>(){"application/pdf"};
         appSetting.DocumentTypeIds = new List<DocumentTypeId>(){DocumentTypeId.APP_CONTRACT};
         _fixture.Inject(_portalRepositories);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(appSetting), offerService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(appSetting), offerService, notificationService);
 
         // Act
         await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None);
@@ -204,7 +207,7 @@ public class AppReleaseBusinessLogicTest
         var appSetting = new AppsSettings();
         appSetting.ContentTypeSettings = new List<string>(){"text/csv"};
         appSetting.DocumentTypeIds = new List<DocumentTypeId>(){DocumentTypeId.APP_CONTRACT};
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(appSetting), offerService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(appSetting), offerService, notificationService);
      
         // Act
         async Task Act() => await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);

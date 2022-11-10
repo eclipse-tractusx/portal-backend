@@ -18,12 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.FileProviders;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.BusinessLogic;
-
-using Microsoft.Extensions.FileProviders;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 
 var VERSION = "v2";
 

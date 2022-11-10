@@ -359,7 +359,7 @@ public class OfferServiceTests
         // Arrange
         var consentId = Guid.NewGuid();
         var statusId = ConsentStatusId.ACTIVE;
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, statusId)
         };
@@ -396,7 +396,7 @@ public class OfferServiceTests
     {
         // Arrange
         var nonExistingAgreementId = Guid.NewGuid();
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(nonExistingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -407,14 +407,14 @@ public class OfferServiceTests
         
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Message.Should().Be($"Invalid Agreements for subscription {_existingServiceId} (Parameter 'offerAgreementConsentDatas')");
+        ex.Message.Should().Be($"Invalid Agreements for subscription {_existingServiceId} (Parameter 'offerAgreementConsentData')");
     }
 
     [Fact]
     public async Task CreateOrUpdateServiceAgreementConsentAsync_WithWrongUser_ThrowsException()
     {
         // Arrange
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -433,7 +433,7 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingServiceId = Guid.NewGuid();
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -452,7 +452,7 @@ public class OfferServiceTests
     public async Task CreateOrUpdateServiceAgreementConsentAsync_WithInvalidOfferType_ThrowsException()
     {
         // Arrange
-        var data = new List<ServiceAgreementConsentData>
+        var data = new List<OfferAgreementConsentData>
         {
             new(_existingAgreementId, ConsentStatusId.ACTIVE)
         };
@@ -730,21 +730,21 @@ public class OfferServiceTests
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, _companyUser.Id, Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, "user@email.com"));
+                _bpn, "user@email.com", "Tony"));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUserIdWithoutMail),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, null));
+                _bpn, null, null));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUserId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, "user@email.com"));
+                _bpn, "user@email.com", "Tony"));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUserId),
@@ -756,7 +756,7 @@ public class OfferServiceTests
                 A<OfferTypeId>._))
             .ReturnsLazily(() =>new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, null));
+                _bpn, null, null));
 
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
             .Returns(new List<string> { "en" }.ToAsyncEnumerable());

@@ -148,7 +148,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-        A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
         Assert.IsType<bool>(result);
         Assert.True(result);
         _notifications.Should().HaveCount(5);
@@ -309,7 +309,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync())
             .Returns(1);
 
-        A.CallTo(() => _custodianService.CreateWallet(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
             
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._))
@@ -317,20 +317,18 @@ public class RegistrationBusinessLogicTest
             {
                 var creatorId = x.Arguments.Get<Guid?>("creatorId");
                 var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
-                if(notifications is not null)
+                if (notifications is null) return;
+                foreach (var notificationData in notifications)
                 {
-                    foreach (var notificationData in notifications)
+                    var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
+                        DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
                     {
-                        var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
-                            DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
-                        {
-                            CreatorUserId = creatorId,
-                            Content = notificationData.content
-                        };
-                        _notifications.Add(notification);
-                    }
+                        CreatorUserId = creatorId,
+                        Content = notificationData.content
+                    };
+                    _notifications.Add(notification);
                 }
-                    
+
             });
     }
 

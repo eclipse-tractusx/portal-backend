@@ -3653,7 +3653,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         new
                         {
                             Id = 4,
-                            Label = "DATA_CONTRACT"
+                            Label = "APP_DATA_DETAILS"
                         },
                         new
                         {
@@ -3673,7 +3673,12 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         new
                         {
                             Id = 8,
-                            Label = "SELF_DESCRIPTION_EDC"
+                            Label = "SELF_DESCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "APP_TECHNICAL_INFORMATION"
                         });
                 });
 
@@ -4010,6 +4015,41 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.ToTable("notifications", "portal");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notification_topic");
+
+                    b.ToTable("notification_topic", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "INFO"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "ACTION"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "OFFER"
+                        });
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", b =>
                 {
                     b.Property<int>("Id")
@@ -4097,6 +4137,101 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         {
                             Id = 14,
                             Label = "SERVICE_ACTIVATION"
+                        });
+                });
+
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", b =>
+                {
+                    b.Property<int>("NotificationTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_type_id");
+
+                    b.Property<int>("NotificationTopicId")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_topic_id");
+
+                    b.HasKey("NotificationTypeId", "NotificationTopicId")
+                        .HasName("pk_notification_type_assigned_topic");
+
+                    b.HasIndex("NotificationTopicId")
+                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_topic_id");
+
+                    b.HasIndex("NotificationTypeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_type_id");
+
+                    b.ToTable("notification_type_assigned_topic", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            NotificationTypeId = 1,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 12,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 10,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 5,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 6,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 3,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 4,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 7,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 2,
+                            NotificationTopicId = 2
+                        },
+                        new
+                        {
+                            NotificationTypeId = 8,
+                            NotificationTopicId = 2
+                        },
+                        new
+                        {
+                            NotificationTypeId = 13,
+                            NotificationTopicId = 2
+                        },
+                        new
+                        {
+                            NotificationTypeId = 9,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 11,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 14,
+                            NotificationTopicId = 3
                         });
                 });
 
@@ -5524,6 +5659,25 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("Receiver");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", b =>
+                {
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", "NotificationTopic")
+                        .WithMany("NotificationTypeAssignedTopics")
+                        .HasForeignKey("NotificationTopicId")
+                        .IsRequired()
+                        .HasConstraintName("fk_notification_type_assigned_topic_notification_topic_notific");
+
+                    b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
+                        .WithOne("NotificationTypeAssignedTopic")
+                        .HasForeignKey("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", "NotificationTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_notification_type_assigned_topic_notification_type_notifica");
+
+                    b.Navigation("NotificationTopic");
+
+                    b.Navigation("NotificationType");
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", b =>
                 {
                     b.HasOne("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferStatus", "OfferStatus")
@@ -5953,8 +6107,15 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                     b.Navigation("UserRoleDescriptions");
                 });
 
+            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", b =>
+                {
+                    b.Navigation("NotificationTypeAssignedTopics");
+                });
+
             modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", b =>
                 {
+                    b.Navigation("NotificationTypeAssignedTopic");
+
                     b.Navigation("Notifications");
                 });
 

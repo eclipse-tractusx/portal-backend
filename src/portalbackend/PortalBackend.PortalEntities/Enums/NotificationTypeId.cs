@@ -23,7 +23,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 /// <summary>
 /// Possible types of a notification
 /// </summary>
-public enum NotificationTypeId : int
+public enum NotificationTypeId
 {
     /// <summary>
     /// Notification is just an information for the user
