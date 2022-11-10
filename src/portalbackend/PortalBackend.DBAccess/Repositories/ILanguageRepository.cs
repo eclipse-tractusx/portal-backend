@@ -35,4 +35,11 @@ public interface ILanguageRepository
     /// <param name="languageCodes">the language codes that should be checked</param>
     /// <returns>Returns the found language codes</returns>
     IAsyncEnumerable<string> GetLanguageCodesUntrackedAsync(IEnumerable<string> languageCodes);
+
+    /// <summary>
+    /// Checks whether all given language short codes already exists in the database
+    /// </summary>
+    /// <param name="languages">Short code of the languages</param>
+    /// <returns>Returns the existing shortNames</returns>
+    IAsyncEnumerable<string> CheckLanguagesExistsAsync(IEnumerable<string> languages);
 }

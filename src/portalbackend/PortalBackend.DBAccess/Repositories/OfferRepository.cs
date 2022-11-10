@@ -24,6 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -129,6 +130,18 @@ public class OfferRepository : IOfferRepository
         _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
+    public OfferLicense AttachAndModifyOfferLicense(Guid id, string licenseText)
+    {
+        var offerLicense = _context.OfferLicenses.Attach(new OfferLicense(id, null!)).Entity;
+        offerLicense.Licensetext = licenseText;
+        return offerLicense;
+    }
+
+    /// <inheritdoc />
+    public void RemoveOfferAssignedLicense(Guid appId, Guid offerLicenseId) =>
+        _context.OfferAssignedLicenses.Remove(new OfferAssignedLicense(appId, offerLicenseId));
+
+    /// <inheritdoc />
     public OfferAssignedLicense CreateOfferAssignedLicense(Guid appId, Guid appLicenseId) =>
         _context.OfferAssignedLicenses.Add(new OfferAssignedLicense(appId, appLicenseId)).Entity;
 
@@ -157,7 +170,11 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
-    
+
+    /// <inheritdoc />
+    public void RemoveAppLanguages(Guid appId, IEnumerable<string> languagesToRemove) =>
+        _context.AppLanguages.RemoveRange(languagesToRemove.Select(x => new AppLanguage(appId, x)));
+
     ///<inheritdoc />
     public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages)=>
         _context.OfferDetailImages.AddRange(appImages.Select(s=> new OfferDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
@@ -321,6 +338,27 @@ public class OfferRepository : IOfferRepository
                 (offer.OfferStatusId == offerStatusId),
                 offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                 offer.UserRoles.Any(userRole => userRole.Id == roleId)
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<AppUpdateData?> GetAppUpdateData(
+        Guid appId,
+        string iamUserId,
+        IEnumerable<string> languageCodes,
+        IEnumerable<Guid> useCaseIds, 
+        string price) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(o => o.Id == appId && o.OfferTypeId == OfferTypeId.APP)
+            .Select(x => new AppUpdateData
+            (
+                x.OfferStatusId,
+                x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
+                x.UseCases.Select(uc => uc.Id).Where(uc => useCaseIds.Any(uci => uci == uc)),
+                x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Apps.Count > 1)).FirstOrDefault(ol => ol.Item2 == price)
             ))
             .SingleOrDefaultAsync();
 }
