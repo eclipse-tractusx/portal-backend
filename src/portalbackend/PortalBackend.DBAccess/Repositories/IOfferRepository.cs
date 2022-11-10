@@ -21,6 +21,7 @@
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -120,6 +121,13 @@ public interface IOfferRepository
     void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages);
 
     /// <summary>
+    /// Removes <see cref="AppLanguage"/>s to the database
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="languagesToRemove">The app languages that should be added to the database</param>
+    void RemoveAppLanguages(Guid appId, IEnumerable<string> languagesToRemove);
+
+    /// <summary>
     /// Retrieve all app data
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
@@ -213,4 +221,35 @@ public interface IOfferRepository
     /// <param name="roleId"></param>
     /// <returns></returns>
     Task<(bool OfferStatus, bool IsProviderCompanyUser,bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
+
+    /// <summary>
+    /// Gets all data needed for the app update
+    /// </summary>
+    /// <param name="appId">Id of the requested app</param>
+    /// <param name="iamUserId">Id of the current IamUser</param>
+    /// <param name="languageCodes">the languageCodes for the app</param>
+    /// <param name="useCaseIds">ids of the usecases</param>
+    /// <param name="price">the price</param>
+    /// <returns></returns>
+    Task<AppUpdateData?> GetAppUpdateData(
+        Guid appId,
+        string iamUserId,
+        IEnumerable<string> languageCodes,
+        IEnumerable<Guid> useCaseIds,
+        string price);
+
+    /// <summary>
+    /// Updates the licenseText of the given offerLicense
+    /// </summary>
+    /// <param name="id">id of the offer license</param>
+    /// <param name="licenseText">the new text</param>
+    /// <returns>the updated entity</returns>
+    OfferLicense AttachAndModifyOfferLicense(Guid id, string licenseText);
+
+    /// <summary>
+    /// Removes the app assigned offer license from the database
+    /// </summary>
+    /// <param name="appId">id of the app</param>
+    /// <param name="offerLicenseId">id of the offer license</param>
+    void RemoveOfferAssignedLicense(Guid appId, Guid offerLicenseId);
 }
