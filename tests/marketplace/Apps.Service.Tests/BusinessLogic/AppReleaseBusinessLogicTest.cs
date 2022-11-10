@@ -213,8 +213,10 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
+        
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"Document type not supported. File with contentType {_settings.ContentTypeSettings} are allowed.");
+       
+        error.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", appSetting.ContentTypeSettings)} are allowed.");
     }
 
     #region Setup
