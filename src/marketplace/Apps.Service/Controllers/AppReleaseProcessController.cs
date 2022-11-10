@@ -243,7 +243,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
+    public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
     {
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, iamUserId).ConfigureAwait(false));
         return NoContent();
