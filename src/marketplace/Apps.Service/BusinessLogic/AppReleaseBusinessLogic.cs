@@ -451,15 +451,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private void CreateOrUpdateAppLicense(Guid appId, AppRequestModel appRequestModel, AppUpdateData appData,
         IOfferRepository appRepository)
     {
-        if (appData.OfferLicense == default || appData.OfferLicense.Licensetext == appRequestModel.Price) return;
-
-        if (!appData.OfferLicense.AssignedToMultipleApps)
+        if (appData.OfferLicense == default || appData.OfferLicense.Item2 == appRequestModel.Price) return;
+        
+        if (!appData.OfferLicense.Item3)
         {
-            appRepository.AttachAndModifyOfferLicense(appData.OfferLicense.Id, appRequestModel.Price);
+            appRepository.AttachAndModifyOfferLicense(appData.OfferLicense.Item1, appRequestModel.Price);
         }
         else
         {
-            appRepository.RemoveOfferAssignedLicense(appId, appData.OfferLicense.Id);
+            appRepository.RemoveOfferAssignedLicense(appId, appData.OfferLicense.Item1);
             var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
             appRepository.CreateOfferAssignedLicense(appId, licenseId);
         }

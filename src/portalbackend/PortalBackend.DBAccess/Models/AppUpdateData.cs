@@ -3,11 +3,9 @@
 namespace PortalBackend.DBAccess.Models;
 
 public record AppUpdateData
-(
-    OfferStatusId OfferState,
+(OfferStatusId OfferState,
     bool IsUserOfProvider,
     IEnumerable<(string, string, string)> OfferDescriptions,
     IEnumerable<(string Shortname, bool IsMatch)> Languages,
-    IEnumerable<Guid> MatchingUseCases,
-    (Guid Id, string Licensetext, bool AssignedToMultipleApps) OfferLicense
-);
+    IEnumerable<Guid> MatchingUseCases, 
+    ValueTuple<Guid, string, bool> OfferLicense);
