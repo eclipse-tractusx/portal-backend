@@ -117,7 +117,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "password", password ?? "" },
-                { "companyname", companyNameIdpAliasData.CompanyName },
+                { "companyName", companyNameIdpAliasData.CompanyName },
                 { "message", message ?? "" },
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
