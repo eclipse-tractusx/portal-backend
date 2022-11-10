@@ -97,11 +97,11 @@ public class UserBusinessLogic : IUserBusinessLogic
 
         var emailData = userList.ToDictionary(
             user => user.userName ?? user.eMail,
-            user => (user.eMail, user.Message));
+            user => user.eMail);
 
         await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
-            var (email, message) = emailData[userName];
+            var email = emailData[userName];
 
             if (error != null)
             {
@@ -109,23 +109,16 @@ public class UserBusinessLogic : IUserBusinessLogic
                 continue;
             }
 
-            var inviteTemplateName = string.IsNullOrWhiteSpace(message)
-                ? "PortalTemplate"
-                : "PortalTemplateWithMessage";
-
             var mailParameters = new Dictionary<string, string>
             {
                 { "password", password ?? "" },
-                { "companyname", companyNameIdpAliasData.CompanyName },
-                { "message", message ?? "" },
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
-                { "username", userName },
             };
 
             try
             {
-                await _mailingService.SendMails(email, mailParameters, new List<string> { inviteTemplateName, "PasswordForPortalTemplate" }).ConfigureAwait(false);
+                await _mailingService.SendMails(email, mailParameters, new List<string> { "NewUserTemplate", "NewUserPasswordTemplate" }).ConfigureAwait(false);
             }
             catch(Exception e)
             {
