@@ -101,7 +101,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, displayName, iamUserId);
     }
 
-    private void ValidateDisplayName(string displayName)
+    private static void ValidateDisplayName(string displayName)
     {
         if (displayName.Length < 2 || displayName.Length > 30)
         {
