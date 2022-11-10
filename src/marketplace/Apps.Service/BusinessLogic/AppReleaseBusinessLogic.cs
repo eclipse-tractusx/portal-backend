@@ -448,7 +448,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return appId;
     }
 
-    private void CreateOrUpdateAppLicense(Guid appId, AppRequestModel appRequestModel, AppUpdateData appData,
+    private static void CreateOrUpdateAppLicense(Guid appId, AppRequestModel appRequestModel, AppUpdateData appData,
         IOfferRepository appRepository)
     {
         if (appData.OfferLicense == default || appData.OfferLicense.Item2 == appRequestModel.Price) return;
@@ -465,7 +465,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
     }
 
-    private void UpdateAppSupportedLanguages(Guid appId, IEnumerable<string> newSupportedLanguages, IEnumerable<string> languagesToRemove, IOfferRepository appRepository)
+    private static void UpdateAppSupportedLanguages(Guid appId, IEnumerable<string> newSupportedLanguages, IEnumerable<string> languagesToRemove, IOfferRepository appRepository)
     {
         appRepository.AddAppLanguages(newSupportedLanguages.Select(c =>
             (appId, c)));
