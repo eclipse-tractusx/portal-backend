@@ -40,7 +40,7 @@ public interface ICompanyRepository
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     
-    Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
+    Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 
