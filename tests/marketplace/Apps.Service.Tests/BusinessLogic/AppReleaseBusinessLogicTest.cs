@@ -22,17 +22,17 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Microsoft.AspNetCore.Http;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -50,8 +50,8 @@ public class AppReleaseBusinessLogicTest
     private readonly IamUser _iamUser;
     private readonly AppsSettings _settings;
     private readonly IFormFile _document;
-    private readonly IOfferService offerService;
-    private readonly INotificationService notificationService;
+    private readonly IOfferService _offerService;
+    private readonly INotificationService _notificationService;
     public AppReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -63,8 +63,8 @@ public class AppReleaseBusinessLogicTest
         _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
-        offerService = A.Fake<IOfferService>();
-        notificationService = A.Fake<INotificationService>();
+        _offerService = A.Fake<IOfferService>();
+        _notificationService = A.Fake<INotificationService>();
         _settings = A.Fake<AppsSettings>();
         _document = A.Fake<IFormFile>();
         _options = A.Fake<IOptions<AppsSettings>>();
@@ -75,29 +75,26 @@ public class AppReleaseBusinessLogicTest
             .With(u => u.CompanyUser, _companyUser)
             .Create();
         _companyUser.IamUser = _iamUser;
-        _settings.ContentTypeSettings = new List<string>
-        {
-            "application/pdf",
-            "image/jpeg",
-            "image/png"
-        };
+        A.CallTo(() => _options.Value).Returns(_settings);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-        _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, offerService, notificationService);
+        _logic = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
     }
 
     [Fact]
     public async Task CreateServiceOffering_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
     {
         // Arrange
-        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
-        var iamUserId = new Guid("7eab8e16-8298-4b41-953b-515745423658").ToString();
-        var appUserRoleDescription = new List<AppUserRoleDescription>();
-        appUserRoleDescription.Add(new AppUserRoleDescription("en","this is test1"));
-        appUserRoleDescription.Add(new AppUserRoleDescription("de","this is test2"));
-        appUserRoleDescription.Add(new AppUserRoleDescription("fr","this is test3"));
-        var appUserRoles = new List<AppUserRole>();
-        appUserRoles.Add(new AppUserRole("IT Admin",appUserRoleDescription));
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+        var appUserRoleDescription = new [] {
+            new AppUserRoleDescription("en","this is test1"),
+            new AppUserRoleDescription("de","this is test2"),
+            new AppUserRoleDescription("fr","this is test3")
+        };
+        var appUserRoles = new [] {
+            new AppUserRole("IT Admin",appUserRoleDescription)
+        };
 
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP))).Returns((true,true));
 
@@ -108,15 +105,15 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>._, A<string>._, A<OfferTypeId>._)).MustHaveHappened();
         foreach(var appRole in appUserRoles)
         {
-            A.CallTo(() => _userRolesRepository.CreateAppUserRole(A<Guid>._, A<string>._)).MustHaveHappened();
+            A.CallTo(() => _userRolesRepository.CreateAppUserRole(A<Guid>._, A<string>.That.IsEqualTo(appRole.role))).MustHaveHappened();
             foreach(var item in appRole.descriptions)
             {
-                A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>._, A<string>._)).MustHaveHappened();
+                A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(item.languageCode), A<string>.That.IsEqualTo(item.description))).MustHaveHappened();
             }
         }
 
         Assert.NotNull(result);
-        Assert.IsType<List<AppRoleData>>(result);
+        Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
     }
     
     #region Create App Document
@@ -125,39 +122,29 @@ public class AppReleaseBusinessLogicTest
     public async Task CreateAppDocumentAsync_ExecutesSuccessfully()
     {
         // Arrange
-        var appId = Guid.NewGuid();
-        var documentId = Guid.NewGuid();
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         SetupRepositories(appId);
         var documents = new List<Document>();
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._))
-            .Invokes(x =>
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
             {
-                var documentName = x.Arguments.Get<string>("documentName")!;
-                var documentContent = x.Arguments.Get<byte[]>("documentContent")!;
-                var hash = x.Arguments.Get<byte[]>("hash")!;
-                var documentTypeId = x.Arguments.Get<DocumentTypeId>("documentType")!;
-                var action = x.Arguments.Get<Action<Document?>>("setupOptionalFields");
-
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
-                action?.Invoke(document);
+                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentType);
+                setupOptionalFields?.Invoke(document);
                 documents.Add(document);
             });
         var offerAssignedDocuments = new List<OfferAssignedDocument>();
         A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._))
-            .Invokes(x =>
+            .Invokes((Guid offerId, Guid documentId) =>
             {
-                var offerId = x.Arguments.Get<Guid>("offerId");
-                var docId = x.Arguments.Get<Guid>("documentId");
-
-                var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
+                var offerAssignedDocument = new OfferAssignedDocument(offerId, documentId);
                 offerAssignedDocuments.Add(offerAssignedDocument);
             });
-        var appSetting = new AppsSettings();
-        appSetting.ContentTypeSettings = new List<string>(){"application/pdf"};
-        appSetting.DocumentTypeIds = new List<DocumentTypeId>(){DocumentTypeId.APP_CONTRACT};
-        _fixture.Inject(_portalRepositories);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(appSetting), offerService, notificationService);
+        _settings.ContentTypeSettings = new [] { "application/pdf" };
+        _settings.DocumentTypeIds = new [] { DocumentTypeId.APP_CONTRACT };
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
 
         // Act
         await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None);
@@ -174,40 +161,29 @@ public class AppReleaseBusinessLogicTest
     public async Task CreateAppDocumentAsync_WrongContentTypeThrows()
     {
         // Arrange
-        var appId = Guid.NewGuid();
-        var documentId = Guid.NewGuid();
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         SetupRepositories(appId);
         var documents = new List<Document>();
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._))
-            .Invokes(x =>
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
             {
-                var documentName = x.Arguments.Get<string>("documentName")!;
-                var documentContent = x.Arguments.Get<byte[]>("documentContent")!;
-                var hash = x.Arguments.Get<byte[]>("hash")!;
-                var documentTypeId = x.Arguments.Get<DocumentTypeId>("documentType")!;
-                var action = x.Arguments.Get<Action<Document?>>("setupOptionalFields");
-
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
-                action?.Invoke(document);
+                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentType);
+                setupOptionalFields?.Invoke(document);
                 documents.Add(document);
             });
         var offerAssignedDocuments = new List<OfferAssignedDocument>();
         A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._))
-            .Invokes(x =>
+            .Invokes((Guid offerId, Guid documentId) =>
             {
-                var offerId = x.Arguments.Get<Guid>("offerId");
-                var docId = x.Arguments.Get<Guid>("documentId");
-
-                var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
+                var offerAssignedDocument = new OfferAssignedDocument(offerId, documentId);
                 offerAssignedDocuments.Add(offerAssignedDocument);
             });
         
-        _fixture.Inject(_portalRepositories);
-        var appSetting = new AppsSettings();
-        appSetting.ContentTypeSettings = new List<string>(){"text/csv"};
-        appSetting.DocumentTypeIds = new List<DocumentTypeId>(){DocumentTypeId.APP_CONTRACT};
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(appSetting), offerService, notificationService);
+        _settings.ContentTypeSettings = new [] { "text/csv" };
+        _settings.DocumentTypeIds = new [] { DocumentTypeId.APP_CONTRACT };
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
      
         // Act
         async Task Act() => await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
@@ -216,7 +192,7 @@ public class AppReleaseBusinessLogicTest
         
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
        
-        error.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", appSetting.ContentTypeSettings)} are allowed.");
+        error.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", _settings.ContentTypeSettings)} are allowed.");
     }
 
     #region Setup
