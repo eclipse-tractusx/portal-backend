@@ -18,18 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -41,17 +44,21 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly INotificationService _notificationService;
+
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories"></param>
     /// <param name="settings"></param>
     /// <param name="offerService"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService)
+    /// <param name="notificationService"></param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService, INotificationService notificationService)
     {
         _portalRepositories = portalRepositories;
         _settings = settings.Value;
         _offerService = offerService;
+        _notificationService = notificationService;
     }
     
     /// <inheritdoc/>
@@ -160,15 +167,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if (appId == Guid.Empty)
         {
-            throw new ArgumentException($"AppId must not be empty");
+            throw new ControllerArgumentException($"AppId must not be empty");
         }
         if (!_settings.DocumentTypeIds.Contains(documentTypeId))
         {
-            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
         }
         if (string.IsNullOrEmpty(document.FileName))
         {
-            throw new ArgumentException("File name is must not be null");
+            throw new ControllerArgumentException("File name is must not be null");
         }
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         if (!_settings.ContentTypeSettings.Contains(document.ContentType))
@@ -312,4 +319,160 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId) =>
        _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
+    
+    /// <inheritdoc/>
+    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
+    {
+        if(appRequestModel.ProviderCompanyId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"Company Id must not be null or empty"); 
+        }
+
+        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
+        if (emptyLanguageCodes.Any())
+        {
+            throw new ControllerArgumentException($"Language Codes must not be null or empty"); 
+        }
+        
+        var emptyUseCaseIds = appRequestModel.UseCaseIds.Where(item => item == Guid.Empty);
+        if (emptyUseCaseIds.Any())
+        {
+            throw new ControllerArgumentException($"Use Case Ids must not be null or empty");
+        }
+        
+        return this.CreateAppAsync(appRequestModel, iamUserId);
+    }
+
+    private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
+    {   
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
+
+        var responseData =await _portalRepositories.GetInstance<IUserRepository>().GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId).ConfigureAwait(false);
+        
+        if(responseData == default)
+        {
+            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}");
+        }
+        if(!responseData.IsSameCompany)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
+        }
+        if(userRoleIds.Except(responseData.RoleIds).Any())
+        {
+            throw new ControllerArgumentException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
+        }
+        
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
+        {
+            app.Name = appRequestModel.Title;
+            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
+            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
+            app.OfferStatusId = OfferStatusId.CREATED;
+            app.SalesManagerId = appRequestModel.SalesManagerId;
+        }).Id;
+        appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
+              (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
+        appRepository.AddAppLanguages(appRequestModel.SupportedLanguageCodes.Select(c =>
+              (appId, c)));
+        appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
+              (appId, uc)));
+        var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
+        appRepository.CreateOfferAssignedLicense(appId, licenseId);
+
+        try
+        {
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            return appId;
+        }
+        catch(Exception exception)when (exception?.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
+        {
+            throw new ControllerArgumentException($"invalid language code or UseCaseId specified");
+        }
+    }
+
+    /// <inheritdoc/>
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
+    {
+        var apps = _portalRepositories.GetInstance<IOfferRepository>().GetAllInReviewStatusAppsAsync();
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            15,
+            (int skip, int take) => new Pagination.AsyncSource<InReviewAppData>(
+                apps.CountAsync(),
+                apps.OrderBy(app => app.Id)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(app => new InReviewAppData(
+                        app.Id,
+                        app.Name,
+                        app.ProviderCompany!.Name,
+                        app.ThumbnailUrl))
+                    .AsAsyncEnumerable()));
+    }
+
+    /// <inheritdoc/>
+    public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appDetails = await offerRepository.GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
+        if (appDetails == null)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+        
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+
+        if(appDetails.name is null || appDetails.thumbnailUrl is null 
+            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
+            || appDetails.descriptionLongIsNullOrEmpty || appDetails.descriptionShortIsNullOrEmpty)
+        {
+            var nullProperties = new List<string>();
+            if (appDetails.name is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.name)}");
+            }
+            if(appDetails.thumbnailUrl is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.thumbnailUrl)}");
+            }
+            if(appDetails.salesManagerId is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.salesManagerId)}");
+            }
+            if(appDetails.providerCompanyId is null)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.providerCompanyId)}");
+            }
+            if(appDetails.descriptionLongIsNullOrEmpty)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
+            }
+            if(appDetails.descriptionShortIsNullOrEmpty)
+            {
+                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
+            }
+            throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
+        }
+        offerRepository.AttachAndModifyOffer(appId, app =>
+        {
+            app.OfferStatusId = OfferStatusId.IN_REVIEW;
+            app.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+
+        var notificationContent = new
+        {
+            appId,
+            RequestorCompanyName = appDetails.companyName
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }

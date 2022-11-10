@@ -29,6 +29,7 @@
         <DockerfileContext>..\..\..</DockerfileContext>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <UserSecretsId>53be9d36-5a45-441f-8f48-772ae6e64ca2</UserSecretsId>
+        <RootNamespace>Org.CatenaX.Ng.Portal.Backend.Notification.Service</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
