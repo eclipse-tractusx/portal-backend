@@ -32,7 +32,7 @@ public interface IProvisioningManager
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
-    Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol);
+    Task<string> CreateOwnIdpAsync(string displayName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId);
     Task AddProviderUserLinkToCentralUserAsync(string userId, IdentityProviderLink identityProviderLink);
@@ -53,6 +53,7 @@ public interface IProvisioningManager
     Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
+    Task<string> GetCentralIdentityProviderDisplayName(string alias);
     ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
     ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled);
     ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled);

@@ -188,6 +188,9 @@ public class UserProvisioningService : IUserProvisioningService
         return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, true);
     }
 
+    public Task<string> GetIdentityProviderDisplayName(string idpAlias) =>
+        _provisioningManager.GetCentralIdentityProviderDisplayName(idpAlias);
+
     private async Task<Guid> ValidateDuplicateIdpUsersAsync(IUserRepository userRepository, string alias, UserCreationRoleDataIdpInfo user, Guid companyId)
     {
         Guid existingCompanyUserId = Guid.Empty;

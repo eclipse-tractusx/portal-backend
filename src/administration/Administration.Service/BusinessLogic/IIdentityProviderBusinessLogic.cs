@@ -27,7 +27,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 public interface IIdentityProviderBusinessLogic
 {
     IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync(string iamUserId);
-    ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string iamUserId);
+    ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string? displayName, string iamUserId);
     ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProviderAsync(Guid identityProviderId, string iamUserId);
     ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatusAsync(Guid identityProviderId, bool enabled, string iamUserId);
     ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId);
