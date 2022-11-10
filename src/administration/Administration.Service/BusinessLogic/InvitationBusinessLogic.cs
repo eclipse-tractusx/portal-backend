@@ -141,7 +141,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password ?? "" },
-            { "companyname", invitationData.organisationName },
+            { "companyName", invitationData.organisationName },
             { "url", $"{_settings.RegistrationAppAddress}"},
         };
 

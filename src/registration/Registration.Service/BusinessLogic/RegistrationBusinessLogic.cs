@@ -301,7 +301,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password },
-            { "companyname", companyName },
+            { "companyName", companyName },
             { "message", userCreationInfo.Message ?? "" },
             { "nameCreatedBy", iamUserId },
             { "url", _settings.BasePortalAddress },
