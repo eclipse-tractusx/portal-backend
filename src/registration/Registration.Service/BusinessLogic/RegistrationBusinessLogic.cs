@@ -232,7 +232,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string iamUserId)
+    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId)
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
@@ -241,7 +241,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return InviteNewUserInternalAsync(applicationId, userCreationInfo, iamUserId);
     }
 
-    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfo userCreationInfo, string iamUserId)
+    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId)
     {
         if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, iamUserId))
         {
