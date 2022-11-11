@@ -122,7 +122,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="appRequestModel"></param>
     /// <param name="iamUserId"></param>
     /// <returns>Guid of the created app.</returns>
-    Task<Guid> UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId);
+    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
