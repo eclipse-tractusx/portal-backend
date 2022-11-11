@@ -378,7 +378,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Guid> UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId)
+    public Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId)
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
@@ -388,7 +388,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return this.UpdateAppInternal(appId, appRequestModel, iamUserId);
     }
 
-    private async Task<Guid> UpdateAppInternal(Guid appId, AppRequestModel appRequestModel, string iamUserId)
+    private async Task UpdateAppInternal(Guid appId, AppRequestModel appRequestModel, string iamUserId)
     {
         var appData = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetAppUpdateData(
@@ -445,7 +445,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         CreateOrUpdateAppLicense(appId, appRequestModel, appData, appRepository);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return appId;
     }
 
     private static void CreateOrUpdateAppLicense(Guid appId, AppRequestModel appRequestModel, AppUpdateData appData,
