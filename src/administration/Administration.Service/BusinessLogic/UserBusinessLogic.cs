@@ -99,6 +99,8 @@ public class UserBusinessLogic : IUserBusinessLogic
             user => user.userName ?? user.eMail,
             user => user.eMail);
 
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
+
         await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
             var email = emailData[userName];
@@ -109,7 +111,6 @@ public class UserBusinessLogic : IUserBusinessLogic
                 continue;
             }
 
-            var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
             var mailParameters = new Dictionary<string, string>
             {
                 { "password", password ?? "" },
