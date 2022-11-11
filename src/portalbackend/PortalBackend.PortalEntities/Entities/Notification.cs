@@ -63,5 +63,5 @@ public class Notification
     // Navigation properties
     public virtual CompanyUser? Receiver { get; set; }
     public virtual NotificationType? NotificationType { get; set; }
-    public virtual CompanyUser? Creator { get; private set; }
+    public virtual CompanyUser? Creator { get; set; }
 }
