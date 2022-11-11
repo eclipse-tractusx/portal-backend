@@ -22,7 +22,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -78,28 +77,18 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting sorting = NotificationSorting.DateDesc)
     {
         var source =  _portalRepositories.GetInstance<INotificationRepository>()
-            .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId);
+            .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId, sorting);
         return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
             new Pagination.AsyncSource<NotificationDetailData>
             (
                 source.CountAsync(),
-                GetNotificationOrderByQuery(source, sorting)
+                source
                     .Skip(skip)
                     .Take(take)
                     .AsAsyncEnumerable()
             )
         );
     }
-
-    private static IOrderedQueryable<NotificationDetailData> GetNotificationOrderByQuery(IQueryable<NotificationDetailData> source, NotificationSorting sorting) =>
-        sorting switch
-        {
-            NotificationSorting.DateAsc => source.OrderBy(notification => notification.Created),
-            NotificationSorting.ReadStatusAsc => source.OrderBy(notification => notification.IsRead),
-            NotificationSorting.ReadStatusDesc => source.OrderByDescending(notification => notification.IsRead),
-            NotificationSorting.DateDesc => source.OrderByDescending(notification => notification.Created),
-            _ => throw new ControllerArgumentException("The sorting does not exists.", nameof(sorting))
-        };
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId)

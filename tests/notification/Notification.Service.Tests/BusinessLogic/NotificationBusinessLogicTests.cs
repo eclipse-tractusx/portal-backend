@@ -30,7 +30,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
@@ -178,23 +177,6 @@ public class NotificationBusinessLogicTests
 
         // Assert
         result.Content.Should().HaveCount(_notificationDetails.Count());
-    }
-
-    [Fact]
-    public async Task GetNotifications_WithInvalidSorting_ThrowsArgumentException()
-    {
-        // Arrange
-        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
-        {
-            MaxPageSize = 15
-        }));
-
-        // Act
-        async Task Act() => await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, sorting: 0).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("sorting");
     }
 
     #endregion
@@ -474,14 +456,14 @@ public class NotificationBusinessLogicTests
 
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false,
-                    null))
+                    null, A<NotificationSorting>._))
             .Returns(unreadNotificationDetails.AsQueryable());
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true,
-                    null))
+                    null, A<NotificationSorting>._))
             .Returns(readNotificationDetails.AsQueryable());
         A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null))
+                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<NotificationSorting>._))
             .Returns(notificationDetails.AsQueryable());
 
         A.CallTo(() =>

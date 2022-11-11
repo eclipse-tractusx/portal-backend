@@ -22,6 +22,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -40,14 +41,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IFixture _fixture;
 
     public NotificationRepositoryTests(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -139,7 +141,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, NotificationSorting.DateDesc)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -157,7 +159,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, NotificationSorting.DateAsc)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -174,7 +176,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, NotificationSorting.ReadStatusAsc).ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -189,7 +191,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, NotificationSorting.ReadStatusDesc).ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -290,9 +292,42 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.IsUserReceiver.Should().BeTrue();
         results.IsNotificationExisting.Should().BeTrue();
     }
+    
+    #endregion
+    
+    #region GetNotificationOrderByQuery
+    
+    [Theory]
+    [InlineData(NotificationSorting.DateAsc)]
+    [InlineData(NotificationSorting.DateDesc)]
+    [InlineData(NotificationSorting.ReadStatusAsc)]
+    [InlineData(NotificationSorting.ReadStatusDesc)]
+    public void GetNotificationOrderByQuery_SortsWithoutException(NotificationSorting sorting)
+    {
+        // Arrange
+        var list = _fixture.CreateMany<Notification>(5);
+        var query = list.AsQueryable().GetNotificationOrderByQuery(sorting);
 
-    
-    
+        // Act
+        var result = query.ToList();
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public void GetNotificationOrderByQuery_ThrowsInvalidCastException()
+    {
+        // Arrange
+        var list = _fixture.CreateMany<Notification>(5);
+
+        // Act
+        var ex = Assert.Throws<InvalidCastException>(() => list.AsQueryable().GetNotificationOrderByQuery(0));
+
+        // Assert
+        ex.Message.Should().Be("The sorting does not exists.");
+    }
+
     #endregion
     
     #region Setup
