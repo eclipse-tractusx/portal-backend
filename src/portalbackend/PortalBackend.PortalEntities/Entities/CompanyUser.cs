@@ -91,6 +91,5 @@ public class CompanyUser : IAuditableV1
     public virtual ICollection<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<Notification> CreatedNotifications { get; private set; }
-    
     public virtual ICollection<OfferSubscription> RequestedSubscriptions { get; private set; }
 }

@@ -159,6 +159,36 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CheckAgreementsExistsForOffer
+
+    [Fact]
+    public async Task CheckAgreementsExistsForOfferAsync_WithExistingAgreementForOffer_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckAgreementsExistsForOfferAsync(Enumerable.Repeat(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), 1), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckAgreementsExistsForOfferAsync_WithNonExistingAgreementForOffer_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.CheckAgreementsExistsForOfferAsync(Enumerable.Repeat(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), 1), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     private async Task<(AgreementRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

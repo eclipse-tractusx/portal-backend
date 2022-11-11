@@ -33,7 +33,7 @@ public class Config
     [JsonProperty("hideOnLoginPage")]
     public string HideOnLoginPage { get; set; }
     [JsonProperty("clientSecret")]
-    public string ClientSecret { get; set; }
+    public string? ClientSecret { get; set; }
     [JsonProperty("clientId")]
     public string ClientId { get; set; }
     [JsonProperty("disableUserInfo")]
@@ -51,7 +51,7 @@ public class Config
     [JsonProperty("clientAuthMethod")]
     public string ClientAuthMethod { get; set; }
     [JsonProperty("clientAssertionSigningAlg")]
-    public string ClientAssertionSigningAlg { get; set; }
+    public string? ClientAssertionSigningAlg { get; set; }
     [JsonProperty("syncMode")]
     public string SyncMode{ get; set; }
     [JsonProperty("validateSignature")]

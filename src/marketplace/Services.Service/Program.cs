@@ -18,15 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.FileProviders;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
-using Microsoft.Extensions.FileProviders;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 var VERSION = "v2";
 
@@ -43,15 +44,15 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddMailingAndTemplateManager(builder.Configuration)
     .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration)
-    .AddHttpClient();
+    .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .AddTransient<IOfferService, OfferService>()
-    .AddTransient<IOfferSetupService, OfferSetupService>()
     .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
+
+builder.Services.AddOfferSetupService();
 
 builder.Build()
     .CreateApp<Program>("services", VERSION)

@@ -72,6 +72,13 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+    
+    /// <summary>
+    /// Document Content Type Settings
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
 }
 
 /// <summary>

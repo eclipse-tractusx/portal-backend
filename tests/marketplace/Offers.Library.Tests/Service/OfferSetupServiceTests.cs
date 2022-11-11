@@ -63,7 +63,7 @@ public class OfferSetupServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
+        var sut = new OfferSetupService(_httpClientFactory);
 
         // Act
         async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
@@ -81,7 +81,7 @@ public class OfferSetupServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
+        var sut = new OfferSetupService(_httpClientFactory);
 
         // Act
         async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);
@@ -99,7 +99,7 @@ public class OfferSetupServiceTests
         var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
         _fixture.Inject(_httpClientFactory);
-        var sut = new OfferSetupService(_httpClientFactory, _fixture.Create<ILogger<OfferSetupService>>());
+        var sut = new OfferSetupService(_httpClientFactory);
 
         // Act
         async Task Action() => await sut.AutoSetupOffer(_fixture.Create<OfferThirdPartyAutoSetupData>(), _iamUser.UserEntityId, _accessToken, "https://www.superservice.com").ConfigureAwait(false);

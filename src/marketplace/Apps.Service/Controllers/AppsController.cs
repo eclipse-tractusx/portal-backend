@@ -21,7 +21,6 @@
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -109,10 +108,10 @@ public class AppsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
+    public async Task<CreatedAtRouteResult> CreateAppAsync([FromBody] AppInputModel appInputModel)
     {
         var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new { appId }, appId);
     }
 
     /// <summary>
@@ -210,9 +209,43 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, auth.iamUserId, auth.bearerToken));
+        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, Enumerable.Empty<OfferAgreementConsentData>(), auth.iamUserId, auth.bearerToken));
         return NoContent();
     }
+
+    /// <summary>
+    /// Adds an app to current user's company's subscriptions.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
+    /// <param name="offerAgreementConsentData">The agreement consent data</param>
+    /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
+    /// <response code="204">App was successfully subscribed to.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If appId does not exist.</response>
+    [HttpPost]
+    [Route("{appId}/subscribe-consent")]
+    [Authorize(Roles = "subscribe_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
+    {
+        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData, auth.iamUserId, auth.bearerToken));
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Gets all agreements 
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the app consent to retrieve.</param>
+    /// <remarks>Example: GET: /api/apps/appAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <response code="200">Returns the app agreement data.</response>
+    [HttpGet]
+    [Route("appAgreementData/{appId}")]
+    [Authorize(Roles = "subscribe_apps")]
+    [ProducesResponseType(typeof(AgreementData), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementData> GetAppAgreement([FromRoute] Guid appId) =>
+        _appsBusinessLogic.GetAppAgreement(appId);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
@@ -269,62 +302,6 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<AllAppData> GetAppDataAsync()=>
         this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(userId));
-    
-
-    /// <summary>
-    /// Creates an app according to request model
-    /// </summary>
-    /// <param name="appRequestModel">Request model for app creation.</param>
-    /// <returns>ID of created application.</returns> 
-    /// <remarks>Example: POST: /api/apps/createapp</remarks>
-    /// <response code="201">Returns created app's ID.</response>
-    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
-    [HttpPost]
-    [Route("createapp")]
-    [Authorize(Roles = "add_app")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
-    {
-        var appId = await _appsBusinessLogic.AddAppAsync(appRequestModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
-    }
-
-    /// <summary>
-    /// Retrieves all in review status apps in the marketplace .
-    /// </summary>
-    /// <param name="page">page index start from 0</param>
-    /// <param name="size">size to get number of records</param>
-    /// <returns>Collection of all in review status marketplace apps.</returns>
-    /// <remarks>Example: GET: /api/apps/inReview</remarks>
-    /// <response code="200">Returns the list of all in review status marketplace apps.</response>
-    [HttpGet]
-    [Route("inReview")]
-    [Authorize(Roles = "approve_app_release,decline_app_release")]
-    [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
-        _appsBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
-
-    /// <summary>
-    /// Submit an app for release
-    /// </summary>
-    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app.</param>
-    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit</remarks>
-    /// <response code="204">The app was successfully submitted for release.</response>
-    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
-    /// <response code="404">App does not exist.</response>
-    [HttpPut]
-    [Route("{appId}/submit")]
-    [Authorize(Roles = "add_app")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
-    {
-        await this.WithIamUserId(userId => _appsBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
-        return NoContent();
-    }
 
     /// <summary>
     /// Auto setup the app

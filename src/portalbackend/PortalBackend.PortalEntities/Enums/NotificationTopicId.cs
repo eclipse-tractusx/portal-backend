@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
+ * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN.Model;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BPN
+/// <summary>
+/// Possible topic of a notification
+/// </summary>
+public enum NotificationTopicId
 {
-    public interface IBPNAccess
-    {
-        Task<List<FetchBusinessPartnerDto>> FetchBusinessPartner(string bpn, string token);
-    }
+    /// <summary>
+    /// Notification is just an information for the user
+    /// </summary>
+    INFO = 1,
+    
+    /// <summary>
+    /// Notification that requires an action
+    /// </summary>
+    ACTION = 2,
+
+    /// <summary>
+    /// Offer related notification
+    /// </summary>
+    OFFER = 3,
 }

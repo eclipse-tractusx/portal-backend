@@ -60,7 +60,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var content = Encoding.UTF8.GetBytes(test);
 
         // Act
-        var result = sut.CreateDocument("New Document", content, content, DocumentTypeId.DATA_CONTRACT, doc =>
+        var result = sut.CreateDocument("New Document", content, content, DocumentTypeId.APP_DATA_DETAILS, doc =>
         {
             doc.DocumentStatusId = DocumentStatusId.INACTIVE;
         });
@@ -68,7 +68,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        result.DocumentTypeId.Should().Be(DocumentTypeId.DATA_CONTRACT);
+        result.DocumentTypeId.Should().Be(DocumentTypeId.APP_DATA_DETAILS);
         result.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
