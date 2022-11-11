@@ -108,10 +108,10 @@ public class AppsController : ControllerBase
     [Route("")]
     [Authorize(Roles = "add_app")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<ActionResult<Guid>> CreateAppAsync([FromBody] AppInputModel appInputModel)
+    public async Task<CreatedAtRouteResult> CreateAppAsync([FromBody] AppInputModel appInputModel)
     {
         var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new {appId = appId}, appId);
+        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new { appId }, appId);
     }
 
     /// <summary>

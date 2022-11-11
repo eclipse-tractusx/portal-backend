@@ -39,7 +39,7 @@ public interface INotificationRepository
     Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
         bool isRead, Action<Notification>? setOptionalParameter = null);
 
-    Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameters = null);
+    Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null);
 
     Notification DeleteNotification(Guid notificationId);
 
@@ -50,8 +50,7 @@ public interface INotificationRepository
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    IAsyncEnumerable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId,
-        bool? isRead, NotificationTypeId? typeId);
+    IQueryable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
@@ -76,4 +75,11 @@ public interface INotificationRepository
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
     Task<(bool IsUserExisting, int Count)> GetNotificationCountForIamUserAsync(string iamUserId, bool? isRead);
+
+    /// <summary>
+    /// Gets the count details of the notifications for the given user
+    /// </summary>
+    /// <param name="iamUserId">id of the iam user</param>
+    /// <returns>Returns the notification count details</returns>
+    IAsyncEnumerable<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId);
 }

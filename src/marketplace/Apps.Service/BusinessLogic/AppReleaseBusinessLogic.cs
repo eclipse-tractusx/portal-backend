@@ -168,20 +168,20 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if (appId == Guid.Empty)
         {
-            throw new ArgumentException($"AppId must not be empty");
+            throw new ControllerArgumentException($"AppId must not be empty");
         }
         if (!_settings.DocumentTypeIds.Contains(documentTypeId))
         {
-            throw new ArgumentException($"documentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
         }
         if (string.IsNullOrEmpty(document.FileName))
         {
-            throw new ArgumentException("File name is must not be null");
+            throw new ControllerArgumentException("File name is must not be null");
         }
-        // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+        // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+        if (!_settings.ContentTypeSettings.Contains(document.ContentType))
         {
-            throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
+            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", _settings.ContentTypeSettings)} are allowed.");
         }
         return UploadAppDoc(appId, documentTypeId, document, iamUserId, cancellationToken);
     }

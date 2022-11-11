@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,9 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
 
-public interface IMailingService
+/// <summary>
+/// Settings for the notification service
+/// </summary>
+public class NotificationSettings
 {
-    Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates);
+    /// <summary>
+    /// Max Page Size
+    /// </summary>
+    public int MaxPageSize { get; set; }
 }
