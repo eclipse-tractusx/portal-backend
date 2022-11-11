@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -77,14 +78,23 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting sorting = NotificationSorting.DateDesc)
     {
         var source =  _portalRepositories.GetInstance<INotificationRepository>()
-            .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId, sorting);
+            .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId);
         return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
             new Pagination.AsyncSource<NotificationDetailData>
             (
                 source.CountAsync(),
                 source
+                    .GetNotificationOrderByQuery(sorting)
                     .Skip(skip)
                     .Take(take)
+                    .Select(notification => new NotificationDetailData(
+                        notification.Id,
+                        notification.DateCreated,
+                        notification.NotificationTypeId,
+                        notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
+                        notification.IsRead,
+                        notification.Content,
+                        notification.DueDate))
                     .AsAsyncEnumerable()
             )
         );
