@@ -326,19 +326,19 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
-            throw new ControllerArgumentException($"Company Id must not be null or empty"); 
+            throw new ControllerArgumentException("Company Id must not be null or empty", nameof(appRequestModel.ProviderCompanyId)); 
         }
 
-        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
+        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(string.IsNullOrWhiteSpace);
         if (emptyLanguageCodes.Any())
         {
-            throw new ControllerArgumentException($"Language Codes must not be null or empty"); 
+            throw new ControllerArgumentException("Language Codes must not be null or empty", nameof(appRequestModel.SupportedLanguageCodes)); 
         }
         
         var emptyUseCaseIds = appRequestModel.UseCaseIds.Where(item => item == Guid.Empty);
         if (emptyUseCaseIds.Any())
         {
-            throw new ControllerArgumentException($"Use Case Ids must not be null or empty");
+            throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
         
         return this.CreateAppAsync(appRequestModel, iamUserId);
@@ -480,7 +480,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             .ConfigureAwait(false);
         if (responseData == default)
         {
-            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}");
+            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}", nameof(appRequestModel.SalesManagerId));
         }
 
         if (!responseData.IsSameCompany)
@@ -491,7 +491,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         if (userRoleIds.Except(responseData.RoleIds).Any())
         {
             throw new ControllerArgumentException(
-                $"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
+                $"User {appRequestModel.SalesManagerId} does not have sales Manager Role", nameof(appRequestModel.SalesManagerId));
         }
     }
 
