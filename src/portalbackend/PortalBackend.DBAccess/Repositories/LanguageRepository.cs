@@ -53,8 +53,4 @@ public class LanguageRepository : ILanguageRepository
             .Where(x => languageCodes.Contains(x.ShortName))
             .Select(x => x.ShortName)
             .AsAsyncEnumerable();
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<string> CheckLanguagesExistsAsync(IEnumerable<string> languages) =>
-        _portalDbContext.Languages.Where(l => languages.Any(x => x == l.ShortName)).Select(l => l.ShortName).AsAsyncEnumerable();
 }
