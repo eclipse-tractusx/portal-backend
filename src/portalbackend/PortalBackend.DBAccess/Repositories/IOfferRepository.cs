@@ -241,10 +241,10 @@ public interface IOfferRepository
     /// <summary>
     /// Updates the licenseText of the given offerLicense
     /// </summary>
-    /// <param name="id">id of the offer license</param>
+    /// <param name="offerLicenseId">id of the offer license</param>
     /// <param name="licenseText">the new text</param>
     /// <returns>the updated entity</returns>
-    OfferLicense AttachAndModifyOfferLicense(Guid id, string licenseText);
+    OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, string licenseText);
 
     /// <summary>
     /// Removes the app assigned offer license from the database

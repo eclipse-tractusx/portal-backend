@@ -80,7 +80,6 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     
     #region AttachAndModifyNotification
     
-    
     [Fact]
     public async Task AttachAndModifyNotification_WithExistingNotification_UpdatesStatus()
     {
