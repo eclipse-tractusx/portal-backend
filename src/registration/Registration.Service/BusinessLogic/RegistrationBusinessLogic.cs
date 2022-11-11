@@ -307,6 +307,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             inviteTemplateName = "inviteWithMessage";
         }
+
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
         
         var mailParameters = new Dictionary<string, string>

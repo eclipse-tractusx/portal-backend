@@ -137,11 +137,11 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         applicationRepository.CreateInvitation(application.Id, companyUserId);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(idpName).ConfigureAwait(false);
+
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password ?? "" },
-            { "companyName", companyDisplayName },
+            { "companyName", invitationData.organisationName },
             { "url", $"{_settings.RegistrationAppAddress}"},
         };
 
