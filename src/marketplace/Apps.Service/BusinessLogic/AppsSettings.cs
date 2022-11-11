@@ -54,6 +54,12 @@ public class AppsSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
+    
+    /// <summary>
+    /// Service account roles
+    /// </summary>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
 }
 
 /// <summary>

@@ -20,12 +20,12 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
@@ -94,11 +94,11 @@ public class OfferRepositoryTests
         var sut = _fixture.Create<OfferRepository>();
 
         // Act
-        var result = await sut.GetAppDetailsByIdAsync(apps.Single().Id, Guid.NewGuid().ToString(), null);
+        var result = await sut.GetOfferDetailsByIdAsync(apps.Single().Id, Guid.NewGuid().ToString(), null, Constants.DefaultLanguage, OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().BeOfType<AppDetailsData>();
-        result.Id.Should().Be(apps.Single().Id);
+        result.Should().BeOfType<OfferDetailsData>();
+        result.Should().Match<OfferDetailsData>(r => r.Id == apps.Single().Id);
     }
 }

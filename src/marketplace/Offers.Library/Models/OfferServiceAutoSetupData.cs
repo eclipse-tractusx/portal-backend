@@ -30,6 +30,20 @@ public record OfferAutoSetupData(Guid RequestId, string OfferUrl);
 /// <summary>
 /// Response data for the service auto setup
 /// </summary>
+/// <param name="TechnicalUserInfo">Object containing the information of the technical user</param>
+/// <param name="ClientInfo">Information of the created client</param>
+public record OfferAutoSetupResponseData(TechnicalUserInfoData TechnicalUserInfo, ClientInfoData ClientInfo);
+
+/// <summary>
+/// Technical User information
+/// </summary>
 /// <param name="TechnicalUserId">Id of the created technical user</param>
 /// <param name="TechnicalUserSecret">User secret for the created user</param>
-public record OfferAutoSetupResponseData(Guid TechnicalUserId, string? TechnicalUserSecret);
+/// <param name="TechnicalClientId">User secret for the created user</param>
+public record TechnicalUserInfoData(Guid TechnicalUserId, string? TechnicalUserSecret, string? TechnicalClientId);
+
+/// <summary>
+/// Client infos
+/// </summary>
+/// <param name="ClientId">Id of the created client</param>
+public record ClientInfoData(string ClientId);

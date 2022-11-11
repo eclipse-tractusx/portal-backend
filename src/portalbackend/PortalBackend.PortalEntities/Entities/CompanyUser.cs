@@ -20,16 +20,15 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUser : IAuditable
+[AuditEntityV1(typeof(AuditCompanyUser20221005))]
+public class CompanyUser : IAuditableV1
 {
-    /// <summary>
-    /// Only needed for ef and the audit entity
-    /// </summary>
-    public CompanyUser()
+    private CompanyUser()
     {
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();
@@ -74,7 +73,7 @@ public class CompanyUser : IAuditable
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     // Navigation properties

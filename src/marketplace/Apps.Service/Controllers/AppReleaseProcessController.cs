@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
@@ -77,7 +78,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
     /// <param name="cancellationToken"></param>
-    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/apprelease/{appId}/documentType/{documentTypeId}/documents</remarks>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/updateappdoc/{appId}/documentType/{documentTypeId}/documents</remarks>
     /// <response code="200">Successfully uploaded the document</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
@@ -94,7 +95,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public Task<int> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-         this.WithIamUserId(userId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, userId, cancellationToken));
+         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, iamUserId, cancellationToken));
     
     /// <summary>
     /// Add role and role description for App 
@@ -104,18 +105,16 @@ public class AppReleaseProcessController : ControllerBase
     /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role</remarks>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="200">created role and role description successfully.</response>
     [HttpPost]
     [Route("{appId}/role")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)
-    {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, userId)).ConfigureAwait(false);
-        return NoContent();
-    }
-    
+    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
+         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
+
     /// <summary>
     /// Return Agreement Data for offer_type_id App
     /// </summary>
@@ -172,8 +171,8 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("{appId}/appStatus")]
     [Authorize(Roles = "app_management")]
-    [ProducesResponseType(typeof(OfferProviderData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<OfferProviderData> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
+    public Task<OfferProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
 }

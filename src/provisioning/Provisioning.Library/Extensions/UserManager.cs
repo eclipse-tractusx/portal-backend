@@ -119,11 +119,7 @@ public partial class ProvisioningManager
         newUser.Email = profile.Email;
         if (attributes.Any())
         {
-            newUser.Attributes ??= new Dictionary<string,IEnumerable<string>>();
-            foreach (var attribute in attributes)
-            {
-                newUser.Attributes[attribute.Name] = attribute.Values;
-            }
+            newUser.Attributes = attributes.Where(a => a.Values.Any()).ToDictionary(a => a.Name, a => a.Values);
         }
         var newUserId = await _CentralIdp.CreateAndRetrieveUserIdAsync(_Settings.CentralRealm, newUser).ConfigureAwait(false);
         if (newUserId == null)

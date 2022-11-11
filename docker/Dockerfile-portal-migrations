@@ -6,6 +6,8 @@ WORKDIR /
 RUN dotnet tool install dotnet-ef -g
 ENV PATH $PATH:/root/.dotnet/tools
 COPY /src/portalbackend /src/portalbackend
+COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
+COPY /src/framework/Framework.BaseDependencies /src/framework/Framework.BaseDependencies
 WORKDIR /src/portalbackend/PortalBackend.Migrations
 RUN dotnet-ef migrations bundle -r linux-x64
 

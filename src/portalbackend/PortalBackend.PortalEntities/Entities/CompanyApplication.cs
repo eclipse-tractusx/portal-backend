@@ -18,12 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyApplication : IAuditable
+[AuditEntityV1(typeof(AuditCompanyApplication20221005))]
+public class CompanyApplication : IAuditableV1
 {
     protected CompanyApplication()
     {
@@ -47,7 +49,7 @@ public class CompanyApplication : IAuditable
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
     public Guid CompanyId { get; private set; }
 
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     // Navigation properties
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }

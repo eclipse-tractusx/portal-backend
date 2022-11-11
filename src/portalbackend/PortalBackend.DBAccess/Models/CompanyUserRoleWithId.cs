@@ -20,13 +20,6 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class UserRoleWithId
-{
-    public UserRoleWithId(string companyUserRoleText, Guid companyUserRoleId)
-    {
-        CompanyUserRoleText = companyUserRoleText;
-        CompanyUserRoleId = companyUserRoleId;
-    }
-    public string CompanyUserRoleText { get; set; }
-    public Guid CompanyUserRoleId { get; set; }
-}
+public record UserRoleWithId(string CompanyUserRoleText, Guid CompanyUserRoleId);
+
+public record UserRoleModificationData(string CompanyUserRoleText, Guid CompanyUserRoleId, bool IsAssignedToUser);

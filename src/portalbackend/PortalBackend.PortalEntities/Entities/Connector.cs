@@ -49,13 +49,23 @@ public class Connector
 
     public Guid? HostId { get; set; }
 
+    /// <summary>
+    /// Link to the self description document
+    /// </summary>
+    public Guid? SelfDescriptionDocumentId { get; set; }
+
     [StringLength(2, MinimumLength = 2)]
     public string LocationId { get; set; }
 
     // Navigation properties
-    public ConnectorType? Type { get; set; }
-    public ConnectorStatus? Status { get; set; }
-    public Company? Provider { get; set; }
-    public Company? Host { get; set; }
-    public Country? Location { get; set; }
+    public virtual ConnectorType? Type { get; set; }
+    public virtual ConnectorStatus? Status { get; set; }
+    public virtual Company? Provider { get; set; }
+    public virtual Company? Host { get; set; }
+    public virtual Country? Location { get; set; }
+    
+    /// <summary>
+    /// Mapping to the assigned document
+    /// </summary>
+    public virtual Document? SelfDescriptionDocument { get; set; }
 }

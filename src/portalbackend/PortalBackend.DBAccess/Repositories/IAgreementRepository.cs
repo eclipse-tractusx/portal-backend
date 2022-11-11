@@ -49,7 +49,7 @@ public interface IAgreementRepository
     /// Gets the agreement data untracked from the database
     /// </summary>
     /// <returns>Returns an async enumerable of agreement data</returns>
-    IAsyncEnumerable<AgreementData> GetAgreementsForCompanyRolesUntrackedAsync();
+    IAsyncEnumerable<AgreementDocumentData> GetAgreementsForCompanyRolesUntrackedAsync();
 
     /// <summary>
     /// Return all agreements for agreement category app_contract

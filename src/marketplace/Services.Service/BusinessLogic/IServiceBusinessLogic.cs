@@ -42,15 +42,16 @@ public interface IServiceBusinessLogic
     /// <param name="data">The data to create the service offering</param>
     /// <param name="iamUserId">the iamUser id</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOffering(ServiceOfferingData data, string iamUserId);
+    Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId);
 
     /// <summary>
     /// Adds a subscription to the given service
     /// </summary>
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
     /// <param name="iamUserId">Id of the user</param>
+    /// <param name="accessToken">The access token of the user</param>
     /// <returns></returns>
-    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId);
+    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken);
 
     /// <summary>
     /// Gets the service detail data for the given service
@@ -106,5 +107,5 @@ public interface IServiceBusinessLogic
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupService(OfferAutoSetupData data, string iamUserId);
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId);
 }

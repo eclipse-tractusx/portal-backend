@@ -18,88 +18,84 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using FakeItEasy;
-using Xunit;
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Xunit;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
+
+public class RegistrationControllerTest
 {
-    public class RegistrationControllerTest
+    private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
+    private readonly IRegistrationBusinessLogic _logic;
+    private readonly RegistrationController _controller;
+    private readonly IFixture _fixture;
+    public RegistrationControllerTest()
     {
-        private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-        private readonly IRegistrationBusinessLogic _logic;
-        private readonly RegistrationController _controller;
-        private readonly IFixture _fixture;
-        public RegistrationControllerTest()
-        {
-            _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-            _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-            _logic = A.Fake<IRegistrationBusinessLogic>();
-            this._controller = new RegistrationController(_logic);
-            _controller.AddControllerContextWithClaim(IamUserId);
-        }
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+        .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _logic = A.Fake<IRegistrationBusinessLogic>();
+        this._controller = new RegistrationController(_logic);
+        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken);
+    }
 
-        [Fact]
-        public async Task Test1()
-        {
-            //Arrange
-            var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, id))
-                      .Returns(true);
+    [Fact]
+    public async Task Test1()
+    {
+        //Arrange
+        var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
+        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, id, A<CancellationToken>._))
+                  .Returns(true);
 
-            //Act
-            var result = await this._controller.ApprovePartnerRequest(id).ConfigureAwait(false);
+        //Act
+        var result = await this._controller.ApprovePartnerRequest(id, CancellationToken.None).ConfigureAwait(false);
 
-            //Assert
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, id)).MustHaveHappenedOnceExactly();
-            Assert.IsType<bool>(result);
-            Assert.True(result);
-        }
+        //Assert
+        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, id, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<bool>(result);
+        Assert.True(result);
+    }
 
-        [Fact]
-        public async Task Test2()
-        {
-            //Arrange
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty))
-                      .Returns(false);
+    [Fact]
+    public async Task Test2()
+    {
+        //Arrange
+        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty, A<CancellationToken>._))
+                  .Returns(false);
 
-            //Act
-            var result = await this._controller.ApprovePartnerRequest(Guid.Empty).ConfigureAwait(false);
+        //Act
+        var result = await this._controller.ApprovePartnerRequest(Guid.Empty, CancellationToken.None).ConfigureAwait(false);
 
-            //Assert
-            A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, Guid.Empty)).MustHaveHappenedOnceExactly();
-            Assert.IsType<bool>(result);
-            Assert.False(result);
-        }
+        //Assert
+        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<bool>(result);
+        Assert.False(result);
+    }
 
-        [Fact]
-        public async Task GetCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
-        {
-             //Arrange
-            var paginationResponse = new Pagination.Response<CompanyApplicationDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyApplicationDetails>(5));
-            A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null))
-                      .Returns(paginationResponse);
+    [Fact]
+    public async Task GetCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
+    {
+         //Arrange
+        var paginationResponse = new Pagination.Response<CompanyApplicationDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyApplicationDetails>(5));
+        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null))
+                  .Returns(paginationResponse);
 
-            //Act
-            var result = await this._controller.GetApplicationDetailsAsync(0, 15,null).ConfigureAwait(false);
+        //Act
+        var result = await this._controller.GetApplicationDetailsAsync(0, 15,null).ConfigureAwait(false);
 
-            //Assert
-            A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null)).MustHaveHappenedOnceExactly();
-            Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
-            result.Content.Should().HaveCount(5);
-        }
+        //Assert
+        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+        result.Content.Should().HaveCount(5);
     }
 }

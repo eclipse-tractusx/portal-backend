@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using PasswordGenerator;
-
+using System.Runtime.CompilerServices;
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 public class UserProvisioningService : IUserProvisioningService
@@ -45,7 +45,11 @@ public class UserProvisioningService : IUserProvisioningService
         _portalRepositories = portalRepositories;
     }
 
-    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, Exception? Error)> CreateOwnCompanyIdpUsersAsync(CompanyNameIdpAliasData companyNameIdpAliasData, string clientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos)
+    public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(
+        CompanyNameIdpAliasData companyNameIdpAliasData,
+        string clientId,
+        IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -56,37 +60,33 @@ public class UserProvisioningService : IUserProvisioningService
             .GetUserRolesWithIdAsync(clientId)
             .ToDictionaryAsync(
                 roleWithId => roleWithId.Role,
-                roleWithId => roleWithId.Id
+                roleWithId => roleWithId.Id,
+                cancellationToken
             )
             .ConfigureAwait(false);
 
-        var password = isSharedIdp ? new Password() : null;
+        var passwordProvider = new OptionalPasswordProvider(isSharedIdp);
 
         await foreach(var user in userCreationInfos)
         {
-            CompanyUser? companyUser = null;
+            IamUser? iamUser = null;
             Exception? error = null;
+
+            var nextPassword = passwordProvider.NextOptionalPassword();
 
             try
             {
-                await ValidateDuplicateUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
+                ValidateRoles(user.Roles, userRoleIds);
 
-                companyUser = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId);
+                var existingCompanyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
 
-                var providerUserId = isSharedIdp
-                    ? await _provisioningManager.CreateSharedRealmUserAsync(
-                        alias,
-                        new UserProfile(
-                            user.UserName,
-                            user.FirstName,
-                            user.LastName,
-                            user.Email,
-                            password!.Next())).ConfigureAwait(false)
-                    : user.UserId;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
 
                 var centralUserId = await _provisioningManager.CreateCentralUserAsync(
                     new UserProfile(
-                        alias + "." + companyUser.Id,
+                        alias + "." + providerUserId,
                         user.FirstName,
                         user.LastName,
                         user.Email
@@ -98,25 +98,62 @@ public class UserProvisioningService : IUserProvisioningService
                     )
                 ).ConfigureAwait(false);
 
-                userRepository.CreateIamUser(companyUser, centralUserId);
-
                 await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
 
-                await AssignRolesToNewUserAsync(userRolesRepository, user.Roles, companyUser.Id, centralUserId, clientId, userRoleIds).ConfigureAwait(false);
+                iamUser = CreateOptionalCompanyUserAndIamUser(userRepository, user, centralUserId, companyId, creatorId, existingCompanyUserId);
+
+                await AssignRolesToNewUserAsync(userRolesRepository, user.Roles, iamUser, clientId, userRoleIds).ConfigureAwait(false);
             }
             catch (Exception e)
             {
+                if (e is OperationCanceledException)
+                {
+                    throw;
+                }
                 error = e;
             }
-            if(companyUser == null && error == null)
+            if(iamUser == null && error == null)
             {
                 error = new UnexpectedConditionException($"failed to create companyUser for provider userid {user.UserId}, username {user.UserName} while not throwing any error");
             }
             
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-            yield return new (companyUser?.Id ?? Guid.Empty, user.UserName, error);
+            yield return new (iamUser?.CompanyUserId ?? Guid.Empty, user.UserName, nextPassword, error);
         }
+    }
+
+    private sealed class OptionalPasswordProvider
+    {
+        readonly Password? password;
+        
+        public OptionalPasswordProvider(bool createOptionalPasswords)
+        {
+            password = createOptionalPasswords ? new Password() : null;
+        }
+
+        public string? NextOptionalPassword() => password?.Next();
+    }
+
+    private Task<string> CreateSharedIdpUserOrReturnUserId(UserCreationInfoIdp user, string alias, string? password, bool isSharedIdp) =>
+        isSharedIdp
+            ? _provisioningManager.CreateSharedRealmUserAsync(
+                alias,
+                new UserProfile(
+                    user.UserName,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    password))
+            : Task.FromResult(user.UserId);
+
+    private static IamUser CreateOptionalCompanyUserAndIamUser(IUserRepository userRepository, UserCreationInfoIdp user, string centralUserId, Guid companyId, Guid creatorId, Guid existingCompanyUserId)
+    {
+        var companyUserId = existingCompanyUserId == Guid.Empty
+            ? userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId).Id
+            : existingCompanyUserId;
+
+        return userRepository.CreateIamUser(companyUserId, centralUserId);
     }
 
     public async Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
@@ -140,10 +177,41 @@ public class UserProvisioningService : IUserProvisioningService
         return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, result.IsSharedIdp);
     }
 
-    private async Task ValidateDuplicateUsersAsync(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
+    public async Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId)
     {
-        await foreach (var userEntityId in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameSharedIdpAliasUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+        }
+
+        if (result.IdpAlias == null)
+        {
+            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any shared idp");
+        }
+
+        if (result.CompanyName == null)
+        {
+            throw new ConflictException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+        }
+
+        return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, true);
+    }
+
+    private async Task<Guid> ValidateDuplicateIdpUsersAsync(IUserRepository userRepository, string alias, UserCreationInfoIdp user, Guid companyId)
+    {
+        Guid existingCompanyUserId = Guid.Empty;
+
+        await foreach (var (userEntityId, companyUserId) in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))
+        {
+            if (userEntityId == null)
+            {
+                if (companyUserId != Guid.Empty)
+                {
+                    existingCompanyUserId = companyUserId;
+                }
+                continue;
+            }
             try
             {
                 if (await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userEntityId).AnyAsync(link =>
@@ -157,9 +225,10 @@ public class UserProvisioningService : IUserProvisioningService
                 // when searching for duplicates this is not a validation-error
             }
         }
+        return existingCompanyUserId;
     }
 
-    private async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<string> roles, Guid companyUserId, string centralUserId, string clientId, IDictionary<string,Guid> userRoleIds)
+    private static void ValidateRoles(IEnumerable<string> roles,IDictionary<string,Guid> userRoleIds)
     {
         if (roles.Any())
         {
@@ -168,14 +237,21 @@ public class UserProvisioningService : IUserProvisioningService
             {
                 throw new ControllerArgumentException($"invalid Roles: [{string.Join(", ",invalidRoles)}]");
             }
+        }
+    }
+
+    private async Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<string> roles, IamUser iamUser, string clientId, IDictionary<string,Guid> userRoleIds)
+    {
+        if (roles.Any())
+        {
             var clientRoleNames = new Dictionary<string, IEnumerable<string>>
             {
                 { clientId, roles }
             };
-            var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(centralUserId, clientRoleNames).ConfigureAwait(false)).Single();
+            var (_, assignedRoles) = (await _provisioningManager.AssignClientRolesToCentralUserAsync(iamUser.UserEntityId, clientRoleNames).ConfigureAwait(false)).Single();
             foreach (var role in assignedRoles)
             {
-                userRolesRepository.CreateCompanyUserAssignedRole(companyUserId, userRoleIds[role]);
+                userRolesRepository.CreateCompanyUserAssignedRole(iamUser.CompanyUserId, userRoleIds[role]);
             }
             if (assignedRoles.Count() < roles.Count())
             {
