@@ -66,7 +66,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
+    public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
         return NoContent();
@@ -190,7 +190,7 @@ public class AppReleaseProcessController : ControllerBase
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
+    public async Task<NoContentResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
     {
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
         return NoContent();
@@ -222,7 +222,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Guid>> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
+    public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
         return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new {controller = "Apps", appId = appId}, appId);
@@ -278,7 +278,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
+    public async Task<NoContentResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();

@@ -199,41 +199,30 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                         .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)))
                 .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias, bool IsSharedIdp)> GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
-        _context.IamUsers
-            .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => new {
-                Company = iamUser!.CompanyUser!.Company,
-                CompanyUser = iamUser.CompanyUser,
-                IdentityProvider = iamUser!.CompanyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
-            })
-            .Select(s => new ValueTuple<Guid,string?,string?,Guid,string?,bool>(
-                s.Company!.Id,
-                s.Company.Name,
-                s.Company!.BusinessPartnerNumber,
-                s.CompanyUser!.Id,
-                s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
-                s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED
-            ))
-            .SingleOrDefaultAsync();
-
-    public Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias)> GetCompanyNameSharedIdpAliasUntrackedAsync(string iamUserId) =>
-        _context.IamUsers
-            .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => new {
-                Company = iamUser!.CompanyUser!.Company,
-                CompanyUser = iamUser.CompanyUser,
-                IdentityProvider = iamUser!.CompanyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-            })
-            .Select(s => new ValueTuple<Guid,string?,string?,Guid,string?>(
-                s.Company!.Id,
-                s.Company.Name,
-                s.Company!.BusinessPartnerNumber,
-                s.CompanyUser!.Id,
-                s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias
-            ))
-            .SingleOrDefaultAsync();
-
+    public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
+        (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
+        (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>
+        GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId) =>
+            _context.CompanyUsers
+                .AsNoTracking()
+                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                .Select(companyUser => new {
+                    Company = companyUser!.Company,
+                    CompanyUser = companyUser,
+                    IdentityProvider = companyUser!.Company!.IdentityProviders.SingleOrDefault(identityProvider => identityProvider.Id == identityProviderId)
+                })
+                .Select(s => new ValueTuple<(Guid,string?,string?),(Guid,string?,string?,string?),(string?,bool)>(
+                    new ValueTuple<Guid,string?,string?>(
+                        s.Company!.Id,
+                        s.Company.Name,
+                        s.Company!.BusinessPartnerNumber),
+                    new ValueTuple<Guid,string?,string?,string?>(
+                        s.CompanyUser!.Id,
+                        s.CompanyUser.Firstname,
+                        s.CompanyUser.Lastname,
+                        s.CompanyUser.Email),
+                    new ValueTuple<string?,bool>(
+                        s.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                        s.IdentityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)))
+                .SingleOrDefaultAsync();
 }

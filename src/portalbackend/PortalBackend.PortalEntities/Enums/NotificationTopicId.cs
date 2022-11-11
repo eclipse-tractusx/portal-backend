@@ -18,9 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public interface IMailingService
+/// <summary>
+/// Possible topic of a notification
+/// </summary>
+public enum NotificationTopicId
 {
-    Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates);
+    /// <summary>
+    /// Notification is just an information for the user
+    /// </summary>
+    INFO = 1,
+    
+    /// <summary>
+    /// Notification that requires an action
+    /// </summary>
+    ACTION = 2,
+
+    /// <summary>
+    /// Offer related notification
+    /// </summary>
+    OFFER = 3,
 }

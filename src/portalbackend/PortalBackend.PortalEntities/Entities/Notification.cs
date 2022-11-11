@@ -28,19 +28,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 public class Notification
 {
     /// <summary>
-    /// Only needed for ef core
-    /// </summary>
-    private Notification()
-    {
-    }
-
-    /// <summary>
     /// Creates a new instance of <see cref="Notification"/> and sets the required values.
     /// </summary>
     /// <param name="id">Id of the notification</param>
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="dateCreated">The creation date</param>
-    /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
     public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
@@ -61,7 +53,7 @@ public class Notification
     public string? Content { get; set; }
 
     public NotificationTypeId NotificationTypeId { get; private set; }
-    
+
     public bool IsRead { get; set; }
 
     public DateTimeOffset? DueDate { get; set; }

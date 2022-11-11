@@ -18,9 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public interface IMailingService
-{
-    Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates);
-}
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+
+/// <summary>
+/// Detail count data of the notifications for a specific user
+/// </summary>
+/// <param name="Read">Count of all read messages</param>
+/// <param name="Unread">Count of all unread messages</param>
+/// <param name="InfoUnread">Count of all unread messages from type info</param>
+/// <param name="OfferUnread">Count of all unread messages from type offer</param>
+/// <param name="ActionRequired">Count of all unread messages from type action</param>
+public record NotificationCountDetails(int Read, int Unread, int InfoUnread, int OfferUnread, int ActionRequired);
