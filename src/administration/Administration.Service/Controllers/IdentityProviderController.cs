@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 
@@ -67,6 +67,7 @@ public class IdentityProviderController : ControllerBase
     /// Create an identity provider
     /// </summary>
     /// <param name="protocol">Type of the protocol the identity provider should be created for</param>
+    /// <param name="displayName">displayName of identityprovider to be set up (optional)</param>
     /// <returns>Returns details of the created identity provider</returns>
     /// <remarks>
     /// Example: POST: api/administration/identityprovider/owncompany/identityproviders
@@ -80,9 +81,9 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(IdentityProviderDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol)
+    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol, [FromQuery] string? displayName = null)
     {
-        var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, iamUserId)).ConfigureAwait(false);
+        var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, displayName, iamUserId)).ConfigureAwait(false);
         return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
     }
 

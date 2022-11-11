@@ -18,11 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 
 public interface IOfferSubscriptionService
 {
-    Task<Guid> AddOfferSubscriptionAsync(Guid offerId, string iamUserId, string accessToken, IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress);
+    Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken,
+        IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress);
 }

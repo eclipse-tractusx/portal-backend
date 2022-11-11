@@ -46,10 +46,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\administration\Administration.Service\Administration.Service.csproj" />
     <ProjectReference Include="..\..\..\src\marketplace\Apps.Service\Apps.Service.csproj" />
-    <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
+    <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
 
 </Project>

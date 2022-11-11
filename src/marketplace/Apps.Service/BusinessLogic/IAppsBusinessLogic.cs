@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -92,9 +91,10 @@ public interface IAppsBusinessLogic
     /// Adds a subscription relation between an application and a user's company.
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
+    /// <param name="offerAgreementConsentData">The agreement consent data</param>
     /// <param name="iamUserId">ID of the user that initiated app subscription for their company.</param>
     /// <param name="accessToken">Access token of the current User</param>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId, string accessToken);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
@@ -124,26 +124,6 @@ public interface IAppsBusinessLogic
     /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Async enumberable of company owned apps data</returns>
     IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId);
-    
-    /// <summary>
-    /// Creates an application and returns its generated ID.
-    /// </summary>
-    /// <param name="appRequestModel"></param>
-    /// <returns>Guid of the created app.</returns>
-    Task<Guid> AddAppAsync(AppRequestModel appRequestModel);
-
-    /// <summary>
-    /// Retrieves all in review status apps in the marketplace.
-    /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
-    
-    /// <summary>
-    /// Update app status and create notification
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Auto setup the app.
@@ -152,4 +132,12 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the response data</returns>
     Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
+
+    /// <summary>
+    /// Gets the app agreement data
+    /// </summary>
+    /// <param name="appId">Id of the app to get the agreements for</param>
+    /// <returns>Returns IAsyncEnumerable of agreement data</returns>
+    IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId);
+
 }
