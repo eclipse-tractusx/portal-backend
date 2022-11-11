@@ -59,7 +59,7 @@ public class NotificationType
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual NotificationTypeAssignedTopic? NotificationTypeAssignedTopic { get; private set; }
+    public virtual NotificationTypeAssignedTopic? NotificationTypeAssignedTopic { get; set; }
 
     public virtual ICollection<Notification> Notifications { get; private set; }
 }
