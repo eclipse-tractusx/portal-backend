@@ -32,7 +32,6 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using System.Text;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -79,7 +78,7 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await GetCompanyNameSharedIdpAliasCreatorData(iamUserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
 
         var distinctRoles = userList.SelectMany(user => user.Roles).Distinct().ToList();
 
@@ -99,6 +98,8 @@ public class UserBusinessLogic : IUserBusinessLogic
             user => user.userName ?? user.eMail,
             user => user.eMail);
 
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
+
         await foreach(var (_, userName, password, error) in _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).ConfigureAwait(false))
         {
             var email = emailData[userName];
@@ -112,6 +113,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "password", password ?? "" },
+                { "companyName", companyDisplayName },
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
             };
@@ -138,54 +140,10 @@ public class UserBusinessLogic : IUserBusinessLogic
         return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeyCloakClientID, roles, iamUserId);
     }
 
-    private async Task<(CompanyNameIdpAliasData CompanyNameIdpAliasData, string CreatedByName)> GetCompanyNameSharedIdpAliasCreatorData(string iamUserId)
-    {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
-        }
-        var (company, companyUser, idpAliase) = result;
-        if (company.CompanyName == null)
-        {
-            throw new UnexpectedConditionException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
-        }
-        if (!idpAliase.Any())
-        {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with any shared idp");
-        }
-        if (idpAliase.Count() > 1)
-        {
-            throw new ConflictException($"user {iamUserId} is associated with more than one shared idp");
-        }
-        
-        var companyNameIdpAliasData = new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, idpAliase.First(), true);
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, iamUserId);
-
-        return (companyNameIdpAliasData,createdByName);
-    }
-
-    private static string CreateNameString(string? firstName, string? lastName, string? email, string iamUserId)
-    {
-        StringBuilder sb = new StringBuilder();
-        if (firstName != null)
-        {
-            sb.Append(firstName);
-        }
-        if (lastName != null)
-        {
-            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
-        }
-        if (email != null)
-        {
-            sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
-        }
-        return firstName == null && lastName == null && email == null ? iamUserId : sb.ToString();
-    }
-
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
     {
-        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
         var roleDatas = await GetOwnCompanyUserRoleData(userCreationInfo.Roles, iamUserId).ConfigureAwait(false);
 
@@ -206,6 +164,30 @@ public class UserBusinessLogic : IUserBusinessLogic
         if(result.Error != null)
         {
             throw result.Error;
+        }
+
+        var mailParameters = new Dictionary<string,string>()
+        {
+            { "companyName", displayName },
+            { "nameCreatedBy", nameCreatedBy },
+            { "url", _settings.Portal.BasePortalAddress },
+        };
+
+        var mailTemplates = new List<string>() { "NewUserTemplate" };
+
+        if (companyNameIdpAliasData.IsSharedIdp)
+        {
+            mailParameters["password"] = result.Password;
+            mailTemplates.Add("NewUserPasswordTemplate");
+        }
+
+        try
+        {
+            await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
+        }
+        catch(Exception e)
+        {
+            _logger.LogError(e, "Error sending email to {Email} after creating user {UserName}", userCreationInfo.Email, userCreationInfo.UserName);
         }
         return result.CompanyUserId;
     }
