@@ -29,6 +29,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using PasswordGenerator;
 using System.Runtime.CompilerServices;
+using System.Text;
+
 namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
 
 public class UserProvisioningService : IUserProvisioningService
@@ -146,46 +148,71 @@ public class UserProvisioningService : IUserProvisioningService
         return userRepository.CreateIamUser(companyUserId, centralUserId);
     }
 
-    public async Task<CompanyNameIdpAliasData> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
+    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
         }
-
-        if (result.IdpAlias == null)
+        var (company, companyUser, identityProvider) = result;
+        if (identityProvider.IdpAlias == null)
         {
-            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with own idp {identityProviderId}");
+            throw new ControllerArgumentException($"user {iamUserId} is not associated with own idp {identityProviderId}");
         }
 
-        if (result.CompanyName == null)
+        if (company.CompanyName == null)
         {
-            throw new ConflictException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
+            throw new ConflictException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
         }
 
-        return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, result.IsSharedIdp);
+        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
+
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
     }
 
-    public async Task<CompanyNameIdpAliasData> GetCompanyNameSharedIdpAliasData(string iamUserId)
+    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameSharedIdpAliasUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
         }
-
-        if (result.IdpAlias == null)
+        var (company, companyUser, idpAliase) = result;
+        if (company.CompanyName == null)
         {
-            throw new ArgumentOutOfRangeException($"user {iamUserId} is not associated with any shared idp");
+            throw new ConflictException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
+        }
+        if (!idpAliase.Any())
+        {
+            throw new ConflictException($"user {iamUserId} is not associated with any shared idp");
+        }
+        if (idpAliase.Count() > 1)
+        {
+            throw new ConflictException($"user {iamUserId} is associated with more than one shared idp");
         }
 
-        if (result.CompanyName == null)
-        {
-            throw new ConflictException($"assertion failed: companyName of company {result.CompanyId} should never be null here");
-        }
+        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
 
-        return new CompanyNameIdpAliasData(result.CompanyId, result.CompanyName, result.BusinessPartnerNumber, result.companyUserId, result.IdpAlias, true);
+        return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, idpAliase.First(), true), createdByName);
+    }
+
+    private static string CreateNameString(string? firstName, string? lastName, string? email, Guid companyUserId)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (firstName != null)
+        {
+            sb.Append(firstName);
+        }
+        if (lastName != null)
+        {
+            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
+        }
+        if (email != null)
+        {
+            sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
+        }
+        return firstName == null && lastName == null && email == null ? companyUserId.ToString() : sb.ToString();
     }
 
     public Task<string> GetIdentityProviderDisplayName(string idpAlias) =>
