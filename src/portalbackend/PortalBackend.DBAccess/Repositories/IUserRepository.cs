@@ -124,5 +124,5 @@ public interface IUserRepository
     /// <param name="roleIds"></param>
     /// <param name="companyUserIdId"></param>
     /// <returns></returns>
-    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
+    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
 }

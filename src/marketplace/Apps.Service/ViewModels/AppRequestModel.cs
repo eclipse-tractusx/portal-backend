@@ -26,7 +26,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Title">Title</param>
 /// <param name="Provider">Provider</param>
 /// <param name="LeadPictureUri">LeadPictureUri</param>
-/// <param name="ProviderCompanyId">ProviderCompanyId</param>
 /// <param name="SalesManagerId">SalesManagerId</param>
 /// <param name="UseCaseIds">UseCaseIds</param>
 /// <param name="Descriptions">Descriptions</param>
@@ -34,4 +33,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Price">Price</param>
 /// <returns></returns>
 
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid ProviderCompanyId, Guid SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
