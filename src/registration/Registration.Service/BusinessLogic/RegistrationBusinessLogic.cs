@@ -307,11 +307,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             inviteTemplateName = "inviteWithMessage";
         }
-
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
+        
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password },
-            { "companyName", companyName },
+            { "companyName", companyDisplayName },
             { "message", userCreationInfo.Message ?? "" },
             { "nameCreatedBy", iamUserId },
             { "url", _settings.BasePortalAddress },
