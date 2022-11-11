@@ -415,10 +415,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
         var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));
-        var notExistingLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>().CheckLanguagesExistsAsync(newSupportedLanguages).ToListAsync().ConfigureAwait(false);
-        if (newSupportedLanguages.Except(notExistingLanguageCodes).Any())
+        var existingLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>().GetLanguageCodesUntrackedAsync(newSupportedLanguages).ToListAsync().ConfigureAwait(false);
+        if (newSupportedLanguages.Except(existingLanguageCodes).Any())
         {
-            throw new ControllerArgumentException($"The language(s) {string.Join(",", newSupportedLanguages.Except(notExistingLanguageCodes))} do not exist in the database.",
+            throw new ControllerArgumentException($"The language(s) {string.Join(",", newSupportedLanguages.Except(existingLanguageCodes))} do not exist in the database.",
                 nameof(appRequestModel.SupportedLanguageCodes));
         }
 
