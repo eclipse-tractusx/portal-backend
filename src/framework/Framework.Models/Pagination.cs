@@ -103,13 +103,13 @@ public class Pagination
             data);
     }
 
-    public static async Task<Response<T>?> CreateResponseAsync<T>(int page, int size, int maxSize, Func<int, int, Task<Source<T>?>> getSource)
+    public static async Task<Response<T>> CreateResponseAsync<T>(int page, int size, int maxSize, Func<int, int, Task<Source<T>?>> getSource)
     {
         ValidatePaginationParameters(page, size, maxSize);
 
         var source = await getSource(size * page, size).ConfigureAwait(false);
         return source == null
-            ? null
+            ? new Response<T>(new Metadata(0,0,0,0),Enumerable.Empty<T>())
             : new Response<T>(
                 new Metadata(
                     source.Count,
