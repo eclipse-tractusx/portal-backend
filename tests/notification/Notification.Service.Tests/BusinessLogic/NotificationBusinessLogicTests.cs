@@ -437,9 +437,9 @@ public class NotificationBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
-        var unreadNotificationDetails = new AsyncEnumerableStub<NotificationDetailData>(_unreadNotificationDetails);
-        var readNotificationDetails = new AsyncEnumerableStub<NotificationDetailData>(_readNotificationDetails);
-        var notificationDetails = new AsyncEnumerableStub<NotificationDetailData>(_notificationDetails);
+        var unreadNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(_fixture.CreateMany<PortalBackend.PortalEntities.Entities.Notification>(_unreadNotificationDetails.Count()));
+        var readNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(_fixture.CreateMany<PortalBackend.PortalEntities.Entities.Notification>(_readNotificationDetails.Count()));
+        var notificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(_fixture.CreateMany<PortalBackend.PortalEntities.Entities.Notification>(_notificationDetails.Count()));
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamUser.UserEntityId, companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>{new (_companyUser.Id, true), new (_companyUser.Id, false)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
@@ -456,14 +456,14 @@ public class NotificationBusinessLogicTests
 
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false,
-                    null, A<NotificationSorting>._))
+                    null))
             .Returns(unreadNotificationDetails.AsQueryable());
         A.CallTo(() =>
                 _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true,
-                    null, A<NotificationSorting>._))
+                    null))
             .Returns(readNotificationDetails.AsQueryable());
         A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<NotificationSorting>._))
+                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null))
             .Returns(notificationDetails.AsQueryable());
 
         A.CallTo(() =>
