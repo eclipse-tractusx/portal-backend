@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
@@ -38,7 +39,7 @@ public class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbContex
             config.GetConnectionString("PortalDb"),
             x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
                   .MigrationsHistoryTable("__efmigrations_history_portal")
-        );
+        ).UsePostgreSqlTriggers();
 
         return new PortalDbContext(optionsBuilder.Options);
     }

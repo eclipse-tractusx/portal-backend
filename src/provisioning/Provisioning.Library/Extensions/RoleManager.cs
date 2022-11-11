@@ -53,24 +53,33 @@ public partial class ProvisioningManager
         }
     }
 
+    public async Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames) =>
+        await Task.WhenAll(clientRoleNames.Select(async x =>
+            {
+                var (client, roleNames) = x;
+                var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
+                if (clientId == null || !roles.Any()) return;
+                
+                await _CentralIdp.DeleteClientRoleMappingsFromUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
+            }
+        )).ConfigureAwait(false);
+
     public async Task<IDictionary<string, IEnumerable<string>>> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames) =>
         (await Task.WhenAll(clientRoleNames.Select(async x =>
             {
                 var (client, roleNames) = x;
                 var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
-                if (clientId != null && roles.Any())
+                if (clientId == null || !roles.Any()) return (client: client, rolesList: Enumerable.Empty<string>());
+                
+                try
                 {
-                    try
-                    {
-                        await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
-                        return (client: client, rolesList: roles.Select(role => role.Name));
-                    }
-                    catch (Exception)
-                    {
-                        return (client: client, rolesList: Enumerable.Empty<string>());
-                    }
+                    await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
+                    return (client: client, rolesList: roles.Select(role => role.Name));
                 }
-                return (client: client, rolesList: Enumerable.Empty<string>());
+                catch (Exception)
+                {
+                    return (client: client, rolesList: Enumerable.Empty<string>());
+                }
             }
         )).ConfigureAwait(false))
         .ToDictionary(clientRole => clientRole.client, clientRole => clientRole.rolesList);

@@ -20,167 +20,102 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using FakeItEasy;
-using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit;
+using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
-/// Tests the logic of the <see cref="UserRepository"/>
+/// Tests the functionality of the <see cref="UserRepository"/>
 /// </summary>
-public class UserRepositoryTests
+public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
-    private readonly PortalDbContext _contextFake;
+    private readonly TestDbFixture _dbTestDbFixture;
+    private const string ValidIamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
 
-    public UserRepositoryTests()
+    public UserRepositoryTests(TestDbFixture testDbFixture)
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
+
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _dbTestDbFixture = testDbFixture;
+    }
 
-        _contextFake = A.Fake<PortalDbContext>();
+    #region GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync
+
+    [Fact]
+    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(ValidIamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
+        result.companyInformation.OrganizationName.Should().Be("Catena-X");
     }
 
     [Fact]
-    public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
+    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithNotExistingIamUser_ReturnsDefault()
     {
         // Arrange
-        var favouriteApps = _fixture.CreateMany<Offer>(10).ToList();
-        var (companyUser, iamUser) = CreateTestUserPair();
-        foreach (var app in favouriteApps)
-        {
-            companyUser.Offers.Add(app);
-        }
-        var iamUsersFakeDbSet = new List<IamUser>{ iamUser }.AsFakeDbSet();
-
-        A.CallTo(() => _contextFake.IamUsers).Returns(iamUsersFakeDbSet);
-        _fixture.Inject(_contextFake);
-
-        var sut = _fixture.Create<UserRepository>();
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllFavouriteAppsForUserUntrackedAsync(iamUser.UserEntityId).ToListAsync();
+        var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(favouriteApps.Count);
-        var favouriteAppIds = favouriteApps.Select(app => app.Id).ToList();
-        results.Should().BeEquivalentTo(favouriteAppIds);
-    }
-    
-    [Fact]
-    public async Task GetBusinessApps_ReturnsAppListSuccessfully()
-    {
-        // Arrange
-        var expectedApp = _fixture.Create<Offer>();
-        var (companyUser, iamUser) = CreateTestUserPair();
-        companyUser.Company!.BoughtOffers.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<Offer>())
-        {
-            companyUser.Company.BoughtOffers.Add(app);
-        }
-
-        var iamClient = _fixture.Create<IamClient>();
-        var expectedAppInstance = new AppInstance(Guid.NewGuid(), expectedApp.Id, iamClient.Id);
-        iamClient.AppInstances.Add(expectedAppInstance);
-        foreach (var appInstance in _fixture.CreateMany<AppInstance>())
-        {
-            iamClient.AppInstances.Add(appInstance);
-        }
-
-        foreach (var role in _fixture.Build<UserRole>().With(r => r.Offer, expectedApp).With(x => x.OfferId, expectedApp.Id).CreateMany())
-        {
-            companyUser.UserRoles.Add(role);
-        }
-
-        var iamUserFakeDbSet = new List<IamUser>() { iamUser }.AsFakeDbSet();
-
-        A.CallTo(() => _contextFake.IamUsers).Returns(iamUserFakeDbSet);
-        _fixture.Inject(_contextFake);
-
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync(iamUser.UserEntityId).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(1);
-        result.Single().Id.Should().Be(expectedApp.Id);
-    }
-
-    [Fact]
-    public async Task GetCompanyUserWithRoleId_ReturnsExpectedCompanyUsers()
-    {
-        // Arrange
-        var userRoles = _fixture.CreateMany<UserRole>(5);
-        userRoles.First().UserRoleText = "CX Admin";
-
-        var companyUser1 = _fixture.Build<CompanyUser>()
-            .With(x => x.CompanyUserStatusId, CompanyUserStatusId.ACTIVE)
-            .Create();
-        companyUser1.UserRoles.Add(userRoles.First());
-        var companyUser2 = _fixture.Build<CompanyUser>()
-            .With(x => x.CompanyUserStatusId, CompanyUserStatusId.ACTIVE)
-            .Create();
-        companyUser2.UserRoles.Add(userRoles.Last());
-        var companyUser3 = _fixture.Build<CompanyUser>()
-            .With(x => x.CompanyUserStatusId, CompanyUserStatusId.ACTIVE)
-            .Create();
-        companyUser3.UserRoles.Add(userRoles.Last());
-
-        var companyUsersDbSet = new List<CompanyUser>
-        {
-            companyUser1,
-            companyUser2,
-            companyUser3
-        }.AsFakeDbSet();
-
-        var userRolesDbSet = new List<CompanyUserAssignedRole>
-        {
-            new(companyUser1.Id, userRoles.First().Id),
-            new(companyUser2.Id, userRoles.Last().Id),
-            new(companyUser3.Id, userRoles.Last().Id),
-        }.AsFakeDbSet();
-        
-        A.CallTo(() => _contextFake.UserRoles).Returns(userRoles.AsFakeDbSet());
-        A.CallTo(() => _contextFake.CompanyUsers).Returns(companyUsersDbSet);
-        A.CallTo(() => _contextFake.CompanyUserAssignedRoles).Returns(userRolesDbSet);
-        
-        _fixture.Inject(_contextFake);
-
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetCompanyUserWithRoleId(new List<Guid>{ userRoles.First().Id }).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(1);
-        result.Single().Should().Be(companyUser1.Id);
-    }
-
-    #region Setup
-
-    private (CompanyUser, IamUser) CreateTestUserPair()
-    {
-        var companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
-            .Create();
-        var iamUser = _fixture.Build<IamUser>()
-            .With(u => u.CompanyUser, companyUser)
-            .Create();
-        companyUser.IamUser = iamUser;
-        return (companyUser, iamUser);
+        (result == default).Should().BeTrue();
     }
 
     #endregion
+
+    #region GetOwnCompanAndCompanyUseryId
+
+    [Fact]
+    public async Task GetOwnCompanAndCompanyUseryId_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyAndCompanyUserId(ValidIamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
+    }
+
+    [Fact]
+    public async Task GetOwnCompanAndCompanyUseryId_WithNotExistingIamUser_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyAndCompanyUserId(Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        (result == default).Should().BeTrue();
+    }
+
+    #endregion
+
+    private async Task<(UserRepository, PortalDbContext)> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        _fixture.Inject(context);
+        var sut = _fixture.Create<UserRepository>();
+        return (sut, context);
+    }
 }

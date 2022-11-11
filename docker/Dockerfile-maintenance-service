@@ -4,6 +4,8 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/maintenance/Maintenance.App/ src/maintenance/Maintenance.App/
 COPY src/portalbackend/PortalBackend.PortalEntities/ src/portalbackend/PortalBackend.PortalEntities/
+COPY src/framework/Framework.BaseDependencies/ src/framework/Framework.BaseDependencies/
+COPY src/framework/Framework.ErrorHandling/ src/framework/Framework.ErrorHandling/
 RUN dotnet restore "src/maintenance/Maintenance.App/Maintenance.App.csproj"
 WORKDIR /src/maintenance/Maintenance.App
 RUN dotnet build "Maintenance.App.csproj" -c Release -o /app/build

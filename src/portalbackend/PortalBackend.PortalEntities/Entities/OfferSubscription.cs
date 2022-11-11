@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -27,12 +28,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-public class OfferSubscription : IAuditable
+[AuditEntityV1(typeof(AuditOfferSubscription20221005))]
+public class OfferSubscription : IAuditableV1
 {
     /// <summary>
     /// Only used for the audit table
     /// </summary>
-    protected OfferSubscription()
+    private OfferSubscription()
     {
         this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
@@ -101,7 +103,7 @@ public class OfferSubscription : IAuditable
     /// </summary>
     public Guid RequesterId { get; set; }
     
-    /// <inheritdoc />
+    [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
     // Navigation properties

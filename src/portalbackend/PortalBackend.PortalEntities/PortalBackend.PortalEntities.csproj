@@ -20,13 +20,14 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities</AssemblyName>
+    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="6.0.0" />
+    <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="6.3.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -37,6 +38,11 @@
     <SonarQubeSetting Include="sonar.coverage.exclusions">
       <Value>AuditCompanyAssignedApp.cs</Value>
       <Value>AuditCompanyUser.cs</Value>
+      <Value>PortalDbContext.cs</Value>
     </SonarQubeSetting>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
   </ItemGroup>
 </Project>

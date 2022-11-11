@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
@@ -50,7 +51,7 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">ID of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
     /// <param name="languageShortName">Optional two character language specifier for the localization of the app description. No description if not provided.</param>
     /// <returns>AppDetailsViewModel of the requested application.</returns>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null);
+    public Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null);
 
     /// <summary>
     /// Get IDs of all favourite apps of the user by ID.
@@ -142,4 +143,12 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Auto setup the app.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
 }

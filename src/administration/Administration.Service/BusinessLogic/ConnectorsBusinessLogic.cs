@@ -19,13 +19,15 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -35,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IConnectorsSdFactoryService _connectorsSdFactoryService;
+    private readonly ISdFactoryService _sdFactoryService;
     private readonly ConnectorsSettings _settings;
 
     /// <summary>
@@ -43,12 +45,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Access to the needed repositories</param>
     /// <param name="options">The options</param>
-    /// <param name="connectorsSdFactoryService">Access to the connectorsSdFactory</param>
-    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, IConnectorsSdFactoryService connectorsSdFactoryService)
+    /// <param name="sdFactoryService">Access to the connectorsSdFactory</param>
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryService sdFactoryService)
     {
         _portalRepositories = portalRepositories;
         _settings = options.Value;
-        _connectorsSdFactoryService = connectorsSdFactoryService;
+        _sdFactoryService = sdFactoryService;
     }
 
     /// <inheritdoc/>
@@ -90,10 +92,41 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken)
+    public async Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, bool isManaged, CancellationToken cancellationToken)
     {
-        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
+        var companyData = await ValidateCompanyDataAsync(connectorInputModel.Location, connectorInputModel.Provider, connectorInputModel.Host).ConfigureAwait(false);
 
+        if (isManaged)
+        {
+            // First check if iamUser is normal user
+            var iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyId(iamUserId).ConfigureAwait(false);
+            // if not check for technical user
+            if (iamUserCompanyId == Guid.Empty)
+            {
+                iamUserCompanyId = await _portalRepositories.GetInstance<IUserRepository>()
+                    .GetServiceAccountCompany(iamUserId)
+                    .ConfigureAwait(false);
+            }
+
+            if (iamUserCompanyId != connectorInputModel.Host)
+            {
+                throw new ControllerArgumentException(
+                    $"CompanyId {iamUserCompanyId} does not match the host company {connectorInputModel.Host}",
+                    nameof(connectorInputModel.Host));
+            }
+        }
+        
+        var createdConnector = await CreateAndRegisterConnectorAsync(connectorInputModel, accessToken, companyData, cancellationToken).ConfigureAwait(false);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
+        {
+            Id = createdConnector.Id,
+            Status = createdConnector.StatusId,
+            Type = createdConnector.TypeId
+        };
+    }
+
+    private async Task<List<(Guid CompanyId, string? BusinessPartnerNumber)>> ValidateCompanyDataAsync(string location, Guid provider, Guid? host)
+    {
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
         {
@@ -118,6 +151,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ControllerArgumentException($"Company {host} does not exist", nameof(host));
         }
 
+        return companyData;
+    }
+
+    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, IEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> companyData, CancellationToken cancellationToken)
+    {
+        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
+
         var providerBusinessPartnerNumber = companyData.Single(data => data.CompanyId == provider).BusinessPartnerNumber;
 
         if (providerBusinessPartnerNumber == null)
@@ -125,8 +165,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new UnexpectedConditionException($"provider company {provider} has no businessPartnerNumber assigned");
         }
 
-        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(name, location.ToUpper(), connectorUrl,
-            (connector) =>
+        var createdConnector = _portalRepositories.GetInstance<IConnectorsRepository>().CreateConnector(
+            name,
+            location.ToUpper(),
+            connectorUrl,
+            connector =>
             {
                 connector.ProviderId = provider;
                 connector.HostId = host;
@@ -134,21 +177,26 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.StatusId = status;
             });
 
-        await _connectorsSdFactoryService.RegisterConnector(connectorInputModel, accessToken, providerBusinessPartnerNumber).ConfigureAwait(false);
+        var documentId = await _sdFactoryService
+            .RegisterConnectorAsync(connectorInputModel, accessToken, providerBusinessPartnerNumber, cancellationToken)
+            .ConfigureAwait(false);
+        createdConnector.SelfDescriptionDocumentId = documentId;
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId)
-        {
-            Id = createdConnector.Id,
-            Status = createdConnector.StatusId,
-            Type = createdConnector.TypeId
-        };
+        return createdConnector;
     }
 
     /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId)
-    {
-        await _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId).ConfigureAwait(false);
-    }
+    public Task DeleteConnectorAsync(Guid connectorId) =>
+        _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId);
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>
+        _portalRepositories.GetInstance<IConnectorsRepository>()
+            .GetConnectorEndPointDataAsync(bpns)
+            .PreSortedGroupBy(data => data.BusinessPartnerNumber)
+            .Select(group =>
+                new ConnectorEndPointData(
+                    group.Key,
+                    group.Select(x => x.ConnectorEndpoint)));
 }

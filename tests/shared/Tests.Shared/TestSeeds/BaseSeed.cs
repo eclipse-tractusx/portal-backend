@@ -49,7 +49,30 @@ public static class BaseSeed
                 AddressId = new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"),
                 Shortname = "Catena-X",
                 BusinessPartnerNumber = "CAXSDUMMYCATENAZZ",
-            }
+            },
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
+            {
+                AddressId = new Guid("12302f9b-418c-4b8c-aea8-3eedf67e6a02"),
+                Shortname = "Test",
+            },
+        });
+        
+        dbContext.ServiceProviderCompanyDetails.AddRange(new List<ServiceProviderCompanyDetail>
+        {
+            new ServiceProviderCompanyDetail(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
+        });
+        
+        dbContext.CompanyRoles.AddRange(new List<CompanyRole>
+        {
+            new(CompanyRoleId.SERVICE_PROVIDER)
+        }); 
+        
+        dbContext.CompanyAssignedRoles.AddRange(new List<CompanyAssignedRole>
+        {
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.SERVICE_PROVIDER),
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.APP_PROVIDER),
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.ACTIVE_PARTICIPANT),
+            new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyRoleId.ACTIVE_PARTICIPANT)
         });
 
         dbContext.CompanyUsers.AddRange(new List<CompanyUser>
@@ -96,6 +119,13 @@ public static class BaseSeed
                 Lastname = "CX Admin",
                 CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
+            new(new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            {
+                Email = "tester.user@test.de",
+                Firstname = "Test User",
+                Lastname = "Test Company",
+                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
+            },
         });
 
         dbContext.IamUsers.AddRange(new List<IamUser>
@@ -104,7 +134,8 @@ public static class BaseSeed
             new ("3d8142f1-860b-48aa-8c2b-1ccb18699f65", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")),
             new ("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990")),
             new ("3d8142f1-860b-48aa-8c2b-1ccb18699f66", new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991")),
-            new ("47ea7f1f-f10d-4cb2-acaf-b77323ef25b4", new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"))
+            new ("47ea7f1f-f10d-4cb2-acaf-b77323ef25b4", new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992")),
+            new ("4b8f156e-5dfc-4a58-9384-1efb195c1c34", new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"))
         });
 
         dbContext.IamClients.AddRange(new List<IamClient>

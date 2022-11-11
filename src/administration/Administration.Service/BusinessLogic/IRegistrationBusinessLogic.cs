@@ -27,7 +27,8 @@ public interface IRegistrationBusinessLogic
 {
     Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(string iamUserId, Guid applicationId);
+    Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId,
+        CancellationToken cancellationToken);
     Task<bool> DeclinePartnerRequest(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
 }

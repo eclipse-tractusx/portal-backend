@@ -54,13 +54,14 @@ public class AgreementRepository : IAgreementRepository
             .Select(x => new AgreementData(x.Id, x.Name))
             .AsAsyncEnumerable();
     
-    public IAsyncEnumerable<AgreementData> GetAgreementsForCompanyRolesUntrackedAsync() =>
+    public IAsyncEnumerable<AgreementDocumentData> GetAgreementsForCompanyRolesUntrackedAsync() =>
         _context.Agreements
             .AsNoTracking()
             .Where(agreement => agreement.AgreementAssignedCompanyRoles.Any())
-            .Select(agreement => new AgreementData(
+            .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
-                agreement.Name))
+                agreement.Name,
+                agreement.Documents.Select(doc=>doc.Id)))
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>

@@ -135,15 +135,45 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "audit_company_users_cplp_1254_db_audit",
                 column: "company_user_status_id");
-            
-            migrationBuilder.AddAuditTrigger<AuditCompanyUser>("cplp_1254_db_audit");
-            // migrationBuilder.AddAuditTrigger<AuditCompanyAssignedApp>("cplp_1254_db_audit");
+
+            migrationBuilder.Sql(
+                "CREATE OR REPLACE FUNCTION portal.process_company_users_audit() RETURNS TRIGGER AS $audit_company_users$ " +
+                "BEGIN " +
+                "IF (TG_OP = 'DELETE') THEN " +
+                "INSERT INTO portal.audit_company_users_cplp_1254_db_audit ( id, audit_id, date_created,email,firstname,lastlogin,lastname,company_id,company_user_status_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), OLD.id, OLD.date_created,OLD.email,OLD.firstname,OLD.lastlogin,OLD.lastname,OLD.company_id,OLD.company_user_status_id, OLD.last_editor_id, CURRENT_DATE, 3 ; " +
+                "ELSIF (TG_OP = 'UPDATE') THEN " +
+                "INSERT INTO portal.audit_company_users_cplp_1254_db_audit ( id, audit_id, date_created,email,firstname,lastlogin,lastname,company_id,company_user_status_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.date_created,NEW.email,NEW.firstname,NEW.lastlogin,NEW.lastname,NEW.company_id,NEW.company_user_status_id, NEW.last_editor_id, CURRENT_DATE, 2 ; " +
+                "ELSIF (TG_OP = 'INSERT') THEN " +
+                "INSERT INTO portal.audit_company_users_cplp_1254_db_audit ( id, audit_id, date_created,email,firstname,lastlogin,lastname,company_id,company_user_status_id, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.date_created,NEW.email,NEW.firstname,NEW.lastlogin,NEW.lastname,NEW.company_id,NEW.company_user_status_id, NEW.last_editor_id, CURRENT_DATE, 1 ; " +
+                "END IF; " +
+                "RETURN NULL; " +
+                "END; " +
+                "$audit_company_users$ LANGUAGE plpgsql; " +
+                "CREATE OR REPLACE TRIGGER audit_company_users " +
+                "AFTER INSERT OR UPDATE OR DELETE ON portal.company_users " +
+                "FOR EACH ROW EXECUTE FUNCTION portal.process_company_users_audit();");
+            migrationBuilder.Sql(
+                "CREATE OR REPLACE FUNCTION portal.process_company_assigned_apps_audit() RETURNS TRIGGER AS $audit_company_assigned_apps$ " +
+                "BEGIN " +
+                "IF (TG_OP = 'DELETE') THEN " +
+                "INSERT INTO portal.audit_company_assigned_apps_cplp_1254_db_audit ( id, audit_id, company_id,app_id,app_instance_id,app_subscription_status_id,display_name,description,requester_id,app_url, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), OLD.id, OLD.company_id,OLD.app_id,OLD.app_instance_id,OLD.app_subscription_status_id,OLD.display_name,OLD.description,OLD.requester_id,OLD.app_url, OLD.last_editor_id, CURRENT_DATE, 3 ; " +
+                "ELSIF (TG_OP = 'UPDATE') THEN " +
+                "INSERT INTO portal.audit_company_assigned_apps_cplp_1254_db_audit ( id, audit_id, company_id,app_id,app_instance_id,app_subscription_status_id,display_name,description,requester_id,app_url, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.company_id,NEW.app_id,NEW.app_instance_id,NEW.app_subscription_status_id,NEW.display_name,NEW.description,NEW.requester_id,NEW.app_url, NEW.last_editor_id, CURRENT_DATE, 2 ; " +
+                "ELSIF (TG_OP = 'INSERT') THEN " +
+                "INSERT INTO portal.audit_company_assigned_apps_cplp_1254_db_audit ( id, audit_id, company_id,app_id,app_instance_id,app_subscription_status_id,display_name,description,requester_id,app_url, last_editor_id, date_last_changed, audit_operation_id ) SELECT gen_random_uuid(), NEW.id, NEW.company_id,NEW.app_id,NEW.app_instance_id,NEW.app_subscription_status_id,NEW.display_name,NEW.description,NEW.requester_id,NEW.app_url, NEW.last_editor_id, CURRENT_DATE, 1 ; " +
+                "END IF; " +
+                "RETURN NULL; " +
+                "END; " +
+                "$audit_company_assigned_apps$ LANGUAGE plpgsql; " +
+                "CREATE OR REPLACE TRIGGER audit_company_assigned_apps " +
+                "AFTER INSERT OR UPDATE OR DELETE ON portal.company_assigned_apps " +
+                "FOR EACH ROW EXECUTE FUNCTION portal.process_company_assigned_apps_audit(); ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropAuditTrigger<AuditCompanyUser>();
-            // migrationBuilder.DropAuditTrigger<AuditCompanyAssignedApp>();
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_users_audit(); DROP TRIGGER audit_company_users ON portal.company_users;");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS process_audit_company_assigned_apps_audit(); DROP TRIGGER audit_company_assigned_apps ON portal.company_assigned_apps;");
 
             migrationBuilder.DropTable(
                 name: "audit_company_assigned_apps_cplp_1254_db_audit",

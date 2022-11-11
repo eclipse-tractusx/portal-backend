@@ -37,11 +37,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// <summary>
 /// Tests the functionality of the <see cref="ServiceRepositoryTests"/>
 /// </summary>
-// [Collection("Database collection")]
 public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly Guid _offerId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5");
 
     public ServiceRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -89,7 +89,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetActiveServices().ToListAsync();
+        var results = await sut.GetActiveServices().ToListAsync().ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -107,7 +107,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE);
+        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         (results == default).Should().BeTrue();
@@ -120,7 +120,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDetailByIdUntrackedAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE);
+        var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -131,6 +131,36 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOfferProviderDetailsAsync
+    
+    [Fact]
+    public async Task GetOfferProviderDetailsAsync_WithExistingOffer_ReturnsOfferProviderDetails()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferProviderDetailsAsync(_offerId, OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+    
+    [Fact]
+    public async Task GetOfferProviderDetailsAsync_WithNotExistingOffer_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+    
+    #endregion
+    
     private async Task<(OfferRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

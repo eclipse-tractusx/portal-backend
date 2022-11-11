@@ -35,20 +35,27 @@ public class ApplicationRepository : IApplicationRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyApplication CreateCompanyApplication(Company company, CompanyApplicationStatusId companyApplicationStatusId) =>
+    public CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId) =>
         _dbContext.CompanyApplications.Add(
             new CompanyApplication(
                 Guid.NewGuid(),
-                company.Id,
+                companyId,
                 companyApplicationStatusId,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public Invitation CreateInvitation(Guid applicationId, CompanyUser user) =>
+    public CompanyApplication AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication>? setOptionalParameters = null)
+    {
+        var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, Guid.Empty, default, default)).Entity;
+        setOptionalParameters?.Invoke(companyApplication);
+        return companyApplication;
+    }
+
+    public Invitation CreateInvitation(Guid applicationId, Guid companyUserId) =>
         _dbContext.Invitations.Add(
             new Invitation(
                 Guid.NewGuid(),
                 applicationId,
-                user.Id,
+                companyUserId,
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
 
@@ -135,6 +142,18 @@ public class ApplicationRepository : IApplicationRepository
             companyApplication.Id == applicationId
             && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
             .Include(companyApplication => companyApplication.Company)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(Guid companyId, string companyName, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
+        _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId
+                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string, string?, string>(
+                ca.CompanyId,
+                ca.Company!.Name,
+                ca.Company!.BusinessPartnerNumber,
+                ca.Company!.Address!.Country!.Alpha2Code))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId) =>

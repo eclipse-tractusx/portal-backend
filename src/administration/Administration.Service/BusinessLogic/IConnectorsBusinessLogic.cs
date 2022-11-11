@@ -44,13 +44,24 @@ public interface IConnectorsBusinessLogic
     /// Add a connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <returns>View model of created connector.</returns>
     /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
-    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken);
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="isManaged">If <c>true</c> an additional check that the iamUser company matches the host is proceeded.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>View model of created connector.</returns>
+    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken,
+        string iamUserId, bool isManaged, CancellationToken cancellationToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
     Task DeleteConnectorAsync(Guid connectorId);
+    
+    /// <summary>
+    /// Retrieve connector end point along with bpns
+    /// </summary>
+    /// <param name="bpns"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns);
 }

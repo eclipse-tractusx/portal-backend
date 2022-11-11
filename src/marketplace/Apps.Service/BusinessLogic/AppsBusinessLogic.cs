@@ -18,19 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notification.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -43,6 +45,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
     private readonly AppsSettings _settings;
+    private readonly IOfferService _offerService;
 
     /// <summary>
     /// Constructor.
@@ -50,12 +53,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="mailingService">Mail service.</param>
     /// <param name="notificationService">Notification service.</param>
+    /// <param name="offerService">Offer service</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOptions<AppsSettings> settings)
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, INotificationService notificationService, IOfferService offerService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _mailingService = mailingService;
         _notificationService = notificationService;
+        _offerService = offerService;
         _settings = settings.Value;
     }
 
@@ -79,9 +84,33 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IUserRepository>().GetAllBusinessAppDataForUserIdAsync(userId);
 
     /// <inheritdoc/>
-    public Task<AppDetailsData> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null) =>
-        _portalRepositories.GetInstance<IOfferRepository>()
-            .GetAppDetailsByIdAsync(appId, iamUserId, languageShortName);
+    public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetOfferDetailsByIdAsync(appId, iamUserId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new NotFoundException($"appId {appId} does not exist");
+        }
+
+        return new AppDetailResponse(
+            result.Id,
+            result.Title ?? Constants.ErrorString,
+            result.LeadPictureUri ?? Constants.ErrorString,
+            result.DetailPictureUris,
+            result.ProviderUri ?? Constants.ErrorString,
+            result.Provider,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.UseCases,
+            result.LongDescription ?? Constants.ErrorString,
+            result.Price ?? Constants.ErrorString,
+            result.Tags,
+            result.IsSubscribed == default ? null : result.IsSubscribed,
+            result.Languages,
+            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
+        );
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId) =>
@@ -132,7 +161,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task AddOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
     {
-        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetAppProviderDetailsAsync(appId).ConfigureAwait(false);
+        var appDetails = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferProviderDetailsAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         if (appDetails == null)
         {
             throw new NotFoundException($"App {appId} does not exist");
@@ -444,4 +473,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                         app.ThumbnailUrl))
                     .AsAsyncEnumerable()));
     }
+     
+    /// <inheritdoc />
+    public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP);
 }

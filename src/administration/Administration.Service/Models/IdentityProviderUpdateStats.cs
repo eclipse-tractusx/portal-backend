@@ -21,5 +21,3 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record IdentityProviderUpdateStats(int Updated, int Unchanged, int Error, int Total, IEnumerable<string> Errors);
-
-public record IdentityProviderUserCreationStats(int Created, int Error, int Total, IEnumerable<string> Errors);
