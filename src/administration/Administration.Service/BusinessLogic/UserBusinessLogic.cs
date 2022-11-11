@@ -109,9 +109,11 @@ public class UserBusinessLogic : IUserBusinessLogic
                 continue;
             }
 
+            var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
             var mailParameters = new Dictionary<string, string>
             {
                 { "password", password ?? "" },
+                { "companyName", companyDisplayName },
                 { "nameCreatedBy", nameCreatedBy },
                 { "url", _settings.Portal.BasePortalAddress },
             };
