@@ -323,11 +323,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
-        if(appRequestModel.ProviderCompanyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"Company Id must not be null or empty"); 
-        }
-
         var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
         if (emptyLanguageCodes.Any())
         {
@@ -368,7 +363,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
-            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
+            app.ProviderCompanyId = responseData.UserCompanyId;
             app.OfferStatusId = OfferStatusId.CREATED;
             app.SalesManagerId = appRequestModel.SalesManagerId;
         }).Id;
