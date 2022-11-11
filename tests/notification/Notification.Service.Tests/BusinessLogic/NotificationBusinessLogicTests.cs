@@ -30,6 +30,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Xunit;
 
@@ -437,14 +438,8 @@ public class NotificationBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
-        var notificationType = new NotificationType(NotificationTypeId.INFO);
-        notificationType.NotificationTypeAssignedTopic = new NotificationTypeAssignedTopic(notificationType.Id, NotificationTopicId.INFO);
-        var unreadNotifications = _fixture.Build<PortalBackend.PortalEntities.Entities.Notification>().With(x => x.NotificationType, notificationType).CreateMany(_unreadNotificationDetails.Count());
-        var readNotifications = _fixture.Build<PortalBackend.PortalEntities.Entities.Notification>().With(x => x.NotificationType, notificationType).CreateMany(_readNotificationDetails.Count());
-        var notifications = _fixture.Build<PortalBackend.PortalEntities.Entities.Notification>().With(x => x.NotificationType, notificationType).CreateMany(_notificationDetails.Count());
-        var unreadNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(unreadNotifications);
-        var readNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(readNotifications);
-        var notificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(notifications);
+        SetupNotifications();
+
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamUser.UserEntityId, companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>{new (_companyUser.Id, true), new (_companyUser.Id, false)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
@@ -458,18 +453,6 @@ public class NotificationBusinessLogicTests
                 _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<string>._))
             .Returns(((bool, NotificationDetailData)) default);
-
-        A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false,
-                    null))
-            .Returns(unreadNotificationDetails.AsQueryable());
-        A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true,
-                    null))
-            .Returns(readNotificationDetails.AsQueryable());
-        A.CallTo(() =>
-                _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null))
-            .Returns(notificationDetails.AsQueryable());
 
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id, _iamUser.UserEntityId))
@@ -496,6 +479,20 @@ public class NotificationBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
+    }
+
+    private void SetupNotifications()
+    {
+        var unreadPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _unreadNotificationDetails);
+        var readPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _readNotificationDetails);
+        var notificationsPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _notificationDetails);
+        
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, A<int>._, A<int>._, A<NotificationSorting>._))
+            .ReturnsLazily(() => unreadPaging);
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, A<int>._, A<int>._, A<NotificationSorting>._))
+            .Returns(readPaging);
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<int>._, A<int>._, A<NotificationSorting>._))
+            .Returns(notificationsPaging);
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
