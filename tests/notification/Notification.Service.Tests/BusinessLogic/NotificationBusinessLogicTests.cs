@@ -437,9 +437,14 @@ public class NotificationBusinessLogicTests
 
     private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
     {
-        var unreadNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(_fixture.CreateMany<PortalBackend.PortalEntities.Entities.Notification>(_unreadNotificationDetails.Count()));
-        var readNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(_fixture.CreateMany<PortalBackend.PortalEntities.Entities.Notification>(_readNotificationDetails.Count()));
-        var notificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(_fixture.CreateMany<PortalBackend.PortalEntities.Entities.Notification>(_notificationDetails.Count()));
+        var notificationType = new NotificationType(NotificationTypeId.INFO);
+        notificationType.NotificationTypeAssignedTopic = new NotificationTypeAssignedTopic(notificationType.Id, NotificationTopicId.INFO);
+        var unreadNotifications = _fixture.Build<PortalBackend.PortalEntities.Entities.Notification>().With(x => x.NotificationType, notificationType).CreateMany(_unreadNotificationDetails.Count());
+        var readNotifications = _fixture.Build<PortalBackend.PortalEntities.Entities.Notification>().With(x => x.NotificationType, notificationType).CreateMany(_readNotificationDetails.Count());
+        var notifications = _fixture.Build<PortalBackend.PortalEntities.Entities.Notification>().With(x => x.NotificationType, notificationType).CreateMany(_notificationDetails.Count());
+        var unreadNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(unreadNotifications);
+        var readNotificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(readNotifications);
+        var notificationDetails = new AsyncEnumerableStub<PortalBackend.PortalEntities.Entities.Notification>(notifications);
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamUser.UserEntityId, companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>{new (_companyUser.Id, true), new (_companyUser.Id, false)}.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
