@@ -30,3 +30,23 @@ public class NotificationSettings
     /// </summary>
     public int MaxPageSize { get; set; }
 }
+
+/// <summary>
+/// Notification Settings extension class.
+/// </summary>
+public static class NotificationSettingsExtension
+{
+    /// <summary>
+    /// configure notification settings using service collection interface
+    /// </summary>
+    public static IServiceCollection ConfigureNotificationSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<NotificationSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
+}

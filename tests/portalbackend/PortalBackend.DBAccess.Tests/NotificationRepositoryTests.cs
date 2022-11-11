@@ -40,14 +40,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IFixture _fixture;
 
     public NotificationRepositoryTests(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -139,14 +140,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null)
-            .ToListAsync()
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, 0, 5, NotificationSorting.ReadStatusDesc)
             .ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(3);
-        results.Should().AllBeOfType<NotificationDetailData>();
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(3);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
     [Fact]
@@ -157,14 +157,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null)
-            .ToListAsync()
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, 0, 5, NotificationSorting.ReadStatusDesc)
             .ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(3);
-        results.Should().AllBeOfType<NotificationDetailData>();
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(3);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
     [Fact]
@@ -174,12 +173,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, 0, 5, NotificationSorting.ReadStatusDesc);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().ContainSingle();
-        results.Should().AllBeOfType<NotificationDetailData>();
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(1);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
     [Fact]
@@ -189,12 +188,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION).ToListAsync();
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, 0, 5, NotificationSorting.ReadStatusAsc);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(2);
-        results.Should().AllBeOfType<NotificationDetailData>();
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(2);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
     #endregion
@@ -290,8 +289,6 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.IsUserReceiver.Should().BeTrue();
         results.IsNotificationExisting.Should().BeTrue();
     }
-
-    
     
     #endregion
     
