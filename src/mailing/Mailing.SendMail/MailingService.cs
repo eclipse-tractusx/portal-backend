@@ -33,12 +33,12 @@ public class MailingService : IMailingService
         _sendMail = sendMail;
     }
 
-    public async Task SendMails(string eMail, Dictionary<string, string> parameters, List<string> templates)
+    public async Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates)
     {
         foreach(var temp in templates)
         {
-            var inviteMail = await _templateManager.ApplyTemplateAsync(temp, parameters).ConfigureAwait(false);
-            await _sendMail.Send("Notifications@catena-x.net", eMail, inviteMail.Subject, inviteMail.Body, inviteMail.isHtml).ConfigureAwait(false);
+            var email = await _templateManager.ApplyTemplateAsync(temp, parameters).ConfigureAwait(false);
+            await _sendMail.Send("Notifications@catena-x.net", recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);
         }
     }
 }
