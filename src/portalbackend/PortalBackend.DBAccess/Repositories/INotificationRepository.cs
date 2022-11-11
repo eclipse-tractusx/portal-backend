@@ -49,8 +49,9 @@ public interface INotificationRepository
     /// <param name="iamUserId">Id of the user</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
+    /// <param name="notificationSorting">The Notification sorting</param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    IQueryable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId);
+    IQueryable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting notificationSorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
