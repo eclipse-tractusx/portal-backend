@@ -130,9 +130,9 @@ public class OfferRepository : IOfferRepository
         _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
-    public OfferLicense AttachAndModifyOfferLicense(Guid id, string licenseText)
+    public OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, string licenseText)
     {
-        var offerLicense = _context.OfferLicenses.Attach(new OfferLicense(id, null!)).Entity;
+        var offerLicense = _context.OfferLicenses.Attach(new OfferLicense(offerLicenseId, null!)).Entity;
         offerLicense.Licensetext = licenseText;
         return offerLicense;
     }
