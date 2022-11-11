@@ -425,7 +425,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderLinkData.userName);
     }
 
-    public async ValueTask<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId)
+    public async ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId)
     {
         var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
 
@@ -433,9 +433,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
         }
-        catch(KeycloakEntityNotFoundException e)
+        catch(KeycloakEntityNotFoundException)
         {
-            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}", e);
+            // for create-and-update semantics this is expected and not an error
         }
         await _provisioningManager.AddProviderUserLinkToCentralUserAsync(
             userEntityId,
