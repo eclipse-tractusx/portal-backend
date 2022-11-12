@@ -57,6 +57,7 @@ public class RegistrationBusinessLogicTest
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
+    private readonly string _displayName;
     private readonly TestException _error;
     private readonly IOptions<RegistrationSettings> _options;
     private readonly IMailingService _mailingService;
@@ -95,6 +96,7 @@ public class RegistrationBusinessLogicTest
         _iamUserId = _fixture.Create<string>();
         _companyUserId = _fixture.Create<Guid>();
         _existingApplicationId = _fixture.Create<Guid>();
+        _displayName = _fixture.Create<string>();
         _error = _fixture.Create<TestException>();
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
@@ -734,7 +736,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId),A<Guid>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<Dictionary<string,string>>._, A<List<string>>._)).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string,string>>.That.Matches(x => x["companyName"] == _displayName), A<List<string>>._)).MustHaveHappened();
     }
 
     [Fact]
@@ -761,7 +763,7 @@ public class RegistrationBusinessLogicTest
         error.Message.Should().Be("email must not be empty");
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -788,7 +790,7 @@ public class RegistrationBusinessLogicTest
         error.Message.Should().Be($"user with email {userCreationInfo.eMail} does already exist");
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -821,7 +823,7 @@ public class RegistrationBusinessLogicTest
         error.Message.Should().Be($"shared idp for CompanyApplication {_existingApplicationId} not found");
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -854,7 +856,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId),A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<Dictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     #endregion
@@ -908,6 +910,8 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IDictionary<string,IEnumerable<string>>>._))
             .ReturnsLazily((IDictionary<string,IEnumerable<string>> clientRoles) =>
                 clientRoles.SelectMany(r => r.Value.Select(role => _fixture.Build<UserRoleData>().With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
+
+        A.CallTo(() => _userProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
