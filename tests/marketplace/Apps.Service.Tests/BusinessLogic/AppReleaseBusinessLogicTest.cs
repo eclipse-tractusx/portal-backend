@@ -32,6 +32,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using PortalBackend.DBAccess.Models;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -51,6 +52,11 @@ public class AppReleaseBusinessLogicTest
     private readonly INotificationService _notificationService;
     private readonly Guid _differentCompanyUserId = Guid.NewGuid();
     private readonly Guid _noSalesManagerUserId = Guid.NewGuid();
+    private readonly Guid _notExistingAppId = Guid.NewGuid();
+    private readonly Guid _activeAppId = Guid.NewGuid();
+    private readonly Guid _differentCompanyAppId = Guid.NewGuid();
+    private readonly Guid _existingAppId = Guid.NewGuid();
+    private readonly ILanguageRepository _languageRepository;
 
     public AppReleaseBusinessLogicTest()
     {
@@ -64,6 +70,7 @@ public class AppReleaseBusinessLogicTest
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
+        _languageRepository = A.Fake<ILanguageRepository>();
         _offerService = A.Fake<IOfferService>();
         _notificationService = A.Fake<INotificationService>();
         _options = A.Fake<IOptions<AppsSettings>>();
@@ -243,6 +250,133 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
     
+    #region UpdateAppReleaseAsync
+    
+    [Fact]
+    public async Task UpdateAppReleaseAsync_WithoutProvider_ThrowsException()
+    {
+        // Arrange
+        var data = new AppRequestModel("test", "test", null, Guid.Empty, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new List<string>(), "123");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+     
+        // Act
+        async Task Act() => await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.ParamName.Should().Be("ProviderCompanyId");
+    }
+
+    [Fact]
+    public async Task UpdateAppReleaseAsync_WithoutApp_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateApp();
+        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+     
+        // Act
+        async Task Act() => await sut.UpdateAppReleaseAsync(_notExistingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"App {_notExistingAppId} does not exists");
+    }
+    
+    [Fact]
+    public async Task UpdateAppReleaseAsync_WithActiveApp_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateApp();
+        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+     
+        // Act
+        async Task Act() => await sut.UpdateAppReleaseAsync(_activeAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("Apps in State ACTIVE can't be updated");
+    }
+
+    [Fact]
+    public async Task UpdateAppReleaseAsync_WithInvalidUser_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateApp();
+        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+     
+        // Act
+        async Task Act() => await sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
+        error.ParamName.Should().Be("iamUserId");
+    }
+
+    [Fact]
+    public async Task UpdateAppReleaseAsync_WithInvalidLanguage_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateApp();
+        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de", "en", "invalid" }, "123");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        
+        // Act
+        async Task Act() => await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.ParamName.Should().Be("SupportedLanguageCodes");
+    }
+
+    [Fact]
+    public async Task UpdateAppReleaseAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupUpdateApp();
+        var data = new AppRequestModel(
+            "test",
+            "test", 
+            null, 
+            _companyUser.CompanyId, 
+            _companyUser.Id, 
+            new []{ Guid.NewGuid() },
+            new List<LocalizedDescription>
+            {
+               new("de", "Long description", "desc") 
+            }, 
+            new [] { "de", "en" },
+            "43");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        
+        // Act
+        await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveAppLanguages(A<Guid>._, A<IEnumerable<string>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddAppAssignedUseCases(A<IEnumerable<(Guid appId, Guid useCaseId)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._, A<string>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Create App Document
         
     [Fact]
@@ -314,6 +448,22 @@ public class AppReleaseBusinessLogicTest
 
     #region Setup
 
+    private void SetupUpdateApp()
+    {
+        SetupValidateSalesManager();
+
+        A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>._))
+            .Returns(new List<string>() {"de", "en"}.ToAsyncEnumerable());
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
+            .ReturnsLazily(() => (AppUpdateData?)null);
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>()));
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_differentCompanyAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>()));
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false)));
+    }
+
     private void SetupValidateSalesManager()
     {
         var roleIds = _fixture.CreateMany<Guid>(2);
@@ -329,6 +479,7 @@ public class AppReleaseBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool>());
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
     }
 
     private void SetupCreateAppDocument(Guid appId)

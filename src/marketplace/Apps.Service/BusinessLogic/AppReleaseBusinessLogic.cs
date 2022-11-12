@@ -125,7 +125,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
         );
 
-        _portalRepositories.RemoveRange<OfferDescription>(
+        _portalRepositories.RemoveRange(
             ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
                 .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
         );
@@ -322,7 +322,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
        _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
     
     /// <inheritdoc/>
-    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
+    public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
@@ -382,7 +382,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         if(appRequestModel.ProviderCompanyId == Guid.Empty)
         {
-            throw new ControllerArgumentException("Company Id must not be null or empty"); 
+            throw new ControllerArgumentException("Company Id must not be null or empty", nameof(appRequestModel.ProviderCompanyId)); 
         }
         
         return this.UpdateAppInternal(appId, appRequestModel, iamUserId);
