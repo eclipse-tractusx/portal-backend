@@ -324,12 +324,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
-        if(appRequestModel.ProviderCompanyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException("Company Id must not be null or empty", nameof(appRequestModel.ProviderCompanyId)); 
-        }
-
-        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(string.IsNullOrWhiteSpace);
+        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
         if (emptyLanguageCodes.Any())
         {
             throw new ControllerArgumentException("Language Codes must not be null or empty", nameof(appRequestModel.SupportedLanguageCodes)); 
@@ -346,14 +341,14 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {   
-        await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
+        var userCompanyId = await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
-            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
+            app.ProviderCompanyId = userCompanyId;
             app.OfferStatusId = OfferStatusId.CREATED;
             app.SalesManagerId = appRequestModel.SalesManagerId;
         }).Id;
@@ -378,15 +373,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId)
-    {
-        if(appRequestModel.ProviderCompanyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException("Company Id must not be null or empty", nameof(appRequestModel.ProviderCompanyId)); 
-        }
-        
-        return this.UpdateAppInternal(appId, appRequestModel, iamUserId);
-    }
+    public Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId) =>
+        this.UpdateAppInternal(appId, appRequestModel, iamUserId);
 
     private async Task UpdateAppInternal(Guid appId, AppRequestModel appRequestModel, string iamUserId)
     {
@@ -427,7 +415,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
-            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
             app.OfferStatusId = OfferStatusId.CREATED;
             app.SalesManagerId = appRequestModel.SalesManagerId;
         });
@@ -471,7 +458,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         appRepository.RemoveAppLanguages(appId, languagesToRemove);
     }
 
-    private async Task ValidateSalesManager(AppRequestModel appRequestModel, string iamUserId)
+    private async Task<Guid> ValidateSalesManager(AppRequestModel appRequestModel, string iamUserId)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
@@ -493,6 +480,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException(
                 $"User {appRequestModel.SalesManagerId} does not have sales Manager Role", nameof(appRequestModel.SalesManagerId));
         }
+
+        return responseData.UserCompanyId;
     }
 
     /// <inheritdoc/>

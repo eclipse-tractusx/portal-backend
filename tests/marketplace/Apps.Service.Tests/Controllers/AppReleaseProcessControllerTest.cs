@@ -253,7 +253,6 @@ public class AppReleaseProcessControllerTest
             "Test Provider",
             "https://test.de",
             Guid.NewGuid(),
-            Guid.NewGuid(),
             new Guid[]
             {
                 Guid.NewGuid()

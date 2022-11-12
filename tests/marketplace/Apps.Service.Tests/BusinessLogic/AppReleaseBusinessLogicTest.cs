@@ -123,26 +123,10 @@ public class AppReleaseBusinessLogicTest
     #region AddAppAsync
     
     [Fact]
-    public async Task AddAppAsync_WithoutProvider_ThrowsException()
-    {
-        // Arrange
-        var data = new AppRequestModel("test", "test", null, Guid.Empty, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new List<string>(), "123");
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
-     
-        // Act
-        async Task Act() => await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.ParamName.Should().Be("ProviderCompanyId");
-    }
-
-    [Fact]
     public async Task AddAppAsync_WithoutEmptyLanguageCodes_ThrowsException()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
+        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -158,7 +142,7 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithEmptyUseCaseIds_ThrowsException()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -175,7 +159,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupValidateSalesManager();
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -192,7 +176,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupValidateSalesManager();
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, _differentCompanyUserId, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, _differentCompanyUserId, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -209,7 +193,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupValidateSalesManager();
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), _noSalesManagerUserId, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, _noSalesManagerUserId, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -226,7 +210,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupValidateSalesManager();
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -253,27 +237,11 @@ public class AppReleaseBusinessLogicTest
     #region UpdateAppReleaseAsync
     
     [Fact]
-    public async Task UpdateAppReleaseAsync_WithoutProvider_ThrowsException()
-    {
-        // Arrange
-        var data = new AppRequestModel("test", "test", null, Guid.Empty, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new List<string>(), "123");
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
-     
-        // Act
-        async Task Act() => await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.ParamName.Should().Be("ProviderCompanyId");
-    }
-
-    [Fact]
     public async Task UpdateAppReleaseAsync_WithoutApp_ThrowsException()
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
+        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -290,7 +258,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -307,7 +275,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -324,7 +292,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, _companyUser.CompanyId, _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de", "en", "invalid" }, "123");
+        var data = new AppRequestModel("test", "test", null, _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de", "en", "invalid" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
         
@@ -345,7 +313,6 @@ public class AppReleaseBusinessLogicTest
             "test",
             "test", 
             null, 
-            _companyUser.CompanyId, 
             _companyUser.Id, 
             new []{ Guid.NewGuid() },
             new List<LocalizedDescription>
@@ -470,13 +437,13 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _companyUser.Id)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool>(roleIds, true));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(roleIds, true, _companyUser.CompanyId));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _differentCompanyUserId)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool>(Enumerable.Repeat(roleIds.First(), 1), false));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), false, Guid.NewGuid()));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _noSalesManagerUserId)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool>(Enumerable.Repeat(roleIds.First(), 1), true));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), true, _companyUser.CompanyId));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Not.Matches(x => x == _companyUser.Id || x == _differentCompanyUserId || x == _noSalesManagerUserId)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool>());
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>());
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
