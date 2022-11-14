@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
@@ -154,11 +155,11 @@ public class Pagination
     {
         if (page < 0)
         {
-            throw new ArgumentException("Parameter page must be >= 0", nameof(page));
+            throw new ControllerArgumentException("Parameter page must be >= 0", nameof(page));
         }
         if (size <= 0 || size > maxSize)
         {
-            throw new ArgumentException($"Parameter size must be between 1 and {maxSize}", nameof(size));
+            throw new ControllerArgumentException($"Parameter size must be between 1 and {maxSize}", nameof(size));
         }
     }
 }
