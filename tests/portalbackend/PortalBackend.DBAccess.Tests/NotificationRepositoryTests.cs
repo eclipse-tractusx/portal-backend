@@ -140,59 +140,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 15, IamUserId, null, null, null).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, null).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(6);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(6);
-        results.Content.Count().Should().Be(6);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-    }
-
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_SecondPage_ReturnsExpectedNotificationDetailData()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(1, 4, 15, IamUserId, null, null, null).ConfigureAwait(false);
-
-        // Assert
-        results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(6);
-        results.Meta.Page.Should().Be(1);
-        results.Meta.NumberOfPages.Should().Be(2);
-        results.Meta.PageSize.Should().Be(2);
-        results.Content.Count().Should().Be(2);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-    }
-
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_ExceedMaxPageSize_Throws()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        var Act = () => sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 5, IamUserId, null, null, null);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task GetAllAsDetailsByUserIdUntracked_NegativePage_Throws()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        var Act = () => sut.GetAllNotificationDetailsByIamUserIdUntracked(-1, 15, 15, IamUserId, null, null, null);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        results!.Count.Should().Be(6);
+        results!.Data.Count().Should().Be(6);
+        results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
     [Fact]
@@ -202,17 +156,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 15, IamUserId, null, null, NotificationSorting.DateAsc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.DateAsc).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(6);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(6);
-        results.Content.Count().Should().Be(6);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().BeInAscendingOrder(detailData => detailData.Created);
+        results!.Data.Count().Should().Be(6);
+        results!.Data.Should().BeInAscendingOrder(detailData => detailData.Created);
     }
 
     [Fact]
@@ -222,17 +171,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 15, IamUserId, null, null, NotificationSorting.DateDesc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.DateDesc).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(6);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(6);
-        results.Content.Count().Should().Be(6);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().BeInDescendingOrder(detailData => detailData.Created);
+        results!.Data.Count().Should().Be(6);
+        results.Data.Should().BeInDescendingOrder(detailData => detailData.Created);
     }
 
     [Fact]
@@ -242,17 +186,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 15, IamUserId, null, null, NotificationSorting.ReadStatusAsc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.ReadStatusAsc).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(6);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(6);
-        results.Content.Count().Should().Be(6);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().BeInAscendingOrder(detailData => detailData.IsRead);
+        results!.Data.Count().Should().Be(6);
+        results.Data.Should().BeInAscendingOrder(detailData => detailData.IsRead);
     }
 
     [Fact]
@@ -262,17 +201,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 15, IamUserId, null, null, NotificationSorting.ReadStatusDesc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.ReadStatusDesc).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(6);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(6);
-        results.Content.Count().Should().Be(6);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().BeInDescendingOrder(detailData => detailData.IsRead);
+        results!.Data.Count().Should().Be(6);
+        results.Data.Should().BeInDescendingOrder(detailData => detailData.IsRead);
     }
 
     [Fact]
@@ -283,18 +217,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(0, 5, 15, IamUserId, false, null, null)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, 0, 15, null)
             .ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(3);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(3);
-        results.Content.Count().Should().Be(3);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
+        results!.Data.Count().Should().Be(3);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
     }
 
     [Fact]
@@ -305,18 +234,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(0, 5, 15, IamUserId, true, null, null)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, 0, 15, null)
             .ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(3);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(3);
-        results.Content.Count().Should().Be(3);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
+        results!.Data.Count().Should().Be(3);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
     }
 
     [Fact]
@@ -326,17 +250,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 5, 15, IamUserId, true, NotificationTypeId.INFO, NotificationSorting.ReadStatusDesc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, 0, 15, NotificationSorting.ReadStatusDesc).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(1);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(1);
-        results.Content.Count().Should().Be(1);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.INFO));
+        results!.Data.Count().Should().Be(1);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.INFO));
     }
 
     [Fact]
@@ -346,17 +265,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 5, 15, IamUserId, true, NotificationTypeId.ACTION, NotificationSorting.ReadStatusAsc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, 0, 15, NotificationSorting.ReadStatusAsc).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
-        results.Meta.NumberOfElements.Should().Be(2);
-        results.Meta.Page.Should().Be(0);
-        results.Meta.NumberOfPages.Should().Be(1);
-        results.Meta.PageSize.Should().Be(2);
-        results!.Content.Count().Should().Be(2);
-        results.Content.Should().AllBeOfType<NotificationDetailData>();
-        results.Content.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.ACTION));
+        results!.Data.Count().Should().Be(2);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.ACTION));
     }
 
     #endregion

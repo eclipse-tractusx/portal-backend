@@ -48,7 +48,7 @@ public interface INotificationBusinessLogic
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <param name="sorting">Kind of sorting for the notifications</param>
     /// <returns>Returns a collection of the users notification</returns>
-    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting);
+    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting sorting = NotificationSorting.DateDesc);
 
     /// <summary>
     ///     Gets a specific notification for the given user.
