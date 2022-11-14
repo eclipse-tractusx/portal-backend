@@ -229,6 +229,27 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
+    /// Updates an app according to request model
+    /// </summary>
+    /// <param name="appId" example="15507472-dfdc-4885-b165-8d4a8970a3e2">Id of the app to update</param>
+    /// <param name="appRequestModel">Request model for app creation.</param>
+    /// <returns>ID of updated application.</returns> 
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/15507472-dfdc-4885-b165-8d4a8970a3e2</remarks>
+    /// <response code="201">Returns created app's ID.</response>
+    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
+    [HttpPut]
+    [Route("{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, iamUserId).ConfigureAwait(false));
+        return NoContent();
+    }
+
+    /// <summary>
     /// Retrieves all in review status apps in the marketplace .
     /// </summary>
     /// <param name="page">page index start from 0</param>
