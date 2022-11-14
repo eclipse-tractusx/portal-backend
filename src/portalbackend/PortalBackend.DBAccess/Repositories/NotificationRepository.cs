@@ -68,6 +68,7 @@ public class NotificationRepository : INotificationRepository
             page,
             size,
             maxSize,
+            new Pagination.GroupedQueryParameters<Notification,Guid,NotificationDetailData>(
             _dbContext.Notifications,
             notification =>
                 notification.Receiver!.IamUser!.UserEntityId == iamUserId
@@ -89,7 +90,7 @@ public class NotificationRepository : INotificationRepository
                 notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
                 notification.IsRead,
                 notification.Content,
-                notification.DueDate));
+                notification.DueDate)));
 
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, string iamUserId) =>
