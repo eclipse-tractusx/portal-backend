@@ -127,8 +127,6 @@ public class Pagination
     private static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
     {
         var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
-        var constantSkip = Expression.Constant(skip);
-        var constantTake = Expression.Constant(take);
 
         var selector = Expression.Lambda<Func<IGrouping<TKey,TEntity>,Pagination.Source<T>>>(
             Expression.New(typeof(Pagination.Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new [] { typeof(int), typeof(IEnumerable<T>) })!,
@@ -138,8 +136,8 @@ public class Pagination
                         Expression.Call(typeof(Enumerable), "Take", new Type[] { typeof(TEntity) }, new Expression [] {
                             Expression.Call(typeof(Enumerable), "Skip", new Type[] { typeof(TEntity) }, new Expression[] {
                                 orderBy == null ? paramGroup : Expression.Invoke(orderBy, paramGroup),
-                                constantSkip }),
-                            constantTake }),
+                                Expression.Constant(skip) }),
+                            Expression.Constant(take) }),
                         select })
                 }
             ),

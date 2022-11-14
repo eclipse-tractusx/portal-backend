@@ -73,7 +73,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting sorting = NotificationSorting.DateDesc) =>
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting) =>
         _portalRepositories.GetInstance<INotificationRepository>()
             .GetAllNotificationDetailsByIamUserIdUntracked(page, size, _settings.MaxPageSize, iamUserId, isRead, typeId, sorting);
 

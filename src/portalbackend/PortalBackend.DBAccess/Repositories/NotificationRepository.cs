@@ -63,7 +63,7 @@ public class NotificationRepository : INotificationRepository
     public Notification DeleteNotification(Guid notificationId) =>
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
-    public Task<Pagination.Response<NotificationDetailData>> GetAllNotificationDetailsByIamUserIdUntracked(int page, int size, int maxSize, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting sorting) =>
+    public Task<Pagination.Response<NotificationDetailData>> GetAllNotificationDetailsByIamUserIdUntracked(int page, int size, int maxSize, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting) =>
         Pagination.CreateResponseAsync(
             page,
             size,

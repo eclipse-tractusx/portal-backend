@@ -55,7 +55,7 @@ public interface INotificationRepository
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    public Task<Pagination.Response<NotificationDetailData>> GetAllNotificationDetailsByIamUserIdUntracked(int page, int size, int maxSize, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting sorting);
+    public Task<Pagination.Response<NotificationDetailData>> GetAllNotificationDetailsByIamUserIdUntracked(int page, int size, int maxSize, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
