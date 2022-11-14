@@ -151,7 +151,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, status).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, status, null, null).ConfigureAwait(false);
 
         // Assert
         var expectedCount = status ? 
@@ -174,7 +174,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, sorting: sorting).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, null, null, sorting).ConfigureAwait(false);
 
         // Assert
         result.Content.Should().HaveCount(_notificationDetails.Count());
@@ -483,15 +483,15 @@ public class NotificationBusinessLogicTests
 
     private void SetupNotifications()
     {
-        var unreadPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _unreadNotificationDetails);
-        var readPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _readNotificationDetails);
-        var notificationsPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _notificationDetails);
+        var unreadPaging = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(_unreadNotificationDetails.Count(),1,1,_unreadNotificationDetails.Count()), _unreadNotificationDetails);
+        var readPaging = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(_readNotificationDetails.Count(),1,1,_readNotificationDetails.Count()), _readNotificationDetails);
+        var notificationsPaging = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(_notificationDetails.Count(),1,1,_notificationDetails.Count()), _notificationDetails);
         
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, A<int>._, A<int>._, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(A<int>._, A<int>._, A<int>._, _iamUser.UserEntityId, false, null, A<NotificationSorting?>._))
             .ReturnsLazily(() => unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, A<int>._, A<int>._, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(A<int>._, A<int>._, A<int>._, _iamUser.UserEntityId, true, null, A<NotificationSorting?>._))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<int>._, A<int>._, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(A<int>._, A<int>._, A<int>._, _iamUser.UserEntityId, null, null, A<NotificationSorting?>._))
             .Returns(notificationsPaging);
     }
 
