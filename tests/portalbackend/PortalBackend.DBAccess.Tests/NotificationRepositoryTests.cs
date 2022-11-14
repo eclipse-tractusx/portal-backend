@@ -177,7 +177,19 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
-        var Act = () => sut.GetAllNotificationDetailsByIamUserIdUntracked(1, 15, 5, IamUserId, null, null, null);
+        var Act = () => sut.GetAllNotificationDetailsByIamUserIdUntracked(0, 15, 5, IamUserId, null, null, null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task GetAllAsDetailsByUserIdUntracked_NegativePage_Throws()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        var Act = () => sut.GetAllNotificationDetailsByIamUserIdUntracked(-1, 15, 15, IamUserId, null, null, null);
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
