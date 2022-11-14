@@ -122,11 +122,14 @@ public class Pagination
                 source.Data);
     }
 
-    public static Task<Response<T>> CreateResponseAsync<TEntity,TKey,T>(int page, int size, int maxSize, DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class =>
-        CreateResponseAsync(page, size, maxSize, (skip, take) => CreateSourceAsync<TEntity,TKey,T>(skip, take, context, where, groupBy, orderBy, select));
+    public static Task<Response<T>> CreateResponseAsync<TEntity,TKey,T>(int page, int size, int maxSize, GroupedQueryParameters<TEntity,TKey,T> queryParameters) where TEntity : class =>
+        CreateResponseAsync(page, size, maxSize, (skip, take) => CreateSourceAsync<TEntity,TKey,T>(skip, take, queryParameters));
 
-    private static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
+    public record GroupedQueryParameters<TEntity,TKey,T>(DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class;
+
+    private static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, GroupedQueryParameters<TEntity,TKey,T> queryParameters) where TEntity : class
     {
+        var (context, where, groupBy, orderBy, select) = queryParameters;
         var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
 
         var selector = Expression.Lambda<Func<IGrouping<TKey,TEntity>,Pagination.Source<T>>>(
