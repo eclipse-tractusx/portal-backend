@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Framework.Models;
@@ -117,6 +119,37 @@ public class Pagination
                     page,
                     source.Data.Count()),
                 source.Data);
+    }
+
+    public static Task<Response<T>> CreateResponseAsync<TEntity,TKey,T>(int page, int size, int maxSize, DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class =>
+        CreateResponseAsync(page, size, maxSize, (skip, take) => CreateSourceAsync<TEntity,TKey,T>(skip, take, context, where, groupBy, orderBy, select));
+
+    private static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
+    {
+        var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
+        var constantSkip = Expression.Constant(skip);
+        var constantTake = Expression.Constant(take);
+
+        var selector = Expression.Lambda<Func<IGrouping<TKey,TEntity>,Pagination.Source<T>>>(
+            Expression.New(typeof(Pagination.Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new [] { typeof(int), typeof(IEnumerable<T>) })!,
+                new Expression[] {
+                    Expression.Call(typeof(Enumerable), "Count", new Type[] { typeof(TEntity) }, paramGroup),
+                    Expression.Call(typeof(Enumerable), "Select", new Type[] { typeof(TEntity), typeof(T) }, new Expression[] {
+                        Expression.Call(typeof(Enumerable), "Take", new Type[] { typeof(TEntity) }, new Expression [] {
+                            Expression.Call(typeof(Enumerable), "Skip", new Type[] { typeof(TEntity) }, new Expression[] {
+                                orderBy == null ? paramGroup : Expression.Invoke(orderBy, paramGroup),
+                                constantSkip }),
+                            constantTake }),
+                        select })
+                }
+            ),
+            paramGroup);
+
+        return context.AsNoTracking()
+            .Where(where)
+            .GroupBy(groupBy)
+            .Select(selector)
+            .SingleOrDefaultAsync();
     }
 
     private static void ValidatePaginationParameters(int page, int size, int maxSize)
