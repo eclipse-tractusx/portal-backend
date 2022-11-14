@@ -118,48 +118,43 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
+   private static void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
     {
         appRepository.AddOfferDescriptions(
             UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
-                .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
+                .Select(updateDescription => (appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
         );
 
-        _portalRepositories.RemoveRange(
+        appRepository.RemoveOfferDescriptions(
             ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
-                .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
+                .Select(existingDescription => (appId, existingDescription.LanguageShortName))
         );
 
-        foreach (var (languageCode, longDescription, shortDescription)
-            in UpdateDescriptions.IntersectBy(
-                ExistingDescriptions.Select(d => d.LanguageShortName), updateDscr => updateDscr.LanguageCode)
-                    .Select(updateDscr => (updateDscr.LanguageCode, updateDscr.LongDescription, updateDscr.ShortDescription)))
+        foreach (var update
+            in UpdateDescriptions
+                .Where(update => ExistingDescriptions.Any(existing => 
+                    existing.LanguageShortName == update.LanguageCode &&
+                    (existing.DescriptionLong != update.LongDescription ||
+                        existing.DescriptionShort != update.ShortDescription))))
         {
-            var existing = ExistingDescriptions.First(d => d.LanguageShortName == languageCode);
-            _portalRepositories.Attach(new OfferDescription(appId, languageCode), appdesc =>
+            appRepository.AttachAndModifyOfferDescription(appId, update.LanguageCode, offerDescription =>
             {
-                if (longDescription != existing.DescriptionLong)
-                {
-                    appdesc.DescriptionLong = longDescription;
-                }
-                if (shortDescription != existing.DescriptionShort)
-                {
-                    appdesc.DescriptionShort = shortDescription;
-                }
+                offerDescription.DescriptionLong = update.LongDescription;
+                offerDescription.DescriptionShort = update.ShortDescription;
             });
         }
     }
 
-    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
+    private static void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
     {
         appRepository.AddAppDetailImages(
             UpdateUrls.Except(ExistingImages.Select(image => image.Url))
                 .Select(url => new ValueTuple<Guid,string>(appId, url))
         );
 
-        _portalRepositories.RemoveRange(
+        appRepository.RemoveOfferDetailImages(
             ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
-                .Select(image => new OfferDetailImage(image.Id))
+                .Select(image => image.Id)
         );
     }
 
@@ -373,10 +368,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId) =>
-        this.UpdateAppInternal(appId, appRequestModel, iamUserId);
-
-    private async Task UpdateAppInternal(Guid appId, AppRequestModel appRequestModel, string iamUserId)
+    public async Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId)
     {
         var appData = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetAppUpdateData(
@@ -398,7 +390,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!appData.IsUserOfProvider)
         {
-            throw new ArgumentException($"User {iamUserId} is not allowed to change the app.", nameof(iamUserId));
+            throw new ForbiddenException($"User {iamUserId} is not allowed to change the app.");
         }
 
         await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
@@ -441,7 +433,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         
         if (!appData.OfferLicense.Item3)
         {
-            appRepository.AttachAndModifyOfferLicense(appData.OfferLicense.Item1, appRequestModel.Price);
+            appRepository.AttachAndModifyOfferLicense(appData.OfferLicense.Item1, offerLicense => offerLicense.Licensetext = appRequestModel.Price);
         }
         else
         {
@@ -453,9 +445,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private static void UpdateAppSupportedLanguages(Guid appId, IEnumerable<string> newSupportedLanguages, IEnumerable<string> languagesToRemove, IOfferRepository appRepository)
     {
-        appRepository.AddAppLanguages(newSupportedLanguages.Select(c =>
-            (appId, c)));
-        appRepository.RemoveAppLanguages(appId, languagesToRemove);
+        appRepository.AddAppLanguages(newSupportedLanguages.Select(language => (appId, language)));
+        appRepository.RemoveAppLanguages(languagesToRemove.Select(language => (appId, language)));
     }
 
     private async Task<Guid> ValidateSalesManager(AppRequestModel appRequestModel, string iamUserId)
