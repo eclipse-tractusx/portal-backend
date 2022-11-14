@@ -63,18 +63,17 @@ public class NotificationRepository : INotificationRepository
     public Notification DeleteNotification(Guid notificationId) =>
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
-    public Task<Pagination.Response<NotificationDetailData>> GetAllNotificationDetailsByIamUserIdUntracked(int page, int size, int maxSize, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting) =>
-        Pagination.CreateResponseAsync(
-            page,
-            size,
-            maxSize,
-            new Pagination.GroupedQueryParameters<Notification,Guid,NotificationDetailData>(
-            _dbContext.Notifications,
-            notification =>
-                notification.Receiver!.IamUser!.UserEntityId == iamUserId
-                && (!isRead.HasValue || notification.IsRead == isRead.Value)
-                && (!typeId.HasValue || notification.NotificationTypeId == typeId.Value),
-            notification => notification.ReceiverUserId,
+    /// <inheritdoc />
+    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting) =>
+        Pagination.CreateSourceAsync(
+            skip,
+            take,
+            _dbContext.Notifications.AsNoTracking()
+                .Where(notification =>
+                    notification.Receiver!.IamUser!.UserEntityId == iamUserId
+                    && (!isRead.HasValue || notification.IsRead == isRead.Value)
+                    && (!typeId.HasValue || notification.NotificationTypeId == typeId.Value))
+                .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {
                 NotificationSorting.DateAsc => (IEnumerable<Notification> notifications) => notifications.OrderBy(notification => notification.DateCreated),
@@ -90,7 +89,7 @@ public class NotificationRepository : INotificationRepository
                 notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
                 notification.IsRead,
                 notification.Content,
-                notification.DueDate)));
+                notification.DueDate));
 
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, string iamUserId) =>

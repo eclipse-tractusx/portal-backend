@@ -122,14 +122,8 @@ public class Pagination
                 source.Data);
     }
 
-    public static Task<Response<T>> CreateResponseAsync<TEntity,TKey,T>(int page, int size, int maxSize, GroupedQueryParameters<TEntity,TKey,T> queryParameters) where TEntity : class =>
-        CreateResponseAsync(page, size, maxSize, (skip, take) => CreateSourceAsync<TEntity,TKey,T>(skip, take, queryParameters));
-
-    public record GroupedQueryParameters<TEntity,TKey,T>(DbSet<TEntity> context, Expression<Func<TEntity,bool>> where, Expression<Func<TEntity,TKey>> groupBy, Expression<Func<IEnumerable<TEntity>,IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class;
-
-    private static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, GroupedQueryParameters<TEntity,TKey,T> queryParameters) where TEntity : class
+    public static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, IQueryable<IGrouping<TKey,TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
     {
-        var (context, where, groupBy, orderBy, select) = queryParameters;
         var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
 
         var selector = Expression.Lambda<Func<IGrouping<TKey,TEntity>,Pagination.Source<T>>>(
@@ -147,11 +141,7 @@ public class Pagination
             ),
             paramGroup);
 
-        return context.AsNoTracking()
-            .Where(where)
-            .GroupBy(groupBy)
-            .Select(selector)
-            .SingleOrDefaultAsync();
+        return query.Select(selector).SingleOrDefaultAsync();
     }
 
     private static void ValidatePaginationParameters(int page, int size, int maxSize)

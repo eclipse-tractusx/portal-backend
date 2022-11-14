@@ -47,15 +47,14 @@ public interface INotificationRepository
     /// <summary>
     ///     Gets all Notifications for a specific user
     /// </summary>
-    /// <param name="page"></param>
-    /// <param name="size"></param>
-    /// <param name="maxSize"></param>
     /// <param name="iamUserId">Id of the user</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
+    /// <param name="skip"></param>
+    /// <param name="take"></param>
     /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    public Task<Pagination.Response<NotificationDetailData>> GetAllNotificationDetailsByIamUserIdUntracked(int page, int size, int maxSize, string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting);
+    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
