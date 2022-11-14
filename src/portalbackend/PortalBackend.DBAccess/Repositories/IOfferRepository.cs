@@ -114,6 +114,10 @@ public interface IOfferRepository
     /// <param name="appDescriptions">The app descriptions that should be added to the database</param>
     void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions);
 
+    void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds);
+
+    OfferDescription AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters = null);
+
     /// <summary>
     /// Adds <see cref="AppLanguage"/>s to the database
     /// </summary>
@@ -123,9 +127,8 @@ public interface IOfferRepository
     /// <summary>
     /// Removes <see cref="AppLanguage"/>s to the database
     /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="languagesToRemove">The app languages that should be added to the database</param>
-    void RemoveAppLanguages(Guid appId, IEnumerable<string> languagesToRemove);
+    /// <param name="appLanguageIds">appIds and languageShortNames of the app languages to be removed from the database</param>
+    void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds);
 
     /// <summary>
     /// Retrieve all app data
@@ -158,6 +161,8 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="appImages"></param>
     void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
+
+    void RemoveOfferDetailImages(IEnumerable<Guid> imageIds);
 
     /// <summary>
     /// Get App Release data by App Id
@@ -242,9 +247,9 @@ public interface IOfferRepository
     /// Updates the licenseText of the given offerLicense
     /// </summary>
     /// <param name="offerLicenseId">id of the offer license</param>
-    /// <param name="licenseText">the new text</param>
+    /// <param name="setOptionalParameters">action to modify newly attached OfferLicence</param>
     /// <returns>the updated entity</returns>
-    OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, string licenseText);
+    OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters = null);
 
     /// <summary>
     /// Removes the app assigned offer license from the database

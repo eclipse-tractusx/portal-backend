@@ -130,10 +130,10 @@ public class OfferRepository : IOfferRepository
         _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
-    public OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, string licenseText)
+    public OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters = null)
     {
         var offerLicense = _context.OfferLicenses.Attach(new OfferLicense(offerLicenseId, null!)).Entity;
-        offerLicense.Licensetext = licenseText;
+        setOptionalParameters?.Invoke(offerLicense);
         return offerLicense;
     }
 
@@ -167,18 +167,30 @@ public class OfferRepository : IOfferRepository
     public void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
         _context.OfferDescriptions.AddRange(appDescriptions.Select(s => new OfferDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
 
+    public void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds) =>
+        _context.RemoveRange(offerDescriptionIds.Select(x => new OfferDescription(x.offerId, x.languageShortName, null!, null!)));
+
+    public OfferDescription AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters = null)
+    {
+        var offerDescription = _context.Attach(new OfferDescription(offerId, languageShortName, null!, null!)).Entity;
+        setOptionalParameters?.Invoke(offerDescription);
+        return offerDescription;
+    }
+
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
 
     /// <inheritdoc />
-    public void RemoveAppLanguages(Guid appId, IEnumerable<string> languagesToRemove) =>
-        _context.AppLanguages.RemoveRange(languagesToRemove.Select(x => new AppLanguage(appId, x)));
+    public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
+        _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
 
     ///<inheritdoc />
-    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages)=>
+    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages) =>
         _context.OfferDetailImages.AddRange(appImages.Select(s=> new OfferDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
-    
+
+    public void RemoveOfferDetailImages(IEnumerable<Guid> imageIds) =>
+        _context.RemoveRange(imageIds.Select(imageId => new OfferDetailImage(imageId, Guid.Empty, null!)));
 
     /// <inheritdoc />
     public IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId) =>
@@ -350,7 +362,7 @@ public class OfferRepository : IOfferRepository
         string price) =>
         _context.Offers
             .AsNoTracking()
-            .Where(o => o.Id == appId && o.OfferTypeId == OfferTypeId.APP)
+            .Where(offer => offer.Id == appId && offer.OfferTypeId == OfferTypeId.APP)
             .Select(x => new AppUpdateData
             (
                 x.OfferStatusId,

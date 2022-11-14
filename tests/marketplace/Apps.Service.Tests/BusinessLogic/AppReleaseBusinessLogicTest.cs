@@ -283,8 +283,8 @@ public class AppReleaseBusinessLogicTest
         async Task Act() => await sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
-        error.ParamName.Should().Be("iamUserId");
+        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"User {_iamUser.UserEntityId} is not allowed to change the app.");
     }
 
     [Fact]
@@ -334,11 +334,11 @@ public class AppReleaseBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.RemoveAppLanguages(A<Guid>._, A<IEnumerable<string>>._))
+        A.CallTo(() => _offerRepository.RemoveAppLanguages(A<IEnumerable<(Guid,string)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddAppAssignedUseCases(A<IEnumerable<(Guid appId, Guid useCaseId)>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._, A<string>._))
+        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._,A<Action<OfferLicense>>._))
             .MustHaveHappenedOnceExactly();
     }
 

@@ -267,7 +267,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
-        sut.AttachAndModifyOfferLicense(new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"), "666");
+        sut.AttachAndModifyOfferLicense(new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"), offerLicense => offerLicense.Licensetext = "666");
 
         // Assert
         var changeTracker = dbContext.ChangeTracker;
@@ -314,7 +314,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
-        sut.RemoveAppLanguages(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new []{"de"});
+        sut.RemoveAppLanguages(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "de") });
 
         // Assert
         var changeTracker = dbContext.ChangeTracker;
