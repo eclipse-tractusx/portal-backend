@@ -203,7 +203,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="200">Return the Users with Role of Sales Manager.</response>
     [HttpGet]
     [Route("ownCompany/salesManager")]
-    [Authorize(Roles = "add_app")]  
+    [Authorize(Roles = "add_apps")]  
     [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(iamUserId));
@@ -218,7 +218,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
     [HttpPost]
     [Route("createapp")]
-    [Authorize(Roles = "add_app")]
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
