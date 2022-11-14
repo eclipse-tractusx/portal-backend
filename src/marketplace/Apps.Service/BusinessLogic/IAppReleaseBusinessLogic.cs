@@ -116,6 +116,15 @@ public interface IAppReleaseBusinessLogic
     Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId);
 
     /// <summary>
+    /// Creates an application and returns its generated ID.
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appRequestModel"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns>Guid of the created app.</returns>
+    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId);
+
+    /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
     Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);

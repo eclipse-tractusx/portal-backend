@@ -141,6 +141,14 @@ public static class BaseSeed
         });
 
         dbContext.Offers.AddRange(OfferData.Offers);
+        dbContext.OfferLicenses.AddRange(new List<OfferLicense>
+        {
+            new (new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"), "43")
+        });
+        dbContext.OfferAssignedLicenses.AddRange(new List<OfferAssignedLicense>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"))
+        });
         dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
         dbContext.OfferSubscriptions.AddRange(new List<OfferSubscription>
         {
@@ -155,6 +163,17 @@ public static class BaseSeed
                 AppSubscriptionUrl = "https://url.test-app.com"
             }
         });
+        dbContext.AppLanguages.AddRange(new List<AppLanguage>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "de"),
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "en")
+        });
+        dbContext.AppAssignedUseCases.AddRange(new List<AppAssignedUseCase>
+        {
+            new(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90"))
+        });
+        
+        
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
             new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),

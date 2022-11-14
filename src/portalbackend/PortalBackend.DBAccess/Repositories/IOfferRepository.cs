@@ -21,6 +21,7 @@
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -113,11 +114,21 @@ public interface IOfferRepository
     /// <param name="appDescriptions">The app descriptions that should be added to the database</param>
     void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions);
 
+    void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds);
+
+    OfferDescription AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters = null);
+
     /// <summary>
     /// Adds <see cref="AppLanguage"/>s to the database
     /// </summary>
     /// <param name="appLanguages">The app languages that should be added to the database</param>
     void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages);
+
+    /// <summary>
+    /// Removes <see cref="AppLanguage"/>s to the database
+    /// </summary>
+    /// <param name="appLanguageIds">appIds and languageShortNames of the app languages to be removed from the database</param>
+    void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds);
 
     /// <summary>
     /// Retrieve all app data
@@ -150,6 +161,8 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="appImages"></param>
     void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
+
+    void RemoveOfferDetailImages(IEnumerable<Guid> imageIds);
 
     /// <summary>
     /// Get App Release data by App Id
@@ -213,4 +226,35 @@ public interface IOfferRepository
     /// <param name="roleId"></param>
     /// <returns></returns>
     Task<(bool OfferStatus, bool IsProviderCompanyUser,bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
+
+    /// <summary>
+    /// Gets all data needed for the app update
+    /// </summary>
+    /// <param name="appId">Id of the requested app</param>
+    /// <param name="iamUserId">Id of the current IamUser</param>
+    /// <param name="languageCodes">the languageCodes for the app</param>
+    /// <param name="useCaseIds">ids of the usecases</param>
+    /// <param name="price">the price</param>
+    /// <returns></returns>
+    Task<AppUpdateData?> GetAppUpdateData(
+        Guid appId,
+        string iamUserId,
+        IEnumerable<string> languageCodes,
+        IEnumerable<Guid> useCaseIds,
+        string price);
+
+    /// <summary>
+    /// Updates the licenseText of the given offerLicense
+    /// </summary>
+    /// <param name="offerLicenseId">id of the offer license</param>
+    /// <param name="setOptionalParameters">action to modify newly attached OfferLicence</param>
+    /// <returns>the updated entity</returns>
+    OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters = null);
+
+    /// <summary>
+    /// Removes the app assigned offer license from the database
+    /// </summary>
+    /// <param name="appId">id of the app</param>
+    /// <param name="offerLicenseId">id of the offer license</param>
+    void RemoveOfferAssignedLicense(Guid appId, Guid offerLicenseId);
 }

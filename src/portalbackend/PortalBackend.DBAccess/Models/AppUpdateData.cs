@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,26 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace PortalBackend.DBAccess.Models;
 
-public class OfferDetailImage
-{
-    public OfferDetailImage(Guid id, Guid offerId, string imageUrl)
-    {
-        Id = id;
-        OfferId = offerId;
-        ImageUrl = imageUrl;
-    }
-
-    public Guid Id { get; private set; }
-
-    public Guid OfferId { get; set; }
-
-    [MaxLength(255)]
-    public string ImageUrl { get; set; }
-
-    // Navigation properties
-    public virtual Offer? Offer { get; set; }
-}
+public record AppUpdateData
+(OfferStatusId OfferState,
+    bool IsUserOfProvider,
+    IEnumerable<(string, string, string)> OfferDescriptions,
+    IEnumerable<(string Shortname, bool IsMatch)> Languages,
+    IEnumerable<Guid> MatchingUseCases, 
+    ValueTuple<Guid, string, bool> OfferLicense);
