@@ -106,7 +106,7 @@ public class AppsController : ControllerBase
     /// <response code="201">Returns created app's ID.</response>
     [HttpPost]
     [Route("")]
-    [Authorize(Roles = "add_app")]
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     public async Task<CreatedAtRouteResult> CreateAppAsync([FromBody] AppInputModel appInputModel)
     {
