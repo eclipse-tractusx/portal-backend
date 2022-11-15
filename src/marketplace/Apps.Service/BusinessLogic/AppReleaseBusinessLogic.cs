@@ -336,16 +336,33 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {   
-        var userCompanyId = await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
+        Guid companyId;
+        if(appRequestModel.SalesManagerId.HasValue)
+        {
+            companyId = await ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId).ConfigureAwait(false);
+        }
+        else
+        {
+            companyId = await _portalRepositories.GetInstance<IUserRepository>()
+                .GetOwnCompanyId(iamUserId)
+                .ConfigureAwait(false);
+            if (companyId == Guid.Empty)
+            {
+                throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+            }
+        }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
-            app.ProviderCompanyId = userCompanyId;
+            app.ProviderCompanyId = companyId;
             app.OfferStatusId = OfferStatusId.CREATED;
-            app.SalesManagerId = appRequestModel.SalesManagerId;
+            if (appRequestModel.SalesManagerId.HasValue)
+            {
+                app.SalesManagerId = appRequestModel.SalesManagerId;
+            }
         }).Id;
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
@@ -393,7 +410,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"User {iamUserId} is not allowed to change the app.");
         }
 
-        await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
+        if (appRequestModel.SalesManagerId.HasValue)
+        {
+            await ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId).ConfigureAwait(false);
+        }
+
         var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));
         var existingLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>().GetLanguageCodesUntrackedAsync(newSupportedLanguages).ToListAsync().ConfigureAwait(false);
         if (newSupportedLanguages.Except(existingLanguageCodes).Any())
@@ -449,16 +470,16 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         appRepository.RemoveAppLanguages(languagesToRemove.Select(language => (appId, language)));
     }
 
-    private async Task<Guid> ValidateSalesManager(AppRequestModel appRequestModel, string iamUserId)
+    private async Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
         var responseData = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId)
+            .GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, salesManagerId)
             .ConfigureAwait(false);
         if (responseData == default)
         {
-            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}", nameof(appRequestModel.SalesManagerId));
+            throw new ControllerArgumentException($"invalid salesManagerId {salesManagerId}", nameof(salesManagerId));
         }
 
         if (!responseData.IsSameCompany)
@@ -469,7 +490,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         if (userRoleIds.Except(responseData.RoleIds).Any())
         {
             throw new ControllerArgumentException(
-                $"User {appRequestModel.SalesManagerId} does not have sales Manager Role", nameof(appRequestModel.SalesManagerId));
+                $"User {salesManagerId} does not have sales Manager Role", nameof(salesManagerId));
         }
 
         return responseData.UserCompanyId;

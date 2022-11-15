@@ -33,4 +33,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Price">Price</param>
 /// <returns></returns>
 
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
+public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid? SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
