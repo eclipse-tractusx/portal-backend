@@ -467,7 +467,7 @@ public class UserRepository : IUserRepository
             .AsAsyncEnumerable();
     
     /// <inheritdoc />
-    public Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId) =>
+    public Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid? companyUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser=>new ValueTuple<IEnumerable<Guid>,bool, Guid>(
@@ -475,4 +475,14 @@ public class UserRepository : IUserRepository
                 companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
                 companyUser.CompanyId))
             .SingleOrDefaultAsync();
+    
+    /// <inheritdoc />
+    public Task<Guid> GetCompanyMembershipWithIdUntrackedAsync(string iamUserId)
+    =>
+        _dbContext.CompanyUsers.AsNoTracking()
+            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+            .Select(companyUser =>
+                companyUser.CompanyId)
+            .SingleOrDefaultAsync();
+    
 }
