@@ -168,7 +168,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.ParamName.Should().Be("SalesManagerId");
+        error.ParamName.Should().Be("salesManagerId");
     }
 
     [Fact]
@@ -202,11 +202,11 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.ParamName.Should().Be("SalesManagerId");
+        error.ParamName.Should().Be("salesManagerId");
     }
 
     [Fact]
-    public async Task AddAppAsync_WithValidData_ReturnsExpected()
+    public async Task AddAppAsync_WithSalesManagerValidData_ReturnsExpected()
     {
         // Arrange
         SetupValidateSalesManager();
@@ -218,6 +218,37 @@ public class AppReleaseBusinessLogicTest
         await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
+        A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddAppAssignedUseCases(A<IEnumerable<(Guid appId, Guid useCaseId)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.CreateOfferLicenses(A<string>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.CreateOfferAssignedLicense(A<Guid>._, A<Guid>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task AddAppAsync_WithNullSalesMangerValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupValidateSalesManager();
+        var data = new AppRequestModel("test", "test", null, null, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
+        var settings = new AppsSettings();
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+     
+        // Act
+        await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>._)).MustHaveHappened();
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
@@ -444,6 +475,7 @@ public class AppReleaseBusinessLogicTest
             .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), true, _companyUser.CompanyId));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Not.Matches(x => x == _companyUser.Id || x == _differentCompanyUserId || x == _noSalesManagerUserId)))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>());
+        A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.IsEqualTo(_iamUser.UserEntityId))).Returns(_companyUser.CompanyId);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
