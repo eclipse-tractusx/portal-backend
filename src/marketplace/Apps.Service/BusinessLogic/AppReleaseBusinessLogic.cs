@@ -336,7 +336,21 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {   
-        var userCompanyId = await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
+        Guid userCompanyId = Guid.Empty;
+        if(appRequestModel.SalesManagerId.HasValue)
+        {
+            userCompanyId = await ValidateSalesManager(appRequestModel, iamUserId).ConfigureAwait(false);
+        }
+        else
+        {
+            userCompanyId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyMembershipWithIdUntrackedAsync(iamUserId)
+            .ConfigureAwait(false);
+            if (userCompanyId == default)
+            {
+                throw new ControllerArgumentException($"CompanyId Does not Exist");
+            }
+        }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
