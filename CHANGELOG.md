@@ -2,14 +2,34 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-### In Progress
+### Unreleased
 
-* Feature - Service customer notification & email for service activation
-* Feature - Service provider notification & email for service subscriptions
-* Feature - User Management: Modification of Roles of one specific user under an app
-* Feature - Managed/Own connector registration endpoint refactoring
-* Feature - Add user-role-collections restricting the assignable user-roles per CompanyRole
-* Feature - Enhance Logging for external Service calls
+* ...
+
+## 0.8.0
+
+### Change
+* Email Template
+   * refactored email templates for registration and administration services (style and component update)
+   * added CompanyName to all "Invite" email templates
+* IdP Administration
+   * refactored put and post endpoints by merging the user create and update endpoint 
+   * added the displayName as optional parameter inside the idp create endpoint
+* Service & App Subscribe endpoints enhanced by adding the submission of the consent agreement details inside the request body
+
+### Feature
+* Notification Service ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+   * enabled pagination for get/notification endpoint
+   * created count-detail endpoint to retrieve additional metadata (unread, unread per type, etc.)
+   * added notification type info to support the filtering and tagging of notification areas (info, action, offer)
+   * enabled notification sorting
+
+### Technical Support
+* Enabled "Debug" Logging mechanism for 3rd party interfaces by implementing a "debug" config level inside the service config files
+
+### Bugfix
+* Create new user account email template changed; wrong email template was fetched
+* Add user role endpoint got refactored; multi subscription offers did result into an exception and have been fixed by a interim workaround to assign the role to all specific offer app-instances which the company as assigned for
 
 ## 0.7.0
 
