@@ -87,24 +87,6 @@ public class ServiceControllerTest
     }
         
     [Fact]
-    public async Task AddServiceSubscription_ReturnsExpectedId()
-    {
-        //Arrange
-        var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
-            .Returns(offerSubscriptionId);
-
-        //Act
-        var serviceId = Guid.NewGuid();
-        var result = await this._controller.AddServiceSubscription(serviceId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
-        Assert.IsType<CreatedAtRouteResult>(result);
-        result.Value.Should().Be(offerSubscriptionId);
-    }
-        
-    [Fact]
     public async Task AddServiceSubscriptionWithConsent_ReturnsExpectedId()
     {
         //Arrange
