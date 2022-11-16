@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -117,48 +118,43 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-   private void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
+   private static void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
     {
         appRepository.AddOfferDescriptions(
             UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
-                .Select(updateDescription => new ValueTuple<Guid, string, string, string>(appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
+                .Select(updateDescription => (appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
         );
 
-        _portalRepositories.RemoveRange<OfferDescription>(
+        appRepository.RemoveOfferDescriptions(
             ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
-                .Select(existingDescription => new OfferDescription(appId, existingDescription.LanguageShortName))
+                .Select(existingDescription => (appId, existingDescription.LanguageShortName))
         );
 
-        foreach (var (languageCode, longDescription, shortDescription)
-            in UpdateDescriptions.IntersectBy(
-                ExistingDescriptions.Select(d => d.LanguageShortName), updateDscr => updateDscr.LanguageCode)
-                    .Select(updateDscr => (updateDscr.LanguageCode, updateDscr.LongDescription, updateDscr.ShortDescription)))
+        foreach (var update
+            in UpdateDescriptions
+                .Where(update => ExistingDescriptions.Any(existing => 
+                    existing.LanguageShortName == update.LanguageCode &&
+                    (existing.DescriptionLong != update.LongDescription ||
+                        existing.DescriptionShort != update.ShortDescription))))
         {
-            var existing = ExistingDescriptions.First(d => d.LanguageShortName == languageCode);
-            _portalRepositories.Attach(new OfferDescription(appId, languageCode), appdesc =>
+            appRepository.AttachAndModifyOfferDescription(appId, update.LanguageCode, offerDescription =>
             {
-                if (longDescription != existing.DescriptionLong)
-                {
-                    appdesc.DescriptionLong = longDescription;
-                }
-                if (shortDescription != existing.DescriptionShort)
-                {
-                    appdesc.DescriptionShort = shortDescription;
-                }
+                offerDescription.DescriptionLong = update.LongDescription;
+                offerDescription.DescriptionShort = update.ShortDescription;
             });
         }
     }
 
-    private void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
+    private static void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
     {
         appRepository.AddAppDetailImages(
             UpdateUrls.Except(ExistingImages.Select(image => image.Url))
                 .Select(url => new ValueTuple<Guid,string>(appId, url))
         );
 
-        _portalRepositories.RemoveRange(
+        appRepository.RemoveOfferDetailImages(
             ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
-                .Select(image => new OfferDetailImage(image.Id))
+                .Select(image => image.Id)
         );
     }
 
@@ -321,23 +317,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
        _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId,_settings.SalesManagerRoles);
     
     /// <inheritdoc/>
-    public  Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
+    public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
-        if(appRequestModel.ProviderCompanyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"Company Id must not be null or empty"); 
-        }
-
         var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
         if (emptyLanguageCodes.Any())
         {
-            throw new ControllerArgumentException($"Language Codes must not be null or empty"); 
+            throw new ControllerArgumentException("Language Codes must not be null or empty", nameof(appRequestModel.SupportedLanguageCodes)); 
         }
         
         var emptyUseCaseIds = appRequestModel.UseCaseIds.Where(item => item == Guid.Empty);
         if (emptyUseCaseIds.Any())
         {
-            throw new ControllerArgumentException($"Use Case Ids must not be null or empty");
+            throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
         
         return this.CreateAppAsync(appRequestModel, iamUserId);
@@ -345,32 +336,33 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {   
-        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
+        Guid companyId;
+        if(appRequestModel.SalesManagerId.HasValue)
+        {
+            companyId = await ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId).ConfigureAwait(false);
+        }
+        else
+        {
+            companyId = await _portalRepositories.GetInstance<IUserRepository>()
+                .GetOwnCompanyId(iamUserId)
+                .ConfigureAwait(false);
+            if (companyId == Guid.Empty)
+            {
+                throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+            }
+        }
 
-        var responseData =await _portalRepositories.GetInstance<IUserRepository>().GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, appRequestModel.SalesManagerId).ConfigureAwait(false);
-        
-        if(responseData == default)
-        {
-            throw new ControllerArgumentException($"invalid salesManagerId {appRequestModel.SalesManagerId}");
-        }
-        if(!responseData.IsSameCompany)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
-        }
-        if(userRoleIds.Except(responseData.RoleIds).Any())
-        {
-            throw new ControllerArgumentException($"User {appRequestModel.SalesManagerId} does not have sales Manager Role");
-        }
-        
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
-            app.ProviderCompanyId = appRequestModel.ProviderCompanyId;
+            app.ProviderCompanyId = companyId;
             app.OfferStatusId = OfferStatusId.CREATED;
-            app.SalesManagerId = appRequestModel.SalesManagerId;
+            if (appRequestModel.SalesManagerId.HasValue)
+            {
+                app.SalesManagerId = appRequestModel.SalesManagerId;
+            }
         }).Id;
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
@@ -390,6 +382,118 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException($"invalid language code or UseCaseId specified");
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId)
+    {
+        var appData = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetAppUpdateData(
+                appId,
+                iamUserId,
+                appRequestModel.SupportedLanguageCodes,
+                appRequestModel.UseCaseIds,
+                appRequestModel.Price)
+            .ConfigureAwait(false);
+        if (appData is null)
+        {
+            throw new NotFoundException($"App {appId} does not exists");
+        }
+
+        if (appData.OfferState != OfferStatusId.CREATED)
+        {
+            throw new ConflictException($"Apps in State {appData.OfferState} can't be updated");
+        }
+
+        if (!appData.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not allowed to change the app.");
+        }
+
+        if (appRequestModel.SalesManagerId.HasValue)
+        {
+            await ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId).ConfigureAwait(false);
+        }
+
+        var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));
+        var existingLanguageCodes = await _portalRepositories.GetInstance<ILanguageRepository>().GetLanguageCodesUntrackedAsync(newSupportedLanguages).ToListAsync().ConfigureAwait(false);
+        if (newSupportedLanguages.Except(existingLanguageCodes).Any())
+        {
+            throw new ControllerArgumentException($"The language(s) {string.Join(",", newSupportedLanguages.Except(existingLanguageCodes))} do not exist in the database.",
+                nameof(appRequestModel.SupportedLanguageCodes));
+        }
+
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        appRepository.AttachAndModifyOffer(appId, app =>
+        {
+            app.Name = appRequestModel.Title;
+            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
+            app.OfferStatusId = OfferStatusId.CREATED;
+            app.SalesManagerId = appRequestModel.SalesManagerId;
+        });
+
+        UpsertRemoveAppDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions, appRepository);
+        UpdateAppSupportedLanguages(appId, newSupportedLanguages, appData.Languages.Where(x => !x.IsMatch).Select(x => x.Shortname), appRepository);
+
+        var newUseCases = appRequestModel.UseCaseIds.Except(appData.MatchingUseCases);
+        if (newUseCases.Any())
+        {
+            appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
+                (appId, uc)));
+        }
+
+        CreateOrUpdateAppLicense(appId, appRequestModel, appData, appRepository);
+        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private static void CreateOrUpdateAppLicense(Guid appId, AppRequestModel appRequestModel, AppUpdateData appData,
+        IOfferRepository appRepository)
+    {
+        if (appData.OfferLicense == default || appData.OfferLicense.Item2 == appRequestModel.Price) return;
+        
+        if (!appData.OfferLicense.Item3)
+        {
+            appRepository.AttachAndModifyOfferLicense(appData.OfferLicense.Item1, offerLicense => offerLicense.Licensetext = appRequestModel.Price);
+        }
+        else
+        {
+            appRepository.RemoveOfferAssignedLicense(appId, appData.OfferLicense.Item1);
+            var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
+            appRepository.CreateOfferAssignedLicense(appId, licenseId);
+        }
+    }
+
+    private static void UpdateAppSupportedLanguages(Guid appId, IEnumerable<string> newSupportedLanguages, IEnumerable<string> languagesToRemove, IOfferRepository appRepository)
+    {
+        appRepository.AddAppLanguages(newSupportedLanguages.Select(language => (appId, language)));
+        appRepository.RemoveAppLanguages(languagesToRemove.Select(language => (appId, language)));
+    }
+
+    private async Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId)
+    {
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
+        var responseData = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, salesManagerId)
+            .ConfigureAwait(false);
+        if (responseData == default)
+        {
+            throw new ControllerArgumentException($"invalid salesManagerId {salesManagerId}", nameof(salesManagerId));
+        }
+
+        if (!responseData.IsSameCompany)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
+        }
+
+        if (userRoleIds.Except(responseData.RoleIds).Any())
+        {
+            throw new ControllerArgumentException(
+                $"User {salesManagerId} does not have sales Manager Role", nameof(salesManagerId));
+        }
+
+        return responseData.UserCompanyId;
     }
 
     /// <inheritdoc/>

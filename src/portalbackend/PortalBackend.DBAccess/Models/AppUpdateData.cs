@@ -18,30 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-/// <summary>
-/// Possible sorting options for the notification pagination
-/// </summary>
-public enum NotificationSorting
-{
-    /// <summary>
-    /// Ascending by date
-    /// </summary>
-    DateAsc = 1,
-    
-    /// <summary>
-    /// Descending by date
-    /// </summary>
-    DateDesc = 2,
-    
-    /// <summary>
-    /// Ascending by the read status
-    /// </summary>
-    ReadStatusAsc = 3,
-    
-    /// <summary>
-    /// Descending by read status
-    /// </summary>
-    ReadStatusDesc = 4,
-}
+namespace PortalBackend.DBAccess.Models;
+
+public record AppUpdateData
+(OfferStatusId OfferState,
+    bool IsUserOfProvider,
+    IEnumerable<(string, string, string)> OfferDescriptions,
+    IEnumerable<(string Shortname, bool IsMatch)> Languages,
+    IEnumerable<Guid> MatchingUseCases, 
+    ValueTuple<Guid, string, bool> OfferLicense);
