@@ -65,7 +65,7 @@ public class NotificationRepository : INotificationRepository
 
     /// <inheritdoc />
     public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting) =>
-        Pagination.CreateSourceAsync(
+        Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.Notifications.AsNoTracking()
@@ -89,7 +89,8 @@ public class NotificationRepository : INotificationRepository
                 notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
                 notification.IsRead,
                 notification.Content,
-                notification.DueDate));
+                notification.DueDate))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, string iamUserId) =>
