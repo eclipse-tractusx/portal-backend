@@ -532,7 +532,7 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<ProviderCompanyDetail>(entity =>
         {
             entity.HasOne(e => e.Company)
-                .WithOne(e => e.ServiceProviderCompanyDetail)
+                .WithOne(e => e.ProviderCompanyDetail)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
