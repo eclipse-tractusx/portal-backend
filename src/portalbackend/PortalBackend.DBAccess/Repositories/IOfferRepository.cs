@@ -257,4 +257,13 @@ public interface IOfferRepository
     /// <param name="appId">id of the app</param>
     /// <param name="offerLicenseId">id of the offer license</param>
     void RemoveOfferAssignedLicense(Guid appId, Guid offerLicenseId);
+    
+    /// <summary>
+    /// Validate Company User and Retrieve CompanyUserid with App Name
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, bool IsProviderCompanyUser, string AppName, Guid CompanyUserId)> IsProviderCompanyUserForNotificationAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
