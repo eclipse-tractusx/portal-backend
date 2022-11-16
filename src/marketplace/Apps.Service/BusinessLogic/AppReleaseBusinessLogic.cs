@@ -217,7 +217,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId)
     {
-        ValidateAppUserRole(appId, appAssignedDesc, iamUserId);
+        ValidateAppUserRole(appId, appAssignedDesc);
         return InsertAppUserRoleAsync(appId, appAssignedDesc, iamUserId);
     }
 
@@ -574,7 +574,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId)
     {
-        ValidateAppUserRole(appId, appUserRolesDescription, iamUserId);
+        ValidateAppUserRole(appId, appUserRolesDescription);
         return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription, iamUserId);
     }
 
@@ -616,7 +616,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return roleData;
     }
 
-    private void ValidateAppUserRole(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId)
+    private static void ValidateAppUserRole(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription)
     {
         if (appId == Guid.Empty)
         {
