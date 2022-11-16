@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,9 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public interface IMailingService
+/// <summary>
+/// Possible sorting options for the notification pagination
+/// </summary>
+public enum NotificationSorting
 {
-    Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates);
+    /// <summary>
+    /// Ascending by date
+    /// </summary>
+    DateAsc = 1,
+    
+    /// <summary>
+    /// Descending by date
+    /// </summary>
+    DateDesc = 2,
+    
+    /// <summary>
+    /// Ascending by the read status
+    /// </summary>
+    ReadStatusAsc = 3,
+    
+    /// <summary>
+    /// Descending by read status
+    /// </summary>
+    ReadStatusDesc = 4,
 }

@@ -42,9 +42,12 @@ public interface IIdentityProviderRepository
     Task<(string? UserEntityId, string? Alias, bool IsSameCompany)> GetIamUserIsOwnCompanyIdentityProviderAliasAsync(Guid companyUserId, Guid identityProviderId, string iamUserId);
 
     Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
-                (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
-                IEnumerable<string> IdpAliase)>
-        GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId);
-    Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias, bool IsSharedIdp)> GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId);
-    Task<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid companyUserId, string? IdpAlias)> GetCompanyNameSharedIdpAliasUntrackedAsync(string iamUserId);
+        (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
+        IEnumerable<string> IdpAliase)>
+            GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId);
+
+    Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
+        (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
+        (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>
+            GetCompanyNameIdpAliasUntrackedAsync(Guid identityProviderId, string iamUserId);
 }

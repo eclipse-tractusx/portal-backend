@@ -24,6 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -129,6 +130,18 @@ public class OfferRepository : IOfferRepository
         _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
+    public OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters = null)
+    {
+        var offerLicense = _context.OfferLicenses.Attach(new OfferLicense(offerLicenseId, null!)).Entity;
+        setOptionalParameters?.Invoke(offerLicense);
+        return offerLicense;
+    }
+
+    /// <inheritdoc />
+    public void RemoveOfferAssignedLicense(Guid appId, Guid offerLicenseId) =>
+        _context.OfferAssignedLicenses.Remove(new OfferAssignedLicense(appId, offerLicenseId));
+
+    /// <inheritdoc />
     public OfferAssignedLicense CreateOfferAssignedLicense(Guid appId, Guid appLicenseId) =>
         _context.OfferAssignedLicenses.Add(new OfferAssignedLicense(appId, appLicenseId)).Entity;
 
@@ -154,14 +167,30 @@ public class OfferRepository : IOfferRepository
     public void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions) =>
         _context.OfferDescriptions.AddRange(appDescriptions.Select(s => new OfferDescription(s.appId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
 
+    public void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds) =>
+        _context.RemoveRange(offerDescriptionIds.Select(x => new OfferDescription(x.offerId, x.languageShortName, null!, null!)));
+
+    public OfferDescription AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters = null)
+    {
+        var offerDescription = _context.Attach(new OfferDescription(offerId, languageShortName, null!, null!)).Entity;
+        setOptionalParameters?.Invoke(offerDescription);
+        return offerDescription;
+    }
+
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
-    
+
+    /// <inheritdoc />
+    public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
+        _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
+
     ///<inheritdoc />
-    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages)=>
+    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages) =>
         _context.OfferDetailImages.AddRange(appImages.Select(s=> new OfferDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
-    
+
+    public void RemoveOfferDetailImages(IEnumerable<Guid> imageIds) =>
+        _context.RemoveRange(imageIds.Select(imageId => new OfferDetailImage(imageId, Guid.Empty, null!)));
 
     /// <inheritdoc />
     public IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId) =>
@@ -321,6 +350,27 @@ public class OfferRepository : IOfferRepository
                 (offer.OfferStatusId == offerStatusId),
                 offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                 offer.UserRoles.Any(userRole => userRole.Id == roleId)
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<AppUpdateData?> GetAppUpdateData(
+        Guid appId,
+        string iamUserId,
+        IEnumerable<string> languageCodes,
+        IEnumerable<Guid> useCaseIds, 
+        string price) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(offer => offer.Id == appId && offer.OfferTypeId == OfferTypeId.APP)
+            .Select(x => new AppUpdateData
+            (
+                x.OfferStatusId,
+                x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
+                x.UseCases.Select(uc => uc.Id).Where(uc => useCaseIds.Any(uci => uci == uc)),
+                x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Apps.Count > 1)).FirstOrDefault()
             ))
             .SingleOrDefaultAsync();
 }

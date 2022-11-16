@@ -26,12 +26,12 @@ namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private Task CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string name)
+    private Task CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string displayName)
     {
         var newRealm = CloneRealm(_Settings.SharedRealm);
         newRealm.Id = realm;
         newRealm._Realm = realm;
-        newRealm.DisplayName = name;
+        newRealm.DisplayName = displayName;
         return keycloak.ImportRealmAsync(realm, newRealm);
     }
 

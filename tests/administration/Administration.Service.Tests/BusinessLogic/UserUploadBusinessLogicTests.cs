@@ -396,10 +396,10 @@ public class UserUploadBusinessLogicTests
         A.CallTo(() =>_options.Value).Returns(_settings);
 
         A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId)))
-            .Returns(_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create());
+            .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create(),_fixture.Create<string>()));
 
         A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId)))
-            .Returns(_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create());
+            .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(),_fixture.Create<string>()));
 
         A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._,A<IEnumerable<string>>._, A<string>._))
             .ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
