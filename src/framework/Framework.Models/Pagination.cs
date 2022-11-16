@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
@@ -122,7 +121,7 @@ public class Pagination
                 source.Data);
     }
 
-    public static Task<Pagination.Source<T>?> CreateSourceAsync<TEntity,TKey,T>(int skip, int take, IQueryable<IGrouping<TKey,TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
+    public static IQueryable<Pagination.Source<T>?> CreateSourceQueryAsync<TEntity,TKey,T>(int skip, int take, IQueryable<IGrouping<TKey,TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
     {
         var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
 
@@ -141,7 +140,7 @@ public class Pagination
             ),
             paramGroup);
 
-        return query.Select(selector).SingleOrDefaultAsync();
+        return query.Select(selector);
     }
 
     private static void ValidatePaginationParameters(int page, int size, int maxSize)
