@@ -43,7 +43,7 @@ public class ServiceProviderBusinessLogicTest
     private readonly ICompanyRepository _companyRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IFixture _fixture;
-    private readonly ICollection<ServiceProviderCompanyDetail> _serviceProviderDetails;
+    private readonly ICollection<ProviderCompanyDetail> _serviceProviderDetails;
 
     public ServiceProviderBusinessLogicTest()
     {
@@ -52,7 +52,7 @@ public class ServiceProviderBusinessLogicTest
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _serviceProviderDetails = new HashSet<ServiceProviderCompanyDetail>();
+        _serviceProviderDetails = new HashSet<ProviderCompanyDetail>();
             
         _portalRepositories = A.Fake<IPortalRepositories>();
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -293,7 +293,7 @@ public class ServiceProviderBusinessLogicTest
             {
                 var companyId = x.Arguments.Get<Guid>("companyId");
                 var dataUrl = x.Arguments.Get<string>("dataUrl")!;
-                var serviceProviderCompanyDetail = new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
+                var serviceProviderCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
                 _serviceProviderDetails.Add(serviceProviderCompanyDetail);
             });
         

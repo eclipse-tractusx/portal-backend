@@ -57,7 +57,7 @@ public static class BaseSeed
             },
         });
 
-        dbContext.ServiceProviderCompanyDetails.AddRange(new List<ServiceProviderCompanyDetail>
+        dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
         {
             new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
         });
