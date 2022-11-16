@@ -24,6 +24,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Linq.Expressions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -63,34 +64,33 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting sorting) =>
-        _dbContext.Notifications
-            .AsNoTracking()
-            .Where(notification =>
-                notification.Receiver!.IamUser!.UserEntityId == iamUserId
-                && (!isRead.HasValue || notification.IsRead == isRead.Value)
-                && (!typeId.HasValue || notification.NotificationTypeId == typeId.Value))
-            .GroupBy(notification => notification.ReceiverUserId)
-            .Select(group => new Pagination.Source<NotificationDetailData>(
-                group.Count(),
-                (sorting == NotificationSorting.DateAsc ? group.OrderBy(notification => notification.DateCreated) :
-                        sorting == NotificationSorting.DateDesc ? group.OrderByDescending(notification => notification.DateCreated) :
-                        sorting == NotificationSorting.ReadStatusAsc ? group.OrderBy(notification => notification.IsRead) :
-                        sorting == NotificationSorting.ReadStatusDesc ? group.OrderBy(notification => notification.IsRead) :
-                        group.OrderBy(notification => notification))
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(notification => new NotificationDetailData(
-                        notification.Id,
-                        notification.DateCreated,
-                        notification.NotificationTypeId,
-                        notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
-                        notification.IsRead,
-                        notification.Content,
-                        notification.DueDate))
-                    )
-            ).SingleOrDefaultAsync();
-    
+    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting) =>
+        Pagination.CreateSourceAsync(
+            skip,
+            take,
+            _dbContext.Notifications.AsNoTracking()
+                .Where(notification =>
+                    notification.Receiver!.IamUser!.UserEntityId == iamUserId
+                    && (!isRead.HasValue || notification.IsRead == isRead.Value)
+                    && (!typeId.HasValue || notification.NotificationTypeId == typeId.Value))
+                .GroupBy(notification => notification.ReceiverUserId),
+            sorting switch
+            {
+                NotificationSorting.DateAsc => (IEnumerable<Notification> notifications) => notifications.OrderBy(notification => notification.DateCreated),
+                NotificationSorting.DateDesc => (IEnumerable<Notification> notifications) => notifications.OrderByDescending(notification => notification.DateCreated),
+                NotificationSorting.ReadStatusAsc => (IEnumerable<Notification> notifications) => notifications.OrderBy(notification => notification.IsRead),
+                NotificationSorting.ReadStatusDesc => (IEnumerable<Notification> notifications) => notifications.OrderByDescending(notification => notification.IsRead),
+                _ => (Expression<Func<IEnumerable<Notification>,IOrderedEnumerable<Notification>>>?)null
+            },
+            notification => new NotificationDetailData(
+                notification.Id,
+                notification.DateCreated,
+                notification.NotificationTypeId,
+                notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId,
+                notification.IsRead,
+                notification.Content,
+                notification.DueDate));
+
     /// <inheritdoc />
     public Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, string iamUserId) =>
         _dbContext.Notifications
