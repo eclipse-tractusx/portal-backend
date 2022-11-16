@@ -37,11 +37,11 @@ public class ServiceProviderController : ControllerBase
     [HttpGet]
     [Route("owncompany/{serviceProviderDetailDataId}", Name = nameof(GetServiceProviderCompanyDetail))]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(ServiceProviderDetailReturnData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProviderDetailReturnData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetail([FromRoute] Guid serviceProviderDetailDataId) =>
+    public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail([FromRoute] Guid serviceProviderDetailDataId) =>
         this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, iamUserId));
 
     /// <summary>

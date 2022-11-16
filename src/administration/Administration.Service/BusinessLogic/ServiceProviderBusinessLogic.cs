@@ -41,10 +41,10 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
+    public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetServiceProviderCompanyDetailAsync(serviceProviderDetailDataId, CompanyRoleId.SERVICE_PROVIDER, iamUserId)
+            .GetProviderCompanyDetailAsync(serviceProviderDetailDataId, CompanyRoleId.SERVICE_PROVIDER, iamUserId)
             .ConfigureAwait(false);
         if (result == default)
         {
@@ -54,12 +54,12 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         {
             throw new ForbiddenException($"User {iamUserId} is not allowed to request the service provider detail data.");
         }
-        if (!result.IsServiceProviderCompany)
+        if (!result.IsProviderCompany)
         {
             throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
         }
 
-        return result.ServiceProviderDetailReturnData;
+        return result.ProviderDetailReturnData;
     }
 
     /// <inheritdoc />
@@ -82,7 +82,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         }
 
         var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>()
-            .CreateServiceProviderCompanyDetail(result.CompanyId, data.Url);
+            .CreateProviderCompanyDetail(result.CompanyId, data.Url);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return companyDetails.Id;
     }
@@ -106,7 +106,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         ServiceProviderDetailData data, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .CheckServiceProviderDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
+            .CheckProviderCompanyDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
             .ConfigureAwait(false);
         if (result == default)
         {
@@ -117,7 +117,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ForbiddenException($"users {iamUserId} is not associated with service-provider company");
         }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyServiceProviderDetails(
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyProviderCompanyDetails(
             serviceProviderDetailDataId,
             details => { details.AutoSetupUrl = data.Url; });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
