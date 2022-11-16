@@ -265,5 +265,5 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, bool IsProviderCompanyUser, string AppName, Guid CompanyUserId)> IsProviderCompanyUserForNotificationAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, string? AppName, Guid CompanyUserId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
