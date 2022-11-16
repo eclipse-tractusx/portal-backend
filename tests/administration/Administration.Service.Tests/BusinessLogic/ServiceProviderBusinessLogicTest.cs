@@ -43,7 +43,7 @@ public class ServiceProviderBusinessLogicTest
     private readonly ICompanyRepository _companyRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IFixture _fixture;
-    private readonly ICollection<ServiceProviderCompanyDetail> _serviceProviderDetails;
+    private readonly ICollection<ProviderCompanyDetail> _serviceProviderDetails;
 
     public ServiceProviderBusinessLogicTest()
     {
@@ -52,7 +52,7 @@ public class ServiceProviderBusinessLogicTest
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _serviceProviderDetails = new HashSet<ServiceProviderCompanyDetail>();
+        _serviceProviderDetails = new HashSet<ProviderCompanyDetail>();
             
         _portalRepositories = A.Fake<IPortalRepositories>();
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -288,27 +288,27 @@ public class ServiceProviderBusinessLogicTest
         A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUser(A<string>.That.Not.Matches(x => x == IamUserId), A<CompanyRoleId>._))
             .ReturnsLazily(() => ((Guid,bool))default);
 
-        A.CallTo(() => _companyRepository.CreateServiceProviderCompanyDetail(A<Guid>._, A<string>._))
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._))
             .Invokes(x =>
             {
                 var companyId = x.Arguments.Get<Guid>("companyId");
                 var dataUrl = x.Arguments.Get<string>("dataUrl")!;
-                var serviceProviderCompanyDetail = new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
-                _serviceProviderDetails.Add(serviceProviderCompanyDetail);
+                var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
+                _serviceProviderDetails.Add(providerCompanyDetail);
             });
         
-        A.CallTo(() => _companyRepository.GetServiceProviderCompanyDetailAsync(A<Guid>.That.Matches(x => x == ExistingDetailId), A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => (new ServiceProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"),true,true));
-        A.CallTo(() => _companyRepository.GetServiceProviderCompanyDetailAsync(A<Guid>.That.Not.Matches(x => x == ExistingDetailId), A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => ((ServiceProviderDetailReturnData,bool,bool))default);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<Guid>.That.Matches(x => x == ExistingDetailId), A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"),true,true));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<Guid>.That.Not.Matches(x => x == ExistingDetailId), A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => ((ProviderDetailReturnData,bool,bool))default);
         
-        A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
+        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
             .ReturnsLazily(() => (true,true));
-        A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
+        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
             .ReturnsLazily(() => (true,false));
-        A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
+        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
             .ReturnsLazily(() => ((bool,bool))default);
-        A.CallTo(() => _companyRepository.CheckServiceProviderDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
+        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
             .ReturnsLazily(() => ((bool,bool))default);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);

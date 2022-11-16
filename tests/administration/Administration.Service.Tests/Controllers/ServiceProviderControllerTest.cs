@@ -66,7 +66,7 @@ public class ServiceProviderControllerTest
     {
         //Arrange
         var id = Guid.NewGuid();
-        var data = new ServiceProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");  
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");  
         A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(id, IamUserId))
             .ReturnsLazily(() => data);
 
@@ -75,7 +75,7 @@ public class ServiceProviderControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<ServiceProviderDetailReturnData>(result);
+        Assert.IsType<ProviderDetailReturnData>(result);
         result.Id.Should().Be(id);
         result.CompanyId.Should().Be(CompanyId);
     }

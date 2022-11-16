@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public record ServiceProviderDetailData(string Url);
-
-public record ProviderDetailReturnData(Guid Id, Guid CompanyId, string Url);
+public enum ServiceTypeId
+{
+    DATASPACE_SERVICE = 1,
+    CONSULTANCE_SERVICE = 2
+}
