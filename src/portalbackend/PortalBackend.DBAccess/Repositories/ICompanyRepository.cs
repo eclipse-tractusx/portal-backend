@@ -74,7 +74,7 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the company</param>
     /// <param name="dataUrl">Url for the service provider</param>
     /// <returns>Returns the newly created entity</returns>
-    ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl);
+    ProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl);
 
     /// <summary>
     /// Gets the service provider company details data
@@ -90,7 +90,7 @@ public interface ICompanyRepository
     /// <param name="serviceProviderCompanyDetailId">Id of the service provider company details</param>
     /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
     /// <returns></returns>
-    ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null);
+    ProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null);
 
     /// <summary>
     /// Gets the business partner number for the given id

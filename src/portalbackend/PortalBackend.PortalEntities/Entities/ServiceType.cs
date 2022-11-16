@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,32 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ServiceProviderCompanyDetail
+public class ServiceType
 {
-    private ServiceProviderCompanyDetail()
+    private ServiceType()
     {
-        AutoSetupUrl = null!;
-    }
-    
-    public ServiceProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
-        : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        AutoSetupUrl = autoSetupUrl;
-        DateCreated = dateCreated;
+        Label = null!;
+        Services = new HashSet<Offer>();
     }
 
-    public Guid Id { get; private set; }
+    public ServiceType(ServiceTypeId offerTypeId) : this()
+    {
+        Id = offerTypeId;
+        Label = offerTypeId.ToString();
+    }
 
-    public DateTimeOffset DateCreated { get; private set; }
+    public ServiceTypeId Id { get; private set; }
 
-    public string AutoSetupUrl { get; set; }
-
-    public Guid CompanyId { get; set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
     // Navigation properties
-    public virtual Company? Company { get; private set; }
+    public virtual ICollection<Offer> Services { get; private set; }
 }
