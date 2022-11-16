@@ -54,7 +54,7 @@ public class OfferRepository : IOfferRepository
             c.Provider,
             c.ContactEmail,
             c.SalesManagerId,
-            c.ProviderCompany!.ServiceProviderCompanyDetail!.AutoSetupUrl
+            c.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc />

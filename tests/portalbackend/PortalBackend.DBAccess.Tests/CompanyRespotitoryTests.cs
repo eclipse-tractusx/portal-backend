@@ -61,7 +61,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.CreateServiceProviderCompanyDetail(_validCompanyId, url);
+        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url);
 
         // Assert
         var changeTracker = context.ChangeTracker;
@@ -85,13 +85,13 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBe(default);
-        result.ServiceProviderDetailReturnData.Should().NotBeNull();
-        result.ServiceProviderDetailReturnData.Id.Should().Be(_validDetailId);
-        result.IsServiceProviderCompany.Should().BeTrue();
+        result.ProviderDetailReturnData.Should().NotBeNull();
+        result.ProviderDetailReturnData.Id.Should().Be(_validDetailId);
+        result.IsProviderCompany.Should().BeTrue();
         result.IsCompanyUser.Should().BeTrue();
     }
 
@@ -102,7 +102,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetServiceProviderCompanyDetailAsync(Guid.NewGuid(), CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(Guid.NewGuid(), CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -115,11 +115,11 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetServiceProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
-        result.IsServiceProviderCompany.Should().BeTrue();
+        result.IsProviderCompany.Should().BeTrue();
         result.IsCompanyUser.Should().BeFalse();
     }
 
@@ -231,7 +231,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.AttachAndModifyServiceProviderDetails(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"),
+        var results = sut.AttachAndModifyProviderCompanyDetails(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"),
             detail => { detail.AutoSetupUrl = url; });
 
         // Assert
@@ -255,7 +255,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckServiceProviderDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
+        var result = await sut.CheckProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -269,7 +269,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckServiceProviderDetailsExistsForUser(Guid.NewGuid().ToString(), new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
+        var result = await sut.CheckProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString(), new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -283,7 +283,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckServiceProviderDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.CheckProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
