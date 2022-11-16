@@ -222,7 +222,9 @@ public class UserProvisioningService : IUserProvisioningService
     {
         Guid existingCompanyUserId = Guid.Empty;
 
-        await foreach (var (userEntityId, companyUserId) in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId).ConfigureAwait(false))
+        var validCompanyUserStatusIds = new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE };
+
+        await foreach (var (userEntityId, companyUserId) in userRepository.GetMatchingCompanyIamUsersByNameEmail(user.FirstName, user.LastName, user.Email, companyId, validCompanyUserStatusIds ).ConfigureAwait(false))
         {
             if (userEntityId == null)
             {
