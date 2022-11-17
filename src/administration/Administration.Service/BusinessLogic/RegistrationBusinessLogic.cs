@@ -358,7 +358,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return roleData;
     }
 
-    public async Task<bool> UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId)
+    public Task<bool> UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId)
     {
         var regex = new Regex(@"(\w|\d){16}");
         if (!regex.IsMatch(bpn))
@@ -369,10 +369,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
         }
+        return UpdateCompanyBpnAsync(applicationId, bpn, iamuserId);
+    }
+
+    private async Task<bool> UpdateCompanyBpnAsync(Guid applicationId, string bpn, string iamuserId)
+    {
         var businessPartnerNumbers = await _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync().ToListAsync().ConfigureAwait(false);
         if (businessPartnerNumbers.Contains(bpn))
         {
-            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) is already exist", "bpn");
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) is already exist", nameof(bpn));
         }
         var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(iamuserId, applicationId).ConfigureAwait(false);
         if (result == default)
