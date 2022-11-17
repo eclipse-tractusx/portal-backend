@@ -476,4 +476,14 @@ public class UserRepository : IUserRepository
                 companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
                 companyUser.CompanyId))
             .SingleOrDefaultAsync();
+    
+    /// <inheritdoc />
+    public Task<(Guid CompanyId, string Bpn)> GetBpnForIamUserUntrackedAsync(string iamUserId, Guid applicationId) =>
+        _dbContext.IamUsers
+            .AsNoTracking()
+            .Where(iamUser => iamUser.UserEntityId == iamUserId 
+            && iamUser.CompanyUser!.Company!.CompanyStatusId==CompanyStatusId.PENDING
+            && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+            .Select(iamUser =>new ValueTuple<Guid, string>(iamUser.CompanyUser!.Company!.Id, iamUser.CompanyUser!.Company!.BusinessPartnerNumber!))
+            .SingleOrDefaultAsync();
 }

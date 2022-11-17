@@ -31,6 +31,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -355,5 +356,39 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return roleData;
+    }
+
+    public async Task<bool> UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId)
+    {
+        var regex = new Regex(@"(\w|\d){16}");
+        if (!regex.IsMatch(bpn))
+        {
+            throw new ArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+        }
+        if (!bpn.ToUpper().StartsWith("BPNL"))
+        {
+            throw new ArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+        }
+        var businessPartnerNumbers = await _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync().ToListAsync().ConfigureAwait(false);
+        if (businessPartnerNumbers.Contains(bpn))
+        {
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) is already exist", "bpn");
+        }
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(iamuserId, applicationId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"user {iamuserId} is not associated with any company");
+        }
+        if (string.IsNullOrWhiteSpace(result.Bpn))
+        {
+            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(result.CompanyId, c =>
+            {
+                c.BusinessPartnerNumber = bpn;
+            });
+
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            return true;
+        }
+        return false;
     }
 }

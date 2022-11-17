@@ -31,4 +31,5 @@ public interface IRegistrationBusinessLogic
         CancellationToken cancellationToken);
     Task<bool> DeclinePartnerRequest(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
+    Task<bool> UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId);
 }
