@@ -66,7 +66,7 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId);
 
-    Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId);
+    Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckProviderCompanyDetailsExistsForUser(string iamUserId, Guid providerCompanyDetailsId);
     
     /// <summary>
     /// Creates service provider company details
@@ -74,23 +74,23 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the company</param>
     /// <param name="dataUrl">Url for the service provider</param>
     /// <returns>Returns the newly created entity</returns>
-    ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl);
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl);
 
     /// <summary>
     /// Gets the service provider company details data
     /// </summary>
-    /// <param name="serviceProviderDetailDataId">Id of the details</param>
+    /// <param name="providerDetailDataId">Id of the details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
-    Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany, bool IsCompanyUser)> GetProviderCompanyDetailAsync(Guid providerDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
     
     /// <summary>
     /// Updates the service provider company details
     /// </summary>
-    /// <param name="serviceProviderCompanyDetailId">Id of the service provider company details</param>
+    /// <param name="providerCompanyDetailId">Id of the service provider company details</param>
     /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
     /// <returns></returns>
-    ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null);
+    ProviderCompanyDetail AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null);
 
     /// <summary>
     /// Gets the business partner number for the given id

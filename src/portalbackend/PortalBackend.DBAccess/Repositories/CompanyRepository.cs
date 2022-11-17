@@ -133,35 +133,35 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckServiceProviderDetailsExistsForUser(string iamUserId, Guid serviceProviderCompanyDetailsId) =>
-        _context.ServiceProviderCompanyDetails.AsNoTracking()
-            .Where(details => details.Id == serviceProviderCompanyDetailsId)
+    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckProviderCompanyDetailsExistsForUser(string iamUserId, Guid providerCompanyDetailsId) =>
+        _context.ProviderCompanyDetails.AsNoTracking()
+            .Where(details => details.Id == providerCompanyDetailsId)
             .Select(details => new ValueTuple<bool,bool>(
                 true,
                 details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl) =>
-        _context.ServiceProviderCompanyDetails.Add(new ServiceProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
+    public ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl) =>
+        _context.ProviderCompanyDetails.Add(new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId) =>
-        _context.ServiceProviderCompanyDetails
+    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany, bool IsCompanyUser)> GetProviderCompanyDetailAsync(Guid providerDetailDataId, CompanyRoleId companyRoleId, string iamUserId) =>
+        _context.ProviderCompanyDetails
             .Where(x => 
-                x.Id == serviceProviderDetailDataId)
-            .Select(x => new ValueTuple<ServiceProviderDetailReturnData,bool,bool>(
-                new ServiceProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
+                x.Id == providerDetailDataId)
+            .Select(x => new ValueTuple<ProviderDetailReturnData,bool,bool>(
+                new ProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
                 x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
                 x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public ServiceProviderCompanyDetail AttachAndModifyServiceProviderDetails(Guid serviceProviderCompanyDetailId, Action<ServiceProviderCompanyDetail>? setOptionalParameters = null)
+    public ProviderCompanyDetail AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null)
     {
-        var serviceProviderCompanyDetail = _context.Attach(new ServiceProviderCompanyDetail(serviceProviderCompanyDetailId, Guid.Empty, null!, default)).Entity;
-        setOptionalParameters?.Invoke(serviceProviderCompanyDetail);
-        return serviceProviderCompanyDetail;
+        var providerCompanyDetail = _context.Attach(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default)).Entity;
+        setOptionalParameters?.Invoke(providerCompanyDetail);
+        return providerCompanyDetail;
     }
     
     /// <inheritdoc />

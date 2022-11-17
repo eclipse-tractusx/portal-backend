@@ -33,7 +33,7 @@ public interface IServiceProviderBusinessLogic
     /// <param name="serviceProviderDetailDataId">Id of the service provider details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>The detail data</returns>
-    Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId);
+    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId);
 
     /// <summary>
     /// Creates service provider company details
