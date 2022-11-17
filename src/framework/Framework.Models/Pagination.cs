@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Framework.Models;
@@ -119,15 +121,37 @@ public class Pagination
                 source.Data);
     }
 
+    public static IQueryable<Pagination.Source<T>?> CreateSourceQueryAsync<TEntity,TKey,T>(int skip, int take, IQueryable<IGrouping<TKey,TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
+    {
+        var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
+
+        var selector = Expression.Lambda<Func<IGrouping<TKey,TEntity>,Pagination.Source<T>>>(
+            Expression.New(typeof(Pagination.Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new [] { typeof(int), typeof(IEnumerable<T>) })!,
+                new Expression[] {
+                    Expression.Call(typeof(Enumerable), "Count", new Type[] { typeof(TEntity) }, paramGroup),
+                    Expression.Call(typeof(Enumerable), "Select", new Type[] { typeof(TEntity), typeof(T) }, new Expression[] {
+                        Expression.Call(typeof(Enumerable), "Take", new Type[] { typeof(TEntity) }, new Expression [] {
+                            Expression.Call(typeof(Enumerable), "Skip", new Type[] { typeof(TEntity) }, new Expression[] {
+                                orderBy == null ? paramGroup : Expression.Invoke(orderBy, paramGroup),
+                                Expression.Constant(skip) }),
+                            Expression.Constant(take) }),
+                        select })
+                }
+            ),
+            paramGroup);
+
+        return query.Select(selector);
+    }
+
     private static void ValidatePaginationParameters(int page, int size, int maxSize)
     {
         if (page < 0)
         {
-            throw new ArgumentException("Parameter page must be >= 0", nameof(page));
+            throw new ControllerArgumentException("Parameter page must be >= 0", nameof(page));
         }
         if (size <= 0 || size > maxSize)
         {
-            throw new ArgumentException($"Parameter size must be between 1 and {maxSize}", nameof(size));
+            throw new ControllerArgumentException($"Parameter size must be between 1 and {maxSize}", nameof(size));
         }
     }
 }

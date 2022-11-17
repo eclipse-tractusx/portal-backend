@@ -87,33 +87,13 @@ public class ServicesController : ControllerBase
     /// Adds a new service subscription.
     /// </summary>
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
-    /// <remarks>Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
-    /// <response code="201">Returns success</response>
-    /// <response code="400">Company or company user wasn't assigned to the user.</response>
-    /// <response code="404">No Service was found for the given id.</response>
-    [HttpPost]
-    [Route("{serviceId}/subscribe")]
-    [Authorize(Roles = "subscribe_service")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId)
-    {
-        var serviceSubscriptionId = await this.WithIamUserAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, new List<OfferAgreementConsentData>(), auth.iamUserId, auth.bearerToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
-    }
-
-    /// <summary>
-    /// Adds a new service subscription.
-    /// </summary>
-    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
     /// <param name="offerAgreementConsentData">The agreement consent data</param>
     /// <remarks>Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
     /// <response code="201">Returns success</response>
     /// <response code="400">Company or company user wasn't assigned to the user.</response>
     /// <response code="404">No Service was found for the given id.</response>
     [HttpPost]
-    [Route("{serviceId}/subscribe-consent")]
+    [Route("{serviceId}/subscribe")]
     [Authorize(Roles = "subscribe_service")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

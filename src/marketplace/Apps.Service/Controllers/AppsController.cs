@@ -197,33 +197,13 @@ public class AppsController : ControllerBase
     /// Adds an app to current user's company's subscriptions.
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
-    /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
-    /// <response code="204">App was successfully subscribed to.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
-    /// <response code="404">If appId does not exist.</response>
-    [HttpPost]
-    [Route("{appId}/subscribe")]
-    [Authorize(Roles = "subscribe_apps")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId)
-    {
-        await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, Enumerable.Empty<OfferAgreementConsentData>(), auth.iamUserId, auth.bearerToken));
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Adds an app to current user's company's subscriptions.
-    /// </summary>
-    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to subscribe to.</param>
     /// <param name="offerAgreementConsentData">The agreement consent data</param>
     /// <remarks>Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe</remarks>
     /// <response code="204">App was successfully subscribed to.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     /// <response code="404">If appId does not exist.</response>
     [HttpPost]
-    [Route("{appId}/subscribe-consent")]
+    [Route("{appId}/subscribe")]
     [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

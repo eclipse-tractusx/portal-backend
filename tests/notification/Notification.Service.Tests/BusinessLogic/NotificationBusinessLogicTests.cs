@@ -177,7 +177,62 @@ public class NotificationBusinessLogicTests
         var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, sorting: sorting).ConfigureAwait(false);
 
         // Assert
+        result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
+        result.Meta.NumberOfPages.Should().Be(1);
+        result.Meta.Page.Should().Be(0);
+        result.Meta.PageSize.Should().Be(_notificationDetails.Count());
         result.Content.Should().HaveCount(_notificationDetails.Count());
+    }
+
+    [Fact]
+    public async Task GetNotifications_SecondPage_ReturnsExpectedNotificationDetailData()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
+
+        // Act
+        var results = await sut.GetNotificationsAsync(1, 3, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
+        results.Meta.NumberOfPages.Should().Be(2);
+        results.Meta.Page.Should().Be(1);
+        results.Meta.PageSize.Should().Be(1);
+        results.Content.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetNotifications_ExceedMaxPageSize_Throws()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
+
+        var Act = () => sut.GetNotificationsAsync(0, 20, _iamUser.UserEntityId);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task GetNotifications_NegativePage_Throws()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
+
+        var Act = () => sut.GetNotificationsAsync(-1, 15, _iamUser.UserEntityId);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
     }
 
     #endregion
@@ -484,15 +539,16 @@ public class NotificationBusinessLogicTests
     private void SetupNotifications()
     {
         var unreadPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _unreadNotificationDetails);
-        var readPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _readNotificationDetails);
-        var notificationsPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _notificationDetails);
+        var readPaging = new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails);
+        var notificationsPaging = new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails);
         
         A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, A<int>._, A<int>._, A<NotificationSorting>._))
             .ReturnsLazily(() => unreadPaging);
         A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, A<int>._, A<int>._, A<NotificationSorting>._))
             .Returns(readPaging);
         A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<int>._, A<int>._, A<NotificationSorting>._))
-            .Returns(notificationsPaging);
+            .ReturnsLazily((string _, bool? _, NotificationTypeId? _, int skip, int take, NotificationSorting? _) => 
+                new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
