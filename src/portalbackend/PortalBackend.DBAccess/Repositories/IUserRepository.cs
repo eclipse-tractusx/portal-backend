@@ -125,4 +125,12 @@ public interface IUserRepository
     /// <param name="companyUserIdId"></param>
     /// <returns></returns>
     Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
+
+    /// <summary>
+    /// Retrieve BPN for applicationId and Logged In User Company
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="applicationId"></param>
+    /// <returns></returns>
+    Task<(Guid CompanyId, string Bpn)> GetBpnForIamUserUntrackedAsync(string iamUserId, Guid applicationId);
 }
