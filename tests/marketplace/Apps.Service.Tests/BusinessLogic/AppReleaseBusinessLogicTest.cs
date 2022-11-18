@@ -33,6 +33,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using PortalBackend.DBAccess.Models;
+using System.Text.Json;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -57,7 +58,9 @@ public class AppReleaseBusinessLogicTest
     private readonly Guid _differentCompanyAppId = Guid.NewGuid();
     private readonly Guid _existingAppId = Guid.NewGuid();
     private readonly ILanguageRepository _languageRepository;
-
+    private readonly AppsSettings _settings;
+    private const string ClientId = "catenax-portal";
+    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
     public AppReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -74,6 +77,7 @@ public class AppReleaseBusinessLogicTest
         _offerService = A.Fake<IOfferService>();
         _notificationService = A.Fake<INotificationService>();
         _options = A.Fake<IOptions<AppsSettings>>();
+        _settings = A.Fake<AppsSettings>();
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
             .Create();
@@ -81,6 +85,14 @@ public class AppReleaseBusinessLogicTest
             .With(u => u.CompanyUser, _companyUser)
             .Create();
         _companyUser.IamUser = _iamUser;
+        _settings.ActiveAppNotificationTypeIds = new List<NotificationTypeId>
+        {
+            NotificationTypeId.APP_ROLE_ADDED
+        };
+         _settings.ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
+        };
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
     }
@@ -440,6 +452,44 @@ public class AppReleaseBusinessLogicTest
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
        
         error.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", settings.ContentTypeSettings)} are allowed.");
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRoleAsync_ExecutesSuccessfully()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = _fixture.Create<string>();
+        var userRole = _fixture.Create<UserRole>();
+
+        var appAssignedRoleDesc = new List<AppUserRole>();
+        var appUserRoleDescription = new List<AppUserRoleDescription>();
+        appUserRoleDescription.Add(new AppUserRoleDescription("de","this is test1"));
+        appUserRoleDescription.Add(new AppUserRoleDescription("en","this is test2"));
+        appAssignedRoleDesc.Add(new AppUserRole("Legal Admin", appUserRoleDescription));
+
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, appName, _companyUser.Id));
+       
+        
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+        //Act
+        var result = await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappened();
+        foreach(var item in appAssignedRoleDesc)
+        {
+            A.CallTo(() => _userRolesRepository.CreateAppUserRole(A<Guid>._, A<string>.That.IsEqualTo(item.role))).MustHaveHappened();
+            foreach (var indexItem in item.descriptions)
+            {
+                A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(indexItem.languageCode), A<string>.That.IsEqualTo(indexItem.description))).MustHaveHappened();
+            }
+        }
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
+        Assert.NotNull(result);
+        Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
     }
 
     #endregion
