@@ -97,7 +97,7 @@ public class DocumentRepository : IDocumentRepository
         this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
-    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsApplicationNotSubmittedConfirmedDeclined)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
@@ -110,6 +110,6 @@ public class DocumentRepository : IDocumentRepository
                 x.Document.DocumentStatusId,
                 x.Applications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 x.Document.DocumentTypeId,
-                x.Applications.Any(companyApplication => !applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
+                x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
             .SingleOrDefaultAsync();
 }
