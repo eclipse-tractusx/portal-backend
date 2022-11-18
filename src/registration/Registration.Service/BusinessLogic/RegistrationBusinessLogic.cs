@@ -628,7 +628,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ConflictException($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
         }
-        if (details.IsApplicationSubmittedConfirmedDeclined)
+        if (details.IsQueriedApplicationStatus)
         {
             throw new ConflictException("Document deletion is not allowed. Application is already closed.");
         }
