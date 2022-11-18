@@ -312,11 +312,12 @@ public class AppReleaseProcessControllerTest
     [Fact]
     public async Task AddActiveAppUserRole_ReturnsExpectedCount()
     {
-        Guid appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
-        Guid userId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles,userId.ToString()))
+        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
             .Returns(appRoleData);
 
         //Act
@@ -324,10 +325,9 @@ public class AppReleaseProcessControllerTest
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles,userId.ToString())).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
-       
     }
 }
