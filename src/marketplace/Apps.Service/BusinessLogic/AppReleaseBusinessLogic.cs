@@ -217,23 +217,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId)
     {
-        if (appId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"AppId must not be empty");
-        }
-        var descriptions = appAssignedDesc.SelectMany(x => x.descriptions).Where(item => !string.IsNullOrWhiteSpace(item.languageCode)).Distinct();
-        if (!descriptions.Any())
-        {
-            throw new ControllerArgumentException($"Language Code must not be empty");
-        }
-
+        ValidateAppUserRole(appId, appAssignedDesc);
         return InsertAppUserRoleAsync(appId, appAssignedDesc, iamUserId);
     }
 
     private async Task<IEnumerable<AppRoleData>> InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId)
     {
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-
         var result = await _portalRepositories.GetInstance<IOfferRepository>().IsProviderCompanyUserAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
         if (result == default)
         {
@@ -243,6 +232,58 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
         }
+        var roleData = CreateUserRolesWithDescriptions(appId, appAssignedDesc);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return roleData;
+    }
+
+    /// <inheritdoc/>
+    public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId)
+    {
+        ValidateAppUserRole(appId, appUserRolesDescription);
+        return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription, iamUserId);
+    }
+
+    private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"app {appId} does not exist");
+        }
+        if (result.CompanyUserId == Guid.Empty)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
+        }
+        var roleData = CreateUserRolesWithDescriptions(appId, appAssignedDesc);
+        var notificationContent = new
+        {
+            AppName = result.AppName,
+            Roles = roleData.Select(x => x.roleName)
+        };
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return roleData;
+    }
+
+    private static void ValidateAppUserRole(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription)
+    {
+        if (appId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"AppId must not be empty");
+        }
+        var descriptions = appUserRolesDescription.SelectMany(x => x.descriptions).Where(item => !string.IsNullOrWhiteSpace(item.languageCode)).Distinct();
+        if (!descriptions.Any())
+        {
+            throw new ControllerArgumentException($"Language Code must not be empty");
+        }
+    }
+
+    private IEnumerable<AppRoleData>CreateUserRolesWithDescriptions(Guid appId, IEnumerable<AppUserRole> appAssignedDesc)
+    {
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = new List<AppRoleData>();
         foreach (var indexItem in appAssignedDesc)
         {
@@ -253,10 +294,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 userRolesRepository.CreateAppUserRoleDescription(appRole.Id, item.languageCode, item.description);
             }
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
-    
+
     /// <inheritdoc/>
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
         _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);

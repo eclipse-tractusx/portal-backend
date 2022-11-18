@@ -373,4 +373,15 @@ public class OfferRepository : IOfferRepository
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Apps.Count > 1)).FirstOrDefault()
             ))
             .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool OfferExists, string? AppName, Guid CompanyUserId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool,string?,Guid>(
+                true,
+                offer.Name,
+                offer.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == userId)!.Id
+            ))
+            .SingleOrDefaultAsync();
 }
