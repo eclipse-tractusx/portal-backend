@@ -33,7 +33,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using PortalBackend.DBAccess.Models;
-using System.Text.Json;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -85,13 +84,13 @@ public class AppReleaseBusinessLogicTest
             .With(u => u.CompanyUser, _companyUser)
             .Create();
         _companyUser.IamUser = _iamUser;
-        _settings.ActiveAppNotificationTypeIds = new List<NotificationTypeId>
+        _settings.ActiveAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_ROLE_ADDED
         };
          _settings.ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
         {
-            { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
+            { ClientId, new [] { "Company Admin" } }
         };
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
@@ -454,6 +453,10 @@ public class AppReleaseBusinessLogicTest
         error.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", settings.ContentTypeSettings)} are allowed.");
     }
 
+    #endregion
+
+    #region  AddActiveAppUserRole
+
     [Fact]
     public async Task AddActiveAppUserRoleAsync_ExecutesSuccessfully()
     {
@@ -462,18 +465,17 @@ public class AppReleaseBusinessLogicTest
         var appName = _fixture.Create<string>();
         var userRole = _fixture.Create<UserRole>();
 
-        var appAssignedRoleDesc = new List<AppUserRole>();
-        var appUserRoleDescription = new List<AppUserRoleDescription>();
-        appUserRoleDescription.Add(new AppUserRoleDescription("de","this is test1"));
-        appUserRoleDescription.Add(new AppUserRoleDescription("en","this is test2"));
-        appAssignedRoleDesc.Add(new AppUserRole("Legal Admin", appUserRoleDescription));
-
+        var appUserRoleDescription = new [] {
+            new AppUserRoleDescription("de","this is test1"),
+            new AppUserRoleDescription("en","this is test2"),
+        };
+        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
             .ReturnsLazily(() => (true, appName, _companyUser.Id));
-       
-        
+
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
         //Act
         var result = await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
 
