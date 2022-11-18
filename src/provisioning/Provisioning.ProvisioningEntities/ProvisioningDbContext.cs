@@ -24,13 +24,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
 {
-    public partial class ProvisioningDBContext : DbContext
+    public partial class ProvisioningDbContext : DbContext
     {
-        public ProvisioningDBContext()
+        public ProvisioningDbContext()
         {
         }
 
-        public ProvisioningDBContext(DbContextOptions<ProvisioningDBContext> options)
+        public ProvisioningDbContext(DbContextOptions<ProvisioningDbContext> options)
             : base(options)
         {
         }
@@ -47,6 +47,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
         {
             modelBuilder.HasAnnotation("Relational:Collation", "en_US.utf8");
 
+            modelBuilder.HasSequence<int>("client_sequence_sequence_id_seq", "provisioning");
+            modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq", "provisioning");
+
             modelBuilder.Entity<ClientSequence>(entity =>
             {
                 entity.HasKey(e => e.SequenceId)
@@ -56,7 +59,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
 
                 entity.Property(e => e.SequenceId)
                     .HasColumnName("sequence_id")
-                    .HasDefaultValueSql("nextval('client_sequence_sequence_id_seq'::regclass)");
+                    .HasDefaultValueSql("nextval('provisioning.client_sequence_sequence_id_seq'::regclass)");
             });
 
             modelBuilder.Entity<IdentityProviderSequence>(entity =>
@@ -68,7 +71,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
 
                 entity.Property(e => e.SequenceId)
                     .HasColumnName("sequence_id")
-                    .HasDefaultValueSql("nextval('identity_provider_sequence_sequence_id_seq'::regclass)");
+                    .HasDefaultValueSql("nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)");
             });
 
             modelBuilder.Entity<UserPasswordReset>(entity =>

@@ -25,9 +25,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 
 public class ProvisioningDBAccess : IProvisioningDBAccess
 {
-    private readonly ProvisioningDBContext _dbContext;
+    private readonly ProvisioningDbContext _dbContext;
 
-    public ProvisioningDBAccess(ProvisioningDBContext provisioningDBContext)
+    public ProvisioningDBAccess(ProvisioningDbContext provisioningDBContext)
     {
         _dbContext = provisioningDBContext;
     }
