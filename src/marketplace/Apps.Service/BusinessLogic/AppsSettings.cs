@@ -79,6 +79,13 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
+
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 }
 
 /// <summary>

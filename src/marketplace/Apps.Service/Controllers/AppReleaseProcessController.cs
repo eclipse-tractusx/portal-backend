@@ -254,6 +254,7 @@ public class AppReleaseProcessController : ControllerBase
     /// </summary>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
+    /// <param name="sorting">sort by</param>
     /// <returns>Collection of all in review status marketplace apps.</returns>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/inReview</remarks>
     /// <response code="200">Returns the list of all in review status marketplace apps.</response>
@@ -261,8 +262,8 @@ public class AppReleaseProcessController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
-        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting sorting = OfferSorting.DateDesc) =>
+        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting);
 
     /// <summary>
     /// Submit an app for release
