@@ -93,5 +93,10 @@ public enum NotificationTypeId
     /// <summary>
     /// Activation of a service
     /// </summary>
-    SERVICE_ACTIVATION = 14
+    SERVICE_ACTIVATION = 14,
+
+    /// <summary>
+    /// Role Added for Active App
+    /// </summary>
+    APP_ROLE_ADDED = 15
 }

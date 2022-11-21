@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -982,10 +983,10 @@ public class UserBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var iamUserId = _fixture.Create<string>();
-        var companyUsers = new AsyncEnumerableStub<CompanyUser>(_fixture.CreateMany<CompanyUser>(5));
+        var companyUsers = _fixture.CreateMany<CompanyAppUserDetails>(5);
 
-        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersUntrackedAsync(A<Guid>._, A<string>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<CompanyUserFilter>._))
-            .ReturnsLazily(() => companyUsers.AsQueryable());
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<string>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<CompanyUserStatusId>>._, A<CompanyUserFilter>._))
+            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
         
@@ -1000,6 +1001,32 @@ public class UserBusinessLogicTests
         // Assert
         results.Should().NotBeNull();
         results.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersAsync_SecondPage_ReturnsExpectedResult()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+        var companyUsers = _fixture.CreateMany<CompanyAppUserDetails>(5);
+
+        A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<string>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<CompanyUserStatusId>>._, A<CompanyUserFilter>._))
+            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
+        
+        // Act
+        var results = await sut.GetOwnCompanyAppUsersAsync(
+            appId,
+            iamUserId, 
+            1,
+            3,
+            new CompanyUserFilter(null, null, null, null, null)).ConfigureAwait(false);
+        
+        // Assert
+        results.Should().NotBeNull();
+        results.Content.Should().HaveCount(2);
     }
 
     #endregion
