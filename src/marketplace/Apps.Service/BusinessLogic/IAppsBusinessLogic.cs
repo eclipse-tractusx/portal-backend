@@ -19,8 +19,10 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -83,9 +85,13 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
     /// </summary>
+    /// <param name="page"></param>
+    /// <param name="size"></param>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <param name="sorting"></param>
+    /// <param name="statusId"></param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
