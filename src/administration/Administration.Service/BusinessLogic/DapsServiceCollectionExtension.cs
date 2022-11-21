@@ -18,32 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// Settings used in business logic concerning connectors.
-/// </summary>
-public class ConnectorsSettings
+public static class DapsServiceCollectionExtension
 {
-    /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
-    /// </summary>
-    [Required]
-    public int MaxPageSize { get; set; }
-}
-
-public static class ConnectorsSettingsExtensions
-{
-    public static IServiceCollection ConfigureConnectorsSettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
+    public static IServiceCollection AddDapsService(this IServiceCollection services, IConfigurationSection section)
     {
-        services.AddOptions<ConnectorsSettings>()
+        services.AddOptions<DapsSettings>()
             .Bind(section)
             .ValidateOnStart();
+        services.AddTransient<LoggingHandler<DapsService>>();
+
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<DapsSettings>>();
+        services.AddHttpClient(nameof(DapsService), c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.DapsUrl);
+        }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
+        services.AddTransient<IDapsService, DapsService>();
+
         return services;
     }
 }
