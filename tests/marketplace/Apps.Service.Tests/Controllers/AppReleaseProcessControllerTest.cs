@@ -23,16 +23,15 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Xunit;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
 
@@ -211,7 +210,6 @@ public class AppReleaseProcessControllerTest
     public async Task GetAppProviderSalesManagerAsync_ReturnsExpectedResult()
     {
         //Arrange
-        var appId = Guid.NewGuid();
         var data = _fixture.CreateMany<CompanyUserNameData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(A<string>._))
             .ReturnsLazily(() => data);
@@ -253,7 +251,7 @@ public class AppReleaseProcessControllerTest
             "Test Provider",
             "https://test.de",
             Guid.NewGuid(),
-            new Guid[]
+            new []
             {
                 Guid.NewGuid()
             },
@@ -307,5 +305,27 @@ public class AppReleaseProcessControllerTest
         //Assert
         A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRole_ReturnsExpectedCount()
+    {
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+
+        var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
+        var appRoleData = _fixture.CreateMany<AppRoleData>(3);
+        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
+            .Returns(appRoleData);
+
+        //Act
+        var result = await this._controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        foreach (var item in result)
+        {
+            //Assert
+            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<AppRoleData>(item);
+        }
     }
 }

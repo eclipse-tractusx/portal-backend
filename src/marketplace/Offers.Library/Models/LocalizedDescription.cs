@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 
 /// <summary>
 /// Simple model to specify descriptions for a language.
@@ -58,3 +58,12 @@ public class LocalizedDescription
     [MaxLength(255)]
     public string ShortDescription { get; set; }
 }
+
+/// <summary>
+/// Model for LanguageCode and Description
+/// </summary>
+/// <param name="LanguageCode"></param>
+/// <param name="LongDescription"></param>
+/// <param name="ShortDescription"></param>
+/// <returns></returns>
+public record Localization(string LanguageCode, string LongDescription, string ShortDescription);
