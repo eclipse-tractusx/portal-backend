@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
@@ -31,6 +33,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Descriptions">Descriptions</param>
 /// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
 /// <param name="Price">Price</param>
-/// <returns></returns>
-
 public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid? SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
