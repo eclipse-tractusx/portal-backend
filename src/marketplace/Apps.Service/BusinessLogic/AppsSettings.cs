@@ -79,6 +79,20 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
+
+     /// <summary>
+    /// Active App Company Admin Roles
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Active App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
 }
 
 /// <summary>

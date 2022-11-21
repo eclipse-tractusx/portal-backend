@@ -19,6 +19,9 @@
  ********************************************************************************/
 
 using AutoFixture;
+using FakeItEasy;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -27,9 +30,6 @@ using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
-using FakeItEasy;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.Controllers;
@@ -56,8 +56,8 @@ public class ServiceControllerTest
     {
         //Arrange
         var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-        var serviceOfferingData = _fixture.Create<OfferingData>();
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<OfferingData>._, IamUserId))
+        var serviceOfferingData = _fixture.Create<ServiceOfferingData>();
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._, IamUserId))
             .Returns(id);
 
         //Act
@@ -74,14 +74,14 @@ public class ServiceControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<ServiceOverviewData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ServiceOverviewData>(5));
-        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15))
+        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15, null, null))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetAllActiveServicesAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<ServiceOverviewData>>(result);
         result.Content.Should().HaveCount(5);
     }
@@ -110,7 +110,7 @@ public class ServiceControllerTest
     {
         //Arrange
         var serviceId = Guid.NewGuid();
-        var serviceDetailData = _fixture.Create<OfferDetailData>();
+        var serviceDetailData = _fixture.Create<ServiceDetailData>();
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, IamUserId))
             .Returns(serviceDetailData);
 
@@ -119,7 +119,7 @@ public class ServiceControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<OfferDetailData>(result);
+        Assert.IsType<ServiceDetailData>(result);
         result.Should().Be(serviceDetailData);
     }
         
@@ -231,5 +231,22 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.AutoSetupServiceAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
+    }
+        
+    [Fact]
+    public async Task UpdateService_ReturnsExpected()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var data = _fixture.Create<ServiceUpdateRequestData>();
+        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, A<string>.That.Matches(x => x== IamUserId)))
+            .Returns(Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.UpdateService(serviceId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }
