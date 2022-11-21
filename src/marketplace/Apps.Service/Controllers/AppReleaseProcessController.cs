@@ -262,7 +262,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting sorting = OfferSorting.DateDesc) =>
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null) =>
         _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting);
 
     /// <summary>

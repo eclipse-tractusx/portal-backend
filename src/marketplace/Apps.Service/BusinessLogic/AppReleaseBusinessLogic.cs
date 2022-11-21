@@ -466,14 +466,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting sorting = OfferSorting.DateDesc)
-    =>
-        Pagination.CreateResponseAsync(page, size, 15, (skip, take) =>
-             _portalRepositories.GetInstance<IOfferRepository>()
-                 .GetAllInReviewStatusAppsAsync(_settings.OfferStatusIds, skip, take, sorting));
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting) =>
+        Pagination.CreateResponseAsync(page, size, 15,
+            _portalRepositories.GetInstance<IOfferRepository>()
+                .GetAllInReviewStatusAppsAsync(_settings.OfferStatusIds, sorting ?? OfferSorting.DateDesc));
 
-    
-        
     /// <inheritdoc/>
     public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
     {
@@ -535,8 +532,4 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
-
-    
-        
-    
 }
