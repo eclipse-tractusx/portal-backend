@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,11 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// View model containing the ID of a company and its app subscription status in a specific context.
+/// Possible sorting options for the subscription status pagination
 /// </summary>
-public record CompanySubscriptionStatusData(Guid CompanyId, string CompanyName, Guid SubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatus);
+public enum SubscriptionStatusSorting
+{
+    /// <summary>
+    /// Ascending by date
+    /// </summary>
+    CompanyNameAsc = 1,
+    
+    /// <summary>
+    /// Descending by date
+    /// </summary>
+    CompanyNameDesc = 2,
+    
+    /// <summary>
+    /// Ascending by the offer id
+    /// </summary>
+    OfferIdAsc = 3,
+    
+    /// <summary>
+    /// Descending by offer id
+    /// </summary>
+    OfferIdDesc = 4,
+}

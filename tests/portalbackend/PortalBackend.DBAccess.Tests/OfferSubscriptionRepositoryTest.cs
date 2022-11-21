@@ -21,6 +21,7 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
@@ -80,7 +81,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferSubscriptionStateForCompanyAsync_WithExistingData_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
@@ -99,7 +100,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferSubscriptionStateForCompanyAsync_WithWrongType_ReturnsDefault()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
@@ -132,6 +133,30 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region xy
+    
+    [Theory]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc)]
+    [InlineData(SubscriptionStatusSorting.OfferIdDesc)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameAsc)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameDesc)]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferTypeId.SERVICE, sorting, null)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(1);
+        results.Data.Should().HaveCount(1);
+        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>();
+    }
+    
+    #endregion
+    
     #region Setup
     
     private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
