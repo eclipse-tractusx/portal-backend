@@ -21,6 +21,7 @@
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -190,7 +191,11 @@ public interface IOfferRepository
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    IQueryable<Offer> GetAllInReviewStatusAppsAsync();
+    /// <param name="offerStatusIds"></param>
+    /// <param name="skip"></param>
+    /// <param name="take"></param>
+    /// <param name="sorting"></param>
+    Task<Pagination.Source<InReviewAppData>?> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, int skip, int take, OfferSorting? sorting);
     
     /// <summary>
     /// Retrieve Offer Detail with Status
@@ -257,4 +262,6 @@ public interface IOfferRepository
     /// <param name="appId">id of the app</param>
     /// <param name="offerLicenseId">id of the offer license</param>
     void RemoveOfferAssignedLicense(Guid appId, Guid offerLicenseId);
+
+    
 }

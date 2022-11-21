@@ -282,14 +282,14 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._))
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._,A<OfferSorting>._))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
         var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15, OfferSorting.DateDesc)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
