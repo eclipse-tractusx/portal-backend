@@ -123,9 +123,9 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId) =>
+    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId) =>
         _context.Companies.AsNoTracking()
-            .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId) || company.CompanyServiceAccounts.Any(sa => sa.IamServiceAccount!.UserEntityId == iamUserId))
             .Select(company => new ValueTuple<Guid, bool>(
                 company.Id,
                 company.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)
