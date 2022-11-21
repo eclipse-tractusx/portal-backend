@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -405,10 +406,11 @@ public class UserRepository : IUserRepository
             .Select(x => x.Id)
             .ToAsyncEnumerable();
     
-    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
+    public Func<int,int,Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(
         Guid appId,
         string iamUserId,
-        IEnumerable<OfferSubscriptionStatusId> statusIds,
+        IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds,
+        IEnumerable<CompanyUserStatusId> companyUserStatusIds,
         CompanyUserFilter filter)
     {
         var regex = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace);
@@ -420,17 +422,33 @@ public class UserRepository : IUserRepository
         email = email == null ? null : regex.Replace(email!, @"\"); 
         roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
-        return _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId && 
-                                  companyUser.Company!.OfferSubscriptions.Any(subscription => subscription.OfferId == appId && statusIds.Contains(subscription.OfferSubscriptionStatusId)))
-            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-            .Where(companyUser => 
-                (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&
-                (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName}%")) &&
-                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
-                (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))) &&
-                (!hasRole.HasValue || !hasRole.Value || companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId)) &&
-                (!hasRole.HasValue || hasRole.Value || companyUser.UserRoles.All(userRole => userRole.Offer!.Id != appId)));
+        return (int skip, int take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _dbContext.CompanyUsers.AsNoTracking()
+                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId && 
+                                    companyUser.Company!.OfferSubscriptions.Any(subscription => subscription.OfferId == appId && subscriptionStatusIds.Contains(subscription.OfferSubscriptionStatusId)))
+                .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
+                .Where(companyUser => 
+                    (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&
+                    (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName}%")) &&
+                    (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
+                    (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))) &&
+                    (!hasRole.HasValue || !hasRole.Value || companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId)) &&
+                    (!hasRole.HasValue || hasRole.Value || companyUser.UserRoles.All(userRole => userRole.Offer!.Id != appId)) &&
+                    companyUserStatusIds.Contains(companyUser.CompanyUserStatusId))
+                .GroupBy(companyUser => companyUser.CompanyId),
+            null,
+            companyUser => new CompanyAppUserDetails(
+                    companyUser.Id,
+                    companyUser.CompanyUserStatusId,
+                    companyUser.UserRoles!.Where(userRole => userRole.Offer!.Id == appId).Select(userRole => userRole.UserRoleText))
+                {
+                    FirstName = companyUser.Firstname,
+                    LastName = companyUser.Lastname,
+                    Email = companyUser.Email
+                }
+        ).SingleOrDefaultAsync();
     }
 
     /// <inheritdoc />

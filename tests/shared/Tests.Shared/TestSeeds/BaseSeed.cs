@@ -74,52 +74,57 @@ public static class BaseSeed
         {
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user1@test.de",
+                Firstname = "Test User 1",
                 Lastname = "cx-user-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user2@test.de",
+                Firstname = "Test User 2",
                 Lastname = "cx-admin-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user3@test.de",
+                Firstname = "Test User 3",
                 Lastname = "company-admin-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user4@test.de",
+                Firstname = "Test User 4",
                 Lastname = "it-admin-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user5@test.de",
+                Firstname = "Test User 5",
                 Lastname = "CX User",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user6@test.de",
+                Firstname = "Test User 6",
                 Lastname = "CX Admin",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
+            },
+            new(new Guid("40ed8c0d-b506-4c15-b2a9-85fee4b0c280"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.INACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            {
+                Email = "tester.user7@test.de",
+                Firstname = "Test User 7",
+                Lastname = "Inactive",
+            },
+            new(new Guid("22b7bfef-19f5-4d8a-9fb4-af1a5e978f21"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.DELETED, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            {
+                Email = "tester.user8@test.de",
+                Firstname = "Test User 8",
+                Lastname = "Deleted",
             },
             new(new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
                 Email = "tester.user@test.de",
                 Firstname = "Test User",
                 Lastname = "Test Company",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
         });
 

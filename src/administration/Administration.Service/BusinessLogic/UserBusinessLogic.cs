@@ -480,40 +480,18 @@ public class UserBusinessLogic : IUserBusinessLogic
         throw new NotFoundException($"Cannot identify companyId or shared idp : companyUserId {companyUserId} is not associated with the same company as adminUserId {adminUserId}");
     }
 
-    public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(
-        Guid appId, 
-        string iamUserId,
-        int page,
-        int size,
-        CompanyUserFilter filter)
-    {
-        var appUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersUntrackedAsync(
-            appId,
-            iamUserId,
-            Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1),
-            filter
-        );
-
-        return Pagination.CreateResponseAsync(
+    public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size, CompanyUserFilter filter) =>
+        Pagination.CreateResponseAsync(
             page,
             size,
             15,
-            (int skip, int take) => new Pagination.AsyncSource<CompanyAppUserDetails>(
-                appUsers.CountAsync(),
-                appUsers.OrderBy(companyUser => companyUser.Id)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(companyUser => new CompanyAppUserDetails(
-                        companyUser.Id,
-                        companyUser.CompanyUserStatusId,
-                        companyUser.UserRoles!.Where(userRole => userRole.Offer!.Id == appId).Select(userRole => userRole.UserRoleText))
-                    {
-                        FirstName = companyUser.Firstname,
-                        LastName = companyUser.Lastname,
-                        Email = companyUser.Email
-                    }).AsAsyncEnumerable()));
-    }
-
+            _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyAppUsersPaginationSourceAsync(
+                appId,
+                iamUserId,
+                new [] { OfferSubscriptionStatusId.ACTIVE },
+                new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+                filter));
+    
     public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)
     {
         var userBusinessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
