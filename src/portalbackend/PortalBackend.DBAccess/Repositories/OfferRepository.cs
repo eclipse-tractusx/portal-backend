@@ -248,8 +248,8 @@ public class OfferRepository : IOfferRepository
             )).AsAsyncEnumerable();
     
      /// <inheritdoc />
-     public Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId) =>
-        (int skip, int take) => Pagination.CreateSourceQueryAsync(
+    public Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _context.Offers
@@ -314,8 +314,8 @@ public class OfferRepository : IOfferRepository
              .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<Pagination.Source<InReviewAppData>?> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, int skip, int take, OfferSorting? sorting) =>
-        Pagination.CreateSourceQueryAsync(
+    public Func<int,int,Task<Pagination.Source<InReviewAppData>?>> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferSorting? sorting) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _context.Offers.AsNoTracking()

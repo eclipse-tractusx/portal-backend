@@ -204,7 +204,7 @@ public interface IOfferRepository
     /// <param name="skip"></param>
     /// <param name="take"></param>
     /// <param name="sorting"></param>
-    Task<Pagination.Source<InReviewAppData>?> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, int skip, int take, OfferSorting? sorting);
+    Func<int,int,Task<Pagination.Source<InReviewAppData>?>> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferSorting? sorting);
     
     /// <summary>
     /// Retrieve Offer Detail with Status

@@ -25,25 +25,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 ///  View model of an application's base data.
 /// </summary>
-public record InReviewAppData(Guid AppId, string? Name, string Provider, OfferStatusId Status)
-{
-
-    /// <summary>
-    /// ID of the app.
-    /// </summary>
-    public Guid AppId { get; set; } = AppId;
-
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
-    public string? Name { get; set; } = Name;
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    public string Provider { get; set; } = Provider;
-
-    /// <summary>
-    /// Uri to app's lead picture.
-    /// </summary>
-    public OfferStatusId Status { get; set; } = Status;
-}
+public record InReviewAppData(Guid AppId, string? Name, string Provider, OfferStatusId Status);
