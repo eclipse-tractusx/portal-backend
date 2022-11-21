@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,16 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// View model of an application's detailed data specific for service.
+/// Possible sorting options for the notification pagination
 /// </summary>
-/// <param name="Id">ID of the service.</param>
-/// <param name="Title">Title or name of the service.</param>
-/// <param name="Provider">Provider of the service.</param>
-/// <param name="LeadPictureUri">Uri to service's lead picture.</param>
-/// <param name="ContactEmail">Contact email address.</param>
-/// <param name="Description">The description of the service.</param>
-/// <param name="Price">Pricing information of the service.</param>
-public record ServiceOverviewData(Guid Id, string Title, string Provider, string LeadPictureUri, string? ContactEmail, string? Description, string Price);
+public enum ServiceOverviewSorting
+{
+    /// <summary>
+    /// Ascending by provider
+    /// </summary>
+    ProviderAsc = 1,
+    
+    /// <summary>
+    /// Descending by provider
+    /// </summary>
+    ProviderDesc = 2,
+    
+    /// <summary>
+    /// Ascending by the release date
+    /// </summary>
+    ReleaseDateAsc = 3,
+    
+    /// <summary>
+    /// Descending by release date
+    /// </summary>
+    ReleaseDateDesc = 4,
+}

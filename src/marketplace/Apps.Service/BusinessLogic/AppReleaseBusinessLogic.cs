@@ -33,7 +33,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
-using PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -112,37 +111,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             }
         });
 
-        UpsertRemoveAppDescription(appId, updateModel.Descriptions, appResult.Descriptions, appRepository);
+        _offerService.UpsertRemoveOfferDescription(appId, updateModel.Descriptions, appResult.Descriptions);
         UpsertRemoveAppDetailImage(appId, updateModel.Images, appResult.ImageUrls, appRepository);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-   private static void UpsertRemoveAppDescription(Guid appId, IEnumerable<Localization> UpdateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> ExistingDescriptions, IOfferRepository appRepository)
-    {
-        appRepository.AddOfferDescriptions(
-            UpdateDescriptions.ExceptBy(ExistingDescriptions.Select(d => d.LanguageShortName), updateDescription => updateDescription.LanguageCode)
-                .Select(updateDescription => (appId, updateDescription.LanguageCode, updateDescription.LongDescription, updateDescription.ShortDescription))
-        );
-
-        appRepository.RemoveOfferDescriptions(
-            ExistingDescriptions.ExceptBy(UpdateDescriptions.Select(d => d.LanguageCode), existingDescription => existingDescription.LanguageShortName)
-                .Select(existingDescription => (appId, existingDescription.LanguageShortName))
-        );
-
-        foreach (var update
-            in UpdateDescriptions
-                .Where(update => ExistingDescriptions.Any(existing => 
-                    existing.LanguageShortName == update.LanguageCode &&
-                    (existing.DescriptionLong != update.LongDescription ||
-                        existing.DescriptionShort != update.ShortDescription))))
-        {
-            appRepository.AttachAndModifyOfferDescription(appId, update.LanguageCode, offerDescription =>
-            {
-                offerDescription.DescriptionLong = update.LongDescription;
-                offerDescription.DescriptionShort = update.ShortDescription;
-            });
-        }
     }
 
     private static void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
@@ -379,7 +351,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         Guid companyId;
         if(appRequestModel.SalesManagerId.HasValue)
         {
-            companyId = await ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId).ConfigureAwait(false);
+            companyId = await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
         else
         {
@@ -452,7 +424,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (appRequestModel.SalesManagerId.HasValue)
         {
-            await ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));
@@ -472,7 +444,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.SalesManagerId = appRequestModel.SalesManagerId;
         });
 
-        UpsertRemoveAppDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions, appRepository);
+        _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);
         UpdateAppSupportedLanguages(appId, newSupportedLanguages, appData.Languages.Where(x => !x.IsMatch).Select(x => x.Shortname), appRepository);
 
         var newUseCases = appRequestModel.UseCaseIds.Except(appData.MatchingUseCases);
@@ -482,58 +454,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 (appId, uc)));
         }
 
-        CreateOrUpdateAppLicense(appId, appRequestModel, appData, appRepository);
+        _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Provider, appData.OfferLicense);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    private static void CreateOrUpdateAppLicense(Guid appId, AppRequestModel appRequestModel, AppUpdateData appData,
-        IOfferRepository appRepository)
-    {
-        if (appData.OfferLicense == default || appData.OfferLicense.Item2 == appRequestModel.Price) return;
-        
-        if (!appData.OfferLicense.Item3)
-        {
-            appRepository.AttachAndModifyOfferLicense(appData.OfferLicense.Item1, offerLicense => offerLicense.Licensetext = appRequestModel.Price);
-        }
-        else
-        {
-            appRepository.RemoveOfferAssignedLicense(appId, appData.OfferLicense.Item1);
-            var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
-            appRepository.CreateOfferAssignedLicense(appId, licenseId);
-        }
     }
 
     private static void UpdateAppSupportedLanguages(Guid appId, IEnumerable<string> newSupportedLanguages, IEnumerable<string> languagesToRemove, IOfferRepository appRepository)
     {
         appRepository.AddAppLanguages(newSupportedLanguages.Select(language => (appId, language)));
         appRepository.RemoveAppLanguages(languagesToRemove.Select(language => (appId, language)));
-    }
-
-    private async Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId)
-    {
-        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(_settings.SalesManagerRoles).ToListAsync().ConfigureAwait(false);
-        var responseData = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, salesManagerId)
-            .ConfigureAwait(false);
-        if (responseData == default)
-        {
-            throw new ControllerArgumentException($"invalid salesManagerId {salesManagerId}", nameof(salesManagerId));
-        }
-
-        if (!responseData.IsSameCompany)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
-        }
-
-        if (userRoleIds.Except(responseData.RoleIds).Any())
-        {
-            throw new ControllerArgumentException(
-                $"User {salesManagerId} does not have sales Manager Role", nameof(salesManagerId));
-        }
-
-        return responseData.UserCompanyId;
     }
 
     /// <inheritdoc/>
