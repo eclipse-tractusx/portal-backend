@@ -113,7 +113,7 @@ public interface IOfferService
     /// <param name="iamUserId">the iamUser id</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId, OfferTypeId offerTypeId);
+    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// 
@@ -123,4 +123,17 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Checks whether the sales manager has the a sales manager role assigned and is in the same company as the user
+    /// </summary>
+    /// <param name="salesManagerId">Id of the sales manager</param>
+    /// <param name="iamUserId">id of the current user</param>
+    /// <param name="salesManagerRoles">the sales manager roles</param>
+    /// <returns>Returns the company id of the user</returns>
+    Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
+    
+    void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> existingDescriptions);
+
+    void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
 }

@@ -27,7 +27,7 @@ public class OfferLicense
     private OfferLicense()
     {
         Licensetext = null!;
-        Apps = new HashSet<Offer>();
+        Offers = new HashSet<Offer>();
     }
 
     public OfferLicense(Guid id, string licensetext) : this()
@@ -42,5 +42,5 @@ public class OfferLicense
     public string Licensetext { get; set; }
 
     // Navigation properties
-    public virtual ICollection<Offer> Apps { get; private set; }
+    public virtual ICollection<Offer> Offers { get; private set; }
 }

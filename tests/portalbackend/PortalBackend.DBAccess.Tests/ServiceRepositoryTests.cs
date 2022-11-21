@@ -20,6 +20,7 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using Castle.Core.Logging;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -88,11 +89,11 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetActiveServices().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetActiveServicesPaginationSource(null, null)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(1);
+        result.Should().NotBeNull();
+        result!.Count.Should().Be(1);
     }
 
     #endregion

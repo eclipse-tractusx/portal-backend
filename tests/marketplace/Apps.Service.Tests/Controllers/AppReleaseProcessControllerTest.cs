@@ -23,16 +23,15 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Xunit;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
 
@@ -211,7 +210,6 @@ public class AppReleaseProcessControllerTest
     public async Task GetAppProviderSalesManagerAsync_ReturnsExpectedResult()
     {
         //Arrange
-        var appId = Guid.NewGuid();
         var data = _fixture.CreateMany<CompanyUserNameData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(A<string>._))
             .ReturnsLazily(() => data);
@@ -253,7 +251,7 @@ public class AppReleaseProcessControllerTest
             "Test Provider",
             "https://test.de",
             Guid.NewGuid(),
-            new Guid[]
+            new []
             {
                 Guid.NewGuid()
             },

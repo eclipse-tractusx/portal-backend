@@ -21,6 +21,7 @@
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
@@ -34,7 +35,7 @@ public interface IServiceBusinessLogic
     /// Gets all active services from the database
     /// </summary>
     /// <returns>All services with pagination</returns>
-    Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync(int page, int size);
+    Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync(int page, int size, ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId);
 
     /// <summary>
     /// Creates a new service offering
@@ -42,7 +43,7 @@ public interface IServiceBusinessLogic
     /// <param name="data">The data to create the service offering</param>
     /// <param name="iamUserId">the iamUser id</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId);
+    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId);
 
     /// <summary>
     /// Adds a subscription to the given service
@@ -61,7 +62,7 @@ public interface IServiceBusinessLogic
     /// <param name="lang">Shortcode of the language for the text translations</param>
     /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the service detail data</returns>
-    Task<OfferDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
+    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
 
     /// <summary>
     /// Gets the Subscription Details for the given Id
@@ -109,4 +110,12 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the response data</returns>
     Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId);
+
+    /// <summary>
+    /// Updates the given service
+    /// </summary>
+    /// <param name="serviceId">Id of the service to update</param>
+    /// <param name="data">Data of the updated entry</param>
+    /// <param name="iamUserId">Id of the current user</param>
+    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId);
 }
