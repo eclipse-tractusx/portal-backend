@@ -18,32 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Service to handle communication with the connectors sd factory
 /// </summary>
-public class ConnectorsSettings
+public interface IDapsService
 {
     /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
+    /// Registers the Connector at the connectorsSdFactory
     /// </summary>
-    [Required]
-    public int MaxPageSize { get; set; }
-}
-
-public static class ConnectorsSettingsExtensions
-{
-    public static IServiceCollection ConfigureConnectorsSettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
-    {
-        services.AddOptions<ConnectorsSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        return services;
-    }
+    /// <param name="clientName">name of the client</param>
+    /// <param name="accessToken">the access token</param>
+    /// <param name="referringConnector">the connectors url with the bpn of the company append to it</param>
+    /// <param name="formFile">The file</param>
+    /// <param name="cancellationToken">cancelattion token</param>
+    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+    Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, IFormFile formFile, CancellationToken cancellationToken);
 }

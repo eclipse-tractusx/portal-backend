@@ -23,27 +23,19 @@ using System.ComponentModel.DataAnnotations;
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Settings used in business logic concerning daps.
 /// </summary>
-public class ConnectorsSettings
+public class DapsSettings
 {
     /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
+    /// Daps endpoint.
     /// </summary>
     [Required]
-    public int MaxPageSize { get; set; }
-}
+    public string DapsUrl { get; set; } = null!;
 
-public static class ConnectorsSettingsExtensions
-{
-    public static IServiceCollection ConfigureConnectorsSettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
-    {
-        services.AddOptions<ConnectorsSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        return services;
-    }
+    /// <summary>
+    /// Allowed content types for the certificate
+    /// </summary>
+    [Required]
+    public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 }
