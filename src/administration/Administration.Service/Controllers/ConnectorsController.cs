@@ -99,11 +99,8 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
-    {
-        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
-    }
+    public Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
+        this.CreateConnectorWithDapsAsync(connectorInputModel, cancellationToken);
 
     /// <summary>
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
@@ -143,11 +140,8 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
-    {
-        var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
-    }
+    public Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
+        this.CreateManagedConnectorWithDapsAsync(connectorInputModel, cancellationToken);
 
     /// <summary>
     /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
@@ -186,7 +180,7 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Route("trigger-daps/{connectorId:guid}")]
     [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
