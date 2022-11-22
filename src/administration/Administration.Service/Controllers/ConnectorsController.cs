@@ -116,7 +116,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
-    [Route("")]
+    [Route("daps")]
     [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -160,7 +160,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
     [HttpPost]
-    [Route("managed")]
+    [Route("managed-daps")]
     [Authorize(Roles = "add_connectors")]
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -170,6 +170,28 @@ public class ConnectorsController : ControllerBase
         var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
+
+    /// <summary>
+    /// Triggers the daps endpoint for the given connector.
+    /// </summary>
+    /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Id of the connector to trigger the daps call.</param>
+    /// <param name="certificate"></param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>View model of the created connector.</returns>
+    /// <remarks>Example: POST: /api/administration/connectors/trigger-daps/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
+    /// <response code="200">Returns true if the daps call was successful, otherwise false.</response>
+    /// <response code="400">Input parameter are invalid.</response>
+    /// <response code="404">Connector was not found.</response>
+    /// <response code="503">Access to SD factory failed with the given status code.</response>
+    [HttpPost]
+    [Route("trigger-daps/{connectorId:guid}")]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<bool> TriggerDapsAuth([FromRoute] Guid connectorId, [FromForm] IFormFile certificate, CancellationToken cancellationToken) =>
+        await this.WithIamUserAndBearerToken(auth => _businessLogic.TriggerDapsAsync(connectorId, certificate, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
 
     /// <summary>
     /// Removes a connector from persistence layer by id.

@@ -50,8 +50,18 @@ public class ConnectorsRepository : IConnectorsRepository
         _context.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId)
-            .Select(connector => ((ConnectorData ConnectorData, bool IsProviderUser)) new (
+            .Select(connector => new ValueTuple<ConnectorData, bool>(
                 new ConnectorData(connector.Name, connector.Location!.Alpha2Code, connector.Id, connector.TypeId, connector.StatusId),
+                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
+            ))
+            .SingleOrDefaultAsync();
+
+    public Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser) =>
+        _context.Connectors
+            .AsNoTracking()
+            .Where(connector => connector.Id == connectorId)
+            .Select(connector => new ValueTuple<ConnectorInformationData, bool>(
+                new ConnectorInformationData(connector.Name, connector.Provider!.BusinessPartnerNumber!, connector.Id, connector.ConnectorUrl),
                 connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
             ))
             .SingleOrDefaultAsync();

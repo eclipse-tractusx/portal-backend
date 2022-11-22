@@ -105,7 +105,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private void ValidateCertificationType(IFormFile? certificate)
     {
-        if (certificate is not null && !_settings.ValidCertificationContentTypes.Contains(certificate.ContentType))
+        if (certificate != null && !_settings.ValidCertificationContentTypes.Contains(certificate.ContentType))
         {
             throw new UnsupportedMediaTypeException(
                 $"Only {string.Join(",", _settings.ValidCertificationContentTypes)} files are allowed.");
@@ -244,4 +244,37 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 new ConnectorEndPointData(
                     group.Key,
                     group.Select(x => x.ConnectorEndpoint)));
+
+    /// <inheritdoc />
+    public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    {
+        var connectorsRepository = _portalRepositories
+            .GetInstance<IConnectorsRepository>();
+        var connector = await connectorsRepository
+            .GetConnectorInformationByIdForIamUser(connectorId, iamUserId)
+            .ConfigureAwait(false);
+        
+        if (connector == default)
+        {
+            throw new NotFoundException($"Connector {connectorId} does not exists");
+        }
+
+        if (!connector.IsProviderUser)
+        {
+            throw new ForbiddenException("User is not provider of the connector");
+        }
+
+        var connectorData = connector.ConnectorInformationData;
+        var url = connectorData.Url.EndsWith("/") ? $"{connectorData.Url}{connectorData.Bpn}" : $"{connectorData.Url}/{connectorData.Bpn}";
+        var dapsCallSuccessful = await _dapsService
+            .EnableDapsAuthAsync(connectorData.Name, accessToken, $"{url}", certificate, cancellationToken)
+            .ConfigureAwait(false);
+        connectorsRepository.AttachAndModifyConnector(connectorId, con =>
+        {
+            con.DapsRegistrationSuccessful = dapsCallSuccessful;
+        });
+        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return dapsCallSuccessful;
+    }
 }
