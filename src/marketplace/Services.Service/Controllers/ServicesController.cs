@@ -244,4 +244,18 @@ public class ServicesController : ControllerBase
         await this.WithIamUserId(iamUserId => _serviceBusinessLogic.UpdateServiceAsync(serviceId, data, iamUserId));
         return NoContent();
     }
+    
+    /// <summary>
+    /// Retrieves subscription statuses of provided services of the currently logged in user's company.
+    /// </summary>
+    /// <remarks>Example: GET: /api/services/provided/subscription-status</remarks>
+    /// <response code="200">Returns list of applicable service subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("provided/subscription-status")]
+    // [Authorize(Roles = "view_service_subscription")]
+    [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
+        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
 }

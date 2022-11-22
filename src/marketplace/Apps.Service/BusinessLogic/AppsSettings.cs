@@ -93,6 +93,11 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
+    
+    /// <summary>
+    /// Max page size for pagination
+    /// </summary>
+    public int ApplicationsMaxPageSize { get; set; }
 }
 
 /// <summary>

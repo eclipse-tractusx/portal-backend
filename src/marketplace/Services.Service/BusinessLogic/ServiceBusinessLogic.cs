@@ -178,4 +178,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         appRepository.AddServiceAssignedServiceTypes(newServiceTypes);
         appRepository.RemoveServiceAssignedServiceTypes(serviceTypeIdsToRemove);
     }
+
+    /// <inheritdoc/>
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
+        Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId));
+
 }

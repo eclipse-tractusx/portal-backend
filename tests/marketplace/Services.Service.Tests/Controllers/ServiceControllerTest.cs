@@ -249,4 +249,22 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
+    
+    [Fact]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._))
+                    .ReturnsLazily(() => pagination);
+
+
+        //Act
+        var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
+    }
 }
