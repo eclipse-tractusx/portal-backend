@@ -54,7 +54,7 @@ public class UserRepository : IUserRepository
             })
             .AsAsyncEnumerable();
 
-    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser =>
@@ -65,7 +65,7 @@ public class UserRepository : IUserRepository
                 company!.Id,
                 company.Name,
                 company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
+                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Where(document=>documentTypes.Contains(document.DocumentTypeId)).Select(document => new RegistrationDocumentNames(document.DocumentName))),
                 company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                     .Select(consent => new AgreementConsentStatusForRegistrationData(
                         consent.AgreementId, consent.ConsentStatusId)))
