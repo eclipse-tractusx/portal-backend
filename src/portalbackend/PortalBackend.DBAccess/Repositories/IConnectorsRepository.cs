@@ -59,4 +59,12 @@ public interface IConnectorsRepository
     /// <param name="bpns"></param>
     /// <returns></returns>
     IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns);
+    
+    /// <summary>
+    /// Attaches the entity with the given id to the db context and modifies the given values.
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="setOptionalParameters">Action to set the parameters</param>
+    /// <returns>The updated connector</returns>
+    Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? setOptionalParameters = null);
 }

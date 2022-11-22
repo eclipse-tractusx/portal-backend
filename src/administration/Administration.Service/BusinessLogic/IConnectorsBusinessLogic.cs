@@ -63,28 +63,6 @@ public interface IConnectorsBusinessLogic
         string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Add a connector to persistence layer, calls the daps sd factory service with connector parameters.
-    /// </summary>
-    /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateConnectorWithDapsAsync(ConnectorWithDapsInputModel connectorInputModel, string accessToken,
-        string iamUserId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Add a managed connector to persistence layer, calls the daps and the sd factory service with connector parameters.
-    /// </summary>
-    /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateManagedConnectorWithDapsAsync(ManagedConnectorWithDapsInputModel connectorInputModel, string accessToken,
-        string iamUserId, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Remove a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>

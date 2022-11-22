@@ -91,5 +91,13 @@ public class ConnectorsRepository : IConnectorsRepository
                 connector.Provider!.BusinessPartnerNumber!,
                 connector.ConnectorUrl
             ))
-            .AsAsyncEnumerable();      
+            .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? setOptionalParameters = null)
+    {
+        var connector = _context.Connectors.Attach(new Connector(connectorId, null!, null!, null!)).Entity;
+        setOptionalParameters?.Invoke(connector);
+        return connector;
+    }
 }

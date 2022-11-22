@@ -32,10 +32,4 @@ public class DapsSettings
     /// </summary>
     [Required]
     public string DapsUrl { get; set; } = null!;
-
-    /// <summary>
-    /// Allowed content types for the certificate
-    /// </summary>
-    [Required]
-    public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 }
