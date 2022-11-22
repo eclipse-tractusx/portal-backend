@@ -390,11 +390,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     c.BusinessPartnerNumber = bpn;
                 });
-
-                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+                
             }
 
         }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
     }
 }
