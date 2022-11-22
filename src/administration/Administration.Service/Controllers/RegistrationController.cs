@@ -153,7 +153,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<bool> UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
+    public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
         this.WithIamUserId(iamUserId => _logic.UpdateCompanyBpn(applicationId, bpn, iamUserId));
     
 }
