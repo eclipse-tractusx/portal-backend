@@ -30,26 +30,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 /// <param name="ConnectorUrl"> URL of the connector..</param>
 /// <param name="Status">Connector status.</param>
 /// <param name="Location">Connector's location country code.</param>
+/// <param name="Certificate">The certificate for the daps call.</param>
 public record ConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
     ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location);
-
-/// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
-/// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="Certificate">The certificate for the daps call.</param>
-public record ConnectorWithDapsInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorStatusId Status,
     [StringLength(2, MinimumLength = 2)] string Location,
-    IFormFile Certificate);
+    IFormFile? Certificate);
 
 /// <summary>
 /// Input model defining all parameters for creating a connector in persistence layer.
@@ -59,29 +46,14 @@ public record ConnectorWithDapsInputModel(
 /// <param name="Status">Connector status.</param>
 /// <param name="Location">Connector's location country code.</param>
 /// <param name="ProviderBpn">Providing company's BPN.</param>
+/// <param name="Certificate">The certificate for the daps call.</param>
 public record ManagedConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
     ConnectorStatusId Status,
     [StringLength(2, MinimumLength = 2)] string Location,
-    string ProviderBpn);
-
-/// <summary>
-/// Input model defining all parameters for creating a connector in persistence layer.
-/// </summary>
-/// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
-/// <param name="Status">Connector status.</param>
-/// <param name="Location">Connector's location country code.</param>
-/// <param name="ProviderBpn">Providing company's BPN.</param>
-/// <param name="Certificate">The certificate for the daps call.</param>
-public record ManagedConnectorWithDapsInputModel(
-    [MaxLength(255)] string Name,
-    [MaxLength(255)] string ConnectorUrl,
-    ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location,
     string ProviderBpn,
-    IFormFile Certificate);
+    IFormFile? Certificate);
 
 public record ConnectorRequestModel(
     [MaxLength(255)] string Name,

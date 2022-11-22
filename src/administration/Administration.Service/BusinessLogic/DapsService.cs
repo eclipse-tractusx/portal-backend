@@ -15,7 +15,9 @@ public class DapsService : IDapsService
     /// </summary>
     /// <param name="httpClientFactory">Factory to create httpClients</param>
     /// <param name="options">The options</param>
-    public DapsService(IOptions<DapsSettings> options, IHttpClientFactory httpClientFactory)
+    public DapsService(
+        IOptions<DapsSettings> options, 
+        IHttpClientFactory httpClientFactory)
     {
         _settings = options.Value;
         _httpClient = httpClientFactory.CreateClient(nameof(DapsService));

@@ -32,6 +32,12 @@ public class ConnectorsSettings
     /// </summary>
     [Required]
     public int MaxPageSize { get; set; }
+
+    /// <summary>
+    /// Allowed content types for the certificate
+    /// </summary>
+    [Required]
+    public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions
