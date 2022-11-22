@@ -358,42 +358,43 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return roleData;
     }
 
-    public Task<bool> UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId)
+    public Task UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId)
     {
         var regex = new Regex(@"(\w|\d){16}");
         if (!regex.IsMatch(bpn))
         {
-            throw new ArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
         }
-        if (!bpn.ToUpper().StartsWith("BPNL"))
+        if (!bpn.ToUpper().StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
         }
         return UpdateCompanyBpnAsync(applicationId, bpn, iamuserId);
     }
 
-    private async Task<bool> UpdateCompanyBpnAsync(Guid applicationId, string bpn, string iamuserId)
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn, string iamuserId)
     {
-        var businessPartnerNumbers = await _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync().ToListAsync().ConfigureAwait(false);
-        if (businessPartnerNumbers.Contains(bpn))
+        await foreach (var item in _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(iamuserId, applicationId, bpn).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) is already exist", nameof(bpn));
-        }
-        var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(iamuserId, applicationId).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new NotFoundException($"user {iamuserId} is not associated with any company");
-        }
-        if (string.IsNullOrWhiteSpace(result.Bpn))
-        {
-            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(result.CompanyId, c =>
+            if (item == default)
             {
-                c.BusinessPartnerNumber = bpn;
-            });
+                throw new NotFoundException($"user {iamuserId} is not associated with any company");
+            }
+            if (!item.IsApplicationCompany)
+            {
+                throw new ConflictException($"Bpn can not be updated for applicationId");
+            }
+            if (string.IsNullOrWhiteSpace(item.BusinessPartnerNumber))
+            {
+                _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(item.CompanyId, c =>
+                {
+                    c.BusinessPartnerNumber = bpn;
+                });
 
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-            return true;
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            }
+
         }
-        return false;
+        
     }
 }

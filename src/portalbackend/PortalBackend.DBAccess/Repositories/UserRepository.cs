@@ -496,12 +496,13 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string Bpn)> GetBpnForIamUserUntrackedAsync(string iamUserId, Guid applicationId) =>
-        _dbContext.IamUsers
+    public IAsyncEnumerable<(bool IsApplicationCompany, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(string iamUserId, Guid applicationId, string businessPartnerNumber) =>
+        _dbContext.Companies
             .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId 
-            && iamUser.CompanyUser!.Company!.CompanyStatusId==CompanyStatusId.PENDING
-            && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(iamUser =>new ValueTuple<Guid, string>(iamUser.CompanyUser!.Company!.Id, iamUser.CompanyUser!.Company!.BusinessPartnerNumber!))
-            .SingleOrDefaultAsync();
+            .Where(company => company.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId== iamUserId)
+            && company!.CompanyStatusId==CompanyStatusId.PENDING
+            && company!.CompanyApplications.Any(application => application.Id == applicationId) ||
+            company.BusinessPartnerNumber == businessPartnerNumber)
+            .Select(company =>new ValueTuple<bool, string?, Guid>(company!.CompanyApplications.Any(application => application.Id == applicationId), company.BusinessPartnerNumber!, company.Id))
+            .AsAsyncEnumerable();
 }
