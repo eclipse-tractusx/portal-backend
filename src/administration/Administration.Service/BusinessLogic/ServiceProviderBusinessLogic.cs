@@ -71,7 +71,9 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
 
     private async Task<Guid> CreateServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
+            .ConfigureAwait(false);
         if (result == default)
         {
             throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");

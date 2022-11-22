@@ -118,4 +118,15 @@ public interface IServiceBusinessLogic
     /// <param name="data">Data of the updated entry</param>
     /// <param name="iamUserId">Id of the current user</param>
     Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId);
+
+    /// <summary>
+    /// Retrieves subscription statuses of provided services of the provided user's company.
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="size"></param>
+    /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <param name="sorting"></param>
+    /// <param name="statusId"></param>
+    /// <returns>Pagination of user's company's provided service' statuses.</returns>
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
 }

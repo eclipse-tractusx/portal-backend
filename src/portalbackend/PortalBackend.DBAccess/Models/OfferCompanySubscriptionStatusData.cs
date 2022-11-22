@@ -21,22 +21,27 @@
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// View model containing an app id and connected company subscription statuses.
+/// View model containing an offer id and connected company subscription statuses.
 /// </summary>
-public class AppCompanySubscriptionStatusData
+public class OfferCompanySubscriptionStatusData
 {
     /// <summary>
     /// Constructor.
     /// </summary>
-    public AppCompanySubscriptionStatusData()
+    public OfferCompanySubscriptionStatusData()
     {
         CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
     }
 
     /// <summary>
-    /// Id of the app.
+    /// Id of the offer.
     /// </summary>
-    public Guid AppId { get; set; }
+    public Guid OfferId { get; set; }
+
+    /// <summary>
+    /// Name of the service.
+    /// </summary>
+    public string? ServiceName { get; set; }
 
     /// <summary>
     /// Subscription statuses of subscribing companies.

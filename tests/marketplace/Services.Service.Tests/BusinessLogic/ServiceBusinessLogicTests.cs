@@ -193,6 +193,33 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region GetCompanyProvidedServiceSubscriptionStatusesForUser
+    
+    [Fact]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    {
+        // Arrange
+        var (_, iamUser) = CreateTestUserPair();
+
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, null))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Count(), data.Skip(skip).Take(take)))!);
+
+        var serviceSettings = new ServiceSettings
+        {
+            ApplicationsMaxPageSize = 15
+        };
+        var sut = new ServiceBusinessLogic(_portalRepositories, A.Fake<IOfferService>(), A.Fake<IOfferSubscriptionService>(), Options.Create(serviceSettings));
+
+        // Act
+        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null).ConfigureAwait(false);
+
+        // Assert
+        result.Content.Should().HaveCount(5);
+    }
+
+    #endregion
+
     #region Get Service Detail Data
 
     [Fact]

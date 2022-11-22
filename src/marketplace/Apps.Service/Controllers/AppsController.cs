@@ -27,6 +27,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
 
@@ -188,10 +189,10 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("provided/subscription-status")]
     [Authorize(Roles = "view_app_subscription")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AppCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync() =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(userId));
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
+        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
