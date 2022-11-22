@@ -53,7 +53,8 @@ public class ConnectorsControllerTests
             "New Connector", 
             "https://connec-tor.com",
             ConnectorStatusId.ACTIVE,
-            "the location");
+            "the location",
+            null);
         var connectorResult = new ConnectorData("New Connector", "the location", Guid.NewGuid(), ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE);
         A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, AccessToken, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => connectorResult);
@@ -76,7 +77,8 @@ public class ConnectorsControllerTests
             "https://connec-tor.com",
             ConnectorStatusId.ACTIVE,
             "the location",
-            "VALIDBPN1234");
+            "VALIDBPN1234",
+            null);
         var connectorResult = new ConnectorData("New Connector", "the location", Guid.NewGuid(), ConnectorTypeId.CONNECTOR_AS_A_SERVICE, ConnectorStatusId.ACTIVE);
         A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, AccessToken, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => connectorResult);

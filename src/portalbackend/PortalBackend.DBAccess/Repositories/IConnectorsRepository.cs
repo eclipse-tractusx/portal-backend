@@ -37,6 +37,8 @@ public interface IConnectorsRepository
 
     Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
 
+    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
+
     /// <summary>
     /// Creates a given connector in persistence layer. 
     /// </summary>

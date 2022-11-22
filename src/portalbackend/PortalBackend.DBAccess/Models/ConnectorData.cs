@@ -33,3 +33,13 @@ public record ConnectorData(
     Guid Id,
     ConnectorTypeId Type,
     ConnectorStatusId Status);
+
+/// <summary>
+/// Connector information for the daps call.
+/// </summary>
+public record ConnectorInformationData(
+    string Name,
+    string Bpn,
+    Guid Id,
+    string Url);
+    
