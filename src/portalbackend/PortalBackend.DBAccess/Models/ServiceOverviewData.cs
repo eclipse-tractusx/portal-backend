@@ -18,17 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Model for updating an app.
+/// View model of an application's detailed data specific for service.
 /// </summary>
-/// <param name="Descriptions"></param>
-/// <param name="Images"></param>
-/// <param name="ProviderUri"></param>
-/// <param name="ContactEmail"></param>
-/// <param name="ContactNumber"></param>
-/// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+/// <param name="Id">ID of the service.</param>
+/// <param name="Title">Title or name of the service.</param>
+/// <param name="Provider">Provider of the service.</param>
+/// <param name="LeadPictureUri">Uri to service's lead picture.</param>
+/// <param name="ContactEmail">Contact email address.</param>
+/// <param name="Description">The description of the service.</param>
+/// <param name="Price">Pricing information of the service.</param>
+/// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
+public record ServiceOverviewData(
+    Guid Id,
+    string Title,
+    string Provider,
+    string? LeadPictureUri,
+    string? ContactEmail,
+    string? Description,
+    string Price,
+    IEnumerable<ServiceTypeId> ServiceTypeIds);

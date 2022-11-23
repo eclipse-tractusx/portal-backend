@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,30 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-///  View model of an application's base data.
+/// Possible sorting options for the notification pagination
 /// </summary>
-public record InReviewAppData(Guid AppId, string? Title, string Provider, string? LeadPictureUri)
+public enum ServiceOverviewSorting
 {
-
     /// <summary>
-    /// ID of the app.
+    /// Ascending by provider
     /// </summary>
-    public Guid AppId { get; set; } = AppId;
-
+    ProviderAsc = 1,
+    
     /// <summary>
-    /// Title or name of the app.
+    /// Descending by provider
     /// </summary>
-    public string? Title { get; set; } = Title;
+    ProviderDesc = 2,
+    
     /// <summary>
-    /// Provider of the app.
+    /// Ascending by the release date
     /// </summary>
-    public string Provider { get; set; } = Provider;
-
+    ReleaseDateAsc = 3,
+    
     /// <summary>
-    /// Uri to app's lead picture.
+    /// Descending by release date
     /// </summary>
-    public string? LeadPictureUri { get; set; } = LeadPictureUri;
+    ReleaseDateDesc = 4,
 }

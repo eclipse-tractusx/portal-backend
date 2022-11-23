@@ -127,7 +127,7 @@ public interface IAppReleaseBusinessLogic
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting);
 
     /// <summary>
     /// Update app status and create notification
@@ -136,4 +136,13 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
+    
+    /// <summary>
+    /// Add User ROle for Active App and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appUserRolesDescription"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task<IEnumerable<AppRoleData>>  AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
 }

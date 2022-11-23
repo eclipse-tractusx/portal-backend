@@ -346,6 +346,139 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
+    #region RemoveServiceAssignedServiceTypes
+    
+    [Fact]
+    public async Task AddServiceAssignedServiceTypes_WithExisting_RemovesServiceAssignedServiceType()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AddServiceAssignedServiceTypes(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.DATASPACE_SERVICE) });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<ServiceAssignedServiceType>().Which.ServiceTypeId.Should().Be(ServiceTypeId.DATASPACE_SERVICE);
+    }
+
+    #endregion
+
+    #region RemoveServiceAssignedServiceTypes
+    
+    [Fact]
+    public async Task RemoveServiceAssignedServiceTypes_WithExisting_RemovesServiceAssignedServiceType()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.RemoveServiceAssignedServiceTypes(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE) });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+    
+    #region GetActiveServices
+    
+    [Theory]
+    [InlineData(ServiceOverviewSorting.ProviderAsc)]
+    [InlineData(ServiceOverviewSorting.ProviderDesc)]
+    [InlineData(ServiceOverviewSorting.ReleaseDateAsc)]
+    [InlineData(ServiceOverviewSorting.ReleaseDateDesc)]
+    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var offerDetail = await sut.GetActiveServicesPaginationSource(sorting, null)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        offerDetail.Should().NotBeNull();
+        offerDetail!.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var offerDetail = await sut.GetActiveServicesPaginationSource(null, ServiceTypeId.CONSULTANCE_SERVICE)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        offerDetail.Should().NotBeNull();
+        offerDetail!.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetActiveServices_WithoutExistingServiceAndServiceType_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var offerDetail = await sut.GetActiveServicesPaginationSource(null, ServiceTypeId.DATASPACE_SERVICE)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        offerDetail.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetServiceDetailById
+    
+    [Fact]
+    public async Task GetServiceDetailByIdUntrackedAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var offerDetail = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "de", "623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+
+        // Assert
+        offerDetail.Should().NotBeNull();
+        offerDetail!.Title.Should().Be("Newest Service");
+    }
+
+    #endregion
+
+    #region GetServiceUpdateData
+    
+    [Fact]
+    public async Task GetServiceUpdateData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var offerDetail = await sut.GetServiceUpdateData(
+            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"),
+            Enumerable.Repeat(ServiceTypeId.CONSULTANCE_SERVICE, 1),
+            "623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+
+        // Assert
+        offerDetail.Should().NotBeNull();
+        offerDetail!.OfferState.Should().Be(OfferStatusId.ACTIVE);
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<OfferRepository> CreateSut()

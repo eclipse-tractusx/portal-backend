@@ -28,6 +28,7 @@ using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
@@ -188,16 +189,17 @@ public class AppsControllerTests
     public async Task GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AppCompanySubscriptionStatusData>(_fixture.CreateMany<AppCompanySubscriptionStatusData>(5));
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<string>._))
-            .Returns(data.AsAsyncEnumerable());
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._))
+            .ReturnsLazily(() => pagination);
 
         //Act
-        var result = await this._controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
+        var result = await this._controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 
     [Fact]

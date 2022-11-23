@@ -283,9 +283,9 @@ public class ServiceProviderBusinessLogicTest
 
     private void SetupRepositories()
     {
-        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUser(A<string>.That.Matches(x => x == IamUserId), A<CompanyRoleId>._))
+        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Matches(x => x == IamUserId), A<CompanyRoleId>._))
             .ReturnsLazily(() => (ExistingCompanyId,true));
-        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUser(A<string>.That.Not.Matches(x => x == IamUserId), A<CompanyRoleId>._))
+        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Not.Matches(x => x == IamUserId), A<CompanyRoleId>._))
             .ReturnsLazily(() => ((Guid,bool))default);
 
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._))
