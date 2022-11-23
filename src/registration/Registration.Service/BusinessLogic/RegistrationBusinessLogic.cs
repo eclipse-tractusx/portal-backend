@@ -253,7 +253,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
-        var (companyId, companyName, idpAlias, creatorId) = applicationData;
+        var (companyId, companyName, idpAlias, creatorId, fullName) = applicationData;
         if (creatorId == Guid.Empty)
         {
             throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
@@ -315,7 +315,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             { "password", password },
             { "companyName", companyDisplayName },
             { "message", userCreationInfo.Message ?? "" },
-            { "nameCreatedBy", iamUserId },
+            { "nameCreatedBy", fullName },
             { "url", _settings.BasePortalAddress },
             { "username", userCreationInfo.eMail },
         };
