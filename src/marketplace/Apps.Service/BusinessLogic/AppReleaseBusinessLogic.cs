@@ -466,26 +466,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
-    {
-        var apps = _portalRepositories.GetInstance<IOfferRepository>().GetAllInReviewStatusAppsAsync();
-
-        return Pagination.CreateResponseAsync(
-            page,
-            size,
-            15,
-            (int skip, int take) => new Pagination.AsyncSource<InReviewAppData>(
-                apps.CountAsync(),
-                apps.OrderBy(app => app.Id)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(app => new InReviewAppData(
-                        app.Id,
-                        app.Name,
-                        app.ProviderCompany!.Name,
-                        app.ThumbnailUrl))
-                    .AsAsyncEnumerable()));
-    }
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting) =>
+        Pagination.CreateResponseAsync(page, size, 15,
+            _portalRepositories.GetInstance<IOfferRepository>()
+                .GetAllInReviewStatusAppsAsync(_settings.OfferStatusIds, sorting ?? OfferSorting.DateDesc));
 
     /// <inheritdoc/>
     public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)

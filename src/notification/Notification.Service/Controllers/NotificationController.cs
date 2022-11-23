@@ -94,7 +94,7 @@ public class NotificationController : ControllerBase
         [FromQuery] bool? isRead = null,
         [FromQuery] NotificationTypeId? notificationTypeId = null,
         [FromQuery] bool onlyDueDate = false,
-        [FromQuery] NotificationSorting sorting = NotificationSorting.DateDesc) =>
+        [FromQuery] NotificationSorting? sorting = null) =>
         this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, isRead, notificationTypeId, sorting));
 
     /// <summary>

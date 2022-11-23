@@ -233,7 +233,7 @@ public class ServicesController : ControllerBase
     /// <response code="204">Service was successfully updated.</response>
     /// <response code="400">Offer Subscription is not in state created or user is not in the same company.</response>
     /// <response code="404">Offer Subscription not found.</response>
-    [HttpPost]
+    [HttpPut]
     [Route("{serviceId:guid}")]
     [Authorize(Roles = "update_service_offering")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
@@ -253,7 +253,7 @@ public class ServicesController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("provided/subscription-status")]
-    // [Authorize(Roles = "view_service_subscription")]
+    [Authorize(Roles = "view_service_subscription")]
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>

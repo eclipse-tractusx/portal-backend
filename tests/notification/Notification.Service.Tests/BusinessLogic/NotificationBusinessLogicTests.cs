@@ -538,17 +538,16 @@ public class NotificationBusinessLogicTests
 
     private void SetupNotifications()
     {
-        var unreadPaging = new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _unreadNotificationDetails);
-        var readPaging = new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails);
-        var notificationsPaging = new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails);
+        var unreadPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_unreadNotificationDetails.Count(), _unreadNotificationDetails.Skip(skip).Take(take)));
+        var readPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails.Skip(skip).Take(take)));
+        var notificationsPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
         
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, A<int>._, A<int>._, A<NotificationSorting>._))
-            .ReturnsLazily(() => unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, A<int>._, A<int>._, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, A<NotificationSorting>._))
+            .Returns(unreadPaging);
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, A<NotificationSorting>._))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<int>._, A<int>._, A<NotificationSorting>._))
-            .ReturnsLazily((string _, bool? _, NotificationTypeId? _, int skip, int take, NotificationSorting? _) => 
-                new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<NotificationSorting>._))
+            .Returns(notificationsPaging);
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
