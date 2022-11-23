@@ -26,6 +26,7 @@ using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using System.Net;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -72,10 +73,73 @@ public class DapsServiceTests
         var service = new DapsService(_options, _httpClientFactory);
 
         // Act
-        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, true, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(expectedResult);
+    }
+
+    [Fact]
+    public async Task EnableDapsAuthAsync_WithUnsuccessfulStatusCodeAndErrorSupression_ReturnsFalse()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
+
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        CreateHttpClient(httpMessageHandlerMock);
+        const string clientName = "Connec Tor";
+        const string referringConnector = "https://connect-tor.com";
+        const string businessPartnerNumber = "BPNL000000000009";
+        const string accessToken = "this-is-a-super-secret-secret-not";
+        var service = new DapsService(_options, _httpClientFactory);
+
+        // Act
+        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, true, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EnableDapsAuthAsync_WithUnsuccessfulStatusCode_ReturnsFalse()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
+
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        CreateHttpClient(httpMessageHandlerMock);
+        const string clientName = "Connec Tor";
+        const string referringConnector = "https://connect-tor.com";
+        const string businessPartnerNumber = "BPNL000000000009";
+        const string accessToken = "this-is-a-super-secret-secret-not";
+        var service = new DapsService(_options, _httpClientFactory);
+
+        // Act
+        async Task Act() => await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, false, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task EnableDapsAuthAsync_WithExceptionAndErrorSuppression_ReturnsFalse()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
+
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
+        CreateHttpClient(httpMessageHandlerMock);
+        const string clientName = "Connec Tor";
+        const string referringConnector = "https://connect-tor.com";
+        const string businessPartnerNumber = "BPNL000000000009";
+        const string accessToken = "this-is-a-super-secret-secret-not";
+        var service = new DapsService(_options, _httpClientFactory);
+
+        // Act
+        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, true, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -93,10 +157,10 @@ public class DapsServiceTests
         var service = new DapsService(_options, _httpClientFactory);
 
         // Act
-        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, false, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeFalse();
+        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
     }
 
     #endregion
