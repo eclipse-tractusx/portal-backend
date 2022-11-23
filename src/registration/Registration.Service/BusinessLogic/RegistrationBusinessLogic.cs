@@ -45,6 +45,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IBpdmService _bpdmService;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogic(
@@ -54,7 +55,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
-        IPortalRepositories portalRepositories)
+        IPortalRepositories portalRepositories,
+        IBpdmService bpdmService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -63,6 +65,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _userProvisioningService = userProvisioningService;
         _logger = logger;
         _portalRepositories = portalRepositories;
+        _bpdmService = bpdmService;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -647,4 +650,25 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return true;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> TriggerBpnDataPushAsync(string iamUserId, string accessToken, Guid applicationId, CancellationToken cancellationToken)
+    {
+        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
+        if (data is null)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exists.");
+        }
+
+        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (!data.IsUserInCompany)
+        {
+            throw new ControllerArgumentException($"User is not assigned to company", nameof(iamUserId));
+        }
+
+        return await _bpdmService.TriggerBpnDataPush(data, accessToken, cancellationToken);
+    }
 }
