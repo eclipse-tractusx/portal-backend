@@ -200,8 +200,12 @@ public interface IOfferRepository
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    IQueryable<Offer> GetAllInReviewStatusAppsAsync();
-
+    /// <param name="offerStatusIds"></param>
+    /// <param name="skip"></param>
+    /// <param name="take"></param>
+    /// <param name="sorting"></param>
+    Func<int,int,Task<Pagination.Source<InReviewAppData>?>> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferSorting? sorting);
+    
     /// <summary>
     /// Retrieve Offer Detail with Status
     /// </summary>

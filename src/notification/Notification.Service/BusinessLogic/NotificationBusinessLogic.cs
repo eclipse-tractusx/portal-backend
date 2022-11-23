@@ -73,10 +73,10 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting sorting = NotificationSorting.DateDesc) =>
-        Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, bool? isRead = null, NotificationTypeId? typeId = null, NotificationSorting? sorting = null) =>
+        Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize,
             _portalRepositories.GetInstance<INotificationRepository>()
-                .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId, skip, take, sorting));
+                .GetAllNotificationDetailsByIamUserIdUntracked(iamUserId, isRead, typeId, sorting ?? NotificationSorting.DateDesc));
 
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId)
