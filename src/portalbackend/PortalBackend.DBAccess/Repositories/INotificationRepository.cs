@@ -54,7 +54,7 @@ public interface INotificationRepository
     /// <param name="take"></param>
     /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting);
+    Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null

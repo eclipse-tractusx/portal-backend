@@ -18,17 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Model for updating an app.
+/// Possible sorting options for the Offer pagination
 /// </summary>
-/// <param name="Descriptions"></param>
-/// <param name="Images"></param>
-/// <param name="ProviderUri"></param>
-/// <param name="ContactEmail"></param>
-/// <param name="ContactNumber"></param>
-/// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+public enum OfferSorting
+{
+    /// <summary>
+    /// Ascending by date
+    /// </summary>
+    DateAsc = 1,
+    
+    /// <summary>
+    /// Descending by date
+    /// </summary>
+    DateDesc = 2,
+    
+    /// <summary>
+    /// Ascending by the read status
+    /// </summary>
+    NameAsc = 3,
+    
+    /// <summary>
+    /// Descending by read status
+    /// </summary>
+    NameDesc = 4,
+}

@@ -122,6 +122,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UserRoleCollection> UserRoleCollections { get; set; } = default!;
     public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -293,7 +294,7 @@ public class PortalDbContext : DbContext
                 );
             
             entity.HasMany(p => p.OfferLicenses)
-                .WithMany(p => p.Apps)
+                .WithMany(p => p.Offers)
                 .UsingEntity<OfferAssignedLicense>(
                     j => j
                         .HasOne(d => d.OfferLicense!)

@@ -4,7 +4,13 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Unreleased
 
-* ...
+### Change
+* Services Endpoints
+   * added service types support the filtering and tagging of services (one service can have multiple service types)
+   * enabled service sorting
+   * enable service updates
+
+*...
 
 ## 0.8.0
 

@@ -254,6 +254,7 @@ public class AppReleaseProcessController : ControllerBase
     /// </summary>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
+    /// <param name="sorting">sort by</param>
     /// <returns>Collection of all in review status marketplace apps.</returns>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/inReview</remarks>
     /// <response code="200">Returns the list of all in review status marketplace apps.</response>
@@ -261,8 +262,8 @@ public class AppReleaseProcessController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
-        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null) =>
+        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting);
 
     /// <summary>
     /// Submit an app for release
@@ -283,4 +284,22 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
+    
+    /// <summary>
+    /// dd role and role description for Active App 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appAssignedDesc"></param>
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role/activeapp</remarks>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
+    /// <response code="200">created role and role description successfully.</response>
+    [HttpPost]
+    [Route("{appId}/role/activeapp")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
+         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddActiveAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
 }

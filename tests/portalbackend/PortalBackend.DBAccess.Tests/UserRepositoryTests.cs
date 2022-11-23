@@ -118,30 +118,81 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region Get own company app users
 
     [Fact]
-    public async Task GetOwnCompanyAppUsersUntrackedAsync_WithValidIamUser_ReturnsExpectedResult()
+    public async Task GetOwnCompanyAppUsersPaginationSourceAsync_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, ValidIamUserId, Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1), new CompanyUserFilter(null, null, null, null, null)).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
+            _validOfferId,
+            ValidIamUserId,
+            new [] { OfferSubscriptionStatusId.ACTIVE },
+            new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().HaveCount(6);
+        result.Should().NotBeNull();
+        result!.Data.Should().NotBeEmpty();
+        result!.Data.Should().HaveCount(7);
     }
 
     [Fact]
-    public async Task GetOwnCompanyAppUsersUntrackedAsync_WithNotExistingIamUser_ReturnsDefault()
+    public async Task GetOwnCompanyAppUsersPaginationSourceAsync_Inactive_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyAppUsersUntrackedAsync(_validOfferId, Guid.NewGuid().ToString(), Enumerable.Repeat(OfferSubscriptionStatusId.ACTIVE, 1), new CompanyUserFilter(null, null, null, null, null)).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
+            _validOfferId,
+            ValidIamUserId,
+            new [] { OfferSubscriptionStatusId.ACTIVE },
+            new [] { CompanyUserStatusId.INACTIVE },
+            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEmpty();
+        result.Should().NotBeNull();
+        result!.Data.Should().NotBeEmpty();
+        result!.Data.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersPaginationSourceAsync_Active_Inactive_Deleted_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
+            _validOfferId,
+            ValidIamUserId,
+            new [] { OfferSubscriptionStatusId.ACTIVE },
+            new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE, CompanyUserStatusId.DELETED },
+            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Data.Should().NotBeEmpty();
+        result!.Data.Should().HaveCount(8);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyAppUsersPaginationSourceAsync_WithNotExistingIamUser_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
+            _validOfferId,
+            Guid.NewGuid().ToString(),
+            new [] { OfferSubscriptionStatusId.ACTIVE },
+            new [] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+            new CompanyUserFilter(null, null, null, null, null))(0,15).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
     }
 
     #endregion
