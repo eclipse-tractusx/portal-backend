@@ -18,10 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-public static class Paths
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+
+public class ConnectorsEndpoints
 {
-    public static readonly string Notification = "/api/notification";
-    public static readonly string Connectors = "/api/administration/connectors";
+    private readonly HttpClient _client;
+
+    public static string Path => Paths.Connectors;
+
+    public ConnectorsEndpoints(HttpClient client)
+    {
+        this._client = client;
+    }
+
+    public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
+        return await this._client.SendAsync(request);
+    }
 }
