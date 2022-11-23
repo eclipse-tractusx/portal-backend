@@ -18,30 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 ///  View model of an application's base data.
 /// </summary>
-public record InReviewAppData(Guid AppId, string? Title, string Provider, string? LeadPictureUri)
-{
-
-    /// <summary>
-    /// ID of the app.
-    /// </summary>
-    public Guid AppId { get; set; } = AppId;
-
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
-    public string? Title { get; set; } = Title;
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    public string Provider { get; set; } = Provider;
-
-    /// <summary>
-    /// Uri to app's lead picture.
-    /// </summary>
-    public string? LeadPictureUri { get; set; } = LeadPictureUri;
-}
+public record InReviewAppData(Guid AppId, string? Name, string Provider, OfferStatusId Status);
