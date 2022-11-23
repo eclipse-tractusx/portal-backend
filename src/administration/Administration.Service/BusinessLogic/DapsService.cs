@@ -21,7 +21,7 @@ public class DapsService : IDapsService
     }
 
     /// <inheritdoc />
-    public async Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, IFormFile formFile, CancellationToken cancellationToken)
+    public async Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -33,6 +33,7 @@ public class DapsService : IDapsService
         multiPartStream.Add(new StringContent(clientName), "clientName");
         multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
         multiPartStream.Add(new StringContent(referringConnector), "referringConnector");
+        multiPartStream.Add(new StringContent(businessPartnerNumber), "regististrationConnector");
 
         try
         {

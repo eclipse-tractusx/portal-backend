@@ -92,8 +92,3 @@ builder.Services.AddDbContext<ProvisioningDBContext>(options =>
 builder.Build()
     .CreateApp<Program>("administration", VERSION)
     .Run();
-
-/// <summary>
-/// Needed for integration Test setup
-/// </summary>
-public partial class Program { }

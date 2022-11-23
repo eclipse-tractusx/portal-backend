@@ -44,8 +44,3 @@ builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLo
 builder.Build()
     .CreateApp<Program>("notification", VERSION)
     .Run();
-
-/// <summary>
-/// Needed for integration Test setup
-/// </summary>
-public partial class Program { }

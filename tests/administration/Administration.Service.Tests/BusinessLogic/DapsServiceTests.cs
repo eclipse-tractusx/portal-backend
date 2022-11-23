@@ -66,12 +66,13 @@ public class DapsServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(expectedResult ? HttpStatusCode.OK : HttpStatusCode.BadRequest);
         CreateHttpClient(httpMessageHandlerMock);
         const string clientName = "Connec Tor";
-        const string referringConnector = "https://connect-tor.com/BPNL000000000009";
+        const string referringConnector = "https://connect-tor.com";
+        const string businessPartnerNumber = "BPNL000000000009";
         const string accessToken = "this-is-a-super-secret-secret-not";
         var service = new DapsService(_options, _httpClientFactory);
 
         // Act
-        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(expectedResult);
@@ -86,12 +87,13 @@ public class DapsServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
         CreateHttpClient(httpMessageHandlerMock);
         const string clientName = "Connec Tor";
-        const string referringConnector = "https://connect-tor.com/BPNL000000000009";
+        const string referringConnector = "https://connect-tor.com";
+        const string businessPartnerNumber = "BPNL000000000009";
         const string accessToken = "this-is-a-super-secret-secret-not";
         var service = new DapsService(_options, _httpClientFactory);
 
         // Act
-        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
