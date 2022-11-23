@@ -23,15 +23,16 @@ using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
 using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.IntegrationTests;
 
-public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<Program>>
+public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController>>
 {
-    private readonly IntegrationTestFactory<Program> _factory;
+    private readonly IntegrationTestFactory<NotificationController> _factory;
 
-    public NotificationControllerIntegrationTests(IntegrationTestFactory<Program> factory)
+    public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController> factory)
     {
         _factory = factory;
     }

@@ -20,6 +20,7 @@
 
 using System.Net;
 using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.EnpointSetup;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -29,11 +30,11 @@ using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.IntegrationTests;
 
-public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTestFactory<Program>>
+public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTestFactory<ConnectorsController>>
 {
-    private readonly IntegrationTestFactory<Program> _factory;
+    private readonly IntegrationTestFactory<ConnectorsController> _factory;
 
-    public ConnectorsControllerIntegrationTests(IntegrationTestFactory<Program> factory)
+    public ConnectorsControllerIntegrationTests(IntegrationTestFactory<ConnectorsController> factory)
     {
         _factory = factory;
     }

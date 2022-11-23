@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
@@ -34,8 +33,9 @@ public interface IDapsService
     /// <param name="clientName">name of the client</param>
     /// <param name="accessToken">the access token</param>
     /// <param name="referringConnector">the connectors url with the bpn of the company append to it</param>
+    /// <param name="businessPartnerNumber">the business partner number</param>
     /// <param name="formFile">The file</param>
     /// <param name="cancellationToken">cancelattion token</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, IFormFile formFile, CancellationToken cancellationToken);
+    Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
 }

@@ -212,9 +212,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (file is not null)
         {
-            var url = connectorUrl.EndsWith("/") ? $"{connectorUrl}{businessPartnerNumber}" : $"{connectorUrl}/{businessPartnerNumber}";
             var dapsCallSuccessful = await _dapsService
-                .EnableDapsAuthAsync(name, accessToken, $"{url}", file, cancellationToken)
+                .EnableDapsAuthAsync(name, accessToken, connectorUrl, businessPartnerNumber, file, cancellationToken)
                 .ConfigureAwait(false);
             connectorsRepository.AttachAndModifyConnector(createdConnector.Id, con =>
             {
@@ -265,9 +264,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
 
         var connectorData = connector.ConnectorInformationData;
-        var url = connectorData.Url.EndsWith("/") ? $"{connectorData.Url}{connectorData.Bpn}" : $"{connectorData.Url}/{connectorData.Bpn}";
         var dapsCallSuccessful = await _dapsService
-            .EnableDapsAuthAsync(connectorData.Name, accessToken, $"{url}", certificate, cancellationToken)
+            .EnableDapsAuthAsync(connectorData.Name, accessToken, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
             .ConfigureAwait(false);
         connectorsRepository.AttachAndModifyConnector(connectorId, con =>
         {
