@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -15,9 +14,7 @@ public class DapsService : IDapsService
     /// </summary>
     /// <param name="httpClientFactory">Factory to create httpClients</param>
     /// <param name="options">The options</param>
-    public DapsService(
-        IOptions<DapsSettings> options, 
-        IHttpClientFactory httpClientFactory)
+    public DapsService(IOptions<DapsSettings> options, IHttpClientFactory httpClientFactory)
     {
         _settings = options.Value;
         _httpClient = httpClientFactory.CreateClient(nameof(DapsService));
@@ -36,7 +33,16 @@ public class DapsService : IDapsService
         multiPartStream.Add(new StringContent(clientName), "clientName");
         multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
         multiPartStream.Add(new StringContent(referringConnector), "referringConnector");
-        var response = await _httpClient.PostAsync(_settings.DapsUrl, multiPartStream, cancellationToken).ConfigureAwait(false);
-        return response.IsSuccessStatusCode;
+
+        try
+        {
+            var response = await _httpClient.PostAsync(_settings.DapsUrl, multiPartStream, cancellationToken)
+                .ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

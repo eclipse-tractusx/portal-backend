@@ -26,7 +26,6 @@ using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
 using System.Net;
-using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -59,7 +58,7 @@ public class DapsServiceTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task EnableDapsAuthAsync_WithValidData_ReturnsSuccess(bool expectedResult)
+    public async Task EnableDapsAuthAsync_ReturnsExpected(bool expectedResult)
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
@@ -78,13 +77,33 @@ public class DapsServiceTests
         result.Should().Be(expectedResult);
     }
 
+    [Fact]
+    public async Task EnableDapsAuthAsync_WithException_ReturnsFalse()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
+
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
+        CreateHttpClient(httpMessageHandlerMock);
+        const string clientName = "Connec Tor";
+        const string referringConnector = "https://connect-tor.com/BPNL000000000009";
+        const string accessToken = "this-is-a-super-secret-secret-not";
+        var service = new DapsService(_options, _httpClientFactory);
+
+        // Act
+        var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, file, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
     #endregion
 
     #region Setup
 
     private void CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
     {
-        var httpClient = new HttpClient(httpMessageHandlerMock) {BaseAddress = new Uri(_options.Value.DapsUrl)};
+        var httpClient = new HttpClient(httpMessageHandlerMock) { BaseAddress = new Uri(_options.Value.DapsUrl) };
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
     }
 
