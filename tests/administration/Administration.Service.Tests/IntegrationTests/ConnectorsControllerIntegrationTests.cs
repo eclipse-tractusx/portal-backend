@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
 using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.EnpointSetup;
@@ -26,6 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
+using System.Net;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.IntegrationTests;

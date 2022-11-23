@@ -42,4 +42,3 @@ public record ConnectorInformationData(
     string Bpn,
     Guid Id,
     string Url);
-    
