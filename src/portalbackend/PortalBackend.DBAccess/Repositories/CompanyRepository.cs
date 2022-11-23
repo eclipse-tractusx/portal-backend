@@ -74,17 +74,18 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => new ValueTuple<string,Guid>(company!.Name, company.Id))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId, string FullName)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
         _context.Companies.AsNoTracking()
             .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(company => new ValueTuple<Guid,string,string?,Guid>(
+            .Select(company => new ValueTuple<Guid,string,string?,Guid, string>(
                 company.Id,
                 company.Name,
                 company.IdentityProviders
                     .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
                     .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
                     .SingleOrDefault(),
-                company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id
+                company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
+                string.Concat(company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Firstname!, company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Lastname!)
             ))
             .SingleOrDefaultAsync();
 
