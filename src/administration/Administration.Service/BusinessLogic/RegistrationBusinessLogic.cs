@@ -358,43 +358,47 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return roleData;
     }
 
-    public Task UpdateCompanyBpn(Guid applicationId, string bpn, string iamuserId)
+    public Task UpdateCompanyBpn(Guid applicationId, string bpn)
     {
         var regex = new Regex(@"(\w|\d){16}");
         if (!regex.IsMatch(bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
         }
-        if (!bpn.ToUpper().StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
+        if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
         {
             throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
         }
-        return UpdateCompanyBpnAsync(applicationId, bpn, iamuserId);
+        return UpdateCompanyBpnAsync(applicationId, bpn);
     }
 
-    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn, string iamuserId)
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
     {
-        await foreach (var item in _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(iamuserId, applicationId, bpn).ConfigureAwait(false))
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+        if (!result.Any(item => item.IsApplicationCompany))
         {
-            if (item == default)
-            {
-                throw new NotFoundException($"user {iamuserId} is not associated with any company");
-            }
-            if (!item.IsApplicationCompany)
-            {
-                throw new ConflictException($"Bpn can not be updated for applicationId");
-            }
-            if (string.IsNullOrWhiteSpace(item.BusinessPartnerNumber))
-            {
-                _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(item.CompanyId, c =>
-                {
-                    c.BusinessPartnerNumber = bpn;
-                });
-                
-            }
-
+            throw new NotFoundException($"application {applicationId} not found");
         }
+        if (result.Any(item => !item.IsApplicationCompany))
+        {
+            throw new ConflictException($"BusinessPartnerNumber is already assigned to a different company");
+        }
+        var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
+        if (!applicationCompanyData.IsApplicationPending)
+        {
+            throw new ConflictException($"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+        }
+        if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
+        {
+            throw new ConflictException($"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, c =>
+        {
+            c.BusinessPartnerNumber = bpn;
+        });
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        
+
     }
 }

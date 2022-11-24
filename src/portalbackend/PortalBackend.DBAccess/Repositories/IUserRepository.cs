@@ -134,5 +134,5 @@ public interface IUserRepository
     /// <param name="applicationId"></param>
     /// <param name="businessPartnerNumber"></param>
     /// <returns></returns>
-    IAsyncEnumerable<(bool IsApplicationCompany, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(string iamUserId, Guid applicationId, string businessPartnerNumber);
+    IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
 }
