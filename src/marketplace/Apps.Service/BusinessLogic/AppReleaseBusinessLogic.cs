@@ -532,4 +532,39 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+    
+    /// <inheritdoc/>
+    public async Task ApproveAppRequestAsync(Guid appId, string iamUserId)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
+        if (!appDetails.OfferExists)
+        {
+            throw new NotFoundException($"Apps not found. Either Not Existing or incorrect offer type");
+        }
+        if (!appDetails.IsStatusInReview)
+        {
+            throw new ConflictException($"Apps in InCorrect Status {appDetails.IsStatusInReview} ");
+        }
+        if (!appDetails.IsProviderCompanyUser)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not allowed to change the app.");
+        }
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        offerRepository.AttachAndModifyOffer(appId, app =>
+        {
+            app.OfferStatusId = OfferStatusId.ACTIVE;
+        });
+        var notificationContent = new
+        {
+            appId,
+            appDetails.OfferName
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = _settings.ApproveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(_settings.AprroveAppUserRoles, requesterId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }
