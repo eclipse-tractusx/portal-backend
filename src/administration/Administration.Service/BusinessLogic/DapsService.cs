@@ -34,7 +34,8 @@ public class DapsService : IDapsService
         multiPartStream.Add(new StringContent(clientName), "clientName");
         multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
         multiPartStream.Add(new StringContent(referringConnector), "referringConnector");
-        multiPartStream.Add(new StringContent(businessPartnerNumber), "regististrationConnector");
+        var registrationConnector = referringConnector.EndsWith("/") ? $"{referringConnector}{businessPartnerNumber}" : $"{referringConnector}/{businessPartnerNumber}";
+        multiPartStream.Add(new StringContent(registrationConnector), "regististrationConnector");
 
         try
         {
