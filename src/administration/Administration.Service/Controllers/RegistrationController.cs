@@ -145,15 +145,17 @@ public class RegistrationController : ControllerBase
     /// <returns></returns>
     /// <remarks>Example: POST: /api/administration/registration/application/6126fdc8-f572-4a63-a5b3-d5e52cb58136/BPNL00000003CSGV/bpn</remarks>
     /// <response code="200">Successfully Updated the BPN.</response>
-    /// <response code="404">CompanyId does not exist for application Id</response>
+    /// <response code="404">application Id not found</response>
     /// <response code="400">Bpn is not 16 character long or alphanumeric or does not start with BPNL</response>
+    /// <response code="409">Bpn is already assigned or alphanumeric or application for company is not pending</response>
     [HttpPost]
     [Route("application/{applicationId}/{bpn}/bpn")]
     [Authorize(Roles = "approve_new_partner")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
-        this.WithIamUserId(iamUserId => _logic.UpdateCompanyBpn(applicationId, bpn, iamUserId));
+        _logic.UpdateCompanyBpn(applicationId, bpn);
     
 }
