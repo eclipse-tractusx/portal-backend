@@ -18,30 +18,32 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-/// <summary>
-///  View model of an application's base data.
-/// </summary>
-public record InReviewAppData(Guid AppId, string? Title, string Provider, string? LeadPictureUri)
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+
+public class AuditAppSubscriptionDetail20221118 : IAuditEntityV1
 {
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
+    public Guid Id { get; set; }
+    public Guid OfferSubscriptionId { get; set; }
+    public Guid? AppInstanceId { get; set; }
+    
+    [MaxLength(255)]
+    public string? AppSubscriptionUrl { get; set; }
+    
+     public Guid? LastEditorId { get; set; }
 
-    /// <summary>
-    /// ID of the app.
-    /// </summary>
-    public Guid AppId { get; set; } = AppId;
-
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
-    public string? Title { get; set; } = Title;
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    public string Provider { get; set; } = Provider;
-
-    /// <summary>
-    /// Uri to app's lead picture.
-    /// </summary>
-    public string? LeadPictureUri { get; set; } = LeadPictureUri;
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

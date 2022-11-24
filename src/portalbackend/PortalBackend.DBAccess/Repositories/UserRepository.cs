@@ -422,7 +422,7 @@ public class UserRepository : IUserRepository
         email = email == null ? null : regex.Replace(email!, @"\"); 
         roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
-        return (int skip, int take) => Pagination.CreateSourceQueryAsync(
+        return (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.CompanyUsers.AsNoTracking()
