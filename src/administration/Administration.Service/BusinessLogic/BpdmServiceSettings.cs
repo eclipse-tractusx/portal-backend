@@ -18,18 +18,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-public interface IRegistrationBusinessLogic
+/// <summary>
+/// Settings used in business logic concerning connectors.
+/// </summary>
+public class BpdmServiceSettings
 {
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId,
-        CancellationToken cancellationToken);
-    Task<bool> DeclinePartnerRequest(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
-    Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken);
+    [Required(AllowEmptyStrings = false)]
+    public string Username { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string Password { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string ClientId { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string GrantType { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string ClientSecret { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string Scope { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string KeyCloakTokenAdress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string BaseAdress { get; set; } = null!;
 }
