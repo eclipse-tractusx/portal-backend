@@ -17,7 +17,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -25,7 +26,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 /// <summary>
 /// Detail data for the app subscription
 /// </summary>
-public class AppSubscriptionDetail
+
+[AuditEntityV1(typeof(AuditAppSubscriptionDetail20221118))]
+public class AppSubscriptionDetail : IAuditableV1
 {
     /// <summary>
     /// Only needed for ef
@@ -62,7 +65,10 @@ public class AppSubscriptionDetail
     
     [MaxLength(255)]
     public string? AppSubscriptionUrl { get; set; }
-
+    
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
+    
     /// <summary>
     /// Subscribing app instance.
     /// </summary>
