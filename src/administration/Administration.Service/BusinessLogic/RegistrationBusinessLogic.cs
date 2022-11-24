@@ -43,6 +43,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactoryService;
+    private readonly IBpdmService _bpdmService;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories, 
@@ -51,7 +52,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         ICustodianService custodianService, 
         IMailingService mailingService,
         INotificationService notificationService,
-        ISdFactoryService sdFactoryService)
+        ISdFactoryService sdFactoryService,
+        IBpdmService bpdmService)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -60,6 +62,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _mailingService = mailingService;
         _notificationService = notificationService;
         _sdFactoryService = sdFactoryService;
+        _bpdmService = bpdmService;
     }
 
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
@@ -355,5 +358,27 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return roleData;
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken)
+    {
+        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
+        if (data is null)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exists.");
+        }
+
+        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (!data.IsUserInCompany)
+        {
+            throw new ControllerArgumentException($"User is not assigned to company", nameof(iamUserId));
+        }
+
+        await _bpdmService.TriggerBpnDataPush(data, cancellationToken);
     }
 }

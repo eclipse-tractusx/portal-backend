@@ -395,28 +395,5 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
             await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
             return NoContent();
         }
-        
-        /// <summary>
-        /// Approves the partner request
-        /// </summary>
-        /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
-        /// <returns>the result as a boolean</returns>
-        /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
-        /// <response code="200">the result as a boolean.</response>
-        /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
-        /// <response code="404">Application ID not found.</response>
-        /// <response code="500">Internal Server Error.</response>
-        /// <response code="502">Bad Gateway Service Error.</response>
-        [HttpPut]
-        [Authorize(Roles = "approve_new_partner")]
-        [Route("application/{applicationId}/trigger-bpn")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-        public Task<bool> TriggerBpnDataPush([FromRoute] Guid applicationId, CancellationToken cancellationToken) =>
-            this.WithIamUserAndBearerToken((auth) => _registrationBusinessLogic.TriggerBpnDataPushAsync(auth.iamUserId, auth.bearerToken, applicationId, cancellationToken));
     }
 }
