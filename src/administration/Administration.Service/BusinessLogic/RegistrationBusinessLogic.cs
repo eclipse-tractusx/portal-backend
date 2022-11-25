@@ -399,6 +399,5 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
     }
 }

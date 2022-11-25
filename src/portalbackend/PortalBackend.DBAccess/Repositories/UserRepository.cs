@@ -499,12 +499,12 @@ public class UserRepository : IUserRepository
     public IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber) =>
         _dbContext.Companies
             .AsNoTracking()
-            .Where(company => company!.CompanyApplications.Any(application => application.Id == applicationId) ||
-            company.BusinessPartnerNumber == businessPartnerNumber)
+            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId) ||
+                company.BusinessPartnerNumber == businessPartnerNumber)
             .Select(company => new ValueTuple<bool, bool, string?, Guid>(
-                company!.CompanyApplications.Any(application => application.Id == applicationId),
+                company.CompanyApplications.Any(application => application.Id == applicationId),
                 company.CompanyStatusId == CompanyStatusId.PENDING,
-                company.BusinessPartnerNumber!,
+                company.BusinessPartnerNumber,
                 company.Id))
             .AsAsyncEnumerable();
 }
