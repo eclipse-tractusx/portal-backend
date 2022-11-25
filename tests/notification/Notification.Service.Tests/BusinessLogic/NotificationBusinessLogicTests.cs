@@ -87,7 +87,7 @@ public class NotificationBusinessLogicTests
                 var receiverId = x.Arguments.Get<Guid>("receiverUserId");
                 var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
                 var isRead = x.Arguments.Get<bool>("isRead");
-                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
+                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameters");
 
                 var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
                     DateTimeOffset.UtcNow, notificationTypeId, isRead);
@@ -378,7 +378,7 @@ public class NotificationBusinessLogicTests
         A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<PortalBackend.PortalEntities.Entities.Notification>>._))
             .Invokes(x =>
             {
-                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
+                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameters");
                 action?.Invoke(notification);
             });
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
