@@ -145,10 +145,10 @@ public class OfferSubscriptionServiceTests
                 var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
                 var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
                 var isRead = x.Arguments.Get<bool>("isRead");
-                var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
+                var setOptionalParameters = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameters");
 
                 var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameter?.Invoke(notification);
+                setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });        
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
@@ -176,10 +176,10 @@ public class OfferSubscriptionServiceTests
                 var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
                 var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
                 var isRead = x.Arguments.Get<bool>("isRead");
-                var setOptionalParameter = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameter");
+                var setOptionalParameters = x.Arguments.Get< Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameters");
 
                 var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameter?.Invoke(notification);
+                setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
