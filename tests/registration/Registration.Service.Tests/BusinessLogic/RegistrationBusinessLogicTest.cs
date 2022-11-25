@@ -803,7 +803,8 @@ public class RegistrationBusinessLogicTest
                 CompanyId: _fixture.Create<Guid>(),
                 CompanyName: _fixture.Create<string>(),
                 Alias: (string?)null,
-                CompanyUserId: Guid.NewGuid() // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
+                CompanyUserId: Guid.NewGuid(), // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
+                FullName: _fixture.Create<string>()
             ));
 
         var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
@@ -924,7 +925,8 @@ public class RegistrationBusinessLogicTest
                 CompanyId: _fixture.Create<Guid>(),
                 CompanyName: _fixture.Create<string>(),
                 Alias: _fixture.Create<string>(),
-                CompanyUserId: Guid.NewGuid() // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
+                CompanyUserId: Guid.NewGuid(), // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
+                FullName :_fixture.Create<string>()
             ));
     }
 
