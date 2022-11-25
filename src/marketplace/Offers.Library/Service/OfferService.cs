@@ -381,7 +381,8 @@ public class OfferService : IOfferService
             data.ProviderUri,
             data.ContactEmail,
             data.ContactNumber,
-            data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))));
+            data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
+            data.SalesManagerId);
     }
     
     /// <inheritdoc />
