@@ -136,6 +136,28 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationWithCompanyUserDetails>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] string? companyName = null) =>
         _logic.GetAllCompanyApplicationsDetailsAsync(page, size, companyName);
+
+    /// <summary>
+    /// Update the BPN for a Company
+    /// </summary>
+    /// <param name="applicationId"></param>
+    /// <param name="bpn"></param>
+    /// <returns></returns>
+    /// <remarks>Example: POST: /api/administration/registration/application/6126fdc8-f572-4a63-a5b3-d5e52cb58136/BPNL00000003CSGV/bpn</remarks>
+    /// <response code="200">Successfully Updated the BPN.</response>
+    /// <response code="404">application Id not found</response>
+    /// <response code="400">Bpn is not 16 character long or alphanumeric or does not start with BPNL</response>
+    /// <response code="409">Bpn is already assigned or alphanumeric or application for company is not pending</response>
+    [HttpPost]
+    [Route("application/{applicationId}/{bpn}/bpn")]
+    [Authorize(Roles = "approve_new_partner")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
+        _logic.UpdateCompanyBpn(applicationId, bpn);
+
     
     /// <summary>
     /// Approves the partner request

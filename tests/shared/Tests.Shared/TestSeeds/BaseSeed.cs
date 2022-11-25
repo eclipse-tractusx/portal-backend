@@ -56,7 +56,15 @@ public static class BaseSeed
                 Shortname = "Test",
             },
         });
-
+        dbContext.CompanyApplications.AddRange(new List<CompanyApplication>
+        {
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),CompanyApplicationStatusId.CONFIRMED,DateTimeOffset.UtcNow)
+        });
+        dbContext.Documents.AddRange(new List<Document>
+        {
+            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"),new byte[1024],new byte[1024],"test.pdf",DateTimeOffset.UtcNow,DocumentStatusId.INACTIVE,DocumentTypeId.CX_FRAME_CONTRACT)
+        });
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
         {
             new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
