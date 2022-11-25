@@ -62,18 +62,18 @@ public class BpdmService : IBpdmService
                 
                 new BpdmAddress(
                     new BpdmAddressVersion("WESTERN_LATIN_STANDARD", "de"),
-                    data.AlphaCode2,
+                    data.AlphaCode2.ToUpper(),
                     new []
                     {
                         new BpdmPostcode(data.ZipCode, "REGULAR")
                     },
                     new []
                     {
-                        new BpdmLocality(data.City, null, "CITY")
+                        new BpdmLocality(data.City, "CITY")
                     },
                     new []
                     {
-                        new BpdmThoroughfares(data.Street, null, null, null, null, "STREET")
+                        new BpdmThoroughfares(data.Street, "STREET")
                     })
                 );
             var result = await _httpClient.PutAsJsonAsync("api/catena/input/legal-entities", requestData, cancellationToken).ConfigureAwait(false);
