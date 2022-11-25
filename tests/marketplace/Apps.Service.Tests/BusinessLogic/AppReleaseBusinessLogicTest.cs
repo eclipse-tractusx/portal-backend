@@ -318,7 +318,7 @@ public class AppReleaseBusinessLogicTest
         await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
         
         // Assert
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new [] { new Localization("de", "Long description", "desc") }), A<IEnumerable<(string LanguageShorName, string DescriptionLong, string DescriptionShort)>>._))
             .MustHaveHappenedOnceExactly();

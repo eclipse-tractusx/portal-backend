@@ -1200,10 +1200,10 @@ public class UserBusinessLogicTests
                     .ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._))
-            .ReturnsLazily((Guid companyUserId, Action<CompanyUser> setOptionalParameters) =>
+            .Invokes(x => 
             {
-                setOptionalParameters.Invoke(_companyUser);
-                return _companyUser;
+                var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
+                setOptionalParameters!.Invoke(_companyUser);
             });
 
         A.CallTo(() => _companyUserSelectFunction(A<CompanyUserAccountData>._)).ReturnsLazily((CompanyUserAccountData u) => u);

@@ -375,7 +375,7 @@ public class NotificationBusinessLogicTests
     {
         // Arrange
         var notification = new PortalBackend.PortalEntities.Entities.Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, !isRead);
-        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<PortalBackend.PortalEntities.Entities.Notification>>._))
             .Invokes(x =>
             {
                 var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");

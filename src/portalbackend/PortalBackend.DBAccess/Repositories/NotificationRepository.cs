@@ -53,11 +53,10 @@ public class NotificationRepository : INotificationRepository
         return _dbContext.Add(notification).Entity;
     }
 
-    public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null)
+    public void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameter)
     {
         var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
-        setOptionalParameter?.Invoke(notification);
-        return notification;
+        setOptionalParameter.Invoke(notification);
     }
 
     public Notification DeleteNotification(Guid notificationId) =>
