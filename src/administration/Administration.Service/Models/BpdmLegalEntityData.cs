@@ -55,13 +55,8 @@ public record BpdmPostcode(
 
 public record BpdmLocality(
     [property: JsonPropertyName("value")] string Value,
-    [property: JsonPropertyName("shortName")] string? ShortName,
     [property: JsonPropertyName("type")] string Type);
 
 public record BpdmThoroughfares(
     [property: JsonPropertyName("value")] string Value,
-    [property: JsonPropertyName("name")] string? Name,
-    [property: JsonPropertyName("shortName")] string? ShortName,
-    [property: JsonPropertyName("number")] string? Number,
-    [property: JsonPropertyName("direction")] string? Direction,
     [property: JsonPropertyName("type")] string Type);
