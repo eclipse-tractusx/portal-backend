@@ -51,33 +51,18 @@ public class BpdmService : IBpdmService
         {
             var requestData = new BpdmLegalEntityData(
                 "registrationnumber",
-                // data.Bpn,
                 new []
                 {
                     new BpdmIdentifiers("DE216038746", "EU_VAT_ID_DE")
-                    // new BpdmIdentifiers("DE216038746", "EU_VAT_ID_DE", null, null)
                 },
                 new []
                 {
                     new BpdmName(data.CompanyName, "REGISTERED", "de")
                 },
-                // null,
-                // null,
-                // new []
-                // {
-                //     new BpdmClassification("", "", "")
-                // },
-                // new []
-                // {
-                //     "ORGANIZATIONAL_UNIT"
-                // },
-                // new List<BpdmBankAccounts>(),
+                
                 new BpdmAddress(
                     new BpdmAddressVersion("WESTERN_LATIN_STANDARD", "de"),
-                    // null,
-                    // new List<string>(),
                     data.AlphaCode2,
-                    // new List<BpdmAministrativeArea>(),
                     new []
                     {
                         new BpdmPostcode(data.ZipCode, "REGULAR")
@@ -90,10 +75,6 @@ public class BpdmService : IBpdmService
                     {
                         new BpdmThoroughfares(data.Street, null, null, null, null, "STREET")
                     })
-                    // new List<BpdmPremises>(),
-                    // new List<BpdmPostalDeliveryPoints>(),
-                    // new List<BpdmGeoCoordinates>(),
-                    // new List<string>()
                 );
             var result = await _httpClient.PutAsJsonAsync("api/catena/input/legal-entities", requestData, cancellationToken).ConfigureAwait(false);
             if (result.IsSuccessStatusCode)
