@@ -126,4 +126,13 @@ public interface IUserRepository
     /// <param name="companyUserIdId"></param>
     /// <returns></returns>
     Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
+
+    /// <summary>
+    /// Retrieve BPN for applicationId and Logged In User Company
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="applicationId"></param>
+    /// <param name="businessPartnerNumber"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
 }
