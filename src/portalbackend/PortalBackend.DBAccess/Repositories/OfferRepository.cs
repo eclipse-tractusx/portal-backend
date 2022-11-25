@@ -380,7 +380,8 @@ public class OfferRepository : IOfferRepository
                     offer.MarketingUrl,
                     offer.ContactEmail,
                     offer.ContactNumber,
-                    offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))),
+                    offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                    offer.SalesManagerId),
                 offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
                 ))
             .SingleOrDefaultAsync();
