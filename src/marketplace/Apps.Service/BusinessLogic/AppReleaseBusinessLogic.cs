@@ -436,13 +436,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        appRepository.AttachAndModifyOffer(appId, app =>
+        appRepository.AttachAndModifyOffer(
+        appId,
+        app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.OfferStatusId = OfferStatusId.CREATED;
             app.Provider = appRequestModel.Provider;
             app.SalesManagerId = appRequestModel.SalesManagerId;
+        },
+        app => {
+            app.SalesManagerId = Guid.Empty;
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);

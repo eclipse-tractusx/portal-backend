@@ -766,15 +766,18 @@ public class OfferServiceTests
             });
 
         A.CallTo(() => _offerRepository.AttachAndModifyOfferDescription(A<Guid>._, A<string>._, A<Action<OfferDescription>>._)) 
-            .ReturnsLazily((Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters) =>
+            .Invokes(x => 
             {
-                if (!seed.TryGetValue((offerId, languageShortName), out var offerDescription))
+                var offerId = x.Arguments.Get<Guid>("offerId");
+                var languageShortName = x.Arguments.Get<string>("languageShortName");
+                var setOptionalParameters = x.Arguments.Get<Action<OfferDescription>>("setOptionalParameters");
+                if (!seed.TryGetValue((offerId!, languageShortName!), out var offerDescription))
                 {
-                    offerDescription = new OfferDescription(offerId, languageShortName, null!, null!);
-                    seed[(offerId, languageShortName)] = offerDescription;
+                    offerDescription = new OfferDescription(offerId, languageShortName!, null!, null!);
+                    seed[(offerId!, languageShortName!)] = offerDescription;
                 }
+               
                 setOptionalParameters?.Invoke(offerDescription);
-                return offerDescription;
             });
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
@@ -812,7 +815,7 @@ public class OfferServiceTests
 
         sut.CreateOrUpdateOfferLicense(offerId, price, offerLicense);
 
-        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._, A<Action<OfferLicense>?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._, A<Action<OfferLicense>>._)).MustNotHaveHappened();
 
         A.CallTo(() => _offerRepository.CreateOfferLicenses(price)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.RemoveOfferAssignedLicense(offerId, offerLicense.OfferLicenseId)).MustHaveHappenedOnceExactly();
@@ -827,12 +830,13 @@ public class OfferServiceTests
         var offerLicense = _fixture.Build<(Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers)>().With(x => x.AssignedToMultipleOffers, false).Create();
         OfferLicense? modifiedOfferLicense = null;
 
-        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(offerLicense.OfferLicenseId, A<Action<OfferLicense>?>._))
-            .ReturnsLazily((Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters) =>
+        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(offerLicense.OfferLicenseId, A<Action<OfferLicense>>._))
+            .Invokes(x =>
             {
-                modifiedOfferLicense = new OfferLicense(offerLicense.OfferLicenseId, null!);
+                var offerLicenseId = x.Arguments.Get<Guid>("offerLicenseId");
+                var setOptionalParameters = x.Arguments.Get<Action<OfferLicense>>("setOptionalParameters");
+                modifiedOfferLicense = new OfferLicense(offerLicenseId, null!);
                 setOptionalParameters?.Invoke(modifiedOfferLicense);
-                return modifiedOfferLicense;
             });
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
@@ -843,7 +847,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.RemoveOfferAssignedLicense(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _offerRepository.CreateOfferAssignedLicense(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
 
-        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._, A<Action<OfferLicense>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(A<Guid>._, A<Action<OfferLicense>>._)).MustHaveHappenedOnceExactly();
         modifiedOfferLicense.Should().NotBeNull();
         modifiedOfferLicense!.Licensetext.Should().NotBeNull(); 
         modifiedOfferLicense!.Licensetext.Should().BeSameAs(price);

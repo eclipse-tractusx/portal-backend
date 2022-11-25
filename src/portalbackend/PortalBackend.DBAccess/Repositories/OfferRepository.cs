@@ -65,11 +65,12 @@ public class OfferRepository : IOfferRepository
         return app;
     }
 
-    public Offer AttachAndModifyOffer(Guid offerId, Action<Offer>? setOptionalParameters = null)
+    public void AttachAndModifyOffer(Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters = null)
     {
-        var offer = _context.Attach(new Offer(offerId, null!, default, default)).Entity;
-        setOptionalParameters?.Invoke(offer);
-        return offer;
+        var entity = new Offer(offerId, null!, default, default);
+        initializeParemeters?.Invoke(entity);
+        var offer = _context.Attach(entity).Entity;
+        setOptionalParameters.Invoke(offer);
     }
 
     public Offer DeleteOffer(Guid offerId) =>
@@ -130,11 +131,10 @@ public class OfferRepository : IOfferRepository
         _context.OfferLicenses.Add(new OfferLicense(Guid.NewGuid(), licenseText)).Entity;
 
     /// <inheritdoc />
-    public OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters = null)
+    public void AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense> setOptionalParameters)
     {
         var offerLicense = _context.OfferLicenses.Attach(new OfferLicense(offerLicenseId, null!)).Entity;
-        setOptionalParameters?.Invoke(offerLicense);
-        return offerLicense;
+        setOptionalParameters.Invoke(offerLicense);
     }
 
     /// <inheritdoc />
@@ -178,11 +178,10 @@ public class OfferRepository : IOfferRepository
     public void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds) =>
         _context.RemoveRange(offerDescriptionIds.Select(x => new OfferDescription(x.offerId, x.languageShortName, null!, null!)));
 
-    public OfferDescription AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters = null)
+    public void AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters)
     {
         var offerDescription = _context.Attach(new OfferDescription(offerId, languageShortName, null!, null!)).Entity;
-        setOptionalParameters?.Invoke(offerDescription);
-        return offerDescription;
+        setOptionalParameters.Invoke(offerDescription);
     }
 
     /// <inheritdoc />
