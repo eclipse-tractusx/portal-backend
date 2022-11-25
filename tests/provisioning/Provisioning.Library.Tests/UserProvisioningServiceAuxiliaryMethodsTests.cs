@@ -62,7 +62,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
             _resultComposer.Create());
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<IdentityProviderCategoryId>._)).Returns(
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._)).Returns(
             _sharedIdpComposer.With(x => x.IdpAliase, new [] { _fixture.Create<string>() }).Create());
     }
 
@@ -154,7 +154,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
             .Returns(notfound);
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
@@ -166,9 +166,27 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
+    public async void TestGetCompanyNameSharedIdpAliasDataForApplicationIdNotFound()
+    {
+        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
+            .Returns(notfound);
+
+        var applicationId = _fixture.Create<Guid>();
+
+        var sut = new UserProvisioningService(null!,_portalRepositories);
+
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId, applicationId);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"user {_iamUserId} is not associated with application {applicationId}");
+    }
+
+    [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<string>()).Create());
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
@@ -182,7 +200,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<string>(2)).Create());
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
@@ -198,7 +216,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var companyId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<IdentityProviderCategoryId>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
             .Returns(_sharedIdpComposer
                 .With(x => x.Company,
                     _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()

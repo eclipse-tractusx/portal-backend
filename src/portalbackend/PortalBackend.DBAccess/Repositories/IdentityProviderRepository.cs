@@ -180,10 +180,11 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
                 (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
                 IEnumerable<string> IdpAliase)>
-        GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId) =>
+        GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId) =>
             _context.CompanyUsers
                 .AsNoTracking()
-                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId &&
+                    (applicationId == null || companyUser.Company!.CompanyApplications.Any(application => application.Id == applicationId)))
                 .Select(companyUser => new ValueTuple<(Guid,string?,string?),(Guid,string?,string?,string?),IEnumerable<string>>(
                     new ValueTuple<Guid,string?,string?>(
                         companyUser.Company!.Id,
