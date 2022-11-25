@@ -42,8 +42,6 @@ public interface ICompanyRepository
     
     Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
-    Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId, string FullName)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
-
     /// <summary>
     /// Checks the bpn for existence and returns the associated CompanyId
     /// </summary>

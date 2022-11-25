@@ -248,29 +248,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
         }
 
-        var applicationData = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
-        if (applicationData == default)
-        {
-            throw new NotFoundException($"application {applicationId} does not exist");
-        }
-        var (companyId, companyName, idpAlias, creatorId, fullName) = applicationData;
-        if (creatorId == Guid.Empty)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
-        }
-        if (idpAlias == null)
-        {
-            throw new ConflictException($"shared idp for CompanyApplication {applicationId} not found");
-        }
-
-        var companyNameIdpAliasData = new CompanyNameIdpAliasData(
-            companyId,
-            companyName,
-            null,
-            creatorId,
-            idpAlias,
-            true
-        );
+        var (companyNameIdpAliasData, createdByName) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId, applicationId).ConfigureAwait(false);
 
         IEnumerable<UserRoleData>? userRoleDatas = null;
 
@@ -308,14 +286,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             inviteTemplateName = "inviteWithMessage";
         }
 
-        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
         
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password },
             { "companyName", companyDisplayName },
             { "message", userCreationInfo.Message ?? "" },
-            { "nameCreatedBy", fullName },
+            { "nameCreatedBy", createdByName },
             { "url", _settings.BasePortalAddress },
             { "username", userCreationInfo.eMail },
         };

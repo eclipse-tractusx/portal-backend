@@ -794,40 +794,6 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
-    public async Task TestInviteNewUserNoSharedIdpThrows()
-    {
-        SetupFakesForInvitation();
-        
-        A.CallTo(() => _companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
-            (
-                CompanyId: _fixture.Create<Guid>(),
-                CompanyName: _fixture.Create<string>(),
-                Alias: (string?)null,
-                CompanyUserId: Guid.NewGuid(), // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
-                FullName: _fixture.Create<string>()
-            ));
-
-        var userCreationInfo = _fixture.Create<UserCreationInfoWithMessage>();
-
-        var sut = new RegistrationBusinessLogic(
-            _options,
-            _mailingService,
-            null!,
-            _provisioningManager,
-            _userProvisioningService,
-            null!,
-            _portalRepositories);
-
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _iamUserId);
-
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"shared idp for CompanyApplication {_existingApplicationId} not found");
-
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
-    }
-
-    [Fact]
     public async Task TestInviteNewUserAsyncCreationErrorThrows()
     {
         SetupFakesForInvitation();
@@ -914,20 +880,17 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _userProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);
 
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>._,A<Guid?>._)).Returns(
+            (
+                _fixture.Create<CompanyNameIdpAliasData>(),
+                _fixture.Create<string>()
+            ));
+
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, (Exception?)null)
                 .Create());
-        
-        A.CallTo(() => _companyRepository.GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
-            (
-                CompanyId: _fixture.Create<Guid>(),
-                CompanyName: _fixture.Create<string>(),
-                Alias: _fixture.Create<string>(),
-                CompanyUserId: Guid.NewGuid(), // _fixture.Create<Guid>() will randomly generate empty guids which than fail the validation
-                FullName :_fixture.Create<string>()
-            ));
     }
 
     #endregion
