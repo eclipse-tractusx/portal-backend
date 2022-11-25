@@ -31,6 +31,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -73,6 +74,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         return GetCompanyWithAddressAsyncInternal(applicationId);
     }
+
     private async Task<CompanyWithAddress> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
         var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
@@ -207,6 +209,79 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return DeclinePartnerRequestInternal(applicationId);
     }
 
+    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
+    {
+        var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (skip, take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
+                applications.CountAsync(),
+                applications.OrderByDescending(application => application.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new
+                    {
+                        Application = application,
+                        CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
+                    .FirstOrDefault(companyUser =>
+                        companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
+                        && companyUser.Firstname != null
+                        && companyUser.Lastname != null
+                        && companyUser.Email != null
+                    )
+                    })
+                    .Select(s => new CompanyApplicationWithCompanyUserDetails(
+                        s.Application.Id,
+                        s.Application.ApplicationStatusId,
+                        s.Application.DateCreated,
+                        s.Application.Company!.Name)
+                    {
+                        FirstName = s.CompanyUser!.Firstname,
+                        LastName = s.CompanyUser.Lastname,
+                        Email = s.CompanyUser.Email
+                    })
+                    .AsAsyncEnumerable()));
+    }
+
+    public Task UpdateCompanyBpn(Guid applicationId, string bpn)
+    {
+        var regex = new Regex(@"(\w|\d){16}");
+        if (!regex.IsMatch(bpn))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+        }
+        if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+        }
+        return UpdateCompanyBpnAsync(applicationId, bpn);
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken)
+    {
+        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
+        if (data is null)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exists.");
+        }
+
+        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (!data.IsUserInCompany)
+        {
+            throw new ControllerArgumentException($"User is not assigned to company", nameof(iamUserId));
+        }
+
+        await _bpdmService.TriggerBpnDataPush(data, cancellationToken);
+    }
+
     private async Task<bool> DeclinePartnerRequestInternal(Guid applicationId)
     {
         var companyApplication = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
@@ -244,43 +319,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
         }
-    }
-
-    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
-    {
-        var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
-
-        return Pagination.CreateResponseAsync(
-            page,
-            size,
-            _settings.ApplicationsMaxPageSize,
-            (skip, take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
-                applications.CountAsync(),
-                applications.OrderByDescending(application => application.DateCreated)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(application => new
-                    {
-                        Application = application,
-                        CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
-                    .FirstOrDefault(companyUser =>
-                        companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
-                        && companyUser.Firstname != null
-                        && companyUser.Lastname != null
-                        && companyUser.Email != null
-                    )
-                    })
-                    .Select(s => new CompanyApplicationWithCompanyUserDetails(
-                        s.Application.Id,
-                        s.Application.ApplicationStatusId,
-                        s.Application.DateCreated,
-                        s.Application.Company!.Name)
-                    {
-                        FirstName = s.CompanyUser!.Firstname,
-                        LastName = s.CompanyUser.Lastname,
-                        Email = s.CompanyUser.Email
-                    })
-                    .AsAsyncEnumerable()));
     }
 
     private async Task PostRegistrationWelcomeEmailAsync(IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, Guid applicationId)
@@ -360,25 +398,32 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return roleData;
     }
 
-    /// <inheritdoc />
-    public async Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken)
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
     {
-        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
-        if (data is null)
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+        if (!result.Any(item => item.IsApplicationCompany))
         {
-            throw new NotFoundException($"Application {applicationId} does not exists.");
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+        if (result.Any(item => !item.IsApplicationCompany))
+        {
+            throw new ConflictException($"BusinessPartnerNumber is already assigned to a different company");
+        }
+        var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
+        if (!applicationCompanyData.IsApplicationPending)
+        {
+            throw new ConflictException($"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+        }
+        if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
+        {
+            throw new ConflictException($"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
-        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, c =>
         {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
-        }
+            c.BusinessPartnerNumber = bpn;
+        });
 
-        if (!data.IsUserInCompany)
-        {
-            throw new ControllerArgumentException($"User is not assigned to company", nameof(iamUserId));
-        }
-
-        await _bpdmService.TriggerBpnDataPush(data, cancellationToken);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -32,4 +32,5 @@ public interface IRegistrationBusinessLogic
     Task<bool> DeclinePartnerRequest(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
     Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken);
+    Task UpdateCompanyBpn(Guid applicationId, string bpn);
 }
