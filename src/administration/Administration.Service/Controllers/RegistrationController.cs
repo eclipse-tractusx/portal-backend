@@ -157,5 +157,5 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
         _logic.UpdateCompanyBpn(applicationId, bpn);
-    
+
 }
