@@ -54,7 +54,7 @@ public class UserRepository : IUserRepository
             })
             .AsAsyncEnumerable();
 
-    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser =>
@@ -65,7 +65,7 @@ public class UserRepository : IUserRepository
                 company!.Id,
                 company.Name,
                 company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
+                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Where(document=>documentTypes.Contains(document.DocumentTypeId)).Select(document => new RegistrationDocumentNames(document.DocumentName))),
                 company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                     .Select(consent => new AgreementConsentStatusForRegistrationData(
                         consent.AgreementId, consent.ConsentStatusId)))
@@ -494,4 +494,17 @@ public class UserRepository : IUserRepository
                 companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
                 companyUser.CompanyId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber) =>
+        _dbContext.Companies
+            .AsNoTracking()
+            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId) ||
+                company.BusinessPartnerNumber == businessPartnerNumber)
+            .Select(company => new ValueTuple<bool, bool, string?, Guid>(
+                company.CompanyApplications.Any(application => application.Id == applicationId),
+                company.CompanyStatusId == CompanyStatusId.PENDING,
+                company.BusinessPartnerNumber,
+                company.Id))
+            .AsAsyncEnumerable();
 }

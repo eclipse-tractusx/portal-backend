@@ -528,7 +528,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
     {
-        var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+        var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId, _settings.DocumentTypeIds).ConfigureAwait(false);
         if (registrationData == null)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
