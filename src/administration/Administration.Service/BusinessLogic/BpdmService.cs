@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
@@ -46,36 +47,40 @@ public class BpdmService : IBpdmService
     {
         var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        
+
         try
         {
-            var requestData = new BpdmLegalEntityData(
-                "registrationnumber",
-                new []
-                {
-                    new BpdmIdentifiers("DE216038746", "EU_VAT_ID_DE")
-                },
-                new []
-                {
-                    new BpdmName(data.CompanyName, "REGISTERED", "de")
-                },
-                
-                new BpdmAddress(
-                    new BpdmAddressVersion("WESTERN_LATIN_STANDARD", "de"),
-                    data.AlphaCode2.ToUpper(),
-                    new []
+            var requestData = new BpdmLegalEntityData[]
+            {
+                new(
+                    "registrationnumber",
+                    new[]
                     {
-                        new BpdmPostcode(data.ZipCode, "REGULAR")
+                        new BpdmIdentifiers("DE216038746", "EU_VAT_ID_DE")
                     },
-                    new []
+                    new[]
                     {
-                        new BpdmLocality(data.City, "CITY")
+                        new BpdmName(data.CompanyName, "REGISTERED", "de")
                     },
-                    new []
-                    {
-                        new BpdmThoroughfares(data.Street, "STREET")
-                    })
-                );
+
+                    new BpdmAddress(
+                        new BpdmAddressVersion("WESTERN_LATIN_STANDARD", "de"),
+                        data.AlphaCode2,
+                        new[]
+                        {
+                            new BpdmPostcode(data.ZipCode, "REGULAR")
+                        },
+                        new[]
+                        {
+                            new BpdmLocality(data.City, "CITY")
+                        },
+                        new[]
+                        {
+                            new BpdmThoroughfares(data.Street, "STREET")
+                        })
+                )
+            };
+        
             var result = await _httpClient.PutAsJsonAsync("api/catena/input/legal-entities", requestData, cancellationToken).ConfigureAwait(false);
             if (result.IsSuccessStatusCode)
                 return true;
