@@ -34,9 +34,9 @@ public record BpdmIdentifiers(
     [property: JsonPropertyName("type")] string Type);
 
 public record BpdmName(
-    [property: JsonPropertyName("value")] string? Value,
-    [property: JsonPropertyName("type")] string? Type,
-    [property: JsonPropertyName("language")] string? Language);
+    [property: JsonPropertyName("value")] string Value,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("language")] string Language);
 
 public record BpdmAddress(
     [property: JsonPropertyName("version")] BpdmAddressVersion Version,
