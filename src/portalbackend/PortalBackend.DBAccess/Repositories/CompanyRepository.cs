@@ -73,20 +73,6 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => new ValueTuple<string,Guid>(company!.Name, company.Id))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
-        _context.Companies.AsNoTracking()
-            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(company => new ValueTuple<Guid,string,string?,Guid>(
-                company.Id,
-                company.Name,
-                company.IdentityProviders
-                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault(),
-                company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id
-            ))
-            .SingleOrDefaultAsync();
-
     /// <inheritdoc />
     public Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber) =>
         _context.Companies
