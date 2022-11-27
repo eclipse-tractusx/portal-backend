@@ -31,6 +31,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -355,5 +356,48 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return roleData;
+    }
+
+    public Task UpdateCompanyBpn(Guid applicationId, string bpn)
+    {
+        var regex = new Regex(@"(\w|\d){16}");
+        if (!regex.IsMatch(bpn))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+        }
+        if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+        }
+        return UpdateCompanyBpnAsync(applicationId, bpn);
+    }
+
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
+    {
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+        if (!result.Any(item => item.IsApplicationCompany))
+        {
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+        if (result.Any(item => !item.IsApplicationCompany))
+        {
+            throw new ConflictException($"BusinessPartnerNumber is already assigned to a different company");
+        }
+        var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
+        if (!applicationCompanyData.IsApplicationPending)
+        {
+            throw new ConflictException($"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+        }
+        if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
+        {
+            throw new ConflictException($"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, c =>
+        {
+            c.BusinessPartnerNumber = bpn;
+        });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
