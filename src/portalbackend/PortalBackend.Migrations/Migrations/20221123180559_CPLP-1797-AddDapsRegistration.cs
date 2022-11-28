@@ -18,25 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+#nullable disable
 
-public static class FormFileHelper
+namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public static IFormFile GetFormFile(string content, string fileName, string contentType)
+    public partial class CPLP1797AddDapsRegistration : Migration
     {
-        var stream = new MemoryStream();
-        var writer = new StreamWriter(stream);
-        writer.Write(content);
-        writer.Flush();
-        stream.Position = 0;
-
-        var headers = new HeaderDictionary {{HeaderNames.ContentType, contentType}};
-        return new FormFile(stream, 0, stream.Length, fileName.Split(".").First(), fileName)
+        protected override void Up(MigrationBuilder migrationBuilder)
         {
-            Headers = headers 
-        };
+            migrationBuilder.AddColumn<bool>(
+                name: "daps_registration_successful",
+                schema: "portal",
+                table: "connectors",
+                type: "boolean",
+                nullable: true);
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "daps_registration_successful",
+                schema: "portal",
+                table: "connectors");
+        }
     }
 }

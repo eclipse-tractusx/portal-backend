@@ -62,16 +62,13 @@ public class UserBusinessLogicTests
     private readonly string _iamUserId;
     private readonly string _adminIamUser;
     private readonly Guid _companyUserId;
-    private readonly Guid _companyId;
     private readonly Guid _validOfferId;
-    private readonly Guid _noTargetIamUserSet;
     private readonly string _createdCentralUserId;
     private readonly string _displayName;
     private readonly ICollection<CompanyUserAssignedRole> _companyUserAssignedRole = new HashSet<CompanyUserAssignedRole>();
     private readonly Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Func<CompanyUserAccountData,CompanyUserAccountData> _companyUserSelectFunction;
     private readonly Exception _error;
-    private readonly Random _random;
 
     public UserBusinessLogicTests()
     {
@@ -79,8 +76,6 @@ public class UserBusinessLogicTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-        _random = new Random();
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
@@ -102,9 +97,7 @@ public class UserBusinessLogicTests
         _iamUserId = _fixture.Create<string>();
         _adminIamUser = _fixture.Create<string>();
         _companyUserId = _fixture.Create<Guid>();
-        _companyId = _fixture.Create<Guid>();
         _validOfferId = _fixture.Create<Guid>();
-        _noTargetIamUserSet = _fixture.Create<Guid>();
         _createdCentralUserId = _fixture.Create<string>();
         _displayName = _fixture.Create<string>();
 
@@ -117,7 +110,7 @@ public class UserBusinessLogicTests
     #region CreateOwnCompanyUsersAsync
 
     [Fact]
-    public async void TestUserCreationAllSuccess()
+    public async Task TestUserCreationAllSuccess()
     {
         SetupFakesForUserCreation(true);
 
@@ -143,7 +136,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationCreationError()
+    public async Task TestUserCreationCreationError()
     {
         SetupFakesForUserCreation(true);
 
@@ -193,7 +186,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationCreationThrows()
+    public async Task TestUserCreationCreationThrows()
     {
         SetupFakesForUserCreation(true);
 
@@ -240,7 +233,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationSendMailError()
+    public async Task TestUserCreationSendMailError()
     {
         SetupFakesForUserCreation(true);
 
@@ -281,7 +274,7 @@ public class UserBusinessLogicTests
     #region CreateOwnCompanyIdpUserAsync
 
     [Fact]
-    public async void TestCreateOwnCompanyIdpUserAsyncSuccess()
+    public async Task TestCreateOwnCompanyIdpUserAsyncSuccess()
     {
         SetupFakesForUserCreation(false);
 
@@ -303,7 +296,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestCreateOwnCompanyIdpUserAsyncError()
+    public async Task TestCreateOwnCompanyIdpUserAsyncError()
     {
         SetupFakesForUserCreation(false);
 
@@ -332,7 +325,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestCreateOwnCompanyIdpUserAsyncThrows()
+    public async Task TestCreateOwnCompanyIdpUserAsyncThrows()
     {
         SetupFakesForUserCreation(false);
 
@@ -357,7 +350,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestCreateOwnCompanyIdpUserAsyncMailingErrorLogs()
+    public async Task TestCreateOwnCompanyIdpUserAsyncMailingErrorLogs()
     {
         SetupFakesForUserCreation(false);
 
@@ -385,7 +378,7 @@ public class UserBusinessLogicTests
     #region DeleteOwnUserAsync
 
     [Fact]
-    public async void TestDeleteOwnUserSuccess()
+    public async Task TestDeleteOwnUserSuccess()
     {
         SetupFakesForUserDeletion();
 
@@ -399,7 +392,7 @@ public class UserBusinessLogicTests
             _options
         );
 
-        var result = await sut.DeleteOwnUserAsync(_companyUserId, _iamUserId).ConfigureAwait(false);
+        await sut.DeleteOwnUserAsync(_companyUserId, _iamUserId).ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappened();
@@ -416,7 +409,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnUserInvalidUserThrows()
+    public async Task TestDeleteOwnUserInvalidUserThrows()
     {
         SetupFakesForUserDeletion();
 
@@ -447,7 +440,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnUserInvalidCompanyUserThrows()
+    public async Task TestDeleteOwnUserInvalidCompanyUserThrows()
     {
         SetupFakesForUserDeletion();
 
@@ -476,7 +469,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnUserErrorDeletingThrows()
+    public async Task TestDeleteOwnUserErrorDeletingThrows()
     {
         SetupFakesForUserDeletion();
         
@@ -762,7 +755,7 @@ public class UserBusinessLogicTests
     #region DeleteOwnCompanyUsersAsync
 
     [Fact]
-    public async void TestDeleteOwnCompanyUsersAsyncSuccess()
+    public async Task TestDeleteOwnCompanyUsersAsyncSuccess()
     {
         SetupFakesForUserDeletion();
 
@@ -792,7 +785,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnCompanyUsersAsyncNoSharedIdpSuccess()
+    public async Task TestDeleteOwnCompanyUsersAsyncNoSharedIdpSuccess()
     {
         SetupFakesForUserDeletion();
 
@@ -827,7 +820,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnCompanyUsersInvalidAdminUserThrows()
+    public async Task TestDeleteOwnCompanyUsersInvalidAdminUserThrows()
     {
         SetupFakesForUserDeletion();
 
@@ -859,7 +852,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnCompanyUsersAsyncError()
+    public async Task TestDeleteOwnCompanyUsersAsyncError()
     {
         SetupFakesForUserDeletion();
 
@@ -917,7 +910,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async void TestDeleteOwnCompanyUsersAsyncNoSharedIdpError()
+    public async Task TestDeleteOwnCompanyUsersAsyncNoSharedIdpError()
     {
         SetupFakesForUserDeletion();
 

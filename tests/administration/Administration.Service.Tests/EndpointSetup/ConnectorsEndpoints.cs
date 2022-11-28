@@ -18,29 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Microsoft.Extensions.FileProviders;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-var VERSION = "v2";
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.EnpointSetup;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+public class ConnectorsEndpoints
 {
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", false, false);
+    private readonly HttpClient _client;
+
+    public static string Path => Paths.Connectors;
+
+    public ConnectorsEndpoints(HttpClient client)
+    {
+        this._client = client;
+    }
+
+    public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
+        return await this._client.SendAsync(request);
+    }
 }
-
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddPortalRepositories(builder.Configuration);
-
-builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
-
-builder.Build()
-    .CreateApp<Program>("notification", VERSION)
-    .Run();
