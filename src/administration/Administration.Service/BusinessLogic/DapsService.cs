@@ -22,7 +22,7 @@ public class DapsService : IDapsService
     }
 
     /// <inheritdoc />
-    public async Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, string businessPartnerNumber, IFormFile formFile, bool suppress, CancellationToken cancellationToken)
+    public async Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -40,21 +40,15 @@ public class DapsService : IDapsService
         {
             var response = await _httpClient.PostAsync(_settings.DapsUrl, multiPartStream, cancellationToken)
                 .ConfigureAwait(false);
-            var successfulCall = response.IsSuccessStatusCode;
-            if (!suppress)
+            if (!response.IsSuccessStatusCode)
             {
                 throw new ServiceException("Daps Service Call failed", response.StatusCode);
             }
 
-            return successfulCall;
+            return true;
         }
         catch (Exception ex)
         {
-            if (suppress)
-            {
-                return false;
-            }
-
             throw new ServiceException("Daps Service Call failed", ex);
         }
     }
