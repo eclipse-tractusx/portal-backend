@@ -18,29 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Microsoft.Extensions.FileProviders;
 
-var VERSION = "v2";
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+public static class DapsServiceCollectionExtension
 {
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", false, false);
+    public static IServiceCollection AddDapsService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<DapsSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<DapsService>>();
+
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<DapsSettings>>();
+        services.AddHttpClient(nameof(DapsService), c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.DapsUrl);
+        }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
+        services.AddTransient<IDapsService, DapsService>();
+
+        return services;
+    }
 }
-
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddPortalRepositories(builder.Configuration);
-
-builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
-
-builder.Build()
-    .CreateApp<Program>("notification", VERSION)
-    .Run();

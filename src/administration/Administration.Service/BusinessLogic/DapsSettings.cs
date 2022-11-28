@@ -18,29 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Microsoft.Extensions.FileProviders;
+using System.ComponentModel.DataAnnotations;
 
-var VERSION = "v2";
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
+/// <summary>
+/// Settings used in business logic concerning daps.
+/// </summary>
+public class DapsSettings
 {
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", false, false);
+    /// <summary>
+    /// Daps endpoint.
+    /// </summary>
+    [Required]
+    public string DapsUrl { get; set; } = null!;
 }
-
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddPortalRepositories(builder.Configuration);
-
-builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
-
-builder.Build()
-    .CreateApp<Program>("notification", VERSION)
-    .Run();

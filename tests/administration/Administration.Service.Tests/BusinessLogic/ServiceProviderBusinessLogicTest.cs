@@ -171,7 +171,7 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
 
         //Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        await Assert.ThrowsAsync<NotFoundException>(Action);
     }
 
     #endregion
@@ -194,23 +194,6 @@ public class ServiceProviderBusinessLogicTest
 
     [Fact]
     public async Task UpdateServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
-    {
-        //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
-        var serviceProviderDetailDataId = Guid.NewGuid();
-        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-            
-        //Act
-        async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithNotExistingServiceProviderCompanyDetails_ThrowsNotFoundException()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
