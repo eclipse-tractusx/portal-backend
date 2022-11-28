@@ -57,6 +57,8 @@ public class Connector
     [StringLength(2, MinimumLength = 2)]
     public string LocationId { get; set; }
 
+    public bool? DapsRegistrationSuccessful { get; set; }
+
     // Navigation properties
     public virtual ConnectorType? Type { get; set; }
     public virtual ConnectorStatus? Status { get; set; }
