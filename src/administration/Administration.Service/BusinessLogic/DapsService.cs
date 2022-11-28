@@ -1,6 +1,26 @@
-using System.Net.Http.Headers;
-using System.Web;
+/********************************************************************************
+ * Copyright (c) 2021,2022 BMW Group AG
+ * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
+using System.Net.Http.Headers;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -13,7 +33,6 @@ public class DapsService : IDapsService
     /// Creates a new instance of <see cref="DapsService"/>
     /// </summary>
     /// <param name="httpClientFactory">Factory to create httpClients</param>
-    /// <param name="options">The options</param>
     public DapsService(IHttpClientFactory httpClientFactory)
     {
         _httpClient = httpClientFactory.CreateClient(nameof(DapsService));
@@ -24,10 +43,7 @@ public class DapsService : IDapsService
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        if (!connectorUrl.StartsWith("http://") && !connectorUrl.StartsWith("https://"))
-        {
-            throw new ArgumentException("The ConnectorUrl must either start with http:// or https://", nameof(connectorUrl));
-        }
+        UrlHelper.ValidateHttpUrl(connectorUrl, () => nameof(connectorUrl));
 
         try
         {
@@ -38,7 +54,7 @@ public class DapsService : IDapsService
 
             multiPartStream.Add(new StringContent(clientName), "clientName");
             multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
-            multiPartStream.Add(new StringContent(HttpUtility.UrlEncode(Path.Combine(connectorUrl, businessPartnerNumber))), "referringConnector");
+            multiPartStream.Add(new StringContent(UrlHelper.AppendToPathEncoded(connectorUrl, businessPartnerNumber)), "referringConnector");
 
             var response = await _httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
                 .ConfigureAwait(false);
