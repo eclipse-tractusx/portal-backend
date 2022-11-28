@@ -212,9 +212,18 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (file is not null)
         {
-            var dapsCallSuccessful = await _dapsService
-                .EnableDapsAuthAsync(name, accessToken, connectorUrl, businessPartnerNumber, file, true, cancellationToken)
-                .ConfigureAwait(false);
+            var dapsCallSuccessful = false;
+            try
+            {
+                dapsCallSuccessful = await _dapsService
+                    .EnableDapsAuthAsync(name, accessToken, connectorUrl, businessPartnerNumber, file, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (ServiceException)
+            {
+                // No error should be visible for the user
+            }
+
             connectorsRepository.AttachAndModifyConnector(createdConnector.Id, con =>
             {
                 con.DapsRegistrationSuccessful = dapsCallSuccessful;
@@ -265,7 +274,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         var connectorData = connector.ConnectorInformationData;
         var dapsCallSuccessful = await _dapsService
-            .EnableDapsAuthAsync(connectorData.Name, accessToken, connectorData.Url, connectorData.Bpn, certificate, false, cancellationToken)
+            .EnableDapsAuthAsync(connectorData.Name, accessToken, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
             .ConfigureAwait(false);
         connectorsRepository.AttachAndModifyConnector(connectorId, con =>
         {

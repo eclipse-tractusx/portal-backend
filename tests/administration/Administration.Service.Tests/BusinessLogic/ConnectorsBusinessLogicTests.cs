@@ -107,7 +107,7 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<bool>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -136,6 +136,24 @@ public class ConnectorsBusinessLogicTests
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         exception.Message.Should().Be($"provider company {CompanyWithoutBpnId} has no businessPartnerNumber assigned");
+    }
+
+    [Fact]
+    public async Task CreateConnectorAsync_WithFailingDapsService_ReturnsCreatedConnectorData()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", ConnectorStatusId.ACTIVE, "de", file);
+        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._,
+            A<IFormFile>._, A<CancellationToken>._)).Throws(new ServiceException("Service failed"));
+
+        // Act
+        var result = await _logic.CreateConnectorAsync(connectorInput, AccessToken, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        _connectors.Should().HaveCount(1);
+        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -170,7 +188,7 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<bool>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
     
     [Fact]
@@ -186,7 +204,7 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         _connectors.Should().HaveCount(1);
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<bool>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -247,7 +265,7 @@ public class ConnectorsBusinessLogicTests
         await _logic.TriggerDapsAsync(ExistingConnectorId, file, AccessToken, IamUserId, CancellationToken.None).ConfigureAwait(false);
         
         // Assert
-        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<bool>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
