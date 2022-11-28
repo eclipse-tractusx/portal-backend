@@ -162,9 +162,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(false);
         if (offerSubscriptionStateId == default)
         {
-            var offerSubscription = offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
-                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
-            return offerSubscription.Id;
+            return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
+                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
         }
 
         if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)

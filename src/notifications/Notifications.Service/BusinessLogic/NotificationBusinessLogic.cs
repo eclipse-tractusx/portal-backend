@@ -26,7 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
 
 /// <inheritdoc />
 public class NotificationBusinessLogic : INotificationBusinessLogic

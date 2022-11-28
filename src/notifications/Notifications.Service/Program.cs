@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Microsoft.Extensions.FileProviders;
 
