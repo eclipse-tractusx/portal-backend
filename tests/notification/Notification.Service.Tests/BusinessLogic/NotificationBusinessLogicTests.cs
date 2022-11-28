@@ -542,11 +542,11 @@ public class NotificationBusinessLogicTests
         var readPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails.Skip(skip).Take(take)));
         var notificationsPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
         
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, null, A<NotificationSorting>._))
             .Returns(unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, null, A<NotificationSorting>._))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, null, A<NotificationSorting>._))
             .Returns(notificationsPaging);
     }
 

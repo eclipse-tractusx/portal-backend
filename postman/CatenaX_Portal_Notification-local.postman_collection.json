@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e0846dbb-7db8-43a0-81ba-0d9716d5baca",
+		"_postman_id": "468af6df-3ad5-45cd-8d22-3df8bcfefad4",
 		"name": "CatenaX_Portal_Notification-local",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -93,16 +93,6 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -151,16 +141,6 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -196,20 +176,10 @@
 		{
 			"name": "Get Notifications",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/notification?notificationTypeId=2&isRead=false",
+					"raw": "https://localhost:5001/api/notification",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -218,16 +188,6 @@
 					"path": [
 						"api",
 						"notification"
-					],
-					"query": [
-						{
-							"key": "notificationTypeId",
-							"value": "2"
-						},
-						{
-							"key": "isRead",
-							"value": "false"
-						}
 					]
 				}
 			},
@@ -236,16 +196,6 @@
 		{
 			"name": "Get Notifications Count",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -267,16 +217,6 @@
 		{
 			"name": "Get Unread Notifications Count",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -304,16 +244,32 @@
 		{
 			"name": "Get Notifications (Unread)",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/notification?isRead=false",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"notification"
+					],
+					"query": [
 						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
+							"key": "isRead",
+							"value": "false"
 						}
 					]
-				},
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Notifications (Topic filtered)",
+			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -340,16 +296,6 @@
 		{
 			"name": "Set Notification to Read",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "PUT",
 				"header": [],
 				"url": {
@@ -378,16 +324,6 @@
 		{
 			"name": "Delete Notifications",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "DELETE",
 				"header": [],
 				"url": {
@@ -405,8 +341,39 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Get Notifications Details Count",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/notification/count-details",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"notification",
+						"count-details"
+					]
+				}
+			},
+			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{keycloakToken}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",

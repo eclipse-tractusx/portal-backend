@@ -72,14 +72,14 @@ public class ServiceControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<NotificationDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<NotificationDetailData>(5));
-        A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<string>._, A<bool?>._, A<NotificationTypeId?>._, A<NotificationSorting?>._))
+        A.CallTo(() => _logic.GetNotificationsAsync(A<int>._, A<int>._, A<string>._, A<bool?>._, A<NotificationTypeId?>._,  A<NotificationTopicId?>._, A<NotificationSorting?>._))
             .ReturnsLazily(()=> paginationResponse);
 
         //Act
         var result = await this._controller.GetNotifications().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<string>._, A<bool?>._, A<NotificationTypeId?>._, A<NotificationSorting?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<string>._, A<bool?>._, A<NotificationTypeId?>._, A<NotificationTopicId?>._, A<NotificationSorting?>._)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<NotificationDetailData>>(result);
         result.Content.Should().HaveCount(5);
     }
