@@ -13,14 +13,13 @@ public class DapsService : IDapsService
     /// Creates a new instance of <see cref="DapsService"/>
     /// </summary>
     /// <param name="httpClientFactory">Factory to create httpClients</param>
-    /// <param name="options">The options</param>
     public DapsService(IHttpClientFactory httpClientFactory)
     {
         _httpClient = httpClientFactory.CreateClient(nameof(DapsService));
     }
 
     /// <inheritdoc />
-    public async Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
+    public Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -29,16 +28,23 @@ public class DapsService : IDapsService
             throw new ArgumentException("The ConnectorUrl must either start with http:// or https://", nameof(connectorUrl));
         }
 
+        return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
+    }
+
+    private async Task<bool> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
+        IFormFile formFile, CancellationToken cancellationToken)
+    {
         try
         {
             var multiPartStream = new MultipartFormDataContent();
-        
+
             using var stream = formFile.OpenReadStream();
             multiPartStream.Add(new StreamContent(stream), "file", formFile.FileName);
 
             multiPartStream.Add(new StringContent(clientName), "clientName");
             multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
-            multiPartStream.Add(new StringContent(HttpUtility.UrlEncode(Path.Combine(connectorUrl, businessPartnerNumber))), "referringConnector");
+            multiPartStream.Add(new StringContent(HttpUtility.UrlEncode(Path.Combine(connectorUrl, businessPartnerNumber))),
+                "referringConnector");
 
             var response = await _httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
                 .ConfigureAwait(false);
