@@ -224,10 +224,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 // No error should be visible for the user
             }
 
-            connectorsRepository.AttachAndModifyConnector(createdConnector.Id, con =>
-            {
-                con.DapsRegistrationSuccessful = dapsCallSuccessful;
-            });
+            createdConnector.DapsRegistrationSuccessful = dapsCallSuccessful;
         }
 
         var documentId = await _sdFactoryService
