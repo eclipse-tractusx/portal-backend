@@ -31,26 +31,25 @@ public class UrlHelper
     {
         try
         {
-            var bar = new Uri(url);
-            if (!bar.IsAbsoluteUri)
+            var uri = new Uri(url);
+            if (!uri.IsAbsoluteUri)
             {
                 throw new ControllerArgumentException($"url {url} must be an absolute Url", getUrlParameterName());
             }
 
-            if (!ValidUriSchemes.Contains(bar.Scheme))
+            if (!ValidUriSchemes.Contains(uri.Scheme))
             {
                 var parameterName = getUrlParameterName();
                 throw new ControllerArgumentException($"url {url} must either start with http:// or https://", getUrlParameterName());
             }
 
-            if (!bar.IsWellFormedOriginalString())
+            if (!uri.IsWellFormedOriginalString())
             {
                 throw new ControllerArgumentException($"url {url} is not wellformed", getUrlParameterName());
             }
         }
         catch (UriFormatException ufe)
         {
-            var parameterName = getUrlParameterName();
             throw new ControllerArgumentException($"url {url} cannot be parsed: {ufe.Message}", getUrlParameterName());
         }
     }
