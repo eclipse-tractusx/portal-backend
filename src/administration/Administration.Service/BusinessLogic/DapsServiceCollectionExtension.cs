@@ -18,27 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Options;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// View model for connectors.
-/// </summary>
-public record ConnectorData(
-    string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
-    Guid Id,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status);
+public static class DapsServiceCollectionExtension
+{
+    public static IServiceCollection AddDapsService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<DapsSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<DapsService>>();
 
-/// <summary>
-/// Connector information for the daps call.
-/// </summary>
-public record ConnectorInformationData(
-    string Name,
-    string Bpn,
-    Guid Id,
-    string Url);
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<DapsSettings>>();
+        services.AddHttpClient(nameof(DapsService), c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.DapsUrl);
+        }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
+        services.AddTransient<IDapsService, DapsService>();
+
+        return services;
+    }
+}

@@ -18,27 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// View model for connectors.
+/// Settings used in business logic concerning daps.
 /// </summary>
-public record ConnectorData(
-    string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
-    Guid Id,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status);
-
-/// <summary>
-/// Connector information for the daps call.
-/// </summary>
-public record ConnectorInformationData(
-    string Name,
-    string Bpn,
-    Guid Id,
-    string Url);
+public class DapsSettings
+{
+    /// <summary>
+    /// Daps endpoint.
+    /// </summary>
+    [Required]
+    public string DapsUrl { get; set; } = null!;
+}

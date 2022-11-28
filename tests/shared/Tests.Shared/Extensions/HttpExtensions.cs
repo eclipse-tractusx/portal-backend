@@ -20,6 +20,7 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 
@@ -28,7 +29,9 @@ public static class HttpExtensions
     public static async Task<T> GetResultFromContent<T>(this HttpResponseMessage response)
     {
         using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<T>(responseStream).ConfigureAwait(false) ?? throw new InvalidOperationException();
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+        return await JsonSerializer.DeserializeAsync<T>(responseStream, options).ConfigureAwait(false) ?? throw new InvalidOperationException();
     }
     
     public static HttpContent ToFormContent(this string stringContent, string contentType)
