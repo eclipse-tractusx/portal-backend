@@ -35,7 +35,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 [Route("api/administration/[controller]")]
 [ApiController]
 [Produces("application/json")]
-[Consumes("application/json")]
 public class ConnectorsController : ControllerBase
 {
     private readonly IConnectorsBusinessLogic _businessLogic;

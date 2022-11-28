@@ -68,7 +68,7 @@ public class DapsServiceTests
         const string referringConnector = "https://connect-tor.com";
         const string businessPartnerNumber = "BPNL000000000009";
         const string accessToken = "this-is-a-super-secret-secret-not";
-        var service = new DapsService(_options, _httpClientFactory);
+        var service = new DapsService(_httpClientFactory);
 
         // Act
         var result = await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
@@ -89,7 +89,7 @@ public class DapsServiceTests
         const string referringConnector = "https://connect-tor.com";
         const string businessPartnerNumber = "BPNL000000000009";
         const string accessToken = "this-is-a-super-secret-secret-not";
-        var service = new DapsService(_options, _httpClientFactory);
+        var service = new DapsService(_httpClientFactory);
 
         // Act
         async Task Act() => await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
@@ -110,7 +110,7 @@ public class DapsServiceTests
         const string referringConnector = "https://connect-tor.com";
         const string businessPartnerNumber = "BPNL000000000009";
         const string accessToken = "this-is-a-super-secret-secret-not";
-        var service = new DapsService(_options, _httpClientFactory);
+        var service = new DapsService(_httpClientFactory);
 
         // Act
         async Task Act() => await service.EnableDapsAuthAsync(clientName, accessToken, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);

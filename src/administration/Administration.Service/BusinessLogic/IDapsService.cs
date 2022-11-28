@@ -32,10 +32,10 @@ public interface IDapsService
     /// </summary>
     /// <param name="clientName">name of the client</param>
     /// <param name="accessToken">the access token</param>
-    /// <param name="referringConnector">the connectors url with the bpn of the company append to it</param>
+    /// <param name="connectorUrl">the connectors url with the bpn of the company append to it</param>
     /// <param name="businessPartnerNumber">the business partner number</param>
     /// <param name="formFile">The file</param>
     /// <param name="cancellationToken">cancelattion token</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string referringConnector, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
+    Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
 }
