@@ -39,19 +39,24 @@ public class DapsService : IDapsService
     }
 
     /// <inheritdoc />
-    public async Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
+    public Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         UrlHelper.ValidateHttpUrl(connectorUrl, () => nameof(connectorUrl));
 
+        return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
+    }
+
+    private async Task<bool> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
+        IFormFile formFile, CancellationToken cancellationToken)
+    {
         try
         {
-            var multiPartStream = new MultipartFormDataContent();
-        
             using var stream = formFile.OpenReadStream();
-            multiPartStream.Add(new StreamContent(stream), "file", formFile.FileName);
 
+            var multiPartStream = new MultipartFormDataContent();
+            multiPartStream.Add(new StreamContent(stream), "file", formFile.FileName);
             multiPartStream.Add(new StringContent(clientName), "clientName");
             multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
             multiPartStream.Add(new StringContent(UrlHelper.AppendToPathEncoded(connectorUrl, businessPartnerNumber)), "referringConnector");
