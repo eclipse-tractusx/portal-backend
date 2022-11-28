@@ -25,7 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -58,7 +58,7 @@ public class AppReleaseBusinessLogicTest
     private readonly ILanguageRepository _languageRepository;
     private readonly AppsSettings _settings;
     private const string ClientId = "catenax-portal";
-    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
+    private readonly List<Notification> _notifications = new();
     public AppReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });

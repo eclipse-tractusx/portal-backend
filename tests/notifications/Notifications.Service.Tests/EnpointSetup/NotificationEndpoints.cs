@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
 
 public class NotificationEndpoints
 {

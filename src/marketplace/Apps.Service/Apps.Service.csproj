@@ -44,7 +44,7 @@
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-    <ProjectReference Include="..\..\notification\Notification.Library\Notification.Library.csproj" />
+    <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
     <ProjectReference Include="..\Offers.Library\Offers.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
   </ItemGroup>

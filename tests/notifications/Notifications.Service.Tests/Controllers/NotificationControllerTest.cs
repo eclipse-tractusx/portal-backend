@@ -26,11 +26,11 @@ using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Controllers;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.Controllers;
 
 public class ServiceControllerTest
 {

@@ -20,8 +20,10 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -33,8 +35,6 @@ using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using FakeItEasy;
-using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Xunit;
 
@@ -119,14 +119,10 @@ public class OfferServiceTests
 
         var apps = new List<Offer>();
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes(x =>
+            .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
             {
-                var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<OfferTypeId>("offerType");
-                var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
-
-                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
-                action?.Invoke(app);
+                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, offerType);
+                setOptionalParameters?.Invoke(app);
                 apps.Add(app);
             })
             .Returns(new Offer(serviceId, null!, default, default)
@@ -151,14 +147,10 @@ public class OfferServiceTests
 
         var apps = new List<Offer>();
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes(x =>
+            .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
             {
-                var provider = x.Arguments.Get<string>("provider");
-                var appTypeId = x.Arguments.Get<OfferTypeId>("offerType");
-                var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
-
-                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, appTypeId);
-                action?.Invoke(app);
+                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, offerType);
+                setOptionalParameters?.Invoke(app);
                 apps.Add(app);
             })
             .Returns(new Offer(serviceId, null!, default, default)
@@ -273,16 +265,10 @@ public class OfferServiceTests
 
         var consents = new List<Consent>();
         A.CallTo(() => _consentRepository.CreateConsent(A<Guid>._, A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<Action<Consent>?>._))
-            .Invokes(x =>
+            .Invokes((Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields) =>
             {
-                var agreementId = x.Arguments.Get<Guid>("agreementId");
-                var companyId = x.Arguments.Get<Guid>("companyId");
-                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
-                var consentStatusId = x.Arguments.Get<ConsentStatusId>("consentStatusId");
-                var action = x.Arguments.Get<Action<Consent>?>("setupOptionalFields");
-
                 var consent = new Consent(consentId, agreementId, companyId, companyUserId, consentStatusId, DateTimeOffset.UtcNow);
-                action?.Invoke(consent);
+                setupOptionalFields?.Invoke(consent);
                 consents.Add(consent);
             })
             .Returns(new Consent(consentId)
@@ -376,16 +362,10 @@ public class OfferServiceTests
 
         var consents = new List<Consent>();
         A.CallTo(() => _consentRepository.CreateConsent(A<Guid>._, A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<Action<Consent>?>._))
-            .Invokes(x =>
+            .Invokes((Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, Action<Consent>? setupOptionalFields) =>
             {
-                var agreementId = x.Arguments.Get<Guid>("agreementId");
-                var companyId = x.Arguments.Get<Guid>("companyId");
-                var companyUserId = x.Arguments.Get<Guid>("companyUserId");
-                var consentStatusId = x.Arguments.Get<ConsentStatusId>("consentStatusId");
-                var action = x.Arguments.Get<Action<Consent>?>("setupOptionalFields");
-
                 var consent = new Consent(consentId, agreementId, companyId, companyUserId, consentStatusId, DateTimeOffset.UtcNow);
-                action?.Invoke(consent);
+                setupOptionalFields?.Invoke(consent);
                 consents.Add(consent);
             })
             .Returns(new Consent(consentId)
@@ -525,7 +505,7 @@ public class OfferServiceTests
         var clients = new List<IamClient>();
         var appInstances = new List<AppInstance>();
         var appSubscriptionDetails = new List<AppSubscriptionDetail>();
-        var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
+        var notifications = new List<Notification>();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
             .Invokes(x =>
             {
@@ -537,37 +517,26 @@ public class OfferServiceTests
             .Returns(new IamClient(clientId, "cl1"));
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
-            .Invokes(x =>
+            .Invokes((Guid appId, Guid iamClientId) =>
             {
-                var appId = x.Arguments.Get<Guid>("appId");
-                var iamClientId = x.Arguments.Get<Guid>("iamClientId");
-
                 var appInstance = new AppInstance(appInstanceId, appId, iamClientId);
                 appInstances.Add(appInstance);
             })
             .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
         A.CallTo(() => _appSubscriptionDetailRepository.CreateAppSubscriptionDetail(A<Guid>._, A<Action<AppSubscriptionDetail>?>._))
-            .Invokes(x =>
+            .Invokes((Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields) =>
             {
-                var offerSubscriptionId = x.Arguments.Get<Guid>("offerSubscriptionId");
-                var action = x.Arguments.Get<Action<AppSubscriptionDetail>?>("updateOptionalFields");
-
                 var appDetail = new AppSubscriptionDetail(appSubscriptionDetailId, offerSubscriptionId);
-                action?.Invoke(appDetail);
+                updateOptionalFields?.Invoke(appDetail);
                 appSubscriptionDetails.Add(appDetail);
             })
             .Returns(new AppSubscriptionDetail(appSubscriptionDetailId, _validSubscriptionId));
         A.CallTo(() => _notificationReposiotry.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
-                A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
-            .Invokes(x =>
+                A<Action<Notification>?>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
             {
-                var receiverUserId = x.Arguments.Get<Guid>("receiverUserId");
-                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
-                var isRead = x.Arguments.Get<bool>("isRead");
-                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification>?>("setOptionalParameters");
-
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                action?.Invoke(notification);
+                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
         _fixture.Inject(_provisioningManager);
@@ -766,11 +735,8 @@ public class OfferServiceTests
             });
 
         A.CallTo(() => _offerRepository.AttachAndModifyOfferDescription(A<Guid>._, A<string>._, A<Action<OfferDescription>>._)) 
-            .Invokes(x => 
+            .Invokes((Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters) => 
             {
-                var offerId = x.Arguments.Get<Guid>("offerId");
-                var languageShortName = x.Arguments.Get<string>("languageShortName");
-                var setOptionalParameters = x.Arguments.Get<Action<OfferDescription>>("setOptionalParameters");
                 if (!seed.TryGetValue((offerId!, languageShortName!), out var offerDescription))
                 {
                     offerDescription = new OfferDescription(offerId, languageShortName!, null!, null!);
@@ -831,10 +797,8 @@ public class OfferServiceTests
         OfferLicense? modifiedOfferLicense = null;
 
         A.CallTo(() => _offerRepository.AttachAndModifyOfferLicense(offerLicense.OfferLicenseId, A<Action<OfferLicense>>._))
-            .Invokes(x =>
+            .Invokes((Guid offerLicenseId, Action<OfferLicense> setOptionalParameters) =>
             {
-                var offerLicenseId = x.Arguments.Get<Guid>("offerLicenseId");
-                var setOptionalParameters = x.Arguments.Get<Action<OfferLicense>>("setOptionalParameters");
                 modifiedOfferLicense = new OfferLicense(offerLicenseId, null!);
                 setOptionalParameters?.Invoke(modifiedOfferLicense);
             });
