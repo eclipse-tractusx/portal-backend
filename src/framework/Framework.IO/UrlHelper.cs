@@ -23,7 +23,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Framework.IO;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using System.Web;
 
-public class UrlHelper
+public static class UrlHelper
 {
     private static readonly string[] ValidUriSchemes = new [] { "http", "https" };
 
@@ -39,7 +39,6 @@ public class UrlHelper
 
             if (!ValidUriSchemes.Contains(uri.Scheme))
             {
-                var parameterName = getUrlParameterName();
                 throw new ControllerArgumentException($"url {url} must either start with http:// or https://", getUrlParameterName());
             }
 
