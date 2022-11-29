@@ -163,7 +163,7 @@ public class CompanyRepository : ICompanyRepository
                     x.ApplicationStatusId,
                     x.Company!.Name,
                     x.Company!.Address!.CountryAlpha2Code,
-                    x.Company!.Address!.Zipcode!,
+                    x.Company!.Address!.Zipcode,
                     x.Company!.Address!.City,
                     x.Company!.Address!.Streetname,
                     x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))

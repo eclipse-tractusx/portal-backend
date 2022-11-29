@@ -407,7 +407,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (!data.IsUserInCompany)
         {
-            throw new ControllerArgumentException($"User is not assigned to company", nameof(iamUserId));
+            throw new ControllerArgumentException("User is not assigned to company", nameof(iamUserId));
+        }
+
+        if (string.IsNullOrWhiteSpace(data.ZipCode))
+        {
+            throw new ConflictException("ZipCode must not be empty");
         }
 
         var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);

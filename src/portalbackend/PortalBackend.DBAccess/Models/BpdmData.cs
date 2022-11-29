@@ -32,4 +32,4 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="City">City of the company's address.</param>
 /// <param name="Street">Street of the company's address.</param>
 /// <param name="IsUserInCompany"><c>true</c> if the user is part of the company, otherwise <c>false</c>.</param>
-public record BpdmData(CompanyApplicationStatusId ApplicationStatusId, string CompanyName, string AlphaCode2, string ZipCode, string City, string Street, bool IsUserInCompany);
+public record BpdmData(CompanyApplicationStatusId ApplicationStatusId, string CompanyName, string AlphaCode2, string? ZipCode, string City, string Street, bool IsUserInCompany);
