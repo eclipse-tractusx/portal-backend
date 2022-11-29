@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
@@ -43,7 +42,7 @@ public class BpdmService : IBpdmService
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerBpnDataPush(BpdmData data, CancellationToken cancellationToken)
+    public async Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken)
     {
         var token = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
