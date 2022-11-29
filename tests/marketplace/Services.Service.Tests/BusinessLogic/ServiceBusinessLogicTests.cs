@@ -485,7 +485,7 @@ public class ServiceBusinessLogicTests
             }
         };
         var existingOffer = _fixture.Create<Offer>();
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .Invokes(x =>
             {
                 var action = x.Arguments.Get<Action<Offer?>>("setOptionalParameters");
@@ -497,7 +497,7 @@ public class ServiceBusinessLogicTests
         await sut.UpdateServiceAsync(_existingServiceId, data, _iamUser.UserEntityId).ConfigureAwait(false);
         
         // Assert
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<Localization>>._, A<IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)>>._))
             .MustHaveHappenedOnceExactly();

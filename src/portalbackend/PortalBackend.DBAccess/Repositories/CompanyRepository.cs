@@ -49,11 +49,10 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null)
+    public void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters)
     {
         var company = _context.Attach(new Company(companyId, null!, default, default)).Entity;
-        setOptionalParameters?.Invoke(company);
-        return company;
+        setOptionalParameters.Invoke(company);
     }
 
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
@@ -143,11 +142,10 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public ProviderCompanyDetail AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null)
+    public void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters)
     {
         var providerCompanyDetail = _context.Attach(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default)).Entity;
-        setOptionalParameters?.Invoke(providerCompanyDetail);
-        return providerCompanyDetail;
+        setOptionalParameters.Invoke(providerCompanyDetail);
     }
     
     /// <inheritdoc />

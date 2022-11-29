@@ -337,7 +337,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetAppUpdateData(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new []{"de"}, new []{ new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90")}, "19").ConfigureAwait(false);
+        var offerDetail = await sut.GetAppUpdateData(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new []{"de"}, new []{ new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90")}).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();

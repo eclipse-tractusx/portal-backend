@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Notification.Service</AssemblyName>
+        <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Notifications.Service</AssemblyName>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -29,7 +29,7 @@
         <DockerfileContext>..\..\..</DockerfileContext>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <UserSecretsId>53be9d36-5a45-441f-8f48-772ae6e64ca2</UserSecretsId>
-        <RootNamespace>Org.CatenaX.Ng.Portal.Backend.Notification.Service</RootNamespace>
+        <RootNamespace>Org.CatenaX.Ng.Portal.Backend.Notifications.Service</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
