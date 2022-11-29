@@ -177,7 +177,6 @@ public class CompanyRepository : ICompanyRepository
             .Where(x => x.Id == applicationId)
             .Select(x => new BpdmData(
                     x.ApplicationStatusId,
-                    x.Company!.BusinessPartnerNumber!,
                     x.Company!.Name,
                     x.Company!.Address!.CountryAlpha2Code,
                     x.Company!.Address!.Zipcode!,

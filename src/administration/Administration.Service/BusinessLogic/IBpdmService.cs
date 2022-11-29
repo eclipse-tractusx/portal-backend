@@ -13,5 +13,5 @@ public interface IBpdmService
     /// <param name="data">The bpdm data</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
-    Task<bool> TriggerBpnDataPush(BpdmData data, CancellationToken cancellationToken);
+    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
 }

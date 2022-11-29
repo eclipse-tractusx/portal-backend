@@ -246,7 +246,7 @@ public class RegistrationBusinessLogicTest
         await _logic.TriggerBpnDataPushAsync(IamUserId, ApplicationId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _bpdmService.TriggerBpnDataPush(data, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
     
     [Fact]
@@ -271,7 +271,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var createdApplicationId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
-            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, null!, true));
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, true));
 
         // Act
         async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
@@ -288,7 +288,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = Guid.NewGuid();
         var wrongUserId = Guid.NewGuid().ToString();
         A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(wrongUserId, applicationId))
-            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, null!, false));
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
 
         // Act
         async Task Act() => await _logic.TriggerBpnDataPushAsync(wrongUserId, applicationId, CancellationToken.None).ConfigureAwait(false);

@@ -18,18 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// View model of an application's detailed data for the bpdm.
 /// </summary>
-/// <param name="ApplicationStatusId">Status of the application.</param>
 /// <param name="CompanyName">Name of the company.</param>
 /// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
 /// <param name="ZipCode">Zipcode of the company's address.</param>
 /// <param name="City">City of the company's address.</param>
 /// <param name="Street">Street of the company's address.</param>
-/// <param name="IsUserInCompany"><c>true</c> if the user is part of the company, otherwise <c>false</c>.</param>
-public record BpdmData(CompanyApplicationStatusId ApplicationStatusId, string CompanyName, string AlphaCode2, string ZipCode, string City, string Street, bool IsUserInCompany);
+public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);

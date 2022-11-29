@@ -113,7 +113,7 @@ public class BpdmServiceTests
     public async Task TriggerBpnDataPush_WithValidData_DoesNotThrowException()
     {
         // Arrange
-        var data = _fixture.Create<BpdmData>();
+        var data = _fixture.Create<BpdmTransferData>();
         SetupAuthClient();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
@@ -136,7 +136,7 @@ public class BpdmServiceTests
     public async Task TriggerBpnDataPush_WithInvalidData_ThrowsServiceException()
     {
         // Arrange
-        var data = _fixture.Create<BpdmData>();
+        var data = _fixture.Create<BpdmTransferData>();
         SetupAuthClient();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock)
