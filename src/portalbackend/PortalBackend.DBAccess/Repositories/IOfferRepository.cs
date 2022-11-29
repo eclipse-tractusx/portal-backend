@@ -304,13 +304,12 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool OfferExists, string? AppName, Guid CompanyUserId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Retireve and Validate Offer Status for App
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusInReview, string OfferName)> GetOfferStatusDataByIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId);
+    Task<(bool IsStatusInReview, string OfferName)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId);
 }
