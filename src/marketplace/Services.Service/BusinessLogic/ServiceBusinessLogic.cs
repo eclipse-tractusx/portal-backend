@@ -150,12 +150,18 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         await _offerService.ValidateSalesManager(data.SalesManager, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        offerRepository.AttachAndModifyOffer(serviceId, offer =>
-        {
-            offer.Name = data.Title;
-            offer.SalesManagerId = data.SalesManager;
-            offer.ContactEmail = data.ContactEmail;
-        });
+        offerRepository.AttachAndModifyOffer(
+            serviceId,
+            offer =>
+            {
+                offer.Name = data.Title;
+                offer.SalesManagerId = data.SalesManager;
+                offer.ContactEmail = data.ContactEmail;
+            },
+            offer =>
+            {
+                offer.SalesManagerId = Guid.Empty;
+            });
 
         _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), serviceData.Descriptions);
         _offerService.CreateOrUpdateOfferLicense(serviceId, data.Price, serviceData.OfferLicense);

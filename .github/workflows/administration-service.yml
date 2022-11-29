@@ -8,7 +8,7 @@ on:
       - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/mailing/**'
-      - 'src/notification/**'
+      - 'src/notifications/**'
       - 'src/portalbackend/**'
       - 'src/provisioning/**'
       # workflow file

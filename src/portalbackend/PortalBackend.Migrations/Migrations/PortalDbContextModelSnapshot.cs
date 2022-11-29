@@ -1573,6 +1573,10 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("connector_url");
 
+                    b.Property<bool?>("DapsRegistrationSuccessful")
+                        .HasColumnType("boolean")
+                        .HasColumnName("daps_registration_successful");
+
                     b.Property<Guid?>("HostId")
                         .HasColumnType("uuid")
                         .HasColumnName("host_id");
