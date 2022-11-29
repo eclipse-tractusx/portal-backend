@@ -54,7 +54,7 @@ public record ServiceOfferingData(
     string Price,
     string? ThumbnailUrl,
     string? ContactEmail,
-    Guid SalesManager,
+    Guid? SalesManager,
     IEnumerable<OfferingDescription> Descriptions,
     IEnumerable<ServiceTypeId> ServiceTypeIds);
 
