@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
+using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
-using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
+using System.Net;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.IntegrationTests;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.IntegrationTests;
 
 public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController>>
 {

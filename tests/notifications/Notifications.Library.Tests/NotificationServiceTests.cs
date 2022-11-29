@@ -20,16 +20,17 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FakeItEasy;
-using FluentAssertions;
-using Xunit;
 using System.Text.Json;
+using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Library.Tests;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Library.Tests;
 
 public class NotificationServiceTests
 {
@@ -46,7 +47,7 @@ public class NotificationServiceTests
     private readonly IUserRolesRepository _rolesRepository;
     private readonly IUserRepository _userRepository;
     private readonly INotificationRepository _notificationRepository;
-    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
+    private readonly List<Notification> _notifications = new();
 
     public NotificationServiceTests()
     {
@@ -200,17 +201,12 @@ public class NotificationServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId))))
             .Returns(new List<Guid>().ToAsyncEnumerable());
 
-        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
-            .Invokes(x =>
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
             {
-                var receiverId = x.Arguments.Get<Guid>("receiverUserId");
-                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
-                var isRead = x.Arguments.Get<bool>("isRead");
-                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
-
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
+                var notification = new Notification(Guid.NewGuid(), receiverUserId,
                     DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                action?.Invoke(notification);
+                setOptionalParameters?.Invoke(notification);
                 _notifications.Add(notification);
             });
         

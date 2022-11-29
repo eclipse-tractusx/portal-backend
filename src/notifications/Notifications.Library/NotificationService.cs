@@ -23,7 +23,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 
 /// <summary>
 /// Provides methods to create notifications

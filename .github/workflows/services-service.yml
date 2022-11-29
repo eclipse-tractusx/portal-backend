@@ -8,7 +8,7 @@ on:
       - 'src/marketplace/Offers.Library/**'
       - 'src/framework/**'
       - 'src/keycloak/**'
-      - 'src/notification/**'
+      - 'src/notifications/**'
       - 'src/portalbackend/**'
       # workflow file
       - '.github/workflows/services-service.yml'
