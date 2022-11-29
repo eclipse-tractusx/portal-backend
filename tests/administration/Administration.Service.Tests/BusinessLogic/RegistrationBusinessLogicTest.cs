@@ -298,6 +298,27 @@ public class RegistrationBusinessLogicTest
         ex.ParamName.Should().Be("iamUserId");
     }
 
+    [Fact]
+    public async Task TriggerBpnDataPush_WithEmptyZipCode_ThrowsConflictException()
+    {
+        // Arrange
+        var createdApplicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<BpdmData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.IsUserInCompany, true)
+            .With(x => x.ZipCode, (string?)null)
+            .Create();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("ZipCode must not be empty");
+    }
+
     #endregion
     
     #region Setup
