@@ -464,13 +464,12 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(bool OfferExists, bool IsStatusInReview, bool IsProviderCompanyUser, string OfferName)> GetOfferStatusDataByIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId) =>
+    public Task<(bool OfferExists, bool IsStatusInReview, string OfferName)> GetOfferStatusDataByIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.Offers
             .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<bool, bool, bool, string>(
+            .Select(offer => new ValueTuple<bool, bool, string>(
                 true,
                 offer.OfferStatusId == OfferStatusId.IN_REVIEW,
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
                 offer.Name!
             ))
             .SingleOrDefaultAsync();
