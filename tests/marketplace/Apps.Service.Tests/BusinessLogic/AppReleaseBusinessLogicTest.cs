@@ -449,7 +449,7 @@ public class AppReleaseBusinessLogicTest
         var appName = _fixture.Create<string>();
         var requesterId = _fixture.Create<Guid>();
        
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP))
             .ReturnsLazily(() => (true, appName));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(_iamUser.UserEntityId))
             .ReturnsLazily(() => (requesterId));
@@ -467,7 +467,7 @@ public class AppReleaseBusinessLogicTest
         await sut.ApproveAppRequestAsync(appId,_iamUser.UserEntityId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(_iamUser.UserEntityId)).MustHaveHappened();
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();

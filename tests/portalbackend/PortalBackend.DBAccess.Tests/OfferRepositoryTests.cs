@@ -486,7 +486,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var offerDetail = await sut.GetOfferStatusDataByIdAsync(
             new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"),
-            "623770c5-cf38-4b9f-9a35-f8b9ae972e2e",
             OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
