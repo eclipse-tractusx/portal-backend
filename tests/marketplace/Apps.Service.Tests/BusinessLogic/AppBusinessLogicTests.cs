@@ -24,6 +24,7 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
@@ -45,6 +46,8 @@ public class AppBusinessLogicTests
     private readonly IOfferRepository _offerRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IUserRepository _userRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IMailingService _mailingService;
 
     public AppBusinessLogicTests()
     {
@@ -53,13 +56,17 @@ public class AppBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _mailingService = A.Fake<IMailingService>();
+
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _userRepository = A.Fake<IUserRepository>();
+        _notificationRepository = A.Fake<INotificationRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
     }
 
@@ -241,6 +248,105 @@ public class AppBusinessLogicTests
 
         // Assert
         result.Content.Should().HaveCount(5);
+    }
+
+    #endregion
+    
+    #region ActivateOwnCompanyProvidedAppSubscription
+
+    [Fact]
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync_WithNotExistingApp_ThrowsNotFoundException()
+    {
+        // Arrange
+        var notExistingAppId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(notExistingAppId, A<Guid>._, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, bool, string?, Guid, string?, string?>());
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(notExistingAppId, Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<NotFoundException>(Act);
+    }
+
+    [Fact]
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync_IsNoMemberOfCompanyProvidingApp_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, A<string>.That.Not.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, bool, string?, Guid, string?, string?>(null, false, "app 1", Guid.NewGuid(), null, null));
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.Message.Should().Be("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
+    }
+
+    [Fact]
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync_WithActiveApp_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerSubscription = _fixture.Create<OfferSubscription>();
+        offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, bool, string?, Guid, string?, string?>(offerSubscription, true, "app 1", Guid.NewGuid(), null, null));
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.Message.Should().Be("No pending subscription for provided parameters existing.");
+    }
+
+    [Fact]
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync_WithProviderNEmailNotSet_DoesntSendMail()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerSubscription = _fixture.Create<OfferSubscription>();
+        offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, bool, string?, Guid, string?, string?>(offerSubscription, true, "app 1", Guid.NewGuid(), null, null));
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
+
+        // Act
+        await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync_WithProviderEmailSet_SendsMail()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerSubscription = _fixture.Create<OfferSubscription>();
+        offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, bool, string?, Guid, string?, string?>(offerSubscription, true, "app 1", Guid.NewGuid(), "test@email.com", "tony"));
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
+
+        // Act
+        await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.First() == "subscription-activation"))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
