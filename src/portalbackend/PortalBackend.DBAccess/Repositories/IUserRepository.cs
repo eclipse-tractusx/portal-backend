@@ -33,7 +33,7 @@ public interface IUserRepository
     IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
     Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
-    CompanyUser AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? setOptionalParameters = null);
+    void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser> setOptionalParameters);
     IamUser CreateIamUser(Guid companyUserId, string iamUserId);
     IamUser DeleteIamUser(string iamUserId);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<CompanyUserStatusId>? statusIds = null);

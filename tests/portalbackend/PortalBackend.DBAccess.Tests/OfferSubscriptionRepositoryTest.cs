@@ -55,7 +55,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.AttachAndModifyOfferSubscription(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"),
+        sut.AttachAndModifyOfferSubscription(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"),
             sub =>
             {
                 sub.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
@@ -65,8 +65,6 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        results.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
-        results.DisplayName.Should().Be("Modified Name");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);

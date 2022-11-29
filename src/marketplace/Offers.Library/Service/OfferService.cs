@@ -21,7 +21,7 @@
 using System.Text.Json;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
