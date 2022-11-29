@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
@@ -71,7 +72,7 @@ public class AppBusinessLogicTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
 
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
         // Act
         await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
@@ -91,7 +92,7 @@ public class AppBusinessLogicTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
 
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
 
         // Act
@@ -111,7 +112,7 @@ public class AppBusinessLogicTests
         var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, string?, string?, string?>>(5);
         A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
 
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, A.Fake<IOptions<AppsSettings>>());
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, A.Fake<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
         // Act
         var result = await sut.GetAllActiveAppsAsync().ToListAsync().ConfigureAwait(false);
@@ -130,7 +131,7 @@ public class AppBusinessLogicTests
         // Arrange
         var appData = _fixture.CreateMany<(Guid, string?, string, string?, string)>(5);
         A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
         // Act
         var result = await sut.GetAllUserUserBusinessAppsAsync(_fixture.Create<string>()).ToListAsync().ConfigureAwait(false);
@@ -153,7 +154,7 @@ public class AppBusinessLogicTests
         var data = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == appId), A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
-        var sut = new AppsBusinessLogic(null!, null!, offerService, Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(null!, null!, offerService, Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
         // Act
         var result = await sut.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
@@ -175,7 +176,7 @@ public class AppBusinessLogicTests
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
         A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerSubscriptionId);
-        var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService , A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+        var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService , A.Fake<IOfferService>(), Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
         // Act
         var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData, "44638c72-690c-42e8-bd5e-c8ac3047ff82", "THISISAACCESSTOKEN").ConfigureAwait(false);
@@ -207,7 +208,7 @@ public class AppBusinessLogicTests
             .ReturnsLazily(() => offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 
-        var sut = new AppsBusinessLogic(null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
+        var sut = new AppsBusinessLogic(null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
         // Act
         var result = await sut.AutoSetupAppAsync(data, IamUserId).ConfigureAwait(false);
@@ -233,7 +234,7 @@ public class AppBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(appsSettings));
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(appsSettings), A.Fake<MailingService>());
 
         // Act
         var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null).ConfigureAwait(false);

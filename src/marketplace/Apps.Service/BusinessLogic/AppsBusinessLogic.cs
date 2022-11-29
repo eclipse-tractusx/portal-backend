@@ -31,6 +31,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -43,6 +44,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly IMailingService _mailingService;
 
     /// <summary>
     /// Constructor.
@@ -51,11 +53,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="offerSubscriptionService">OfferSubscription Service.</param>
     /// <param name="offerService">Offer service</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings)
+    /// <param name="mailingService">Mailing service</param>
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings, IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
+        _mailingService = mailingService;
         _settings = settings.Value;
     }
 
@@ -171,7 +175,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscription, isMemberOfCompanyProvidingApp, appName, companyUserId) = assignedAppData;
+        var (subscription, isMemberOfCompanyProvidingApp, appName, companyUserId, email, firstname) = assignedAppData;
         if(!isMemberOfCompanyProvidingApp)
         {
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
@@ -195,6 +199,16 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 });
             });
         
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerCustomerName", firstname ?? "User" },
+                { "offerName", appName! },
+                { "url", _settings.BasePortalAddress },
+            };
+            await _mailingService.SendMails(email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
+        }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
