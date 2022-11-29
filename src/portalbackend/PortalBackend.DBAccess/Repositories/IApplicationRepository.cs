@@ -27,7 +27,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 public interface IApplicationRepository
 {
     CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId);
-    CompanyApplication AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication>? setOptionalParameters = null);
+    void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters);
     Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
     void DeleteInvitations(IEnumerable<Guid> invitationIds);
     Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);

@@ -28,7 +28,7 @@ using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -68,7 +68,7 @@ public class RegistrationBusinessLogicTest
     private readonly IFixture _fixture;
     private readonly RegistrationBusinessLogic _logic;
     private readonly RegistrationSettings _settings;
-    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
+    private readonly List<Notification> _notifications = new();
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactory;
     private readonly ICompanyRepository _companyRepository;
@@ -394,7 +394,7 @@ public class RegistrationBusinessLogicTest
                 if (notifications is null) return;
                 foreach (var notificationData in notifications)
                 {
-                    var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), Guid.NewGuid(),
+                    var notification = new Notification(Guid.NewGuid(), Guid.NewGuid(),
                         DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
                     {
                         CreatorUserId = creatorId,

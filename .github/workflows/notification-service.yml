@@ -4,7 +4,7 @@ on:
   push:
     paths:
       # service and transitive paths
-      - 'src/notification/**'
+      - 'src/notifications/**'
       - 'src/framework/**'
       - 'src/keycloak/**'
       - 'src/portalbackend/**'

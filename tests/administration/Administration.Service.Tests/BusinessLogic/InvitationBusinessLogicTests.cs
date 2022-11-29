@@ -92,7 +92,7 @@ public class InvitationBusinessLogicTests
     #region ExecuteInvitation
 
     [Fact]
-    public async void TestExecuteInvitationSuccess()
+    public async Task TestExecuteInvitationSuccess()
     {
         SetupFakes(true);
 
@@ -132,7 +132,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationNoEmailThrows()
+    public async Task TestExecuteInvitationNoEmailThrows()
     {
         SetupFakes(true);
 
@@ -158,7 +158,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationNoOrganisationNameThrows()
+    public async Task TestExecuteInvitationNoOrganisationNameThrows()
     {
         SetupFakes(true);
 
@@ -184,7 +184,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationIamUserNotFoundThrows()
+    public async Task TestExecuteInvitationIamUserNotFoundThrows()
     {
         SetupFakes(true);
 
@@ -212,7 +212,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationCreateUserErrorThrows()
+    public async Task TestExecuteInvitationCreateUserErrorThrows()
     {
         SetupFakes(true);
 
@@ -244,7 +244,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationCreateUserThrowsThrows()
+    public async Task TestExecuteInvitationCreateUserThrowsThrows()
     {
         SetupFakes(true);
 
