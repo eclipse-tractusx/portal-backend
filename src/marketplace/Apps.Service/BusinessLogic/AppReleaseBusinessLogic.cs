@@ -538,7 +538,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
-        if (!appDetails.OfferExists)
+        if (appDetails == default)
         {
             throw new NotFoundException($"Apps not found. Either Not Existing or incorrect offer type");
         }
