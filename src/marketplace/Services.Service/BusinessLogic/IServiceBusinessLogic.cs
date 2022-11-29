@@ -129,4 +129,12 @@ public interface IServiceBusinessLogic
     /// <param name="statusId"></param>
     /// <returns>Pagination of user's company's provided service' statuses.</returns>
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task ApproveServiceRequestAsync(Guid appId, string iamUserId);
 }
