@@ -75,8 +75,9 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
-builder.Services.AddTransient<ISdFactoryService, SdFactoryService>()
-    .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"));
+builder.Services
+    .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
+    .AddDapsService(builder.Configuration.GetSection("Daps"));
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 

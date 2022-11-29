@@ -100,7 +100,7 @@ public class IdentityProviderBusinessLogicTests
     #region UploadOwnCompanyUsersIdentityProviderLinkDataAsync
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncAllUnchangedSuccess()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncAllUnchangedSuccess()
     {
         var numUsers = 5;
 
@@ -132,7 +132,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncWrongContentTypeThrows()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncWrongContentTypeThrows()
     {
         var numUsers = 1;
 
@@ -156,7 +156,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataInvalidUserThrows()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataInvalidUserThrows()
     {
         var numUsers = 1;
 
@@ -180,7 +180,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncEmailChangedSuccess()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncEmailChangedSuccess()
     {
         var numUsers = 5;
 
@@ -251,7 +251,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncSharedIdpLinkChangedError()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncSharedIdpLinkChangedError()
     {
         var numUsers = 5;
 
@@ -303,7 +303,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncOtherIdpLinkChangedSuccess()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncOtherIdpLinkChangedSuccess()
     {
         var numUsers = 5;
 
@@ -354,7 +354,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncUnknownCompanyUserIdError()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncUnknownCompanyUserIdError()
     {
         var numUsers = 5;
 

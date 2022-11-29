@@ -18,27 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.EnpointSetup;
 
-/// <summary>
-/// View model for connectors.
-/// </summary>
-public record ConnectorData(
-    string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
-    Guid Id,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status);
+public class ConnectorsEndpoints
+{
+    private readonly HttpClient _client;
 
-/// <summary>
-/// Connector information for the daps call.
-/// </summary>
-public record ConnectorInformationData(
-    string Name,
-    string Bpn,
-    Guid Id,
-    string Url);
+    public static string Path => Paths.Connectors;
+
+    public ConnectorsEndpoints(HttpClient client)
+    {
+        this._client = client;
+    }
+
+    public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
+        return await this._client.SendAsync(request);
+    }
+}
