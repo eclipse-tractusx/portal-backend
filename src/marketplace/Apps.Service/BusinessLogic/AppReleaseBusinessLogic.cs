@@ -558,8 +558,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         });
         var notificationContent = new
         {
-            appId,
-            appDetails.OfferName
+            OfferId = appId,
+            AppName = appDetails.OfferName
         };
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
