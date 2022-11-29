@@ -203,7 +203,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="200">Return the Users with Role of Sales Manager.</response>
     [HttpGet]
     [Route("ownCompany/salesManager")]
-    [Authorize(Roles = "add_apps")]  
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(iamUserId));

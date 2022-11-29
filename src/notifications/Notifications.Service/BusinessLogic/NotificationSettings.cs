@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
 
 /// <summary>
 /// Settings for the notification service

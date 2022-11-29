@@ -214,13 +214,16 @@ public class IdentityProviderBusinessLogicTests
         var changedEmailResult = (string?)null;
         var lastEditorId = (Guid?)null;
 
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).ReturnsLazily((Guid companyUserId, Action<CompanyUser>? setOptionalParameters) =>
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._))
+            .Invokes(x =>
             {
+                var companyUserId = x.Arguments.Get<Guid>("companyUserId")!;
+                var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
+
                 var companyUser = new CompanyUser(companyUserId,Guid.Empty,default!,default!,Guid.Empty);
                 setOptionalParameters?.Invoke(companyUser);
                 changedEmailResult = companyUser.Email;
                 lastEditorId = companyUser.LastEditorId;
-                return companyUser;
             }
         );
 

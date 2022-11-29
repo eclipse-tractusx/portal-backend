@@ -22,7 +22,7 @@ using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;

@@ -20,21 +20,21 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FakeItEasy;
+using FluentAssertions;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FakeItEasy;
-using FluentAssertions;
-using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.BusinessLogic;
 
 public class NotificationBusinessLogicTests
 {
@@ -79,19 +79,14 @@ public class NotificationBusinessLogicTests
     public async Task CreateNotification_WithValidData_ReturnsCorrectDetails()
     {
         // Arrange
-        var notifications = new List<PortalBackend.PortalEntities.Entities.Notification>();
+        var notifications = new List<Notification>();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
-                A<Action<PortalBackend.PortalEntities.Entities.Notification?>>._))
-            .Invokes(x =>
+                A<Action<Notification?>>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
             {
-                var receiverId = x.Arguments.Get<Guid>("receiverUserId");
-                var notificationTypeId = x.Arguments.Get<NotificationTypeId>("notificationTypeId");
-                var isRead = x.Arguments.Get<bool>("isRead");
-                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
-
-                var notification = new PortalBackend.PortalEntities.Entities.Notification(Guid.NewGuid(), receiverId,
+                var notification = new Notification(Guid.NewGuid(), receiverUserId,
                     DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                action?.Invoke(notification);
+                setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
@@ -374,12 +369,11 @@ public class NotificationBusinessLogicTests
     public async Task SetNotificationStatus_WithMatchingId_ReturnsDetailData(bool isRead)
     {
         // Arrange
-        var notification = new PortalBackend.PortalEntities.Entities.Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, !isRead);
-        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<PortalBackend.PortalEntities.Entities.Notification>?>._))
-            .Invokes(x =>
+        var notification = new Notification(_notificationDetail.Id, Guid.NewGuid(), DateTimeOffset.Now, NotificationTypeId.INFO, !isRead);
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(_notificationDetail.Id, A<Action<Notification>>._))
+            .Invokes((Guid _, Action<Notification> setOptionalParameters) =>
             {
-                var action = x.Arguments.Get<Action<PortalBackend.PortalEntities.Entities.Notification?>>("setOptionalParameter");
-                action?.Invoke(notification);
+                setOptionalParameters.Invoke(notification);
             });
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
         {

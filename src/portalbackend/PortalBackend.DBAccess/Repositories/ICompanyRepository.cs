@@ -36,7 +36,7 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
-    Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null);
+    void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     
@@ -88,7 +88,7 @@ public interface ICompanyRepository
     /// <param name="providerCompanyDetailId">Id of the service provider company details</param>
     /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
     /// <returns></returns>
-    ProviderCompanyDetail AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null);
+    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters);
 
     /// <summary>
     /// Gets the business partner number for the given id

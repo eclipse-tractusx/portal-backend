@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Notification.Service": {
+    "Notifications.Service": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/notification/swagger",
