@@ -312,5 +312,5 @@ public interface IOfferRepository
     /// <param name="iamUserId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, bool IsStatusInReview, bool IsProviderCompanyUser, string OfferName)> GetOfferStatusDataByIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, bool IsStatusInReview, string OfferName)> GetOfferStatusDataByIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId);
 }

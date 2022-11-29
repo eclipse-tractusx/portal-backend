@@ -546,10 +546,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ConflictException($"Apps in InCorrect Status {appDetails.IsStatusInReview} ");
         }
-        if (!appDetails.IsProviderCompanyUser)
-        {
-            throw new ForbiddenException($"User {iamUserId} is not allowed to change the app.");
-        }
+       
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         offerRepository.AttachAndModifyOffer(appId, app =>
