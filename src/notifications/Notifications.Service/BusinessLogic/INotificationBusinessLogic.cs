@@ -22,7 +22,7 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
 
 /// <summary>
 ///     Business logic to work with the notifications

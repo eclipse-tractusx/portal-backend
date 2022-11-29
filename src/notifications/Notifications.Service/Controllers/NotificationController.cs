@@ -23,11 +23,11 @@ using Microsoft.AspNetCore.Mvc;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
+namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Controllers;
 
 /// <summary>
 ///     Controller providing actions for creating, displaying and updating notifications.
