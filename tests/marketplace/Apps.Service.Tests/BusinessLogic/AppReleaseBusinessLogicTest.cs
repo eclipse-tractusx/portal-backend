@@ -441,6 +441,41 @@ public class AppReleaseBusinessLogicTest
         Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
     }
 
+    [Fact]
+    public async Task ApproveAppRequestAsync_ExecutesSuccessfully()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = _fixture.Create<string>();
+        var requesterId = _fixture.Create<Guid>();
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, appName));
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(_iamUser.UserEntityId))
+            .ReturnsLazily(() => (requesterId));
+        _settings.ApproveAppNotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_APPROVAL
+        };
+         _settings.AprroveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new [] { "Sales Manager" } }
+        };
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        //Act
+        await sut.ApproveAppRequestAsync(appId,_iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(_iamUser.UserEntityId)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
+            .MustHaveHappenedOnceExactly();
+       
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
+       
+    }
+
     #endregion
 
     #region Setup
