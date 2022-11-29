@@ -404,8 +404,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 appId,
                 iamUserId,
                 appRequestModel.SupportedLanguageCodes,
-                appRequestModel.UseCaseIds,
-                appRequestModel.Price)
+                appRequestModel.UseCaseIds)
             .ConfigureAwait(false);
         if (appData is null)
         {
@@ -447,7 +446,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.SalesManagerId = appRequestModel.SalesManagerId;
         },
         app => {
-            app.SalesManagerId = Guid.Empty;
+            app.SalesManagerId = appData.SalesManagerId;
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);

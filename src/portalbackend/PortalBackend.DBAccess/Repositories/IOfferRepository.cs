@@ -251,14 +251,12 @@ public interface IOfferRepository
     /// <param name="iamUserId">Id of the current IamUser</param>
     /// <param name="languageCodes">the languageCodes for the app</param>
     /// <param name="useCaseIds">ids of the usecases</param>
-    /// <param name="price">the price</param>
     /// <returns></returns>
     Task<AppUpdateData?> GetAppUpdateData(
         Guid appId,
         string iamUserId,
         IEnumerable<string> languageCodes,
-        IEnumerable<Guid> useCaseIds,
-        string price);
+        IEnumerable<Guid> useCaseIds);
 
     /// <summary>
     /// Updates the licenseText of the given offerLicense

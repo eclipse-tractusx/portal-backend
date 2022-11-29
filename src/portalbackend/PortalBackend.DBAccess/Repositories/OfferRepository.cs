@@ -420,8 +420,7 @@ public class OfferRepository : IOfferRepository
         Guid appId,
         string iamUserId,
         IEnumerable<string> languageCodes,
-        IEnumerable<Guid> useCaseIds, 
-        string price) =>
+        IEnumerable<Guid> useCaseIds) =>
         _context.Offers
             .AsNoTracking()
             .Where(offer => offer.Id == appId && offer.OfferTypeId == OfferTypeId.APP)
@@ -432,7 +431,8 @@ public class OfferRepository : IOfferRepository
                 x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
                 x.UseCases.Select(uc => uc.Id).Where(uc => useCaseIds.Any(uci => uci == uc)),
-                x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault()
+                x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
+                x.SalesManagerId
             ))
             .SingleOrDefaultAsync();
     
