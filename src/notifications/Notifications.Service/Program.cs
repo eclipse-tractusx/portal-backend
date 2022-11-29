@@ -18,21 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.BusinessLogic;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
+using Microsoft.Extensions.FileProviders;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+var VERSION = "v2";
 
-/// <summary>
-/// Provides methods to create notifications
-/// </summary>
-public interface INotificationService
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
 {
-    /// <summary>
-    /// Creates notifications for the given notification type ids with the given content.
-    /// The receiver of the notification will be retrieved by the given roles for the given clients.
-    /// </summary>
-    /// <param name="receiverUserRoles">UserRoles for specified clients</param>
-    /// <param name="creatorId">ID of the creator company user</param>
-    /// <param name="notifications">combination of notification types with content of the notification</param>
-    Task CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications);
+    var provider = new PhysicalFileProvider("/app/secrets");
+    builder.Configuration.AddJsonFile(provider, "appsettings.json", false, false);
 }
+
+builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+                .AddPortalRepositories(builder.Configuration);
+
+builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
+    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
+
+builder.Build()
+    .CreateApp<Program>("notification", VERSION)
+    .Run();

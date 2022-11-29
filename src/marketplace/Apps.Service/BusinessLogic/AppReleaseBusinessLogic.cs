@@ -25,7 +25,7 @@ using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -404,8 +404,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 appId,
                 iamUserId,
                 appRequestModel.SupportedLanguageCodes,
-                appRequestModel.UseCaseIds,
-                appRequestModel.Price)
+                appRequestModel.UseCaseIds)
             .ConfigureAwait(false);
         if (appData is null)
         {
@@ -436,12 +435,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        appRepository.AttachAndModifyOffer(appId, app =>
+        appRepository.AttachAndModifyOffer(
+        appId,
+        app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.OfferStatusId = OfferStatusId.CREATED;
+            app.Provider = appRequestModel.Provider;
             app.SalesManagerId = appRequestModel.SalesManagerId;
+        },
+        app => {
+            app.SalesManagerId = appData.SalesManagerId;
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);

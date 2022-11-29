@@ -53,7 +53,7 @@ public interface IOfferRepository
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
     Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
 
-    Offer AttachAndModifyOffer(Guid offerId, Action<Offer>? setOptionalParameters = null);
+    void AttachAndModifyOffer(Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters = null);
 
     Offer DeleteOffer(Guid offerId);
 
@@ -117,7 +117,7 @@ public interface IOfferRepository
 
     void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds);
 
-    OfferDescription AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription>? setOptionalParameters = null);
+    void AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters);
 
     /// <summary>
     /// Adds <see cref="AppLanguage"/>s to the database
@@ -251,14 +251,12 @@ public interface IOfferRepository
     /// <param name="iamUserId">Id of the current IamUser</param>
     /// <param name="languageCodes">the languageCodes for the app</param>
     /// <param name="useCaseIds">ids of the usecases</param>
-    /// <param name="price">the price</param>
     /// <returns></returns>
     Task<AppUpdateData?> GetAppUpdateData(
         Guid appId,
         string iamUserId,
         IEnumerable<string> languageCodes,
-        IEnumerable<Guid> useCaseIds,
-        string price);
+        IEnumerable<Guid> useCaseIds);
 
     /// <summary>
     /// Updates the licenseText of the given offerLicense
@@ -266,7 +264,7 @@ public interface IOfferRepository
     /// <param name="offerLicenseId">id of the offer license</param>
     /// <param name="setOptionalParameters">action to modify newly attached OfferLicence</param>
     /// <returns>the updated entity</returns>
-    OfferLicense AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense>? setOptionalParameters = null);
+    void AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense> setOptionalParameters);
 
     /// <summary>
     /// Removes the offer assigned offer license from the database

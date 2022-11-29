@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests</AssemblyName>
+        <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests</AssemblyName>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\notification\Notification.Service\Notification.Service.csproj" />
+      <ProjectReference Include="..\..\..\src\notifications\Notifications.Service\Notifications.Service.csproj" />
       <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>

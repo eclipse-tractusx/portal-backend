@@ -323,20 +323,20 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/notification/Notification.Service
+        run: dotnet restore src/notifications/Notifications.Service
 
       - name: Build and publish
         run: |
-          cd src/notification/Notification.Service
+          cd src/notifications/Notifications.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-notification.zip
-          src/notification/Notification.Service/.publish
+          src/notifications/Notifications.Service/.publish
           -x
-          src/notification/Notification.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Notification.Service
+          src/notifications/Notifications.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Notifications.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -349,7 +349,7 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Notification.Service.dll, Org.CatenaX.Ng.Portal.Backend.Framework.Models.dll'
+          include: 'Org.CatenaX.Ng.Portal.Backend.Notifications.Service.dll, Org.CatenaX.Ng.Portal.Backend.Framework.Models.dll'
 
   analyze-services-service:
     runs-on: ubuntu-latest
