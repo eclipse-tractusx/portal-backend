@@ -18,38 +18,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.EnpointSetup;
+using FluentAssertions;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
-using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Service.Controllers;
+using System.Net;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notification.Service.Tests.IntegrationTests;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.IntegrationTests;
 
-public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController>>
+public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTestFactory<ConnectorsController>>
 {
-    private readonly IntegrationTestFactory<NotificationController> _factory;
+    private readonly IntegrationTestFactory<ConnectorsController> _factory;
 
-    public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController> factory)
+    public ConnectorsControllerIntegrationTests(IntegrationTestFactory<ConnectorsController> factory)
     {
         _factory = factory;
     }
 
     [Fact]
-    public async Task NotificationCount_WithTwoUnreadNotifications_ReturnsCorrectAmount()
+    public async Task GetCompanyConnectorsForCurrentUserAsync_WithTwoConnectors_ReturnsCorrectAmount()
     {
         // Arrange
         var client = _factory.CreateClient();
-        var endpoint = new NotificationEndpoints(client);
+        var endpoint = new ConnectorsEndpoints(client);
         
         // Act
-        var response = await endpoint.NotificationCount(false);
+        var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
         
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var count = await response.GetResultFromContent<int>();
-        count.Should().Be(3);
+        var pagination = await response.GetResultFromContent<Pagination.Response<ConnectorData>>();
+        pagination.Content.Should().HaveCount(2);
     }
 }
