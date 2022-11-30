@@ -54,7 +54,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 application.CompanyId,
                 application,
                 application.Company.CompanyAssignedRoles,
-                application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+                application.Company.Consents))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>

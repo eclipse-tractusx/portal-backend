@@ -361,7 +361,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var companyId = companyRoleAgreementConsentData.CompanyId;
         var application = companyRoleAgreementConsentData.CompanyApplication;
         var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
-        var activeConsents = companyRoleAgreementConsentData.Consents;
+        var consents = companyRoleAgreementConsentData.Consents;
 
         var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
             .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementIds)
@@ -398,23 +398,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyRolesRepository.CreateCompanyAssignedRole(companyId, companyRoleIdToAdd);
         }
 
-        foreach (var consentToRemove in activeConsents
-            .Where(activeConsent =>
-                !agreementConsentsToSet.Any(agreementConsent =>
-                    agreementConsent.AgreementId == activeConsent.AgreementId
-                    && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE)))
-        {
-            consentToRemove.ConsentStatusId = ConsentStatusId.INACTIVE;
-        }
-
-        foreach (var agreementConsentToAdd in agreementConsentsToSet
-            .Where(agreementConsent =>
-                agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE
-                && !activeConsents.Any(activeConsent =>
-                    activeConsent.AgreementId == agreementConsent.AgreementId)))
-        {
-            consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
-        }
+        HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, companyUserId);
 
         UpdateApplicationStatus(application, UpdateApplicationSteps.CompanyRoleAgreementConsents);
 
@@ -516,6 +500,42 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null) =>
         _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
+
+    private static void HandleConsent(IEnumerable<Consent> consents, IEnumerable<AgreementConsentStatus> agreementConsentsToSet,
+        IConsentRepository consentRepository, Guid companyId, Guid companyUserId)
+    {
+        var consentsToInactivate = consents
+            .Where(consent =>
+                !agreementConsentsToSet.Any(agreementConsent =>
+                    agreementConsent.AgreementId == consent.AgreementId
+                    && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE));
+        consentRepository.AttachAndModifiesConsents(consentsToInactivate, consent =>
+        {
+            consent.ConsentStatusId = ConsentStatusId.INACTIVE;
+        });
+
+       
+        var consentsToActivate = consents
+            .Where(consent =>
+                agreementConsentsToSet.Any(agreementConsent =>
+                    agreementConsent.AgreementId == consent.AgreementId &&
+                    consent.ConsentStatusId == ConsentStatusId.INACTIVE &&
+                    agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE));
+        consentRepository.AttachAndModifiesConsents(consentsToActivate, consent =>
+        {
+            consent.ConsentStatusId = ConsentStatusId.ACTIVE;
+        });
+
+        foreach (var agreementConsentToAdd in agreementConsentsToSet
+                     .Where(agreementConsent =>
+                         agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE
+                         && !consents.Any(activeConsent =>
+                             activeConsent.AgreementId == agreementConsent.AgreementId)))
+        {
+            consentRepository.CreateConsent(agreementConsentToAdd.AgreementId, companyId, companyUserId,
+                ConsentStatusId.ACTIVE);
+        }
+    }
 
     private static void ValidateCompanyApplicationStatus(CompanyApplicationStatusId status,
         CompanyApplicationUserData applicationUserData)
