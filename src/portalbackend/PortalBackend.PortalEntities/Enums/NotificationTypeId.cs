@@ -98,5 +98,7 @@ public enum NotificationTypeId
     /// <summary>
     /// Role Added for Active App
     /// </summary>
-    APP_ROLE_ADDED = 15
+    APP_ROLE_ADDED = 15,
+
+    SERVICE_RELEASE_APPROVAL = 17
 }
