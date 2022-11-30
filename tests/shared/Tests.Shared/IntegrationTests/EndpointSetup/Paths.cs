@@ -23,4 +23,5 @@ namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSe
 public static class Paths
 {
     public static readonly string Notification = "/api/notification";
+    public static readonly string Connectors = "/api/administration/connectors";
 }
