@@ -260,7 +260,7 @@ public class AppBusinessLogicTests
         // Arrange
         var notExistingAppId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(notExistingAppId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>());
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>());
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
@@ -277,7 +277,7 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, A<string>.That.Not.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>(null, "app 1", Guid.Empty, null, null));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(Guid.Empty, default, Guid.Empty, "app 1", Guid.Empty, null, null));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
@@ -285,7 +285,7 @@ public class AppBusinessLogicTests
         async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
     }
 
@@ -295,18 +295,19 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerSubscription = _fixture.Create<OfferSubscription>();
+        var companyId = _fixture.Create<Guid>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
-        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>(offerSubscription, "app 1", Guid.NewGuid(), null, null));
+        A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, companyId, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId, offerSubscription.RequesterId, "app 1", Guid.NewGuid(), null, null));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
         // Act
-        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, IamUserId).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
-        ex.Message.Should().Be("No pending subscription for provided parameters existing.");
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"subscription for app {appId}, company {companyId} is not in status PENDING");
     }
 
     [Fact]
@@ -317,7 +318,7 @@ public class AppBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>(offerSubscription,"app 1", Guid.NewGuid(), null, null));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId, offerSubscription.RequesterId, "app 1", Guid.NewGuid(), null, null));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
@@ -337,7 +338,7 @@ public class AppBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>(offerSubscription, "app 1", Guid.NewGuid(), "test@email.com", "tony"));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId, offerSubscription.RequesterId, "app 1", Guid.NewGuid(), "test@email.com", "tony"));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
 

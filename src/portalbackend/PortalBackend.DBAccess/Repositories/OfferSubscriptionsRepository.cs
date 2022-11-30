@@ -84,15 +84,17 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferSubscription? companyAssignedApp, string? appName, Guid companyUserId, string? email, string? firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, Guid CompanyUserId, string? Email, string? Firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Offers
             .Where(app => app.Id == appId)
             .Select(app => new {
                 App = app,
-                OfferSubscription = app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
+                OfferSubscription = app.OfferSubscriptions.SingleOrDefault(subscription => subscription.CompanyId == companyId),
             })
-            .Select(x => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>(
-                x.OfferSubscription,
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(
+                x.OfferSubscription!.Id,
+                x.OfferSubscription.OfferSubscriptionStatusId,
+                x.OfferSubscription.RequesterId,
                 x.App.Name,
                 x.App.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
                 x.OfferSubscription!.Requester!.Email,
@@ -155,11 +157,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription>? setOptionalParameters = null)
+    public void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters, Action<OfferSubscription>? initOptionalParameters = null)
     {
-        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty)).Entity;
-        setOptionalParameters?.Invoke(offerSubscription);
-        return offerSubscription;
+        var offerSubscription = new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty);
+        initOptionalParameters?.Invoke(offerSubscription);
+        _context.Attach(offerSubscription);
+        setOptionalParameters(offerSubscription);
     }
 
     /// <inheritdoc />

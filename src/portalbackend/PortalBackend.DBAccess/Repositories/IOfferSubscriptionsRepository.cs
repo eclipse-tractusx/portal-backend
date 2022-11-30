@@ -56,7 +56,7 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
     Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
 
-    Task<(OfferSubscription? companyAssignedApp, string? appName, Guid companyUserId, string? email, string? firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
+    Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, Guid CompanyUserId, string? Email, string? Firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
 
     Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
@@ -82,7 +82,7 @@ public interface IOfferSubscriptionsRepository
 
     public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
     
-    OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription>? setOptionalParameters = null);
+    void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters, Action<OfferSubscription>? initOptionalParameters = null);
 
     /// <summary>
     /// Gets all business app data for the given userId
