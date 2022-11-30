@@ -175,8 +175,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscription, isMemberOfCompanyProvidingApp, appName, companyUserId, email, firstname) = assignedAppData;
-        if(!isMemberOfCompanyProvidingApp)
+        var (subscription, appName, companyUserId, email, firstname) = assignedAppData;
+        if(companyUserId == default)
         {
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
@@ -185,6 +185,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ArgumentException("No pending subscription for provided parameters existing.");
         }
+        
+        if (appName is null)
+        {
+            throw new ConflictException("App Name must be set.");
+        }
+
         subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(subscription.RequesterId,
@@ -204,7 +210,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             var mailParams = new Dictionary<string, string>
             {
                 { "offerCustomerName", firstname ?? "User" },
-                { "offerName", appName! },
+                { "offerName", appName },
                 { "url", _settings.BasePortalAddress },
             };
             await _mailingService.SendMails(email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
@@ -268,11 +274,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId)=>
         _portalRepositories.GetInstance<IOfferRepository>().GetProvidedAppsData(userId);
     
-    
-
-    
-
-     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
         _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);
