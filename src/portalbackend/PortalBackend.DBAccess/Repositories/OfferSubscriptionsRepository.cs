@@ -84,16 +84,19 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferSubscription? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId, string? email, string? firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(OfferSubscription? companyAssignedApp, string? appName, Guid companyUserId, string? email, string? firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Offers
             .Where(app => app.Id == appId)
-            .Select(app => new ValueTuple<OfferSubscription?, bool, string?, Guid, string?, string?>(
-                app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
-                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
-                app.Name,
-                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId) ? app.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Id : Guid.Empty,
-                app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId) == null ? app.OfferSubscriptions.Single(assignedApp => assignedApp.CompanyId == companyId).Requester!.Email : null,
-                app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId) == null ? app.OfferSubscriptions.Single(assignedApp => assignedApp.CompanyId == companyId).Requester!.Firstname : null
+            .Select(app => new {
+                App = app,
+                OfferSubscription = app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
+            })
+            .Select(x => new ValueTuple<OfferSubscription?, string?, Guid, string?, string?>(
+                x.OfferSubscription,
+                x.App.Name,
+                x.App.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
+                x.OfferSubscription!.Requester!.Email,
+                x.OfferSubscription.Requester.Firstname
             ))
             .SingleOrDefaultAsync();
 
