@@ -54,23 +54,27 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
+        var offerSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
+        var modifiedName = "Modified Name";
+
         // Act
-        var results = sut.AttachAndModifyOfferSubscription(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"),
+        sut.AttachAndModifyOfferSubscription(offerSubscriptionId,
             sub =>
             {
                 sub.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-                sub.DisplayName = "Modified Name";
+                sub.DisplayName = modifiedName;
             });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        results.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
-        results.DisplayName.Should().Be("Modified Name");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.Should().Match<OfferSubscription>(os =>
+            os.Id == offerSubscriptionId &&
+            os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING &&
+            os.DisplayName == modifiedName);
     }
 
     #endregion

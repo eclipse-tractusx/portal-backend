@@ -169,31 +169,38 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
     {
-        var assignedAppData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, iamUserId).ConfigureAwait(false);
+        var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var assignedAppData = await offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, iamUserId).ConfigureAwait(false);
         if(assignedAppData == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscription, appName, companyUserId, email, firstname) = assignedAppData;
+        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, email, firstname) = assignedAppData;
+
         if(companyUserId == Guid.Empty)
         {
-            throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
+            throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
-        if (subscription is not { OfferSubscriptionStatusId: OfferSubscriptionStatusId.PENDING })
+        if (subscriptionId == Guid.Empty)
         {
-            throw new ArgumentException("No pending subscription for provided parameters existing.");
+            throw new ControllerArgumentException($"subscription for app {appId}, company {subscribingCompanyId} has not been created yet");
+        }
+
+        if (subscriptionStatusId != OfferSubscriptionStatusId.PENDING )
+        {
+            throw new ControllerArgumentException($"subscription for app {appId}, company {subscribingCompanyId} is not in status PENDING");
         }
         
         if (appName is null)
         {
-            throw new ConflictException("App Name must be set.");
+            throw new ConflictException("App Name is not yet set.");
         }
 
-        subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription => subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE);
 
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(subscription.RequesterId,
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
             {
