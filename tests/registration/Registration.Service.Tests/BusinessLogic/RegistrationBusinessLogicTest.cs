@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -54,6 +55,7 @@ public class RegistrationBusinessLogicTest
     private readonly ICompanyRepository _companyRepository;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
@@ -79,6 +81,7 @@ public class RegistrationBusinessLogicTest
         _userRepository = A.Fake<IUserRepository>();
         _userRoleRepository = A.Fake<IUserRolesRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
+        _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
 
         var options = Options.Create(new RegistrationSettings
@@ -828,6 +831,164 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region SubmitRoleConsents
+
+    [Fact]
+    public async Task SubmitRoleConsentsAsync_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var notExistingId = _fixture.Create<Guid>();
+        A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(notExistingId, _iamUserId))
+            .ReturnsLazily(() => (CompanyRoleAgreementConsentData?) null);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        async Task Act() => await sut.SubmitRoleConsentAsync(notExistingId, _fixture.Create<CompanyRoleAgreementConsents>(), _iamUserId)
+                .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"application {notExistingId} does not exist");
+    }
+
+    [Fact]
+    public async Task SubmitRoleConsentsAsync_WithWrongCompanyUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var application = _fixture.Create<CompanyApplication>();
+        var data = new CompanyRoleAgreementConsentData(Guid.Empty, Guid.NewGuid(), application, _fixture.CreateMany<CompanyAssignedRole>(2), _fixture.CreateMany<Consent>(5));
+        A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, _iamUserId))
+            .ReturnsLazily(() => data);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>(), _iamUserId)
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"iamUserId {_iamUserId} is not assigned with CompanyApplication {applicationId}");
+    }
+
+    [Fact]
+    public async Task SubmitRoleConsentsAsync_WithInvalidRoles_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var application = _fixture.Create<CompanyApplication>();
+        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), Guid.NewGuid(), application, _fixture.CreateMany<CompanyAssignedRole>(2), _fixture.CreateMany<Consent>(5));
+        var roleIds = new List<CompanyRoleId>
+        {
+            CompanyRoleId.APP_PROVIDER,
+            CompanyRoleId.ACTIVE_PARTICIPANT,
+        };
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
+        {
+            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, _fixture.CreateMany<Guid>(5))
+        };
+        A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, _iamUserId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(roleIds))
+            .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>(), _iamUserId)
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Contain("invalid companyRole: ");
+    }
+
+    [Fact]
+    public async Task SubmitRoleConsentsAsync_WithoutAllRolesConsentGiven_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var consents = new CompanyRoleAgreementConsents(new []
+            {
+                CompanyRoleId.APP_PROVIDER,
+            },
+            new []
+            {
+                new AgreementConsentStatus(new("0a283850-5a73-4940-9215-e713d0e1c419"), ConsentStatusId.ACTIVE),
+                new AgreementConsentStatus(new("e38da3a1-36f9-4002-9447-c55a38ac2a53"), ConsentStatusId.INACTIVE)
+            });
+        var applicationId = _fixture.Create<Guid>();
+        var application = _fixture.Create<CompanyApplication>();
+        var agreementIds = new List<Guid>
+        {
+            new("0a283850-5a73-4940-9215-e713d0e1c419"),
+            new ("e38da3a1-36f9-4002-9447-c55a38ac2a53")
+        };
+        var companyId = Guid.NewGuid();
+        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), companyId, application, new []{ new CompanyAssignedRole(companyId, CompanyRoleId.APP_PROVIDER)}, new List<Consent>());
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
+        {
+            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, agreementIds)
+        };
+        A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, _iamUserId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
+            .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
+
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, consents, _iamUserId)
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("consent must be given to all CompanyRole assigned agreements");
+    }
+
+    [Fact]
+    public async Task SubmitRoleConsentsAsync_WithValidData_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var consents = new CompanyRoleAgreementConsents(new []
+            {
+                CompanyRoleId.APP_PROVIDER,
+            },
+            new []
+            {
+                new AgreementConsentStatus(new("0a283850-5a73-4940-9215-e713d0e1c419"), ConsentStatusId.ACTIVE),
+                new AgreementConsentStatus(new("e38da3a1-36f9-4002-9447-c55a38ac2a53"), ConsentStatusId.ACTIVE)
+            });
+        var applicationId = _fixture.Create<Guid>();
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.INVITE_USER)
+            .Create();
+        var agreementIds = new List<Guid>
+        {
+            new("0a283850-5a73-4940-9215-e713d0e1c419"),
+            new ("e38da3a1-36f9-4002-9447-c55a38ac2a53")
+        };
+        var companyId = Guid.NewGuid();
+        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), companyId, application, new []{ new CompanyAssignedRole(companyId, CompanyRoleId.APP_PROVIDER)}, new List<Consent>());
+        var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
+        {
+            new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, agreementIds)
+        };
+        A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, _iamUserId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
+            .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
+
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        await sut.SubmitRoleConsentAsync(applicationId, consents, _iamUserId)
+            .ConfigureAwait(false);
+
+        // Arrange
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupRepositories()
@@ -864,6 +1025,8 @@ public class RegistrationBusinessLogicTest
             .Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
             .Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>())
+            .Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>())
             .Returns(_applicationRepository);
     }
