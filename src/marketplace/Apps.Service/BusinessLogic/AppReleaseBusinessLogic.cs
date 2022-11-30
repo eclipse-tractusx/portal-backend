@@ -549,7 +549,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         if (!appDetails.IsStatusInReview)
         {
-            throw new ConflictException($"Apps in InCorrect Status {appDetails.IsStatusInReview} ");
+            throw new ConflictException($"Apps is in InCorrect Status");
         }
        
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
