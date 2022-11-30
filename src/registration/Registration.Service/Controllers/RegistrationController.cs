@@ -265,8 +265,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
-            this.WithIamUserId(iamUserId =>
-                _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, iamUserId));
+            this.WithIamUserId(iamUserId => _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, iamUserId));
 
         /// <summary>
         /// Gets the agreement consent statuses for the given application
