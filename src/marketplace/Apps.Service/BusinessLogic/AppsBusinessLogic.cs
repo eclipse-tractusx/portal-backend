@@ -176,7 +176,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
 
         var (subscription, appName, companyUserId, email, firstname) = assignedAppData;
-        if(companyUserId == default)
+        if(companyUserId == Guid.Empty)
         {
             throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
