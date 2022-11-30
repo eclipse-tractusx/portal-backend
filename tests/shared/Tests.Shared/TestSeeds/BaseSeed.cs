@@ -254,5 +254,24 @@ public static class BaseSeed
             new (new Guid("34782A2E-7B54-4E78-85BA-419AF534837F"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, true),
             new (new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, false),
         });
+        
+        dbContext.Connectors.AddRange(new List<Connector>
+        {
+            new(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), "Tes One", "DE", "https://api.tes-one.com")
+            {
+                ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                TypeId = ConnectorTypeId.COMPANY_CONNECTOR,
+                StatusId =ConnectorStatusId.ACTIVE,
+                
+            },
+            new(new Guid("f7310cff-a51d-4af8-9bc3-1525e9d1601b"), "Con on Air", "PT", "https://api.con-on-air.com")
+            {
+                ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                TypeId = ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
+                StatusId =ConnectorStatusId.PENDING,
+            },
+        });
     };
 }

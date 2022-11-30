@@ -48,11 +48,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offers.Library", "marketpla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Service", "marketplace\Services.Service\Services.Service.csproj", "{DC95EBAD-4D8F-435C-8E9B-A21FAC7BE570}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notification", "notification", "{3A5882B1-2CFA-48F2-A960-CD5EC8C9FCAB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notifications", "notifications", "{3A5882B1-2CFA-48F2-A960-CD5EC8C9FCAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Library", "notification\Notification.Library\Notification.Library.csproj", "{3C153FC0-5F98-4BDF-881C-1A793F49C0B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Library", "notifications\Notifications.Library\Notifications.Library.csproj", "{3C153FC0-5F98-4BDF-881C-1A793F49C0B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Service", "notification\Notification.Service\Notification.Service.csproj", "{C7246E73-0047-4816-9457-56AE31FBFF15}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Service", "notifications\Notifications.Service\Notifications.Service.csproj", "{C7246E73-0047-4816-9457-56AE31FBFF15}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "portalbackend", "portalbackend", "{774A1FBD-53C1-43A8-82ED-C8001AC9967C}"
 EndProject
@@ -88,9 +88,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offers.Library.Tests", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Service.Tests", "..\tests\marketplace\Services.Service.Tests\Services.Service.Tests.csproj", "{6C2F85D7-0443-4711-96DF-66EC46CA1A98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Library.Tests", "..\tests\notification\Notification.Library.Tests\Notification.Library.Tests.csproj", "{B6DE0855-385D-4A8C-BC22-04BE2105A2F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Library.Tests", "..\tests\notifications\Notifications.Library.Tests\Notifications.Library.Tests.csproj", "{B6DE0855-385D-4A8C-BC22-04BE2105A2F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Service.Tests", "..\tests\notification\Notification.Service.Tests\Notification.Service.Tests.csproj", "{12F16E1B-0275-4F41-8353-C2C9A79BA4E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Service.Tests", "..\tests\notifications\Notifications.Service.Tests\Notifications.Service.Tests.csproj", "{12F16E1B-0275-4F41-8353-C2C9A79BA4E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortalBackend.DBAccess.Tests", "..\tests\portalbackend\PortalBackend.DBAccess.Tests\PortalBackend.DBAccess.Tests.csproj", "{53E03A1A-E59F-4C67-80B4-5A232BF01A81}"
 EndProject

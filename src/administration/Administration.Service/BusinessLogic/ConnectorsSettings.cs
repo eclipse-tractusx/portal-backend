@@ -34,10 +34,10 @@ public class ConnectorsSettings
     public int MaxPageSize { get; set; }
 
     /// <summary>
-    /// SD Factory endpoint for registering connectors.
+    /// Allowed content types for the certificate
     /// </summary>
     [Required]
-    public string SdFactoryUrl { get; set; } = null!;
+    public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions

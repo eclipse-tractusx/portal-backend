@@ -157,12 +157,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters, Action<OfferSubscription>? initOptionalParameters = null)
+    public void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
     {
-        var offerSubscription = new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty);
-        initOptionalParameters?.Invoke(offerSubscription);
-        _context.Attach(offerSubscription);
-        setOptionalParameters(offerSubscription);
+        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty)).Entity;
+        setOptionalParameters.Invoke(offerSubscription);
     }
 
     /// <inheritdoc />

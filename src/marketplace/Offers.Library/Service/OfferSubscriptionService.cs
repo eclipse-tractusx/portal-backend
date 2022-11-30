@@ -162,24 +162,21 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(false);
         if (offerSubscriptionId == Guid.Empty)
         {
-            offerSubscriptionId = offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
+            return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
                 OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
         }
-        else
-        {
-            if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
-            {
-                throw new ConflictException(
-                    $"company {companyInformation.CompanyId} is already subscribed to {offerId}");
-            }
 
-            offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
-                os => {
-                    os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-                    os.LastEditorId = companyUserId;
-                });
+        if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
+        {
+            throw new ConflictException(
+                $"company {companyInformation.CompanyId} is already subscribed to {offerId}");
         }
 
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
+            os => {
+                os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+                os.LastEditorId = companyUserId;
+            });
         return offerSubscriptionId;
     }
 
