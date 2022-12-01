@@ -103,5 +103,10 @@ public enum NotificationTypeId
     /// <summary>
     /// Approve App to change status from IN_REVIEW to ACTIVE
     /// </summary>
-    APP_RELEASE_APPROVAL = 16
+    APP_RELEASE_APPROVAL = 16,
+    
+    /// <summary>
+    /// Service Release was requested
+    /// </summary>
+    SERVICE_RELEASE_REQUEST = 17
 }
