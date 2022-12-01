@@ -456,7 +456,7 @@ public class AppReleaseBusinessLogicTest
         {
             NotificationTypeId.APP_RELEASE_APPROVAL
         };
-         _settings.AprroveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        _settings.AprroveAppUserRoles = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, new [] { "Sales Manager" } }
         };
@@ -473,6 +473,24 @@ public class AppReleaseBusinessLogicTest
        
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
        
+    }
+
+    [Fact]
+    public async Task ApproveAppRequestAsync_WithAppNameNotSet_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, null));
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        //Act
+        async Task Act() => await sut.ApproveAppRequestAsync(appId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("App Name is not yet set.");
     }
 
     #endregion
