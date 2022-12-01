@@ -86,7 +86,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), OfferTypeId.APP);
+        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -145,6 +145,35 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region AttachAndModifiesConsents
+
+    [Fact]
+    public async Task AttachAndModifiesConsents_WithValidConsents_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifiesConsents(new []
+            {
+                new Consent(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910")),
+                new Consent(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"))
+            },
+            consent => { consent.ConsentStatusId = ConsentStatusId.ACTIVE; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changedEntries.Should().HaveCount(2);
+        changedEntries.Should().AllSatisfy(x => x.Entity.Should().BeOfType<Consent>().Which.ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE));
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(2);
+        changedEntries.Should().AllSatisfy(x => x.Entity.Should().BeOfType<Consent>().Which.ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE));
+    }
+
+    #endregion
+    
     private async Task<(ConsentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
