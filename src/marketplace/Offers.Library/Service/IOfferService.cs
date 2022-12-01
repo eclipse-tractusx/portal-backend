@@ -92,7 +92,7 @@ public interface IOfferService
     /// <param name="iamUserId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
+    Task<int> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Auto setup the service.
@@ -136,4 +136,15 @@ public interface IOfferService
     void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> existingDescriptions);
 
     void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
+
+    /// <summary>
+    /// Update offer status and create notification
+    /// </summary>
+    /// <param name="offerId">Id of the offer that should be submitted</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="offerTypeId">Type of the offer</param>
+    /// <param name="notificationTypeIds">Ids for the notifications that are created</param>
+    /// <param name="companyAdminRoles">Company Admin Roles</param>
+    /// <returns></returns>
+    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> companyAdminRoles);
 }
