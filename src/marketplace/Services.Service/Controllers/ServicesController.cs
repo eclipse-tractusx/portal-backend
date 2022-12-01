@@ -262,7 +262,7 @@ public class ServicesController : ControllerBase
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="serviceId"></param>
     /// <returns></returns>
     [HttpPut]
     [Route("{serviceId}/approveService")]
@@ -271,9 +271,9 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid appId)
+    public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
-        await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 }

@@ -53,13 +53,14 @@ public class ServiceSettings
     /// Approve Service Notification Type Id
     /// </summary>
     /// <value></value>
-    public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; set; } = null!;
+    [Required]
+    public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> AprroveServiceUserRoles { get; set; } = null!;
+    public IDictionary<string, IEnumerable<string>> AprroveServiceUserRoles { get; init; } = null!;
 
 }
 
