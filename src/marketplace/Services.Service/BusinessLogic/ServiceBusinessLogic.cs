@@ -207,7 +207,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         {
             throw new ConflictException($"Service is in InCorrect Status");
         }
-
+        if (appDetails.OfferName is null)
+        {
+            throw new ConflictException("Service Name is not yet set.");
+        }
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         offerRepository.AttachAndModifyOffer(appId, app =>
