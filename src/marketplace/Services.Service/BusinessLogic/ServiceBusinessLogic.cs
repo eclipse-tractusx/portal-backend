@@ -198,14 +198,14 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
      public async Task ApproveServiceRequestAsync(Guid appId, string iamUserId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (appDetails == default)
         {
             throw new NotFoundException($"Service not found. Either Not Existing or incorrect offer type");
         }
         if (!appDetails.IsStatusInReview)
         {
-            throw new ConflictException($"Service in InCorrect Status {appDetails.IsStatusInReview} ");
+            throw new ConflictException($"Service is in InCorrect Status");
         }
 
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
