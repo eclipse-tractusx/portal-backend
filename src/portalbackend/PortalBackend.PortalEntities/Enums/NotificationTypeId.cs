@@ -99,6 +99,14 @@ public enum NotificationTypeId
     /// Role Added for Active App
     /// </summary>
     APP_ROLE_ADDED = 15,
-
+    
+    /// <summary>
+    /// Approve App to change status from IN_REVIEW to ACTIVE
+    /// </summary>
+    APP_RELEASE_APPROVAL = 16,
+    
+    /// <summary>
+    /// Approve Service to change status from IN_REVIEW to ACTIVE
+    /// </summary>
     SERVICE_RELEASE_APPROVAL = 17
 }

@@ -468,6 +468,8 @@ public class OfferRepository : IOfferRepository
             .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<bool, string?>(
                 offer.OfferStatusId == OfferStatusId.IN_REVIEW,
-                offer.Name!))
-                .SingleOrDefaultAsync();
+                offer.Name!
+            ))
+            .SingleOrDefaultAsync();
+    
 }

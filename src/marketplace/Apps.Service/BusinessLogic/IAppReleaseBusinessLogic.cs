@@ -145,4 +145,12 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task<IEnumerable<AppRoleData>>  AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
+    
+    /// <summary>
+    /// Approve App Status from IN_Review to Active
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task ApproveAppRequestAsync(Guid appId, string iamUserId);
 }
