@@ -160,7 +160,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var (offerSubscriptionId, offerSubscriptionStateId) = await offerSubscriptionsRepository
             .GetOfferSubscriptionStateForCompanyAsync(offerId, companyInformation.CompanyId, OfferTypeId.APP)
             .ConfigureAwait(false);
-        if (offerSubscriptionStateId == default)
+        if (offerSubscriptionId == Guid.Empty)
         {
             return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
                 OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
