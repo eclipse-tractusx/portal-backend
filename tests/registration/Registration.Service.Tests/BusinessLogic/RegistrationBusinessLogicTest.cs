@@ -993,11 +993,11 @@ public class RegistrationBusinessLogicTest
             .Invokes(x =>
             {
                 var consents = x.Arguments.Get<IEnumerable<Consent>>("consents");
-                var setOptionalParameter = x.Arguments.Get<Action<Consent>>("setOptionalParameter");
+                var setOptionalParameter = x.Arguments.Get<Action<Consent>>("setOptionalParameter")!;
 
-                foreach (var consent in consents)
+                foreach (var consent in consents!)
                 {
-                    setOptionalParameter!.Invoke(consent);
+                    setOptionalParameter.Invoke(consent!);
                 }
             });
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
