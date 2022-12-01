@@ -547,11 +547,17 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new NotFoundException($"Apps not found. Either Not Existing or incorrect offer type");
         }
+        
         if (!appDetails.IsStatusInReview)
         {
             throw new ConflictException($"Apps is in InCorrect Status");
         }
-       
+
+        if (appDetails.OfferName is null)
+        {
+            throw new ConflictException("App Name is not yet set.");
+        }
+
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         offerRepository.AttachAndModifyOffer(appId, app =>
