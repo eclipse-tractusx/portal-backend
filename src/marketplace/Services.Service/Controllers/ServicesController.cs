@@ -260,16 +260,18 @@ public class ServicesController : ControllerBase
         this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
     
     /// <summary>
-    /// 
+    /// Approve Service to change status from IN_REVIEW to Active and create notification
     /// </summary>
     /// <param name="serviceId"></param>
-    /// <returns></returns>
+    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveService</remarks>
+    /// <response code="204">The service was successfully submitted to Active State.</response>
+    /// <response code="409">Service is in InCorrect Status</response>
+    /// <response code="404">service does not exist.</response>
     [HttpPut]
     [Route("{serviceId}/approveService")]
     [Authorize(Roles = "approve_service_release")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
