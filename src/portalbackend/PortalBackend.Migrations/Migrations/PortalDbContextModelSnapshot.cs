@@ -4301,6 +4301,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         {
                             NotificationTypeId = 14,
                             NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 16,
+                            NotificationTopicId = 3
                         });
                 });
 
