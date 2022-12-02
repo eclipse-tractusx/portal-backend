@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
@@ -11,9 +12,10 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221202063817_CPLP-1606-AddServiceReleaseApprovalToNotificationTypeId")]
+    partial class CPLP1606AddServiceReleaseApprovalToNotificationTypeId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
