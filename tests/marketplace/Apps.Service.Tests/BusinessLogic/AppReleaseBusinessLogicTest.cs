@@ -75,7 +75,6 @@ public class AppReleaseBusinessLogicTest
         _offerService = A.Fake<IOfferService>();
         _notificationService = A.Fake<INotificationService>();
         _options = A.Fake<IOptions<AppsSettings>>();
-        _settings = A.Fake<AppsSettings>();
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
             .Create();
@@ -83,9 +82,15 @@ public class AppReleaseBusinessLogicTest
             .With(u => u.CompanyUser, _companyUser)
             .Create();
         _companyUser.IamUser = _iamUser;
+        
+        _settings = A.Fake<AppsSettings>();
         _settings.ActiveAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_ROLE_ADDED
+        };
+        _settings.NotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_REQUEST
         };
          _settings.ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
         {
@@ -491,6 +496,30 @@ public class AppReleaseBusinessLogicTest
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("App Name is not yet set.");
+    }
+
+    #endregion
+
+    #region SubmitAppReleaseRequestAsync
+
+    [Fact]
+    public async Task SubmitAppReleaseRequestAsync_CallsOfferService()
+    {
+        // Arrange
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+
+        // Act
+        await sut.SubmitAppReleaseRequestAsync(_existingAppId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => 
+                _offerService.SubmitOfferAsync(
+                    _existingAppId,
+                    _iamUser.UserEntityId,
+                    OfferTypeId.APP,
+                    A<IEnumerable<NotificationTypeId>>._,
+                    A<IDictionary<string, IEnumerable<string>>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

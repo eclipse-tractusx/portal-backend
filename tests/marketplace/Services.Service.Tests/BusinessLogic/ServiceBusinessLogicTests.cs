@@ -63,6 +63,7 @@ public class ServiceBusinessLogicTests
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferService _offerService;
+    private readonly IOptions<ServiceSettings> _options;
 
     public ServiceBusinessLogicTests()
     {
@@ -89,16 +90,24 @@ public class ServiceBusinessLogicTests
 
         SetupRepositories();
 
-        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>()
+        var serviceSettings = new ServiceSettings
         {
-            {"Test", new[] {"Technical User"}}
+            ApplicationsMaxPageSize = 15, 
+            ServiceAccountRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"Test", new[] {"Technical User"}}
+            }, 
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"CatenaX", new[] {"Company Admin"}}
+            },
+            SubmitServiceNotificationTypeIds = new List<NotificationTypeId>
+            {
+                NotificationTypeId.SERVICE_RELEASE_REQUEST
+            }
         };
-
-        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>()
-        {
-            {"CatenaX", new[] {"Company Admin"}}
-        };
-        _fixture.Inject(Options.Create(new ServiceSettings { ApplicationsMaxPageSize = 15, ServiceAccountRoles = serviceAccountRoles, CompanyAdminRoles = companyAdminRoles}));
+        _options = Options.Create(serviceSettings);
+        _fixture.Inject(_options);
     }
 
     #region Create Service
@@ -512,6 +521,30 @@ public class ServiceBusinessLogicTests
 
     #endregion
     
+    #region SubmitServiceAsync
+
+    [Fact]
+    public async Task SubmitServiceAsync_CallsOfferService()
+    {
+        // Arrange
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, _options);
+
+        // Act
+        await sut.SubmitServiceAsync(_existingServiceId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => 
+                _offerService.SubmitOfferAsync(
+                    _existingServiceId,
+                    _iamUser.UserEntityId,
+                    OfferTypeId.SERVICE,
+                    A<IEnumerable<NotificationTypeId>>._,
+                    A<IDictionary<string, IEnumerable<string>>>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupUpdateService()
@@ -565,8 +598,7 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => (new CompanyInformationData(Guid.Empty, "The Company", "DE", "BPN00000001"), _companyUser.Id, "test@mail.de"));
         A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId || x == _notAssignedCompanyIdUser)))
             .ReturnsLazily(() => (new CompanyInformationData(_companyUser.CompanyId, "The Company", "DE", "BPN00000001"), Guid.Empty, "test@mail.de"));
-
-
+        
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en"), A<string>._))
             .ReturnsLazily(() => serviceDetail with {OfferSubscriptionDetailData = new []
             {
