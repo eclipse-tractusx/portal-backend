@@ -33,8 +33,8 @@ using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
 
-public class IntegrationTestFactory<TProgram> : WebApplicationFactory<TProgram>, IAsyncLifetime
-    where TProgram : class 
+public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestClass>, IAsyncLifetime
+    where TTestClass : class 
 {
     private readonly TestcontainerDatabase _container;
     public IList<Action<PortalDbContext>>? SetupDbActions { get; set; }
