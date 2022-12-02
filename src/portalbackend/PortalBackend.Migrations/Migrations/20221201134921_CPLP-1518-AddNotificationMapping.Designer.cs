@@ -32,8 +32,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20221201120504_CPLP-1606-AddServiceReleaseApprovalToNotificationTypeId")]
-    partial class CPLP1606AddServiceReleaseApprovalToNotificationTypeId
+    [Migration("20221201134921_CPLP-1518-AddNotificationMapping")]
+    partial class CPLP1518AddNotificationMapping
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -4208,11 +4208,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         {
                             Id = 16,
                             Label = "APP_RELEASE_APPROVAL"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Label = "SERVICE_RELEASE_APPROVAL"
                         });
                 });
 
@@ -4312,11 +4307,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         new
                         {
                             NotificationTypeId = 16,
-                            NotificationTopicId = 3
-                        },
-                        new
-                        {
-                            NotificationTypeId = 17,
                             NotificationTopicId = 3
                         });
                 });
