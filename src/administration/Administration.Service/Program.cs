@@ -20,6 +20,7 @@
 
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian;
+using Org.CatenaX.Ng.Portal.Backend.Framework.Token;
 using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
@@ -75,11 +76,13 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
+builder.Services.AddTransient<ITokenService, TokenService>();
+
 builder.Services
     .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
-    .AddDapsService(builder.Configuration.GetSection("Daps"));
-
-builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
+    .AddDapsService(builder.Configuration.GetSection("Daps"))
+    .AddCustodianService(builder.Configuration.GetSection("Custodian"))
+    .AddBpdmService(builder.Configuration.GetSection("Bpdm"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
