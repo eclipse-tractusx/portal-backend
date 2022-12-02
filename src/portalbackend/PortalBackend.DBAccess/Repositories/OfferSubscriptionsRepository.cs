@@ -78,8 +78,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 {
                     OfferId = g.Id,
                     ServiceName = g.Name,
-                    CompanySubscriptionStatuses = g.OfferSubscriptions.Select(s =>
-                        new CompanySubscriptionStatusData(s.CompanyId, s.Company!.Name, s.Id, s.OfferSubscriptionStatusId))
+                    CompanySubscriptionStatuses = g.OfferSubscriptions
+                        .Where(os => os.OfferSubscriptionStatusId == statusId)
+                        .Select(s => new CompanySubscriptionStatusData(s.CompanyId, s.Company!.Name, s.Id, s.OfferSubscriptionStatusId))
                 })
             .SingleOrDefaultAsync();
 

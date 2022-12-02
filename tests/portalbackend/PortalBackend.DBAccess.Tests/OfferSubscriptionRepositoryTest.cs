@@ -137,7 +137,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region xy
+    #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
     
     [Theory]
     [InlineData(SubscriptionStatusSorting.OfferIdAsc)]
@@ -156,7 +156,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         results.Should().NotBeNull();
         results!.Count.Should().Be(1);
         results.Data.Should().HaveCount(1);
-        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>();
+        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
     }
     
     #endregion
