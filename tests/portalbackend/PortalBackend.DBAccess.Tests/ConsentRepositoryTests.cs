@@ -156,8 +156,8 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         sut.AttachAndModifiesConsents(new []
             {
-                new Consent(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910")),
-                new Consent(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"))
+                new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"),
+                new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911")
             },
             consent => { consent.ConsentStatusId = ConsentStatusId.ACTIVE; });
 

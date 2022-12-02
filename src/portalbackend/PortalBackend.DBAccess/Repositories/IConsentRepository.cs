@@ -65,7 +65,7 @@ public interface IConsentRepository
     /// <summary>
     /// Updates the given consents
     /// </summary>
-    /// <param name="consents">Collection of consets that should be updated</param>
+    /// <param name="consentIds">Collection of consets that should be updated</param>
     /// <param name="setOptionalParameter">Action that will be applied to all consents</param>
-    void AttachAndModifiesConsents(IEnumerable<Consent> consents, Action<Consent> setOptionalParameter);
+    void AttachAndModifiesConsents(IEnumerable<Guid> consentIds, Action<Consent> setOptionalParameter);
 }

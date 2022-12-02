@@ -52,9 +52,9 @@ public class CompanyRolesRepository : ICompanyRolesRepository
             .Select(application => new CompanyRoleAgreementConsentData(
                 application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault(),
                 application.CompanyId,
-                application,
+                application.ApplicationStatusId,
                 application.Company.CompanyAssignedRoles,
-                application.Company.Consents))
+                application.Company.Consents.Select(c => new ConsentData(c.Id, c.ConsentStatusId, c.AgreementId))))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
