@@ -22,7 +22,6 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -249,7 +248,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO,null, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, null, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
