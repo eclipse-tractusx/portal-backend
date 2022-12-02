@@ -857,8 +857,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        var application = _fixture.Create<CompanyApplication>();
-        var data = new CompanyRoleAgreementConsentData(Guid.Empty, Guid.NewGuid(), application, _fixture.CreateMany<CompanyAssignedRole>(2), _fixture.CreateMany<Consent>(5));
+        var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
+        var data = new CompanyRoleAgreementConsentData(Guid.Empty, Guid.NewGuid(), applicationStatusId, _fixture.CreateMany<CompanyAssignedRole>(2), _fixture.CreateMany<ConsentData>(5));
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, _iamUserId))
             .ReturnsLazily(() => data);
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
@@ -877,8 +877,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        var application = _fixture.Create<CompanyApplication>();
-        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), Guid.NewGuid(), application, _fixture.CreateMany<CompanyAssignedRole>(2), _fixture.CreateMany<Consent>(5));
+        var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
+        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), Guid.NewGuid(), applicationStatusId, _fixture.CreateMany<CompanyAssignedRole>(2), _fixture.CreateMany<ConsentData>(5));
         var roleIds = new List<CompanyRoleId>
         {
             CompanyRoleId.APP_PROVIDER,
@@ -916,14 +916,14 @@ public class RegistrationBusinessLogicTest
                 new AgreementConsentStatus(new("e38da3a1-36f9-4002-9447-c55a38ac2a53"), ConsentStatusId.INACTIVE)
             });
         var applicationId = _fixture.Create<Guid>();
-        var application = _fixture.Create<CompanyApplication>();
+        var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
         var agreementIds = new List<Guid>
         {
             new("0a283850-5a73-4940-9215-e713d0e1c419"),
             new ("e38da3a1-36f9-4002-9447-c55a38ac2a53")
         };
         var companyId = Guid.NewGuid();
-        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), companyId, application, new []{ new CompanyAssignedRole(companyId, CompanyRoleId.APP_PROVIDER)}, new List<Consent>());
+        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), companyId, applicationStatusId, new []{ new CompanyAssignedRole(companyId, CompanyRoleId.APP_PROVIDER)}, new List<ConsentData>());
         var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
         {
             new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, agreementIds)
@@ -959,9 +959,7 @@ public class RegistrationBusinessLogicTest
                 new AgreementConsentStatus(new("e38da3a1-36f9-4002-9447-c55a38ac2a53"), ConsentStatusId.ACTIVE)
             });
         var applicationId = _fixture.Create<Guid>();
-        var application = _fixture.Build<CompanyApplication>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.INVITE_USER)
-            .Create();
+        var applicationStatusId =  CompanyApplicationStatusId.INVITE_USER;
         var agreementIds = new List<Guid>
         {
             new("0a283850-5a73-4940-9215-e713d0e1c419"),
@@ -971,14 +969,14 @@ public class RegistrationBusinessLogicTest
         var data = new CompanyRoleAgreementConsentData(
             Guid.NewGuid(), 
             companyId, 
-            application,
+            applicationStatusId,
             new []
             {
                 new CompanyAssignedRole(companyId, CompanyRoleId.APP_PROVIDER),
                 new CompanyAssignedRole(companyId, CompanyRoleId.ACTIVE_PARTICIPANT)
             },
             new [] {
-                new Consent(new ("c5072e8f-2a91-46e6-8eeb-66b4f94e2bec"), new("0a283850-5a73-4940-9215-e713d0e1c419"), companyId, Guid.NewGuid(), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
+                new ConsentData(new ("c5072e8f-2a91-46e6-8eeb-66b4f94e2bec"), ConsentStatusId.INACTIVE, new("0a283850-5a73-4940-9215-e713d0e1c419"))
             });
         var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
         {
@@ -989,15 +987,16 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => data);
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
-        A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Consent>>._, A<Action<Consent>>._))
+        A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._))
             .Invokes(x =>
             {
-                var consents = x.Arguments.Get<IEnumerable<Consent>>("consents");
+                var consentIds = x.Arguments.Get<IEnumerable<Guid>>("consentIds");
                 var setOptionalParameter = x.Arguments.Get<Action<Consent>>("setOptionalParameter")!;
 
-                foreach (var consent in consents!)
+                var consents = consentIds.Select(x => new Consent(x));
+                foreach (var consent in consents)
                 {
-                    setOptionalParameter.Invoke(consent!);
+                    setOptionalParameter.Invoke(consent);
                 }
             });
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
@@ -1007,7 +1006,7 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
-        A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Consent>>._, A<Action<Consent>>._)).MustHaveHappenedANumberOfTimesMatching(x => x == 2);
+        A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._)).MustHaveHappenedANumberOfTimesMatching(x => x == 2);
         A.CallTo(() => _consentRepository.CreateConsent(A<Guid>._, A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<Action<Consent>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }

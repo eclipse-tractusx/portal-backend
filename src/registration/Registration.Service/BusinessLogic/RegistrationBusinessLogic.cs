@@ -186,7 +186,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task SetCompanyWithAddressInternal(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
     {
-        var companyApplicationData = await _portalRepositories.GetInstance<IApplicationRepository>()
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var companyApplicationData = await applicationRepository
             .GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyWithAddress.CompanyId, iamUserId)
             .ConfigureAwait(false);
         if (companyApplicationData == null)
@@ -227,7 +228,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         company.Address.Streetnumber = companyWithAddress.Streetnumber;
         company.CompanyStatusId = CompanyStatusId.PENDING;
 
-        UpdateApplicationStatus(companyApplicationData.CompanyApplication, UpdateApplicationSteps.CompanyWithAddress);
+        UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -359,7 +360,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var companyUserId = companyRoleAgreementConsentData.CompanyUserId;
         var companyId = companyRoleAgreementConsentData.CompanyId;
-        var application = companyRoleAgreementConsentData.CompanyApplication;
+        var applicationStatusId = companyRoleAgreementConsentData.CompanyApplicationStatusId;
         var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
         var consents = companyRoleAgreementConsentData.Consents;
 
@@ -400,7 +401,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, companyUserId);
 
-        UpdateApplicationStatus(application, UpdateApplicationSteps.CompanyRoleAgreementConsents);
+        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>());
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -416,14 +417,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     public async Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync() =>
-        new CompanyRoleAgreementData(
+        new(
             (await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable(),
             (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
         );
 
     public async Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId)
     {
-        var applicationUserData = await _portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationUserEmailDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, iamUserId).ConfigureAwait(false);
         if (applicationUserData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
@@ -433,7 +435,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
 
-        UpdateApplicationStatus(applicationUserData.CompanyApplication, UpdateApplicationSteps.SubmitRegistration);
+        UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParameters = new Dictionary<string, string>
@@ -501,7 +503,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null) =>
         _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
 
-    private static void HandleConsent(IEnumerable<Consent> consents, IEnumerable<AgreementConsentStatus> agreementConsentsToSet,
+    private static void HandleConsent(IEnumerable<ConsentData> consents, IEnumerable<AgreementConsentStatus> agreementConsentsToSet,
         IConsentRepository consentRepository, Guid companyId, Guid companyUserId)
     {
         var consentsToInactivate = consents
@@ -509,11 +511,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 !agreementConsentsToSet.Any(agreementConsent =>
                     agreementConsent.AgreementId == consent.AgreementId
                     && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE));
-        consentRepository.AttachAndModifiesConsents(consentsToInactivate, consent =>
+        consentRepository.AttachAndModifiesConsents(consentsToInactivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.INACTIVE;
         });
-
        
         var consentsToActivate = consents
             .Where(consent =>
@@ -521,7 +522,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     agreementConsent.AgreementId == consent.AgreementId &&
                     consent.ConsentStatusId == ConsentStatusId.INACTIVE &&
                     agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE));
-        consentRepository.AttachAndModifiesConsents(consentsToActivate, consent =>
+        consentRepository.AttachAndModifiesConsents(consentsToActivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.ACTIVE;
         });
@@ -562,11 +563,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         application.ApplicationStatusId = status;
     }
 
-    private static void UpdateApplicationStatus(CompanyApplication application, UpdateApplicationSteps type)
+    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository)
     {
-        if (application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
-            || application.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
-            || application.ApplicationStatusId == CompanyApplicationStatusId.DECLINED)
+        if (applicationStatusId == CompanyApplicationStatusId.SUBMITTED
+            || applicationStatusId == CompanyApplicationStatusId.CONFIRMED
+            || applicationStatusId == CompanyApplicationStatusId.DECLINED)
         {
             throw new ForbiddenException($"Application is already closed");
         }
@@ -575,36 +576,46 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             case UpdateApplicationSteps.CompanyWithAddress:
             {
-                if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
+                if (applicationStatusId == CompanyApplicationStatusId.CREATED
+                    || applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
                 {
-                    application.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+                    applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+                    {
+                        ca.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
+                    });
                 }
                 break;
             }
             case UpdateApplicationSteps.CompanyRoleAgreementConsents:
             {
-                if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.INVITE_USER
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
+                if (applicationStatusId == CompanyApplicationStatusId.CREATED
+                    || applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
+                    || applicationStatusId == CompanyApplicationStatusId.INVITE_USER
+                    || applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
                 {
-                    application.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
+                    
+                    applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+                    {
+                        ca.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
+                    });
                 }
                 break;
             }
             case UpdateApplicationSteps.SubmitRegistration:
             {
-                if (application.ApplicationStatusId == CompanyApplicationStatusId.CREATED
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.INVITE_USER
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE
-                    || application.ApplicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
+                if (applicationStatusId == CompanyApplicationStatusId.CREATED
+                    || applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
+                    || applicationStatusId == CompanyApplicationStatusId.INVITE_USER
+                    || applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE
+                    || applicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
                 {
                     throw new ForbiddenException($"Application status is not fitting to the pre-requisite");
                 }
 
-                application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+                {
+                    ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                });
                 break;
             }
         }
