@@ -53,8 +53,8 @@ public static class UrlHelper
         }
     }
 
-    public static string AppendToPathEncoded(string connectorUrl, string businessPartnerNumber)
+    public static string AppendToPathEncoded(string path, string parameter)
     {
-        return string.Format("{0}/{1}", connectorUrl.Trim('/'), HttpUtility.UrlEncode(businessPartnerNumber));
+        return string.Format("{0}/{1}", path.Trim('/'), HttpUtility.UrlEncode(parameter));
     }
 }

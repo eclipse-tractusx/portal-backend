@@ -624,5 +624,4 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
     }
-
 }
