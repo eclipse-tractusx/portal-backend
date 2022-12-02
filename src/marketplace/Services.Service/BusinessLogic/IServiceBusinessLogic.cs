@@ -131,7 +131,7 @@ public interface IServiceBusinessLogic
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
     
     /// <summary>
-    /// 
+    /// Approve Service Status from IN_Review to Active
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="iamUserId"></param>

@@ -195,7 +195,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId));
 
-     public async Task ApproveServiceRequestAsync(Guid appId, string iamUserId)
+    /// <inheritdoc/>
+    public async Task ApproveServiceRequestAsync(Guid appId, string iamUserId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, OfferTypeId.SERVICE).ConfigureAwait(false);
