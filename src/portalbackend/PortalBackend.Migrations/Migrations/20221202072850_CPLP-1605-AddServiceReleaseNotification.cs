@@ -30,9 +30,21 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
         {
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "notification_type",
+                columns: new[] { "id", "label" },
+                values: new object[] { 17, "SERVICE_RELEASE_REQUEST" });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "notification_type_assigned_topic",
                 columns: new[] { "notification_topic_id", "notification_type_id" },
                 values: new object[] { 3, 15 });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "notification_type_assigned_topic",
+                columns: new[] { "notification_topic_id", "notification_type_id" },
+                values: new object[] { 3, 17 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -42,6 +54,18 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 table: "notification_type_assigned_topic",
                 keyColumns: new[] { "notification_topic_id", "notification_type_id" },
                 keyValues: new object[] { 3, 15 });
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type_assigned_topic",
+                keyColumns: new[] { "notification_topic_id", "notification_type_id" },
+                keyValues: new object[] { 3, 17 });
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type",
+                keyColumn: "id",
+                keyValue: 17);
         }
     }
 }

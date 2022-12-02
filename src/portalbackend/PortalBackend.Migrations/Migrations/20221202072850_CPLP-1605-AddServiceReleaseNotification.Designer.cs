@@ -32,7 +32,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20221201155755_CPLP-1605-AddServiceReleaseNotification")]
+    [Migration("20221202072850_CPLP-1605-AddServiceReleaseNotification")]
     partial class CPLP1605AddServiceReleaseNotification
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
