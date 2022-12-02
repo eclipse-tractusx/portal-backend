@@ -12,7 +12,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20221202063817_CPLP-1606-AddServiceReleaseApprovalToNotificationTypeId")]
+    [Migration("20221202072828_CPLP-1606-AddServiceReleaseApprovalToNotificationTypeId")]
     partial class CPLP1606AddServiceReleaseApprovalToNotificationTypeId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
