@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,14 +18,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+using System.Text.Json.Serialization;
 
-/// <summary>
-/// View model of an application's detailed data for the bpdm.
-/// </summary>
-/// <param name="CompanyName">Name of the company.</param>
-/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
-/// <param name="ZipCode">Zipcode of the company's address.</param>
-/// <param name="City">City of the company's address.</param>
-/// <param name="Street">Street of the company's address.</param>
-public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Token;
+
+public record AuthResponse(
+    [property:JsonPropertyName("access_token")]
+    string?  AccessToken,
+
+    [property:JsonPropertyName("expires_in")]
+    int  ExpiresIn,
+
+    [property:JsonPropertyName("refresh_expires_in")]
+    int RefreshExpiresIn,
+
+    [property:JsonPropertyName("refresh_token")]
+    string? RefreshToken,
+
+    [property:JsonPropertyName("token_type")]
+    string? TokenType,
+
+    [property:JsonPropertyName("id_token")]
+    string? IdToken,
+
+    [property:JsonPropertyName("notbeforepolicy")]
+    int NotBeforePolicy,
+
+    [property:JsonPropertyName("session_state")]
+    string? SessionState,
+
+    [property:JsonPropertyName("scope")]
+    string? Scope
+);
