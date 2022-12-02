@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,17 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Custodian.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 
-public class AuthResponse
-{
-    public string? access_token { get; set; }
-    public int expires_in { get; set; }
-    public int refresh_expires_in { get; set; }
-    public string? refresh_token { get; set; }
-    public string? token_type { get; set; }
-    public string? id_token { get; set; }
-    public int notbeforepolicy { get; set; }
-    public string? session_state { get; set; }
-    public string? scope { get; set; }
-}
+/// <summary>
+/// View model of an application's detailed data for the bpdm.
+/// </summary>
+/// <param name="CompanyName">Name of the company.</param>
+/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
+/// <param name="ZipCode">Zipcode of the company's address.</param>
+/// <param name="City">City of the company's address.</param>
+/// <param name="Street">Street of the company's address.</param>
+public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);
