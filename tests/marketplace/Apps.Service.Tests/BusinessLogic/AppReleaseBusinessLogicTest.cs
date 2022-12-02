@@ -524,6 +524,38 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region SubmitOfferConsentAsync
+    
+    [Fact]
+    public async Task SubmitOfferConsentAsync_WithEmptyAppId_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("AppId must not be empty");
+    }
+
+    [Fact]
+    public async Task SubmitOfferConsentAsync_WithAppId_CallsOfferService()
+    {
+        // Arrange
+        var data = _fixture.Create<OfferAgreementConsent>();
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+
+        // Act
+        await sut.SubmitOfferConsentAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupUpdateApp()
