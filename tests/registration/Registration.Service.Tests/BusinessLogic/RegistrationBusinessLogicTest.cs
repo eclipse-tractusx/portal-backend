@@ -990,7 +990,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._))
             .Invokes(x =>
             {
-                var consentIds = x.Arguments.Get<IEnumerable<Guid>>("consentIds");
+                var consentIds = x.Arguments.Get<IEnumerable<Guid>>("consentIds")!;
                 var setOptionalParameter = x.Arguments.Get<Action<Consent>>("setOptionalParameter")!;
 
                 var consents = consentIds.Select(x => new Consent(x));
@@ -998,6 +998,15 @@ public class RegistrationBusinessLogicTest
                 {
                     setOptionalParameter.Invoke(consent);
                 }
+            });
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes(x =>
+            {
+                var companyApplicationId = x.Arguments.Get<Guid>("companyApplicationId");
+                var setOptionalParameter = x.Arguments.Get<Action<CompanyApplication>>("setOptionalParameters")!;
+
+                var companyApplication = new CompanyApplication(companyApplicationId, Guid.Empty, default!, default!);
+                setOptionalParameter.Invoke(companyApplication);
             });
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories);
 
