@@ -300,7 +300,7 @@ public class AppsControllerTests
             .Returns(responseData);
 
         //Act
-        var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
+        var result = await this._controller.AutoSetupApp(data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.AutoSetupAppAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
