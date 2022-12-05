@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,24 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Data Object for the Offer Release data
+/// View model of an application's detailed data for the bpdm.
 /// </summary>
-/// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
-/// <param name="ProviderCompanyId"></param>
-/// <param name="CompanyName"></param>
-/// <param name="IsDescriptionLongNotSet"></param>
-/// <param name="IsDescriptionShortNotSet"></param>
-/// <returns></returns>
-public record OfferReleaseData(
-    string? Name,
-    string? ThumbnailUrl,
-    Guid? SalesManagerId,
-    Guid? ProviderCompanyId,
-    string CompanyName,
-    bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+/// <param name="ApplicationStatusId">Status of the application.</param>
+/// <param name="CompanyName">Name of the company.</param>
+/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
+/// <param name="ZipCode">Zipcode of the company's address.</param>
+/// <param name="City">City of the company's address.</param>
+/// <param name="Street">Street of the company's address.</param>
+/// <param name="IsUserInCompany"><c>true</c> if the user is part of the company, otherwise <c>false</c>.</param>
+public record BpdmData(CompanyApplicationStatusId ApplicationStatusId, string CompanyName, string AlphaCode2, string? ZipCode, string City, string Street, bool IsUserInCompany);

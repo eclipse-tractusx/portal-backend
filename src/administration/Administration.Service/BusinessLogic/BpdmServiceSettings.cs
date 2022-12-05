@@ -18,24 +18,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Data Object for the Offer Release data
+/// Settings used in business logic concerning connectors.
 /// </summary>
-/// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
-/// <param name="ProviderCompanyId"></param>
-/// <param name="CompanyName"></param>
-/// <param name="IsDescriptionLongNotSet"></param>
-/// <param name="IsDescriptionShortNotSet"></param>
-/// <returns></returns>
-public record OfferReleaseData(
-    string? Name,
-    string? ThumbnailUrl,
-    Guid? SalesManagerId,
-    Guid? ProviderCompanyId,
-    string CompanyName,
-    bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+public class BpdmServiceSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public string Username { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string Password { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string ClientId { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string GrantType { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string ClientSecret { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string Scope { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string KeyCloakTokenAdress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string BaseAdress { get; set; } = null!;
+}
