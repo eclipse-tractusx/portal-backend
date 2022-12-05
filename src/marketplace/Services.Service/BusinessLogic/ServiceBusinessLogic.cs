@@ -26,6 +26,7 @@ using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
 
@@ -190,4 +191,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId));
 
+    /// <inheritdoc />
+    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
+        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.BasePortalAddress);
 }
