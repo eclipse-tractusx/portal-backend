@@ -32,7 +32,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                 schema: "portal",
                 table: "notification_type",
                 columns: new[] { "id", "label" },
-                values: new object[] { 17, "SERVICE_RELEASE_REQUEST" });
+                values: new object[,]
+                {
+                    { 17, "SERVICE_RELEASE_REQUEST" },
+                    { 18, "SERVICE_RELEASE_APPROVAL" }
+                });
 
             migrationBuilder.InsertData(
                 schema: "portal",
@@ -49,6 +53,12 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type",
+                keyColumn: "id",
+                keyValue: 18);
+
             migrationBuilder.DeleteData(
                 schema: "portal",
                 table: "notification_type_assigned_topic",

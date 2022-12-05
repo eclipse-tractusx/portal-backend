@@ -32,7 +32,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20221202072850_CPLP-1605-AddServiceReleaseNotification")]
+    [Migration("20221205180503_CPLP-1605-AddServiceReleaseNotification")]
     partial class CPLP1605AddServiceReleaseNotification
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -4213,6 +4213,11 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         {
                             Id = 17,
                             Label = "SERVICE_RELEASE_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Label = "SERVICE_RELEASE_APPROVAL"
                         });
                 });
 
