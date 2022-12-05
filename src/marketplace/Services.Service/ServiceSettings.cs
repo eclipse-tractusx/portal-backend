@@ -20,7 +20,6 @@
 
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
 
