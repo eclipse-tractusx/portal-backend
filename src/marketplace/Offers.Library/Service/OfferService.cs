@@ -477,6 +477,11 @@ public class OfferService : IOfferService
 
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (requesterId == Guid.Empty)
+        {
+            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
+        }            
+
         var notificationContent = new
         {
             offerId,
