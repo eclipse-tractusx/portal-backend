@@ -136,4 +136,16 @@ public interface IOfferService
     void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> existingDescriptions);
 
     void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
+
+    /// <summary>
+    /// Declines the given offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer that should be declined</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="data">The offer decline data</param>
+    /// <param name="offerType">The offer type</param>
+    /// <param name="notificationTypeId">Id of the notification that should be send</param>
+    /// <param name="notificationRecipients">Recipients of the notifications</param>
+    /// <param name="basePortalAddress">the base portal address</param>
+    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress);
 }

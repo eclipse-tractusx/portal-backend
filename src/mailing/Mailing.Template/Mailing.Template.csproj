@@ -81,6 +81,12 @@
 	 <None Update="EmailTemplates\appprovider_subscription_activation.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
+	 <None Update="EmailTemplates\service_request_decline.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\app_request_decline.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
   </ItemGroup>
 
 <ItemGroup>
