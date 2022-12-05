@@ -166,11 +166,12 @@ public interface IOfferRepository
     void RemoveOfferDetailImages(IEnumerable<Guid> imageIds);
 
     /// <summary>
-    /// Get App Release data by App Id
+    /// Get Offer Release data by Offer Id
     /// </summary>
-    /// <param name="offerId"></param>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="offerTypeId">Type of the offer</param>
     /// <returns></returns>
-    Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId);
+    Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets all service detail data from the persistence storage as pagination 
