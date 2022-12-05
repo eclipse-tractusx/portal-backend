@@ -486,12 +486,10 @@ public class ServiceBusinessLogicTests
         };
         var existingOffer = _fixture.Create<Offer>();
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
-            .Invokes(x =>
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParameters) =>
             {
-                var action = x.Arguments.Get<Action<Offer>>("setOptionalParameters")!;
-                var initializeParemeters = x.Arguments.Get<Action<Offer>?>("initializeParemeters");
-                initializeParemeters?.Invoke(existingOffer);
-                action.Invoke(existingOffer);
+                initializeParameters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
             });
         var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, Options.Create(settings));
 
