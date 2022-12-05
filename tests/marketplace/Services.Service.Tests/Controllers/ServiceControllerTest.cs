@@ -259,12 +259,28 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._))
                     .ReturnsLazily(() => pagination);
 
-
         //Act
         var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
+    }
+        
+    [Fact]
+    public async Task DeclineServiceRequest_ReturnsNoContent()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        A.CallTo(() => _logic.DeclineServiceRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeclineServiceRequest(serviceId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineServiceRequestAsync(serviceId, IamUserId, data)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

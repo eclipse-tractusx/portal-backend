@@ -512,6 +512,31 @@ public class ServiceBusinessLogicTests
 
     #endregion
     
+    #region DeclineServiceRequest
+    
+    [Fact]
+    public async Task DeclineServiceRequestAsync_CallsExpected()
+    {
+        // Arrange
+        var data = new OfferDeclineRequest("Just a test");
+        var settings = new ServiceSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, Options.Create(settings));
+     
+        // Act
+        await sut.DeclineServiceRequestAsync(_existingServiceId, _iamUser.UserEntityId, data).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, _iamUser.UserEntityId, data,
+            OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION,
+            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
+    }
+    
+    #endregion
+    
     #region Setup
 
     private void SetupUpdateService()
