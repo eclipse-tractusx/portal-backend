@@ -18,11 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 public interface IOfferSubscriptionService
 {
-    Task<Guid> AddServiceSubscription(Guid serviceId, string iamUserId, string accessToken, OfferTypeId offerTypeId);
+    Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken,
+        IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress);
 }

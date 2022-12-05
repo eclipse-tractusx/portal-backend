@@ -56,4 +56,12 @@
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.administration.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

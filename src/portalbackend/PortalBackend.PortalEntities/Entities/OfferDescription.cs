@@ -32,19 +32,6 @@ public class OfferDescription
         DescriptionShort = descriptionShort;
     }
 
-    /// <summary>
-    /// construtor used for the Attach case
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="languageShortName"></param>
-    public OfferDescription(Guid appId, string languageShortName)
-    {
-        OfferId = appId;
-        LanguageShortName = languageShortName;
-        DescriptionLong = null!;
-        DescriptionShort = null!;
-    }
-    
     [MaxLength(4096)]
     public string DescriptionLong { get; set; }
 

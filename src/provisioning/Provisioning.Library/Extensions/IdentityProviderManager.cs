@@ -64,17 +64,17 @@ public partial class ProvisioningManager
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         _Settings.IdpPrefix + (await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false));
 
-    private Task CreateCentralIdentityProviderAsync(string alias, string organisationName, IdentityProvider identityProvider)
+    private Task CreateCentralIdentityProviderAsync(string alias, string displayName, IdentityProvider identityProvider)
     {
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;
-        newIdp.DisplayName = organisationName;
+        newIdp.DisplayName = displayName;
         return _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp);
     }
 
     private async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
     {
-        var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.Config.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
         identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
         identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
@@ -124,7 +124,7 @@ public partial class ProvisioningManager
         return changed;
     }
 
-    public Task<IdentityProvider> GetCentralIdentityProviderAsync(string alias)
+    private Task<IdentityProvider> GetCentralIdentityProviderAsync(string alias)
     {
         return _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias);
     }
@@ -150,7 +150,7 @@ public partial class ProvisioningManager
 
     private async ValueTask EnableCentralIdentityProviderAsync(string alias)
     {
-        var identityProvider = await _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias).ConfigureAwait(false);
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.Enabled = true;
         identityProvider.Config.HideOnLoginPage = "false";
         await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);

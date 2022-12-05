@@ -1061,6 +1061,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                             CompanyRoleId = 2,
                             LanguageShortName = "en",
                             Description = "Application Provider"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            LanguageShortName = "de",
+                            Description = "Dienstanbieter"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            LanguageShortName = "en",
+                            Description = "Service Provider"
                         });
                 });
 

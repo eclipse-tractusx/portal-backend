@@ -2,6 +2,81 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+### Unreleased
+n/a
+
+## 0.9.0
+
+### Change
+* Services Endpoints
+   * added service types support the filtering and tagging of services (one service can have multiple service types)
+   * enabled service sorting
+   * enable service updates
+   * merged /subscribe and /subscribe-consent endpoints
+
+### Feature
+* App Release Process
+   * enabled Get & Post company SalesManager assigned to an app offer
+   * document upload enpoint enable jpeg and png for app image upload
+* Registration Service
+   * registration document deletion endpoint released
+   * registration data publishin endpoint document types reduced
+
+### Technical Support
+* DB Auditing for app instances enabled
+
+### Bugfix
+* Fixed new company user user invite mixups which deleted user accounts with similar or same name/email
+
+## 0.8.0
+
+### Change
+* Email Template
+   * refactored email templates for registration and administration services (style and component update)
+   * added CompanyName to all "Invite" email templates
+* IdP Administration
+   * refactored put and post endpoints by merging the user create and update endpoint 
+   * added the displayName as optional parameter inside the idp create endpoint
+* Service & App Subscribe endpoints enhanced by adding the submission of the consent agreement details inside the request body
+
+### Feature
+* Notification Service ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+   * enabled pagination for get/notification endpoint
+   * created count-detail endpoint to retrieve additional metadata (unread, unread per type, etc.)
+   * added notification type info to support the filtering and tagging of notification areas (info, action, offer)
+   * enabled notification sorting
+
+### Technical Support
+* Enabled "Debug" Logging mechanism for 3rd party interfaces by implementing a "debug" config level inside the service config files
+
+### Bugfix
+* Create new user account email template changed; wrong email template was fetched
+* Add user role endpoint got refactored; multi subscription offers did result into an exception and have been fixed by a interim workaround to assign the role to all specific offer app-instances which the company as assigned for
+
+## 0.7.0
+
+### Change
+* Connector Registration - managed/own connector registration endpoint refactoring. Change request body content and enhancing backend business logic to validate the respective host and provider. Additionally technical user auth is now supported for managed connectors. ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App role assignment - assign and update app roles assigned to an user. Role assignment (add, delete) is managed by the PUT api/administration/user/app/{appId}/roles endpoint
+
+### Feature
+* Notifications
+   * Service Subscription: Enable prodiver notification creation and email trigger (if applicable) after subscription was triggered by a customer.
+   * Service Subscription Activation: Enable customer notification creation and email trigger (if applicable) after service subscription was triggered by the service provider.
+* Company Role / User Role connection
+   * Creation of new db tables and connections between company roles, roles collections (new) and user roles ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+   * Backend business logic enhancement of user invite endpoints by adding user-role-collection restriction of assignable user-roles based on the company role 
+* App Release Management Process
+   * released create and delete app roles endpoints
+   * enhanced GET app release status/details endpoint by addding consent agreement, documents and sales manager
+   * enhanced POST app release status/details endpoint by adding sales manager value
+
+### Technical Support
+n/a
+
+### Bugfix
+* App instance/tenant management fixed to ensure correct company client/tenant displayed inside "my business app"
+
 ## 0.6.0
 
 ### Change

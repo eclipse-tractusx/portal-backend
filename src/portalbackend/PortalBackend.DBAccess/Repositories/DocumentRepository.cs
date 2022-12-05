@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -89,10 +89,27 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void Remove(Document document) => 
-        _dbContext.Documents.Remove(document);
+    public void RemoveDocument(Guid documentId) => 
+        _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default));
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
         this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+
+    /// <inheritdoc />
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+        _dbContext.Documents
+            .AsNoTracking()
+            .Where(x => x.Id == documentId)
+            .Select(document => new {
+                Document = document,
+                Applications = document.CompanyUser!.Company!.CompanyApplications
+            })
+            .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
+                x.Document.Id,
+                x.Document.DocumentStatusId,
+                x.Applications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
+                x.Document.DocumentTypeId,
+                x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
+            .SingleOrDefaultAsync();
 }

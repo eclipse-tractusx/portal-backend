@@ -23,7 +23,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 /// <summary>
 /// Possible types of a notification
 /// </summary>
-public enum NotificationTypeId : int
+public enum NotificationTypeId
 {
     /// <summary>
     /// Notification is just an information for the user
@@ -84,4 +84,19 @@ public enum NotificationTypeId : int
     /// Technical user was created
     /// </summary>
     TECHNICAL_USER_CREATION = 12,
+    
+    /// <summary>
+    /// Service request
+    /// </summary>
+    SERVICE_REQUEST = 13,
+    
+    /// <summary>
+    /// Activation of a service
+    /// </summary>
+    SERVICE_ACTIVATION = 14,
+
+    /// <summary>
+    /// Role Added for Active App
+    /// </summary>
+    APP_ROLE_ADDED = 15
 }
