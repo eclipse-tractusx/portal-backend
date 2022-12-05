@@ -326,7 +326,7 @@ public class OfferService : IOfferService
         if (string.IsNullOrWhiteSpace(results.Single(x => x.IsIamUser).CompanyShortName))
             throw new ControllerArgumentException($"No matching company found for user {iamUserId}", nameof(iamUserId));
 
-        if (results.All(x => x.CompanyUserId != data.SalesManager))
+        if (data.SalesManager.HasValue && results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
