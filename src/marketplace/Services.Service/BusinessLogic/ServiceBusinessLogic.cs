@@ -147,7 +147,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ForbiddenException($"User {iamUserId} is not allowed to change the service.");
         }
 
-        await _offerService.ValidateSalesManager(data.SalesManager, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        if (data.SalesManager.HasValue)
+        {
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.AttachAndModifyOffer(
@@ -160,7 +163,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             },
             offer =>
             {
-                offer.SalesManagerId = Guid.Empty;
+                offer.SalesManagerId = serviceData.SalesManagerId;
             });
 
         _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), serviceData.Descriptions);
