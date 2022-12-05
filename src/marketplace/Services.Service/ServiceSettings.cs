@@ -60,7 +60,7 @@ public class ServiceSettings
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> AprroveServiceUserRoles { get; init; } = null!;
+    public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
 
 }
 

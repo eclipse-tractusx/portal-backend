@@ -42,7 +42,6 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     private readonly IOfferService _offerService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly ServiceSettings _settings;
-    private readonly INotificationService _notificationService;
 
     /// <summary>
     /// Constructor.
@@ -51,18 +50,16 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <param name="offerService">Access to the offer service</param>
     /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
     /// <param name="settings">Access to the settings</param>
-    /// <param name="notificationService"></param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
         IOfferSubscriptionService offerSubscriptionService,
-        IOptions<ServiceSettings> settings, INotificationService notificationService)
+        IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
         _offerSubscriptionService = offerSubscriptionService;
         _settings = settings.Value;
-        _notificationService = notificationService;
     }
 
     /// <inheritdoc />
@@ -196,38 +193,6 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId));
 
     /// <inheritdoc/>
-    public async Task ApproveServiceRequestAsync(Guid appId, string iamUserId)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, OfferTypeId.SERVICE).ConfigureAwait(false);
-        if (appDetails == default)
-        {
-            throw new NotFoundException($"Service not found. Either Not Existing or incorrect offer type");
-        }
-        if (!appDetails.IsStatusInReview)
-        {
-            throw new ConflictException($"Service is in InCorrect Status");
-        }
-        if (appDetails.OfferName is null)
-        {
-            throw new ConflictException("Service Name is not yet set.");
-        }
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        offerRepository.AttachAndModifyOffer(appId, app =>
-        {
-            app.OfferStatusId = OfferStatusId.ACTIVE;
-        });
-        var notificationContent = new
-        {
-            OfferId = appId,
-            ServiceName = appDetails.OfferName
-        };
-
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = _settings.ApproveServiceNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.AprroveServiceUserRoles, requesterId, content).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
+    public Task ApproveServiceRequestAsync(Guid appId, string iamUserId) =>
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles);
 }
