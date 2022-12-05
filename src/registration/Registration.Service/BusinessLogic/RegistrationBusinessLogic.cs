@@ -358,11 +358,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
 
-        var companyUserId = companyRoleAgreementConsentData.CompanyUserId;
-        var companyId = companyRoleAgreementConsentData.CompanyId;
-        var applicationStatusId = companyRoleAgreementConsentData.CompanyApplicationStatusId;
-        var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
-        var consents = companyRoleAgreementConsentData.Consents;
+        var (companyUserId, companyId, applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
 
         var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
             .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementIds)
@@ -384,19 +380,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ControllerArgumentException("consent must be given to all CompanyRole assigned agreements");
         }
 
-        foreach (var companyAssignedRoleToRemove in companyAssignedRoles
-            .Where(companyAssignedRole =>
-                !companyRoleIdsToSet.Contains(companyAssignedRole.CompanyRoleId)))
-        {
-            companyRolesRepository.RemoveCompanyAssignedRole(companyAssignedRoleToRemove);
-        }
+        companyRolesRepository.RemoveCompanyAssignedRoles(companyId, companyAssignedRoleIds.Except(companyRoleIdsToSet));
 
-        foreach (var companyRoleIdToAdd in companyRoleIdsToSet
-            .Where(companyRoleId =>
-                !companyAssignedRoles.Any(companyAssignedRole =>
-                    companyAssignedRole.CompanyRoleId == companyRoleId)))
+        foreach (var companyRoleId in companyRoleIdsToSet.Except(companyAssignedRoleIds))
         {
-            companyRolesRepository.CreateCompanyAssignedRole(companyId, companyRoleIdToAdd);
+            companyRolesRepository.CreateCompanyAssignedRole(companyId, companyRoleId);
         }
 
         HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, companyUserId);

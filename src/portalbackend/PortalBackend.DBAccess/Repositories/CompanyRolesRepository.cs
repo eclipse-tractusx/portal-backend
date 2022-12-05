@@ -43,8 +43,8 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 companyRoleId
             )).Entity;
 
-    public CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole) =>
-        _dbContext.Remove(companyAssignedRole).Entity;
+    public void RemoveCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+        _dbContext.RemoveRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
 
     public Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications
@@ -53,7 +53,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault(),
                 application.CompanyId,
                 application.ApplicationStatusId,
-                application.Company.CompanyAssignedRoles,
+                application.Company.CompanyAssignedRoles.Select(ar => ar.CompanyRoleId),
                 application.Company.Consents.Select(c => new ConsentData(c.Id, c.ConsentStatusId, c.AgreementId))))
             .SingleOrDefaultAsync();
 

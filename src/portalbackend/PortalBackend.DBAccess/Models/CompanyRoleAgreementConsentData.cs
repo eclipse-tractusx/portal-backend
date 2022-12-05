@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -27,7 +26,7 @@ public record CompanyRoleAgreementConsentData(
     Guid CompanyUserId, 
     Guid CompanyId,
     CompanyApplicationStatusId CompanyApplicationStatusId,
-    IEnumerable<CompanyAssignedRole> CompanyAssignedRoles,
+    IEnumerable<CompanyRoleId> CompanyAssignedRoleIds,
     IEnumerable<ConsentData> Consents);
     
 public record ConsentData(Guid ConsentId, ConsentStatusId ConsentStatusId, Guid AgreementId);
