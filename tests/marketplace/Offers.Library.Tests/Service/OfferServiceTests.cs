@@ -929,10 +929,20 @@ public class OfferServiceTests
     public async Task DeclineOfferAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId)
     {
         // Arrange
+        var offer = _fixture.Create<Offer>();
         var offerId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, _iamUserId, offerTypeId))
             .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), true));
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes(x =>
+            {
+                var setOptionalParameters = x.GetArgument<Action<Offer>>("setOptionalParameters")!;
+                var initializeParemeters = x.GetArgument<Action<Offer>?>("initializeParemeters");
 
+                setOptionalParameters.Invoke(offer);
+                initializeParemeters?.Invoke(offer);
+            });
+        
         var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, _mailingService);
 
         // Act
@@ -943,6 +953,7 @@ public class OfferServiceTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
+        offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
     }
 
     #endregion
