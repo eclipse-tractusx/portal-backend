@@ -307,4 +307,21 @@ public class AppsControllerTests
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
+        
+    [Fact]
+    public async Task DeclineAppRequest_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }
