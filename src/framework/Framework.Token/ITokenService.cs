@@ -18,24 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Token;
 
-/// <summary>
-/// Data Object for the Offer Release data
-/// </summary>
-/// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
-/// <param name="ProviderCompanyId"></param>
-/// <param name="CompanyName"></param>
-/// <param name="IsDescriptionLongNotSet"></param>
-/// <param name="IsDescriptionShortNotSet"></param>
-/// <returns></returns>
-public record OfferReleaseData(
-    string? Name,
-    string? ThumbnailUrl,
-    Guid? SalesManagerId,
-    Guid? ProviderCompanyId,
-    string CompanyName,
-    bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+public interface ITokenService
+{
+    Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken);
+}

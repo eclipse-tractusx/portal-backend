@@ -258,7 +258,27 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
         this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
-    
+
+    /// <summary>
+    /// Submit an Service for release
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the service.</param>
+    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit</remarks>
+    /// <response code="204">The service was successfully submitted for release.</response>
+    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
+    /// <response code="404">service does not exist.</response>
+    [HttpPut]
+    [Route("{serviceId:guid}/submit")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
+    {
+        await this.WithIamUserId(userId => _serviceBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
     /// <summary>
     /// Approve Service to change status from IN_REVIEW to Active and create notification
     /// </summary>

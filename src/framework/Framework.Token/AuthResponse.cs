@@ -18,24 +18,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
 
-/// <summary>
-/// Data Object for the Offer Release data
-/// </summary>
-/// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
-/// <param name="ProviderCompanyId"></param>
-/// <param name="CompanyName"></param>
-/// <param name="IsDescriptionLongNotSet"></param>
-/// <param name="IsDescriptionShortNotSet"></param>
-/// <returns></returns>
-public record OfferReleaseData(
-    string? Name,
-    string? ThumbnailUrl,
-    Guid? SalesManagerId,
-    Guid? ProviderCompanyId,
-    string CompanyName,
-    bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+namespace Org.CatenaX.Ng.Portal.Backend.Framework.Token;
+
+public record AuthResponse(
+    [property:JsonPropertyName("access_token")]
+    string?  AccessToken,
+
+    [property:JsonPropertyName("expires_in")]
+    int  ExpiresIn,
+
+    [property:JsonPropertyName("refresh_expires_in")]
+    int RefreshExpiresIn,
+
+    [property:JsonPropertyName("refresh_token")]
+    string? RefreshToken,
+
+    [property:JsonPropertyName("token_type")]
+    string? TokenType,
+
+    [property:JsonPropertyName("id_token")]
+    string? IdToken,
+
+    [property:JsonPropertyName("notbeforepolicy")]
+    int NotBeforePolicy,
+
+    [property:JsonPropertyName("session_state")]
+    string? SessionState,
+
+    [property:JsonPropertyName("scope")]
+    string? Scope
+);

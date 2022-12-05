@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
  *
@@ -18,24 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+
+namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
-/// Data Object for the Offer Release data
+/// Service to call the BPDM endpoints
 /// </summary>
-/// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
-/// <param name="ProviderCompanyId"></param>
-/// <param name="CompanyName"></param>
-/// <param name="IsDescriptionLongNotSet"></param>
-/// <param name="IsDescriptionShortNotSet"></param>
-/// <returns></returns>
-public record OfferReleaseData(
-    string? Name,
-    string? ThumbnailUrl,
-    Guid? SalesManagerId,
-    Guid? ProviderCompanyId,
-    string CompanyName,
-    bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+public interface IBpdmService
+{
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="data">The bpdm data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
+}
