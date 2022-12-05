@@ -24,5 +24,6 @@ public enum CompanyRoleId : int
 {
     ACTIVE_PARTICIPANT = 1,
     APP_PROVIDER = 2,
-    SERVICE_PROVIDER = 3
+    SERVICE_PROVIDER = 3,
+    OPERATOR = 4,
 }

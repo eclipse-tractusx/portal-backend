@@ -24,7 +24,7 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -34,7 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Xunit;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 
 public class AppBusinessLogicTests
 {
@@ -42,7 +42,7 @@ public class AppBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
-    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
+    private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IUserRepository _userRepository;
 
     public AppBusinessLogicTests()
@@ -53,9 +53,13 @@ public class AppBusinessLogicTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
+        _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _userRepository = A.Fake<IUserRepository>();
+
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
     }
 
     [Fact]
@@ -66,11 +70,8 @@ public class AppBusinessLogicTests
         var (companyUser, iamUser) = CreateTestUserPair();
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        _fixture.Inject(_portalRepositories);
 
-        var sut = _fixture.Create<AppsBusinessLogic>();
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
 
         // Act
         await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
@@ -89,10 +90,9 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
             .Returns(companyUser.Id);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        _fixture.Inject(_portalRepositories);
 
-        var sut = _fixture.Create<AppsBusinessLogic>();
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+
 
         // Act
         await sut.RemoveFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
@@ -102,37 +102,98 @@ public class AppBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
+    #region GetAllActiveApps
+    
     [Fact]
-    public async Task AddCompanyAppSubscription_ExecutesSuccessfully()
+    public async Task GetAllActiveAppsAsync_ExecutesSuccessfully()
+    {
+        // Arrange
+        var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, string?, string?, string?>>(5);
+        A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, A.Fake<IOptions<AppsSettings>>());
+
+        // Act
+        var result = await sut.GetAllActiveAppsAsync().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(5);
+    }
+    
+    #endregion
+
+    #region GetAllUserUserBusinessApps
+
+    [Fact]
+    public async Task GetAllUserUserBusinessAppsAsync_WithValidData_ReturnsExpectedData()
+    {
+        // Arrange
+        var appData = _fixture.CreateMany<(Guid, string?, string, string?, string)>(5);
+        A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+
+        // Act
+        var result = await sut.GetAllUserUserBusinessAppsAsync(_fixture.Create<string>()).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNullOrEmpty();
+        result.Should().HaveCount(5);
+    }
+
+    #endregion
+    
+    #region Get App Agreement
+
+    [Fact]
+    public async Task GetAppAgreement_WithUserId_ReturnsAgreementData()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var appName = "Test App";
-        var providerName = "New Provider";
-        var providerContactEmail = "email@provider.com";
-        var (companyUser, iamUser) = CreateTestUserPair();
-
-        A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAsync(appId, iamUser.UserEntityId, OfferTypeId.APP))
-            .Returns(new ValueTuple<Guid, OfferSubscription?, string, Guid>(companyUser.CompanyId, null, "umbrella corporation", companyUser.Id));
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id))
-            .Returns(new OfferSubscription(Guid.NewGuid(), appId, companyUser.CompanyId, OfferSubscriptionStatusId.PENDING, companyUser.Id, companyUser.Id));
-        A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(appId, OfferTypeId.APP))
-            .Returns(new OfferProviderDetailsData(appName, providerName, providerContactEmail, Guid.NewGuid(), null));
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
-        _fixture.Inject(_portalRepositories);
-        var mailingService = A.Fake<IMailingService>();
-        _fixture.Inject(mailingService);
-
-        var sut = _fixture.Create<AppsBusinessLogic>();
+        var offerService = A.Fake<IOfferService>();
+        var data = _fixture.CreateMany<AgreementData>(1);
+        A.CallTo(() => offerService.GetOfferAgreementsAsync(A<Guid>.That.Matches(x => x == appId), A<OfferTypeId>._))
+            .Returns(data.ToAsyncEnumerable());
+        var sut = new AppsBusinessLogic(null!, null!, offerService, Options.Create(new AppsSettings()));
 
         // Act
-        await sut.AddOwnCompanyAppSubscriptionAsync(appId, iamUser.UserEntityId);
+        var result = await sut.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._)).MustHaveHappened(1, Times.Exactly);
-        A.CallTo(() => mailingService.SendMails(providerContactEmail, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened(1, Times.Exactly);
+        result.Should().ContainSingle();
     }
+
+    #endregion
+
+    #region Add Service Subscription
+
+    [Fact]
+    public async Task AddServiceSubscription_ReturnsCorrectId()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
+            .ReturnsLazily(() => offerSubscriptionId);
+        var sut = new AppsBusinessLogic(A.Fake<IPortalRepositories>(), offerSubscriptionService , A.Fake<IOfferService>(), Options.Create(new AppsSettings()));
+
+        // Act
+        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData, "44638c72-690c-42e8-bd5e-c8ac3047ff82", "THISISAACCESSTOKEN").ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(offerSubscriptionId);
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(
+                A<Guid>._,
+                A<IEnumerable<OfferAgreementConsentData>>._,
+                A<string>._,
+                A<string>._,
+                A<IDictionary<string, IEnumerable<string>>>._,
+                A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
+                A<string>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
 
     #region Auto setup service
 
@@ -142,11 +203,11 @@ public class AppBusinessLogicTests
         var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
         // Arrange
         var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => offerService.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 
-        var sut = new AppsBusinessLogic(null!, null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
+        var sut = new AppsBusinessLogic(null!, null!, offerService, _fixture.Create<IOptions<AppsSettings>>());
 
         // Act
         var result = await sut.AutoSetupAppAsync(data, IamUserId).ConfigureAwait(false);
@@ -157,6 +218,32 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region GetCompanyProvidedAppSubscriptionStatusesForUser
+    
+    [Fact]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<string>();
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, null))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Count(), data.Skip(skip).Take(take)))!);
+
+        var appsSettings = new AppsSettings
+        {
+            ApplicationsMaxPageSize = 15
+        };
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(appsSettings));
+
+        // Act
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null).ConfigureAwait(false);
+
+        // Assert
+        result.Content.Should().HaveCount(5);
+    }
+
+    #endregion
+    
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()

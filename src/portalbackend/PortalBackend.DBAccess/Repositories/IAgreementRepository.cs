@@ -77,6 +77,8 @@ public interface IAgreementRepository
     /// <returns></returns>
     
     Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId);
+
+    /// <summary>
     /// Checks whether the given agreements exists in the database
     /// </summary>
     /// <param name="agreementIds">Ids of the agreements</param>
@@ -84,4 +86,14 @@ public interface IAgreementRepository
     /// <param name="offerTypeId">The OfferTypeId that the agreement must be associated with</param>
     /// <returns>Returns <c>true</c> if the agreements were found, otherwise <c>false</c>.</returns>
     Task<bool> CheckAgreementsExistsForSubscriptionAsync(IEnumerable<Guid> agreementIds, Guid subscriptionId, OfferTypeId offerTypeId);
+
+    
+    /// <summary>
+    /// Checks whether the given agreements exists in the database
+    /// </summary>
+    /// <param name="agreementIds">Ids of the agreements</param>
+    /// <param name="offerId">Id of the offer the agreement must be associated with</param>
+    /// <param name="offerTypeId">The OfferTypeId that the agreement must be associated with</param>
+    /// <returns>Returns <c>true</c> if the agreements were found, otherwise <c>false</c>.</returns>
+    Task<bool> CheckAgreementsExistsForOfferAsync(IEnumerable<Guid> agreementIds, Guid offerId, OfferTypeId offerTypeId);
 }

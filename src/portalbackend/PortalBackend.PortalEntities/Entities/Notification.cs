@@ -28,28 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 public class Notification
 {
     /// <summary>
-    /// Only needed for ef core
-    /// </summary>
-    private Notification()
-    {
-    }
-
-    /// <summary>
-    /// Use this constructor only when attaching the Notification to the database
-    /// </summary>
-    /// <param name="id">Id of the notification</param>
-    public Notification(Guid id)
-    {
-        Id = id;
-    }
-
-    /// <summary>
     /// Creates a new instance of <see cref="Notification"/> and sets the required values.
     /// </summary>
     /// <param name="id">Id of the notification</param>
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="dateCreated">The creation date</param>
-    /// <param name="content">Contains the message content. The Content is a deserialized json object</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
     public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
@@ -70,7 +53,7 @@ public class Notification
     public string? Content { get; set; }
 
     public NotificationTypeId NotificationTypeId { get; private set; }
-    
+
     public bool IsRead { get; set; }
 
     public DateTimeOffset? DueDate { get; set; }
@@ -79,6 +62,6 @@ public class Notification
 
     // Navigation properties
     public virtual CompanyUser? Receiver { get; set; }
-    public virtual NotificationType? NotificationType { get; private set; }
-    public virtual CompanyUser? Creator { get; private set; }
+    public virtual NotificationType? NotificationType { get; set; }
+    public virtual CompanyUser? Creator { get; set; }
 }

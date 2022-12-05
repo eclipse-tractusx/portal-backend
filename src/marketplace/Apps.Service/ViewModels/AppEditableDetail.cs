@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
@@ -30,12 +32,3 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
 public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
-
-/// <summary>
-/// Model for LanguageCode and Description
-/// </summary>
-/// <param name="LanguageCode"></param>
-/// <param name="LongDescription"></param>
-/// <param name="ShortDescription"></param>
-/// <returns></returns>
-public record Localization(string LanguageCode, string LongDescription, string ShortDescription);

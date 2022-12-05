@@ -29,9 +29,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
@@ -41,7 +41,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private readonly RegistrationSettings _settings;
     private readonly IMailingService _mailingService;
-    private readonly IBPNAccess _bpnAccess;
+    private readonly IBpnAccess _bpnAccess;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
@@ -50,7 +50,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
         IMailingService mailingService,
-        IBPNAccess bpnAccess,
+        IBpnAccess bpnAccess,
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
@@ -68,7 +68,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
-    public Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token)
+    public IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
     {
         var regex = new Regex(@"(\w|\d){16}");
         if (!regex.IsMatch(companyIdentifier))
@@ -76,7 +76,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
         }
 
-        return _bpnAccess.FetchBusinessPartner(companyIdentifier, token);
+        return _bpnAccess.FetchBusinessPartner(companyIdentifier, token, cancellationToken);
     }
 
     public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken)
@@ -163,29 +163,38 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return result;
     }
 
-    public async Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
+    public Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
     {
-        if (String.IsNullOrWhiteSpace(companyWithAddress.Name))
+        if (string.IsNullOrWhiteSpace(companyWithAddress.Name))
         {
-            throw new ArgumentException("Name must not be empty");
+            throw new ControllerArgumentException("Name must not be empty", nameof(companyWithAddress.Name));
         }
-        if (String.IsNullOrWhiteSpace(companyWithAddress.City))
+        if (string.IsNullOrWhiteSpace(companyWithAddress.City))
         {
-            throw new ArgumentException("City must not be empty");
+            throw new ControllerArgumentException("City must not be empty", nameof(companyWithAddress.City));
         }
-        if (String.IsNullOrWhiteSpace(companyWithAddress.StreetName))
+        if (string.IsNullOrWhiteSpace(companyWithAddress.StreetName))
         {
-            throw new ArgumentException("Streetname must not be empty");
+            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyWithAddress.StreetName));
         }
         if (companyWithAddress.CountryAlpha2Code.Length != 2)
         {
-            throw new ArgumentException("CountryAlpha2Code must be 2 chars");
+            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyWithAddress.CountryAlpha2Code));
         }
-        var companyApplicationData = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyWithAddress.CompanyId, iamUserId).ConfigureAwait(false);
+        return SetCompanyWithAddressInternal(applicationId, companyWithAddress, iamUserId);
+    }
+
+    private async Task SetCompanyWithAddressInternal(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
+    {
+        var companyApplicationData = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyWithAddress.CompanyId, iamUserId)
+            .ConfigureAwait(false);
         if (companyApplicationData == null)
         {
-            throw new NotFoundException($"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
+            throw new NotFoundException(
+                $"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
         }
+
         if (companyApplicationData.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
@@ -200,10 +209,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         if (company.Address == null)
         {
             company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
-                    companyWithAddress.City,
-                    companyWithAddress.StreetName,
-                    companyWithAddress.CountryAlpha2Code
-                );
+                companyWithAddress.City,
+                companyWithAddress.StreetName,
+                companyWithAddress.CountryAlpha2Code
+            );
         }
         else
         {
@@ -211,6 +220,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             company.Address.Streetname = companyWithAddress.StreetName;
             company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
         }
+
         company.Address.Zipcode = companyWithAddress.Zipcode;
         company.Address.Region = companyWithAddress.Region;
         company.Address.Streetadditional = companyWithAddress.Streetadditional;
@@ -222,7 +232,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string iamUserId)
+    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId)
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
@@ -231,47 +241,35 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return InviteNewUserInternalAsync(applicationId, userCreationInfo, iamUserId);
     }
 
-    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfo userCreationInfo, string iamUserId)
+    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId)
     {
         if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, iamUserId))
         {
             throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
         }
 
-        var applicationData = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
-        if (applicationData == default)
+        var (companyNameIdpAliasData, createdByName) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId, applicationId).ConfigureAwait(false);
+
+        IEnumerable<UserRoleData>? userRoleDatas = null;
+
+        if (userCreationInfo.Roles.Any())
         {
-            throw new NotFoundException($"application {applicationId} does not exist");
-        }
-        var (companyId, companyName, idpAlias, creatorId) = applicationData;
-        if (creatorId == null)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
-        }
-        if (idpAlias == null)
-        {
-            throw new ConflictException($"shared idp for CompanyApplication {applicationId} not found");
+            var clientRoles = new Dictionary<string,IEnumerable<string>> {
+                { _settings.KeyCloakClientID, userCreationInfo.Roles }
+            };
+            userRoleDatas = await _userProvisioningService.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
         }
 
-        var companyNameIdpAliasData = new CompanyNameIdpAliasData(
-            companyId,
-            companyName,
-            null,
-            creatorId,
-            idpAlias,
-            true
-        );
-
-        var userCreationInfoIdps = new [] { new UserCreationInfoIdp(
+        var userCreationInfoIdps = new [] { new UserCreationRoleDataIdpInfo(
             userCreationInfo.firstName ?? "",
             userCreationInfo.lastName ?? "",
             userCreationInfo.eMail,
-            userCreationInfo.Roles,
+            userRoleDatas ?? Enumerable.Empty<UserRoleData>(),
             userCreationInfo.userName ?? userCreationInfo.eMail,
             ""
         )}.ToAsyncEnumerable();
 
-        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, _settings.KeyCloakClientID, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {
@@ -288,12 +286,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             inviteTemplateName = "inviteWithMessage";
         }
 
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
+        
         var mailParameters = new Dictionary<string, string>
         {
             { "password", password },
-            { "companyname", companyName },
+            { "companyName", companyDisplayName },
             { "message", userCreationInfo.Message ?? "" },
-            { "nameCreatedBy", iamUserId },
+            { "nameCreatedBy", createdByName },
             { "url", _settings.BasePortalAddress },
             { "username", userCreationInfo.eMail },
         };
@@ -319,59 +319,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
         }
 
-        var application = applicationUserData.CompanyApplication;
-        switch (application.ApplicationStatusId)
-        {
-            case CompanyApplicationStatusId.CREATED:
-                if (status != CompanyApplicationStatusId.ADD_COMPANY_DATA)
-                {
-                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.ADD_COMPANY_DATA}");
-                }
-                application.ApplicationStatusId = status;
-                break;
-
-            case CompanyApplicationStatusId.ADD_COMPANY_DATA:
-                if (status != CompanyApplicationStatusId.INVITE_USER)
-                {
-                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.INVITE_USER}");
-                }
-                application.ApplicationStatusId = status;
-                break;
-
-            case CompanyApplicationStatusId.INVITE_USER:
-                if (status != CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
-                {
-                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SELECT_COMPANY_ROLE}");
-                }
-                application.ApplicationStatusId = status;
-                break;
-
-            case CompanyApplicationStatusId.SELECT_COMPANY_ROLE:
-                if (status != CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
-                {
-                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.UPLOAD_DOCUMENTS}");
-                }
-                application.ApplicationStatusId = status;
-                break;
-
-            case CompanyApplicationStatusId.UPLOAD_DOCUMENTS:
-                if (status != CompanyApplicationStatusId.VERIFY)
-                {
-                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.VERIFY}");
-                }
-                application.ApplicationStatusId = status;
-                break;
-
-            case CompanyApplicationStatusId.VERIFY:
-                if (status != CompanyApplicationStatusId.SUBMITTED)
-                {
-                    throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SUBMITTED}");
-                }
-                application.ApplicationStatusId = status;
-                break;
-            default:
-                throw new ArgumentException($"invalid status update requested {status}, current status is {application.ApplicationStatusId}");
-        }
+        ValidateCompanyApplicationStatus(status, applicationUserData);
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -415,12 +363,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var companyAssignedRoles = companyRoleAgreementConsentData.CompanyAssignedRoles;
         var activeConsents = companyRoleAgreementConsentData.Consents;
 
-        var companyRoleAssignedAgreements = new Dictionary<CompanyRoleId, IEnumerable<Guid>>();
-        await foreach (var companyRoleAgreement in companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet).ConfigureAwait(false))
-        {
-            companyRoleAssignedAgreements[companyRoleAgreement.CompanyRoleId] = companyRoleAgreement.AgreementIds;
-        }
+        var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
+            .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementIds)
+            .ConfigureAwait(false);
 
+        var invalidRoles = companyRoleIdsToSet.Except(companyRoleAssignedAgreements.Keys);
+        if (invalidRoles.Any())
+        {
+            throw new ControllerArgumentException($"invalid companyRole: {String.Join(", ", invalidRoles)}");
+        }
         if (!companyRoleIdsToSet
             .All(companyRoleIdToSet =>
                 companyRoleAssignedAgreements[companyRoleIdToSet].All(assignedAgreementId =>
@@ -429,7 +380,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                             agreementConsent.AgreementId == assignedAgreementId
                             && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE))))
         {
-            throw new ArgumentException("consent must be given to all CompanyRole assigned agreements");
+            throw new ControllerArgumentException("consent must be given to all CompanyRole assigned agreements");
         }
 
         foreach (var companyAssignedRoleToRemove in companyAssignedRoles
@@ -512,7 +463,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         else
         {
-            _logger.LogInformation($"user {iamUserId} has no email-address");
+            _logger.LogInformation("user {IamUserId} has no email-address", iamUserId);
         }
 
         return true;
@@ -555,7 +506,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
     {
-        var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
+        var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId, _settings.DocumentTypeIds).ConfigureAwait(false);
         if (registrationData == null)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
@@ -563,7 +514,35 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return registrationData;
     }
 
-    private void UpdateApplicationStatus(CompanyApplication application, UpdateApplicationSteps type)
+    public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null) =>
+        _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
+
+    private static void ValidateCompanyApplicationStatus(CompanyApplicationStatusId status,
+        CompanyApplicationUserData applicationUserData)
+    {
+        var application = applicationUserData.CompanyApplication;
+        var allowedCombination = new List<(CompanyApplicationStatusId applicationStatus, CompanyApplicationStatusId status)>
+        {
+            new(CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA),
+            new(CompanyApplicationStatusId.ADD_COMPANY_DATA, CompanyApplicationStatusId.INVITE_USER),
+            new(CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.SELECT_COMPANY_ROLE),
+            new(CompanyApplicationStatusId.SELECT_COMPANY_ROLE, CompanyApplicationStatusId.UPLOAD_DOCUMENTS),
+            new(CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY),
+            new(CompanyApplicationStatusId.VERIFY, CompanyApplicationStatusId.SUBMITTED),
+        };
+
+        if (!allowedCombination.Any(x =>
+                x.applicationStatus == application.ApplicationStatusId &&
+                x.status == status))
+        {
+            throw new ArgumentException(
+                $"invalid status update requested {status}, current status is {application.ApplicationStatusId}, possible values are: {CompanyApplicationStatusId.SUBMITTED}");
+        }
+
+        application.ApplicationStatusId = status;
+    }
+
+    private static void UpdateApplicationStatus(CompanyApplication application, UpdateApplicationSteps type)
     {
         if (application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
             || application.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED
@@ -604,16 +583,46 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     throw new ForbiddenException($"Application status is not fitting to the pre-requisite");
                 }
-                else
-                {
-                    application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
-                }
+
+                application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 break;
             }
         }
     }
 
-    public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
-        _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRolesAsync(languageShortName);
+    public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId)
+    {
+        if (documentId == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"documentId must not be empty");
+        }
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId, _settings.ApplicationStatusIds).ConfigureAwait(false);
+        if (details == default)
+        {
+            throw new NotFoundException("Document does not exist.");
+        }
+        if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
+        {
+            throw new ConflictException($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+        }
+        if (details.IsQueriedApplicationStatus)
+        {
+            throw new ConflictException("Document deletion is not allowed. Application is already closed.");
+        }
+        if (!details.IsSameApplicationUser)
+        {
+            throw new ForbiddenException("User is not allowed to delete this document");
+        }
+        if (details.DocumentStatusId != DocumentStatusId.PENDING)
+        {
+            throw new ConflictException("Document deletion is not allowed. The document is locked.");
+        }
+
+        documentRepository.RemoveDocument(details.DocumentId);
+
+        await this._portalRepositories.SaveAsync().ConfigureAwait(false);
+        return true;
+    }
 
 }

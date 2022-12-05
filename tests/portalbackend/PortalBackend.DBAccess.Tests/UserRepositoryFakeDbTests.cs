@@ -77,47 +77,6 @@ public class UserRepositoryFakeDbTests
     }
     
     [Fact]
-    public async Task GetBusinessApps_ReturnsAppListSuccessfully()
-    {
-        // Arrange
-        var expectedApp = _fixture.Create<Offer>();
-        var (companyUser, iamUser) = CreateTestUserPair();
-        companyUser.Company!.BoughtOffers.Add(expectedApp);
-        foreach (var app in _fixture.CreateMany<Offer>())
-        {
-            companyUser.Company.BoughtOffers.Add(app);
-        }
-
-        var iamClient = _fixture.Create<IamClient>();
-        var expectedAppInstance = new AppInstance(Guid.NewGuid(), expectedApp.Id, iamClient.Id);
-        iamClient.AppInstances.Add(expectedAppInstance);
-        foreach (var appInstance in _fixture.CreateMany<AppInstance>())
-        {
-            iamClient.AppInstances.Add(appInstance);
-        }
-
-        foreach (var role in _fixture.Build<UserRole>().With(r => r.Offer, expectedApp).With(x => x.OfferId, expectedApp.Id).CreateMany())
-        {
-            companyUser.UserRoles.Add(role);
-        }
-
-        var iamUserFakeDbSet = new List<IamUser>() { iamUser }.AsFakeDbSet();
-
-        A.CallTo(() => _contextFake.IamUsers).Returns(iamUserFakeDbSet);
-        _fixture.Inject(_contextFake);
-
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync(iamUser.UserEntityId).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(1);
-        result.Single().Id.Should().Be(expectedApp.Id);
-    }
-
-    [Fact]
     public async Task GetCompanyUserWithRoleId_ReturnsExpectedCompanyUsers()
     {
         // Arrange

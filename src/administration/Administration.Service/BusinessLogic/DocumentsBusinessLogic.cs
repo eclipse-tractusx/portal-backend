@@ -75,7 +75,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             throw new ArgumentException("Incorrect document status");
         }
 
-        documentRepository.Remove(new Document(details.DocumentId));
+        documentRepository.RemoveDocument(details.DocumentId);
         if (details.ConsentIds.Any())
         {
             _portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x)));

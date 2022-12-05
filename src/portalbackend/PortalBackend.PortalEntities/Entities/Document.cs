@@ -36,15 +36,6 @@ public class Document
         Companies = new HashSet<Company>();
     }
     
-    /// <summary>
-    /// Please only use when attaching the Document to the database
-    /// </summary>
-    /// <param name="id"></param>
-    public Document(Guid id) : this()
-    {
-        Id = id;
-    }
-
     public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId) : this()
     {
         Id = id;

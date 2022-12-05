@@ -81,11 +81,11 @@ public partial class ProvisioningManager : IProvisioningManager
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
-    public async Task<string> CreateOwnIdpAsync(string organisationName, IamIdentityProviderProtocol providerProtocol)
+    public async Task<string> CreateOwnIdpAsync(string displayName, IamIdentityProviderProtocol providerProtocol)
     {
         var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderAsync(idpName, organisationName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
+        await CreateCentralIdentityProviderAsync(idpName, displayName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
 
         return idpName;
     }
@@ -195,6 +195,9 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         return (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).Enabled ?? false;
     }
+
+    public async Task<string> GetCentralIdentityProviderDisplayName(string alias) =>
+        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).DisplayName;
 
     public async ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias)
     {

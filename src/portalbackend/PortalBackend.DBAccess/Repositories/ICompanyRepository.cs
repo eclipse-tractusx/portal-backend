@@ -36,21 +36,18 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
-    Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null);
+    void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     
-    Task<(string? Name, Guid Id)> GetCompanyNameIdUntrackedAsync(string iamUserId);
-
-    Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
+    Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     /// <summary>
-    /// Checks an set of CompanyIds for existence and returns the associated BusinessPartnerNumber if requested
+    /// Checks the bpn for existence and returns the associated CompanyId
     /// </summary>
-    /// <param name="companyId">Id of the company to check</param>
-    /// <param name="bpnRequested">whether the assigned businessPartnerNumber should be returned</param>
-    /// <returns>(CompanyId, BusinessPartnerNumber) for any company that exists</returns>
-    IAsyncEnumerable<(Guid CompanyId, string? BusinessPartnerNumber)> GetConnectorCreationCompanyDataAsync(IEnumerable<(Guid companyId, bool bpnRequested)> parameters);
+    /// <param name="businessPartnerNumber">The business partner number</param>
+    /// <returns>the company id or guid empty if not found</returns>
+    Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber);
 
     /// <summary>
     /// Get all member companies bpn
@@ -63,23 +60,40 @@ public interface ICompanyRepository
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
     /// <param name="iamUserId">IAm User Id</param>
-    /// <param name="companyRole">The company Role</param>
+    /// <param name="companyRoleId">The company Role</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUser(string iamUserId, CompanyRoleId companyRoleId);
+    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId);
 
+    Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckProviderCompanyDetailsExistsForUser(string iamUserId, Guid providerCompanyDetailsId);
+    
     /// <summary>
     /// Creates service provider company details
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <param name="dataUrl">Url for the service provider</param>
     /// <returns>Returns the newly created entity</returns>
-    ServiceProviderCompanyDetail CreateServiceProviderCompanyDetail(Guid companyId, string dataUrl);
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl);
 
     /// <summary>
     /// Gets the service provider company details data
     /// </summary>
-    /// <param name="serviceProviderDetailDataId">Id of the details</param>
+    /// <param name="providerDetailDataId">Id of the details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
-    Task<(ServiceProviderDetailReturnData ServiceProviderDetailReturnData, bool IsServiceProviderCompany, bool IsCompanyUser)> GetServiceProviderCompanyDetailAsync(Guid serviceProviderDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany, bool IsCompanyUser)> GetProviderCompanyDetailAsync(Guid providerDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
+    
+    /// <summary>
+    /// Updates the service provider company details
+    /// </summary>
+    /// <param name="providerCompanyDetailId">Id of the service provider company details</param>
+    /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
+    /// <returns></returns>
+    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters);
+
+    /// <summary>
+    /// Gets the business partner number for the given id
+    /// </summary>
+    /// <param name="companyId">Id of the company</param>
+    /// <returns>Returns the business partner number</returns>
+    Task<string?> GetCompanyBpnByIdAsync(Guid companyId);
 }
