@@ -38,7 +38,6 @@
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\Offers.Library\Offers.Library.csproj" />
       <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
-      <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -819,6 +819,80 @@ public class OfferServiceTests
 
     #endregion
 
+    #region ApproveOfferRequest
+
+    [Fact]
+    public async Task ApproveOfferRequestAsync_ExecutesSuccessfully()
+    {
+        //Arrange
+        var offer = _fixture.Build<Offer>().With(o => o.OfferStatusId, OfferStatusId.IN_REVIEW).Create();
+        var requesterId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+       
+        A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, offer.Name));
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId))
+            .ReturnsLazily(() => (requesterId));
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offer.Id, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) => 
+            {
+                initializeParemeters?.Invoke(offer);
+                setOptionalParameters(offer);
+            });
+
+        var approveAppNotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_APPROVAL
+        };
+        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "catenax-portal", new [] { "Sales Manager" } }
+        };
+        var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, null!);
+
+        //Act
+        await sut.ApproveOfferRequestAsync(offer.Id, iamUserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)).MustHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
+       offer.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
+       A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ApproveOfferRequestAsync_WithAppNameNotSet_ThrowsConflictException()
+    {
+        //Arrange
+        var offerId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+       
+        A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offerId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, null));
+
+        var approveAppNotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_APPROVAL
+        };
+        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "catenax-portal", new [] { "Sales Manager" } }
+        };
+        var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, null!);
+
+        //Act
+        Task Act() => sut.ApproveOfferRequestAsync(offerId, iamUserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"Offer {offerId} Name is not yet set.");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupValidateSalesManager()

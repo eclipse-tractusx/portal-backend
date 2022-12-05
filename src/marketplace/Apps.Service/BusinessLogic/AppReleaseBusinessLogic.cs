@@ -539,40 +539,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
-    public async Task ApproveAppRequestAsync(Guid appId, string iamUserId)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appDetails = await offerRepository.GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
-        if (appDetails == default)
-        {
-            throw new NotFoundException($"Apps not found. Either Not Existing or incorrect offer type");
-        }
-        
-        if (!appDetails.IsStatusInReview)
-        {
-            throw new ConflictException($"Apps is in InCorrect Status");
-        }
-
-        if (appDetails.OfferName is null)
-        {
-            throw new ConflictException("App Name is not yet set.");
-        }
-
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        offerRepository.AttachAndModifyOffer(appId, app =>
-        {
-            app.OfferStatusId = OfferStatusId.ACTIVE;
-        });
-        var notificationContent = new
-        {
-            OfferId = appId,
-            AppName = appDetails.OfferName
-        };
-        
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = _settings.ApproveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.AprroveAppUserRoles, requesterId, content).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+    public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
 }

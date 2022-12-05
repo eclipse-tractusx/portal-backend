@@ -440,59 +440,6 @@ public class AppReleaseBusinessLogicTest
         Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
     }
 
-    [Fact]
-    public async Task ApproveAppRequestAsync_ExecutesSuccessfully()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var appName = _fixture.Create<string>();
-        var requesterId = _fixture.Create<Guid>();
-       
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName));
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(_iamUser.UserEntityId))
-            .ReturnsLazily(() => (requesterId));
-        _settings.ApproveAppNotificationTypeIds = new []
-        {
-            NotificationTypeId.APP_RELEASE_APPROVAL
-        };
-        _settings.AprroveAppUserRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { ClientId, new [] { "Sales Manager" } }
-        };
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
-
-        //Act
-        await sut.ApproveAppRequestAsync(appId,_iamUser.UserEntityId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP)).MustHaveHappened();
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(_iamUser.UserEntityId)).MustHaveHappened();
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
-            .MustHaveHappenedOnceExactly();
-       
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
-       
-    }
-
-    [Fact]
-    public async Task ApproveAppRequestAsync_WithAppNameNotSet_ThrowsConflictException()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-       
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferStatusDataByIdAsync(appId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, null));
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
-
-        //Act
-        async Task Act() => await sut.ApproveAppRequestAsync(appId, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("App Name is not yet set.");
-    }
-
     #endregion
 
     #region Setup
