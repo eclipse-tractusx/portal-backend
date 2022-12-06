@@ -535,6 +535,58 @@ public class OfferService : IOfferService
         throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
     }
 
+    /// <inheritdoc/>
+    public async Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
+        if (offerDetails == default)
+        {
+            throw new NotFoundException($"Offer {offerId} not found. Either Not Existing or incorrect offer type");
+        }
+        
+        if (!offerDetails.IsStatusInReview)
+        {
+            throw new ConflictException($"Offer {offerId} is in InCorrect Status");
+        }
+
+        if (offerDetails.OfferName is null)
+        {
+            throw new ConflictException($"Offer {offerId} Name is not yet set.");
+        }
+
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (requesterId == Guid.Empty)
+        {
+            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
+        }
+
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
+        {
+            offer.OfferStatusId = OfferStatusId.ACTIVE;
+        });
+        var notificationContent = offerTypeId switch
+        {
+            OfferTypeId.SERVICE => (object) new
+                {
+                    OfferId = offerId,
+                    ServiceName = offerDetails.OfferName
+                },
+            OfferTypeId.APP => (object) new
+                {
+                    OfferId = offerId,
+                    AppName = offerDetails.OfferName
+                },
+            _ => throw new UnexpectedConditionException($"offerTypeId {offerTypeId} is not implemented yet")
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
     {
         if (languageCodes.Any())

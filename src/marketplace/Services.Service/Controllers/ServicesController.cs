@@ -258,8 +258,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
         this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
-    
-    
+
     /// <summary>
     /// Submit an Service for release
     /// </summary>
@@ -277,6 +276,26 @@ public class ServicesController : ControllerBase
     public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
     {
         await this.WithIamUserId(userId => _serviceBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Approve Service to change status from IN_REVIEW to Active and create notification
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveService</remarks>
+    /// <response code="204">The service was successfully submitted to Active State.</response>
+    /// <response code="409">Service is in InCorrect Status</response>
+    /// <response code="404">service does not exist.</response>
+    [HttpPut]
+    [Route("{serviceId}/approveService")]
+    [Authorize(Roles = "approve_service_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
+    {
+        await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 }

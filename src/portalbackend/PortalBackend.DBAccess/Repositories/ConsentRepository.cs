@@ -70,4 +70,14 @@ public class ConsentRepository : IConsentRepository
                 x.Agreement!.Name
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachAndModifiesConsents(IEnumerable<Guid> consentIds, Action<Consent> setOptionalParameter)
+    {
+        foreach (var consentId in consentIds)
+        {
+            var consent = _portalDbContext.Consents.Attach(new Consent(consentId)).Entity;
+            setOptionalParameter.Invoke(consent);
+        }
+    }
 }
