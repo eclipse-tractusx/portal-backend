@@ -336,18 +336,18 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId) =>
+    public Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
-            .Where(a => a.Id == offerId && a.OfferStatusId == OfferStatusId.CREATED)
-            .Select(c => new OfferReleaseData(
-                c.Name,
-                c.ThumbnailUrl,
-                c.SalesManagerId,
-                c.ProviderCompanyId,
-                c.ProviderCompany!.Name,
-                c.OfferDescriptions.Any(description => (description.DescriptionLong == "")),
-                c.OfferDescriptions.Any(description => (description.DescriptionShort == ""))
+            .Where(o => o.Id == offerId && o.OfferStatusId == OfferStatusId.CREATED && o.OfferTypeId == offerTypeId)
+            .Select(o => new OfferReleaseData(
+                o.Name,
+                o.ThumbnailUrl,
+                o.SalesManagerId,
+                o.ProviderCompanyId,
+                o.ProviderCompany!.Name,
+                o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
+                o.OfferDescriptions.Any(description => description.DescriptionShort == "")
             ))
             .SingleOrDefaultAsync();
 
@@ -447,7 +447,8 @@ public class OfferRepository : IOfferRepository
                 x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
                 x.ServiceTypes.Select(st => new ValueTuple<ServiceTypeId, bool>(st.Id, serviceTypeIds.Contains(st.Id))),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
-                x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
+                x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.SalesManagerId
             ))
             .SingleOrDefaultAsync();
 

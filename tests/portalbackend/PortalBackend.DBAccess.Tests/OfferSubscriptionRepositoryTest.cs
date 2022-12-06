@@ -137,7 +137,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region xy
+    #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
     
     [Theory]
     [InlineData(SubscriptionStatusSorting.OfferIdAsc)]
@@ -150,13 +150,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferTypeId.SERVICE, sorting, null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
         results!.Count.Should().Be(1);
         results.Data.Should().HaveCount(1);
-        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>();
+        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
     }
     
     #endregion
