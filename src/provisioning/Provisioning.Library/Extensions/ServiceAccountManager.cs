@@ -34,7 +34,12 @@ public partial class ProvisioningManager
     {
         var internalClientId = await CreateServiceAccountClient(_CentralIdp, _Settings.CentralRealm, clientId, config.Name, config.IamClientAuthMethod);
         var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
-        var assignedRoles = await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles).ConfigureAwait(false);
+        if (serviceAccountUser.Id == null)
+        {
+            throw new KeycloakEntityConflictException($"serviceAccountUser {internalClientId} has no Id in keycloak");
+        }
+        var assignedRoles = await AssignClientRolesToCentralUserAsync(serviceAccountUser.Id, config.ClientRoles)
+            .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles).ConfigureAwait(false);
 
         var unassignedClientRoles = config.ClientRoles
             .Select(clientRoles => (client: clientRoles.Key, roles: clientRoles.Value.Except(assignedRoles[clientRoles.Key])))

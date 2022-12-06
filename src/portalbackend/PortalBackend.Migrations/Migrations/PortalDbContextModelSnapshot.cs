@@ -44,6 +44,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditAppSubscriptionDetail20221118", b =>
+                {
+                    b.Property<Guid>("AuditV1Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1id");
+
+                    b.Property<Guid?>("AppInstanceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("app_instance_id");
+
+                    b.Property<string>("AppSubscriptionUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("app_subscription_url");
+
+                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_v1date_last_changed");
+
+                    b.Property<Guid?>("AuditV1LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1last_editor_id");
+
+                    b.Property<int>("AuditV1OperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_v1operation_id");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<Guid>("OfferSubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_subscription_id");
+
+                    b.HasKey("AuditV1Id")
+                        .HasName("pk_audit_app_subscription_detail20221118");
+
+                    b.ToTable("audit_app_subscription_detail20221118", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplication20221005", b =>
                 {
                     b.Property<Guid>("AuditV1Id")
@@ -734,6 +780,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(255)")
                         .HasColumnName("app_subscription_url");
 
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
                     b.Property<Guid>("OfferSubscriptionId")
                         .HasColumnType("uuid")
                         .HasColumnName("offer_subscription_id");
@@ -749,6 +799,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_app_subscription_details_offer_subscription_id");
 
                     b.ToTable("app_subscription_details", "portal");
+
+                    b
+                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_APPSUBSCRIPTIONDETAIL", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_APPSUBSCRIPTIONDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_APPSUBSCRIPTIONDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_app_subscription_detail20221118 (\"id\", \"offer_subscription_id\", \"app_instance_id\", \"app_subscription_url\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.offer_subscription_id, \r\n  OLD.app_instance_id, \r\n  OLD.app_subscription_url, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_APPSUBSCRIPTIONDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_APPSUBSCRIPTIONDETAIL AFTER DELETE\r\nON portal.app_subscription_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_APPSUBSCRIPTIONDETAIL();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_APPSUBSCRIPTIONDETAIL", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_APPSUBSCRIPTIONDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_APPSUBSCRIPTIONDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_app_subscription_detail20221118 (\"id\", \"offer_subscription_id\", \"app_instance_id\", \"app_subscription_url\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.offer_subscription_id, \r\n  NEW.app_instance_id, \r\n  NEW.app_subscription_url, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_APPSUBSCRIPTIONDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_APPSUBSCRIPTIONDETAIL AFTER INSERT\r\nON portal.app_subscription_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_APPSUBSCRIPTIONDETAIL();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_APPSUBSCRIPTIONDETAIL", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_APPSUBSCRIPTIONDETAIL() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_APPSUBSCRIPTIONDETAIL$\r\nBEGIN\r\n  INSERT INTO portal.audit_app_subscription_detail20221118 (\"id\", \"offer_subscription_id\", \"app_instance_id\", \"app_subscription_url\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.offer_subscription_id, \r\n  NEW.app_instance_id, \r\n  NEW.app_subscription_url, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_APPSUBSCRIPTIONDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_APPSUBSCRIPTIONDETAIL AFTER UPDATE\r\nON portal.app_subscription_details\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_APPSUBSCRIPTIONDETAIL();");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AuditOperation", b =>
@@ -1043,6 +1098,53 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "SERVICE_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "OPERATOR"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", b =>
+                {
+                    b.Property<int>("CompanyRoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_role_id");
+
+                    b.Property<Guid>("UserRoleCollectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_collection_id");
+
+                    b.HasKey("CompanyRoleId")
+                        .HasName("pk_company_role_assigned_role_collections");
+
+                    b.HasIndex("UserRoleCollectionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_role_assigned_role_collections_user_role_collection");
+
+                    b.ToTable("company_role_assigned_role_collections", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            CompanyRoleId = 1,
+                            UserRoleCollectionId = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2")
+                        },
+                        new
+                        {
+                            CompanyRoleId = 2,
+                            UserRoleCollectionId = new Guid("ec428950-8b64-4646-b336-28af869b5d73")
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            UserRoleCollectionId = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc")
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            UserRoleCollectionId = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575")
                         });
                 });
 
@@ -1095,6 +1197,68 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                             CompanyRoleId = 2,
                             LanguageShortName = "en",
                             Description = "Application Provider"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            LanguageShortName = "de",
+                            Description = "Dienstanbieter"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            LanguageShortName = "en",
+                            Description = "Service Provider"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            LanguageShortName = "de",
+                            Description = "Betreiber"
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            LanguageShortName = "en",
+                            Description = "Operator"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleRegistrationData", b =>
+                {
+                    b.Property<int>("CompanyRoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_role_id");
+
+                    b.Property<bool>("IsRegistrationRole")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_registration_role");
+
+                    b.HasKey("CompanyRoleId")
+                        .HasName("pk_company_role_registration_data");
+
+                    b.ToTable("company_role_registration_data", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            CompanyRoleId = 1,
+                            IsRegistrationRole = true
+                        },
+                        new
+                        {
+                            CompanyRoleId = 2,
+                            IsRegistrationRole = true
+                        },
+                        new
+                        {
+                            CompanyRoleId = 3,
+                            IsRegistrationRole = true
+                        },
+                        new
+                        {
+                            CompanyRoleId = 4,
+                            IsRegistrationRole = false
                         });
                 });
 
@@ -1408,6 +1572,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("connector_url");
+
+                    b.Property<bool?>("DapsRegistrationSuccessful")
+                        .HasColumnType("boolean")
+                        .HasColumnName("daps_registration_successful");
 
                     b.Property<Guid?>("HostId")
                         .HasColumnType("uuid")
@@ -3544,7 +3712,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 4,
-                            Label = "DATA_CONTRACT"
+                            Label = "APP_DATA_DETAILS"
                         },
                         new
                         {
@@ -3564,7 +3732,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 8,
-                            Label = "SELF_DESCRIPTION_EDC"
+                            Label = "SELF_DESCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "APP_TECHNICAL_INFORMATION"
                         });
                 });
 
@@ -3901,6 +4074,41 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("notifications", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notification_topic");
+
+                    b.ToTable("notification_topic", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "INFO"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "ACTION"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "OFFER"
+                        });
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", b =>
                 {
                     b.Property<int>("Id")
@@ -3978,6 +4186,116 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 12,
                             Label = "TECHNICAL_USER_CREATION"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Label = "SERVICE_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Label = "SERVICE_ACTIVATION"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Label = "APP_ROLE_ADDED"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", b =>
+                {
+                    b.Property<int>("NotificationTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_type_id");
+
+                    b.Property<int>("NotificationTopicId")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_topic_id");
+
+                    b.HasKey("NotificationTypeId", "NotificationTopicId")
+                        .HasName("pk_notification_type_assigned_topic");
+
+                    b.HasIndex("NotificationTopicId")
+                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_topic_id");
+
+                    b.HasIndex("NotificationTypeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_type_id");
+
+                    b.ToTable("notification_type_assigned_topic", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            NotificationTypeId = 1,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 12,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 10,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 5,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 6,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 3,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 4,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 7,
+                            NotificationTopicId = 1
+                        },
+                        new
+                        {
+                            NotificationTypeId = 2,
+                            NotificationTopicId = 2
+                        },
+                        new
+                        {
+                            NotificationTypeId = 8,
+                            NotificationTopicId = 2
+                        },
+                        new
+                        {
+                            NotificationTypeId = 13,
+                            NotificationTopicId = 2
+                        },
+                        new
+                        {
+                            NotificationTypeId = 9,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 11,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 14,
+                            NotificationTopicId = 3
                         });
                 });
 
@@ -4280,6 +4598,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("OfferSubscriptionStatusId")
                         .HasDatabaseName("ix_offer_subscriptions_offer_subscription_status_id");
 
+                    b.HasIndex("RequesterId")
+                        .HasDatabaseName("ix_offer_subscriptions_requester_id");
+
                     b.ToTable("offer_subscriptions", "portal");
 
                     b
@@ -4375,7 +4696,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProviderCompanyDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -4396,13 +4717,62 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("date_created");
 
                     b.HasKey("Id")
-                        .HasName("pk_service_provider_company_details");
+                        .HasName("pk_provider_company_details");
 
                     b.HasIndex("CompanyId")
                         .IsUnique()
-                        .HasDatabaseName("ix_service_provider_company_details_company_id");
+                        .HasDatabaseName("ix_provider_company_details_company_id");
 
-                    b.ToTable("service_provider_company_details", "portal");
+                    b.ToTable("provider_company_details", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceAssignedServiceType", b =>
+                {
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<int>("ServiceTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("service_type_id");
+
+                    b.HasKey("ServiceId", "ServiceTypeId")
+                        .HasName("pk_service_assigned_service_types");
+
+                    b.HasIndex("ServiceTypeId")
+                        .HasDatabaseName("ix_service_assigned_service_types_service_type_id");
+
+                    b.ToTable("service_assigned_service_types", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_types");
+
+                    b.ToTable("service_types", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "DATASPACE_SERVICE"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "CONSULTANCE_SERVICE"
+                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", b =>
@@ -4525,6 +4895,141 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasAnnotation("LC_TRIGGER_AFTER_DELETE_USERROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_USERROLE() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_USERROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_user_role20221017 (\"id\", \"user_role\", \"offer_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.user_role, \r\n  OLD.offer_id, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_USERROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_USERROLE AFTER DELETE\r\nON portal.user_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_USERROLE();")
                         .HasAnnotation("LC_TRIGGER_AFTER_INSERT_USERROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_USERROLE() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_USERROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_user_role20221017 (\"id\", \"user_role\", \"offer_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.user_role, \r\n  NEW.offer_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_USERROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_USERROLE AFTER INSERT\r\nON portal.user_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_USERROLE();")
                         .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_USERROLE", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_USERROLE() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_USERROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_user_role20221017 (\"id\", \"user_role\", \"offer_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.user_role, \r\n  NEW.offer_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_USERROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_USERROLE AFTER UPDATE\r\nON portal.user_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_USERROLE();");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleAssignedCollection", b =>
+                {
+                    b.Property<Guid>("UserRoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_id");
+
+                    b.Property<Guid>("UserRoleCollectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_collection_id");
+
+                    b.HasKey("UserRoleId", "UserRoleCollectionId")
+                        .HasName("pk_user_role_assigned_collections");
+
+                    b.HasIndex("UserRoleCollectionId")
+                        .HasDatabaseName("ix_user_role_assigned_collections_user_role_collection_id");
+
+                    b.ToTable("user_role_assigned_collections", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_role_collections");
+
+                    b.ToTable("user_role_collections", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),
+                            Name = "CX Participant"
+                        },
+                        new
+                        {
+                            Id = new Guid("ec428950-8b64-4646-b336-28af869b5d73"),
+                            Name = "App Provider"
+                        },
+                        new
+                        {
+                            Id = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),
+                            Name = "Service Provider"
+                        },
+                        new
+                        {
+                            Id = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),
+                            Name = "Operator"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollectionDescription", b =>
+                {
+                    b.Property<Guid>("UserRoleCollectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_role_collection_id");
+
+                    b.Property<string>("LanguageShortName")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("language_short_name");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("description");
+
+                    b.HasKey("UserRoleCollectionId", "LanguageShortName")
+                        .HasName("pk_user_role_collection_descriptions");
+
+                    b.HasIndex("LanguageShortName")
+                        .HasDatabaseName("ix_user_role_collection_descriptions_language_short_name");
+
+                    b.ToTable("user_role_collection_descriptions", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),
+                            LanguageShortName = "de",
+                            Description = "CX Netzwerkteilnehmer"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("8cb12ea2-aed4-4d75-b041-ba297df3d2f2"),
+                            LanguageShortName = "en",
+                            Description = "CX Participant"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("ec428950-8b64-4646-b336-28af869b5d73"),
+                            LanguageShortName = "de",
+                            Description = "Softwareanbieter"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("ec428950-8b64-4646-b336-28af869b5d73"),
+                            LanguageShortName = "en",
+                            Description = "App Provider"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),
+                            LanguageShortName = "de",
+                            Description = "Dienstanbieter"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"),
+                            LanguageShortName = "en",
+                            Description = "Service Provider"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),
+                            LanguageShortName = "de",
+                            Description = "Betreiber"
+                        },
+                        new
+                        {
+                            UserRoleCollectionId = new Guid("1a24eca5-901f-4191-84a7-4ef09a894575"),
+                            LanguageShortName = "en",
+                            Description = "Operator"
+                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
@@ -4847,6 +5352,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityProvider");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                        .WithOne("CompanyRoleAssignedRoleCollection")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", "CompanyRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_role_assigned_role_collections_company_roles_compan");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", "UserRoleCollection")
+                        .WithOne("CompanyRoleAssignedRoleCollection")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", "UserRoleCollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_role_assigned_role_collections_user_role_collection");
+
+                    b.Navigation("CompanyRole");
+
+                    b.Navigation("UserRoleCollection");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleDescription", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
@@ -4866,6 +5392,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyRole");
 
                     b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleRegistrationData", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                        .WithOne("CompanyRoleRegistrationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleRegistrationData", "CompanyRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_role_registration_data_company_roles_company_role_id");
+
+                    b.Navigation("CompanyRole");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
@@ -5234,6 +5772,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Receiver");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", "NotificationTopic")
+                        .WithMany("NotificationTypeAssignedTopics")
+                        .HasForeignKey("NotificationTopicId")
+                        .IsRequired()
+                        .HasConstraintName("fk_notification_type_assigned_topic_notification_topic_notific");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
+                        .WithOne("NotificationTypeAssignedTopic")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", "NotificationTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_notification_type_assigned_topic_notification_type_notifica");
+
+                    b.Navigation("NotificationTopic");
+
+                    b.Navigation("NotificationType");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferStatus", "OfferStatus")
@@ -5357,11 +5914,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_offer_subscriptions_offer_subscription_statuses_offer_subsc");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "Requester")
+                        .WithMany("RequestedSubscriptions")
+                        .HasForeignKey("RequesterId")
+                        .IsRequired()
+                        .HasConstraintName("fk_offer_subscriptions_company_users_requester_id");
+
                     b.Navigation("Company");
 
                     b.Navigation("Offer");
 
                     b.Navigation("OfferSubscriptionStatus");
+
+                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferTag", b =>
@@ -5375,15 +5940,34 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Offer");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProviderCompanyDetail", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
-                        .WithOne("ServiceProviderCompanyDetail")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceProviderCompanyDetail", "CompanyId")
+                        .WithOne("ProviderCompanyDetail")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProviderCompanyDetail", "CompanyId")
                         .IsRequired()
-                        .HasConstraintName("fk_service_provider_company_details_companies_company_id");
+                        .HasConstraintName("fk_provider_company_details_companies_company_id");
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceAssignedServiceType", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .IsRequired()
+                        .HasConstraintName("fk_service_assigned_service_types_offers_service_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceType", "ServiceType")
+                        .WithMany()
+                        .HasForeignKey("ServiceTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_service_assigned_service_types_service_types_service_type_id");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("ServiceType");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
@@ -5396,6 +5980,46 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_user_roles_offers_offer_id");
 
                     b.Navigation("Offer");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleAssignedCollection", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", "UserRoleCollection")
+                        .WithMany()
+                        .HasForeignKey("UserRoleCollectionId")
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_assigned_collections_user_role_collections_user_r");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
+                        .WithMany()
+                        .HasForeignKey("UserRoleId")
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_assigned_collections_user_roles_user_role_id");
+
+                    b.Navigation("UserRole");
+
+                    b.Navigation("UserRoleCollection");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollectionDescription", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageShortName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_collection_descriptions_languages_language_short_");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", "UserRoleCollection")
+                        .WithMany("UserRoleCollectionDescriptions")
+                        .HasForeignKey("UserRoleCollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_collection_descriptions_user_role_collections_use");
+
+                    b.Navigation("Language");
+
+                    b.Navigation("UserRoleCollection");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
@@ -5467,7 +6091,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("ProvidedOffers");
 
-                    b.Navigation("ServiceProviderCompanyDetail");
+                    b.Navigation("ProviderCompanyDetail");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
@@ -5484,7 +6108,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 {
                     b.Navigation("AgreementAssignedCompanyRoles");
 
+                    b.Navigation("CompanyRoleAssignedRoleCollection");
+
                     b.Navigation("CompanyRoleDescriptions");
+
+                    b.Navigation("CompanyRoleRegistrationData");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
@@ -5521,6 +6149,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Invitations");
 
                     b.Navigation("Notifications");
+
+                    b.Navigation("RequestedSubscriptions");
 
                     b.Navigation("SalesManagerOfOffers");
                 });
@@ -5609,8 +6239,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRoleDescriptions");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", b =>
+                {
+                    b.Navigation("NotificationTypeAssignedTopics");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", b =>
                 {
+                    b.Navigation("NotificationTypeAssignedTopic");
+
                     b.Navigation("Notifications");
                 });
 
@@ -5665,6 +6302,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("UserRoleDescriptions");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleCollection", b =>
+                {
+                    b.Navigation("CompanyRoleAssignedRoleCollection");
+
+                    b.Navigation("UserRoleCollectionDescriptions");
                 });
 #pragma warning restore 612, 618
         }

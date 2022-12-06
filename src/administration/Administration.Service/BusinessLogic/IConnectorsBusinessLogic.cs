@@ -46,11 +46,21 @@ public interface IConnectorsBusinessLogic
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
     /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    /// <param name="isManaged">If <c>true</c> an additional check that the iamUser company matches the host is proceeded.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
     Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken,
-        string iamUserId, bool isManaged, CancellationToken cancellationToken);
+        string iamUserId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Add a managed connector to persistence layer and calls the sd factory service with connector parameters.
+    /// </summary>
+    /// <param name="connectorInputModel">Connector parameters for creation.</param>
+    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>View model of created connector.</returns>
+    Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string accessToken,
+        string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
@@ -64,4 +74,15 @@ public interface IConnectorsBusinessLogic
     /// <param name="bpns"></param>
     /// <returns></returns>
     IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns);
+
+    /// <summary>
+    /// Triggers the daps endpoint for the given trigger
+    /// </summary>
+    /// <param name="connectorId">Id of the connector the endpoint should get triggered for.</param>
+    /// <param name="certificate">The certificate</param>
+    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns><c>true</c> if the call to daps was successful, otherwise <c>false</c>.</returns>
+    Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken);
 }

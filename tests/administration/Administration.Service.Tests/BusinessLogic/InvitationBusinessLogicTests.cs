@@ -56,7 +56,7 @@ public class InvitationBusinessLogicTests
     private readonly Guid _companyId;
     private readonly Guid _identityProviderId;
     private readonly Guid _applicationId;
-    private readonly Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+    private readonly Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Exception _error;
 
     public InvitationBusinessLogicTests()
@@ -84,7 +84,7 @@ public class InvitationBusinessLogicTests
         _identityProviderId = _fixture.Create<Guid>();
         _applicationId = _fixture.Create<Guid>();
 
-        _processLine = A.Fake<Func<UserCreationInfoIdp,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
         _error = _fixture.Create<TestException>();
     }
@@ -92,7 +92,7 @@ public class InvitationBusinessLogicTests
     #region ExecuteInvitation
 
     [Fact]
-    public async void TestExecuteInvitationSuccess()
+    public async Task TestExecuteInvitationSuccess()
     {
         SetupFakes(true);
 
@@ -119,12 +119,11 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
             A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
-            A<string>.That.IsEqualTo(_options.Value.InvitedUserInitialRoles.Single().Key),
-            A<IAsyncEnumerable<UserCreationInfoIdp>>._,
+            A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
             A<CancellationToken>._)).MustHaveHappened();
         
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
 
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId),A<Guid>._)).MustHaveHappened();
 
@@ -133,7 +132,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationNoEmailThrows()
+    public async Task TestExecuteInvitationNoEmailThrows()
     {
         SetupFakes(true);
 
@@ -159,7 +158,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationNoOrganisationNameThrows()
+    public async Task TestExecuteInvitationNoOrganisationNameThrows()
     {
         SetupFakes(true);
 
@@ -185,7 +184,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationIamUserNotFoundThrows()
+    public async Task TestExecuteInvitationIamUserNotFoundThrows()
     {
         SetupFakes(true);
 
@@ -213,12 +212,12 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationCreateUserErrorThrows()
+    public async Task TestExecuteInvitationCreateUserErrorThrows()
     {
         SetupFakes(true);
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>._)).ReturnsLazily(
-            (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
+            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, _error)
                 .Create());
@@ -245,11 +244,11 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async void TestExecuteInvitationCreateUserThrowsThrows()
+    public async Task TestExecuteInvitationCreateUserThrowsThrows()
     {
         SetupFakes(true);
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>._)).Throws(_error);
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).Throws(_error);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
@@ -304,12 +303,12 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<string>._,A<IAsyncEnumerable<UserCreationInfoIdp>>._,A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, string keycloakClientId, IAsyncEnumerable<UserCreationInfoIdp> userCreationInfos, CancellationToken cancellationToken) =>
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
-        A.CallTo(() => _processLine(A<UserCreationInfoIdp>._)).ReturnsLazily(
-            (UserCreationInfoIdp creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
+            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, (Exception?)null)
                 .Create());

@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -39,8 +40,6 @@ public interface IOfferSubscriptionsRepository
     /// <param name="creatorId">id of the creator</param>
     OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
-    IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(Guid appId, string iamUserId, string? firstName = null, string? lastName = null, string? email = null,string? roleName = null);
-
     /// <summary>
     ///
     /// </summary>
@@ -48,18 +47,19 @@ public interface IOfferSubscriptionsRepository
     IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
     /// <summary>
-    /// Gets the provided app subscription statuses for the user and given company
+    /// Gets the provided offer subscription statuses for the user and given company
     /// </summary>
     /// <param name="iamUserId">Id of user of the Providercompany</param>
-    /// <returns>Returns a IAsyncEnumerable of the found <see cref="AppCompanySubscriptionStatusData"/></returns>
-    IAsyncEnumerable<AppCompanySubscriptionStatusData> GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <param name="sorting"></param>
+    /// <param name="statusId"></param>
+    /// <returns>Returns a func with skip, take and the pagination of the source</returns>
+    Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
 
     Task<(OfferSubscription? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
 
     Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
 
-    Task<(Guid companyId, OfferSubscription? offerSubscription, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
-    
     Task<(Guid companyId, OfferSubscription? offerSubscription, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
@@ -79,4 +79,15 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the offer details.</returns>
     Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
+
+    public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+    
+    void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
+
+    /// <summary>
+    /// Gets all business app data for the given userId
+    /// </summary>
+    /// <param name="iamUserId">Id of the user to get the app data for.</param>
+    /// <returns>Returns an IAsyncEnumerable of app data</returns>
+    IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId);
 }

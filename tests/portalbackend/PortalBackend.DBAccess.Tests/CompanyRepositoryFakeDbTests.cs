@@ -57,78 +57,42 @@ public class CompanyRepositoryFakeDbTests
     #region GetConnectorCreationCompanyDataAsync
 
     [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequested_ReturnsCompanyWithBpn()
+    public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequested_ReturnsBpn()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(_validCompanyId, true)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
+        var sut = new CompanyRepository(_contextFake);
 
         // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
+        var result = await sut.GetCompanyBpnByIdAsync(_validCompanyId).ConfigureAwait(false);
 
         // Assert
-        results.Should().ContainSingle();
-        results.All(x => x.BusinessPartnerNumber is not null).Should().BeTrue();
+        result.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithValidCompanyAndBpnRequestedFalse_ReturnsCompanyWithoutBpn()
+    public async Task GetConnectorCreationCompanyDataAsync_WithNotExistingCompany_ReturnsNull()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(_validCompanyId, false)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
+        var sut = new CompanyRepository(_contextFake);
 
         // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
+        var result = await sut.GetCompanyBpnByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        results.Should().ContainSingle();
-        results.All(x => x.BusinessPartnerNumber is null).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GetConnectorCreationCompanyDataAsync_WithNotExistingCompany_ReturnsEmptyList()
-    {
-        // Arrange
-        _fixture.Inject(_contextFake);
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(Guid.NewGuid(), true)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
-
-        // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
-
-        // Assert
-        results.Should().BeEmpty();
+        result.Should().BeNull();
     }
 
     [Fact]
     public async Task GetConnectorCreationCompanyDataAsync_WithCompanyWithoutBpnAndBpnRequested_ReturnsNullBpn()
     {
         // Arrange
-        _fixture.Inject(_contextFake);
-        var parameter = new List<(Guid companyId, bool bpnRequested)>
-        {
-            new(_companyWithoutBpnId, true)
-        };
-        var sut = _fixture.Create<CompanyRepository>();
+        var sut = new CompanyRepository(_contextFake);
 
         // Act
-        var results = await sut.GetConnectorCreationCompanyDataAsync(parameter).ToListAsync();
+        var result = await sut.GetCompanyBpnByIdAsync(_companyWithoutBpnId).ConfigureAwait(false);
 
         // Assert
-        results.Should().ContainSingle();
-        results.All(x => x.BusinessPartnerNumber is null).Should().BeTrue();
+        result.Should().BeNull();
     }
 
     #endregion

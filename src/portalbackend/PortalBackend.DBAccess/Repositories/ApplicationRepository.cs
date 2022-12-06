@@ -43,11 +43,10 @@ public class ApplicationRepository : IApplicationRepository
                 companyApplicationStatusId,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public CompanyApplication AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication>? setOptionalParameters = null)
+    public void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters)
     {
         var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, Guid.Empty, default, default)).Entity;
-        setOptionalParameters?.Invoke(companyApplication);
-        return companyApplication;
+        setOptionalParameters.Invoke(companyApplication);
     }
 
     public Invitation CreateInvitation(Guid applicationId, Guid companyUserId) =>
@@ -58,6 +57,16 @@ public class ApplicationRepository : IApplicationRepository
                 companyUserId,
                 InvitationStatusId.CREATED,
                 DateTimeOffset.UtcNow)).Entity;
+
+    public void DeleteInvitations(IEnumerable<Guid> invitationIds) =>
+        _dbContext.Invitations.RemoveRange(
+            invitationIds.Select(
+                invitationId => new Invitation(
+                    invitationId,
+                    Guid.Empty,
+                    Guid.Empty,
+                    default,
+                    default)));
 
     public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications

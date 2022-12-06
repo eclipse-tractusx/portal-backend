@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
@@ -29,9 +30,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -78,7 +79,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string iamUserId)
+    public ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, string? displayName, string iamUserId)
     {
         IdentityProviderCategoryId identityProviderCategory;
         switch (protocol)
@@ -92,21 +93,38 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             default:
                 throw new ControllerArgumentException($"unexcepted value of protocol: '{protocol.ToString()}'", nameof(protocol));
         }
-        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, iamUserId);
+        if (displayName != null)
+        {
+            ValidateDisplayName(displayName);
+        }
+
+        return CreateOwnCompanyIdentityProviderInternalAsync(identityProviderCategory, protocol, displayName, iamUserId);
     }
 
-    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, string iamUserId)
+    private static void ValidateDisplayName(string displayName)
+    {
+        if (displayName.Length < 2 || displayName.Length > 30)
+        {
+            throw new ControllerArgumentException("displayName length must be 2-30 characters");
+        }
+        if (!Regex.IsMatch(displayName, @"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$"))
+        {
+            throw new ControllerArgumentException("allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '");
+        }
+    }
+
+    private async ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderInternalAsync(IdentityProviderCategoryId identityProviderCategory, IamIdentityProviderProtocol protocol, string? displayName, string iamUserId)
     {
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
-        var (companyName, companyId) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (companyName == null || companyId == Guid.Empty)
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameIdUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with a company", nameof(iamUserId));
         }
-        var alias = await _provisioningManager.CreateOwnIdpAsync(companyName, protocol).ConfigureAwait(false);
+        var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, protocol).ConfigureAwait(false);
         var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory);
-        identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(companyId, identityProvider.Id));
+        identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(result.CompanyId, identityProvider.Id));
         identityProviderRepository.CreateIamIdentityProvider(identityProvider, alias);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -195,7 +213,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public async ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProviderAsync(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
     {
-        var (category, alias) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (category, alias) = await ValidateUpdateOwnCompanyIdentityProviderArguments(identityProviderId, details, iamUserId).ConfigureAwait(false);
 
         switch(category)
         {
@@ -213,8 +231,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateUpdateOwnCompanyIdentityProviderArguments(Guid identityProviderId, string iamUserId)
+    private async ValueTask<(IdentityProviderCategoryId Category, string Alias)> ValidateUpdateOwnCompanyIdentityProviderArguments(Guid identityProviderId, IdentityProviderEditableDetails details, string iamUserId)
     {
+        ValidateDisplayName(details.displayName);
+
         var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
@@ -247,7 +267,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 details.oidc.secret,
                 details.oidc.signatureAlgorithm))
             .ConfigureAwait(false);
-        await _provisioningManager.GetCentralIdentityProviderDataOIDCAsync(alias).ConfigureAwait(false);
     }
 
     private async ValueTask UpdateIdentityProviderSaml(string alias, IdentityProviderEditableDetails details)
@@ -267,7 +286,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 details.saml.serviceProviderEntityId,
                 details.saml.singleSignOnServiceUrl))
             .ConfigureAwait(false);
-        await _provisioningManager.GetCentralIdentityProviderDataSAMLAsync(alias).ConfigureAwait(false);
     }
 
     private async ValueTask UpdateIdentityProviderShared(string alias, IdentityProviderEditableDetails details)
@@ -407,7 +425,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderLinkData.userName);
     }
 
-    public async ValueTask<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId)
+    public async ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(Guid companyUserId, Guid identityProviderId, UserLinkData userLinkData, string iamUserId)
     {
         var (userEntityId, alias) = await GetUserAliasDataAsync(companyUserId, identityProviderId, iamUserId).ConfigureAwait(false);
 
@@ -415,9 +433,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             await _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(userEntityId, alias);
         }
-        catch(KeycloakEntityNotFoundException e)
+        catch(KeycloakEntityNotFoundException)
         {
-            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}", e);
+            // for create-and-update semantics this is expected and not an error
         }
         await _provisioningManager.AddProviderUserLinkToCentralUserAsync(
             userEntityId,
@@ -687,7 +705,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return numIdps;
     }
 
-    private (Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks) ParseCSVLine(string line, int numIdps, IEnumerable<string> existingAliase)
+    private ValueTask<(Guid CompanyUserId, UserProfile UserProfile, IEnumerable<IdentityProviderLink> IdentityProviderLinks)> ParseCSVLine(string line, int numIdps, IEnumerable<string> existingAliase)
     {
         var items = line.Split(_settings.CsvSettings.Separator).AsEnumerable().GetEnumerator();
         if(!items.MoveNext())
@@ -714,7 +732,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
         var email = items.Current;
         var identityProviderLinks = ParseCSVIdentityProviderLinks(items, numIdps, existingAliase).ToList();
-        return (companyUserId, new UserProfile(firstName, lastName, email), identityProviderLinks);
+        return ValueTask.FromResult((companyUserId, new UserProfile(firstName, lastName, email), identityProviderLinks.AsEnumerable()));
     }
 
     private IEnumerable<IdentityProviderLink> ParseCSVIdentityProviderLinks(IEnumerator<string> items, int numIdps, IEnumerable<string> existingAliase)

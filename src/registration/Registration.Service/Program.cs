@@ -24,7 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
 var VERSION = "v2";
@@ -49,11 +49,7 @@ builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddTransient<IBPNAccess, BPNAccess>();
-builder.Services.AddHttpClient("bpn", c =>
-{
-    c.BaseAddress = new Uri($"{builder.Configuration.GetValue<string>("BPN_Address")}");
-});
+builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
 
 builder.Build()
     .CreateApp<Program>("registration", VERSION)

@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -52,6 +53,10 @@ public interface IOfferRepository
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
     Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
 
+    void AttachAndModifyOffer(Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters = null);
+
+    Offer DeleteOffer(Guid offerId);
+
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
     /// </summary>
@@ -66,6 +71,7 @@ public interface IOfferRepository
     /// <param name="iamUserId">OPTIONAL: iamUserId of the company the calling user belongs to</param>
     /// <param name="languageShortName">language shortName</param>
     /// <param name="defaultLanguageShortName">default language shortName</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the details of the application</returns>
     Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId);
 
@@ -88,7 +94,7 @@ public interface IOfferRepository
     /// <param name="appId">Id of the app</param>
     /// <param name="companyUserId">Id of the company User</param>
     CompanyUserAssignedAppFavourite CreateAppFavourite(Guid appId, Guid companyUserId);
-
+    void DeleteAppFavourites(IEnumerable<(Guid AppId, Guid CompanyUserId)> appFavoriteIds);
     /// <summary>
     /// Add app Id and Document Id in App Assigned Document table 
     /// </summary>
@@ -100,20 +106,30 @@ public interface IOfferRepository
     /// <summary>
     /// Adds <see cref="AppAssignedUseCase"/>s to the database
     /// </summary>
-    /// <param name="useCases">The use cases that should be added to the database</param>
+    /// <param name="appUseCases">The use cases that should be added to the database</param>
     void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases);
 
     /// <summary>
     /// Adds <see cref="OfferDescription"/>s to the database
     /// </summary>
-    /// <param name="appDescriptions">The app descriptions that should be added to the database</param>
-    void AddOfferDescriptions(IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)> appDescriptions);
+    /// <param name="offerDescriptions">The app descriptions that should be added to the database</param>
+    void AddOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)> offerDescriptions);
+
+    void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds);
+
+    void AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters);
 
     /// <summary>
     /// Adds <see cref="AppLanguage"/>s to the database
     /// </summary>
     /// <param name="appLanguages">The app languages that should be added to the database</param>
     void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages);
+
+    /// <summary>
+    /// Removes <see cref="AppLanguage"/>s to the database
+    /// </summary>
+    /// <param name="appLanguageIds">appIds and languageShortNames of the app languages to be removed from the database</param>
+    void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds);
 
     /// <summary>
     /// Retrieve all app data
@@ -128,6 +144,7 @@ public interface IOfferRepository
     /// <param name="appId">id of the app to get the client roles for</param>
     /// <param name="languageShortName">The language short names</param>
     /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
+    [Obsolete("only referenced by code that is marked as obsolte")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
 
     /// <summary>
@@ -146,25 +163,20 @@ public interface IOfferRepository
     /// <param name="appImages"></param>
     void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
 
+    void RemoveOfferDetailImages(IEnumerable<Guid> imageIds);
+
     /// <summary>
     /// Get App Release data by App Id
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <returns></returns>
     Task<OfferReleaseData?> GetOfferReleaseDataByIdAsync(Guid offerId);
 
     /// <summary>
-    /// Checks if an service with the given id exists in the persistence layer. 
+    /// Gets all service detail data from the persistence storage as pagination 
     /// </summary>
-    /// <param name="serviceId">Id of the service.</param>
-    /// <returns><c>true</c> if an service exists on the persistence layer with the given id, <c>false</c> if not.</returns>
-    public Task<bool> CheckServiceExistsById(Guid serviceId);
-
-    /// <summary>
-    /// Gets all service detail data from the persistence storage as queryable 
-    /// </summary>
-    /// <returns>Returns an <see cref="IQueryable{ServiceDetailData}"/></returns>
-    IQueryable<(Guid id, string? name, string provider, string? thumbnailUrl, string? contactEmail, string? price)> GetActiveServices();
+    /// <returns>Returns an Pagination</returns>
+    Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId);
 
     /// <summary>
     /// Gets the service details for the given id
@@ -177,15 +189,29 @@ public interface IOfferRepository
     Task<OfferDetailData?> GetOfferDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
+    /// Gets the service details for the given id
+    /// </summary>
+    /// <param name="serviceId">the service to get from the persistence storage</param>
+    /// <param name="languageShortName">the language short code for the descriptions</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    /// <returns>Returns the ServiceDetailData or null</returns>
+    Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId);
+
+    /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    IQueryable<Offer> GetAllInReviewStatusAppsAsync();
+    /// <param name="offerStatusIds"></param>
+    /// <param name="skip"></param>
+    /// <param name="take"></param>
+    /// <param name="sorting"></param>
+    Func<int,int,Task<Pagination.Source<InReviewAppData>?>> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferSorting? sorting);
     
     /// <summary>
     /// Retrieve Offer Detail with Status
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
@@ -198,11 +224,82 @@ public interface IOfferRepository
     /// <returns></returns>
     Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
-        /// <summary>
+    /// <summary>
     /// Return the Company User Id
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="userId"></param>
+    /// <param name="offerStatusId"></param>
+    /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Verify that user is linked to the appId ,offerstatus is in created state and roleId exist
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerStatusId"></param>
+    /// <param name="roleId"></param>
+    /// <returns></returns>
+    Task<(bool OfferStatus, bool IsProviderCompanyUser,bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
+
+    /// <summary>
+    /// Gets all data needed for the app update
+    /// </summary>
+    /// <param name="appId">Id of the requested app</param>
+    /// <param name="iamUserId">Id of the current IamUser</param>
+    /// <param name="languageCodes">the languageCodes for the app</param>
+    /// <param name="useCaseIds">ids of the usecases</param>
+    /// <returns></returns>
+    Task<AppUpdateData?> GetAppUpdateData(
+        Guid appId,
+        string iamUserId,
+        IEnumerable<string> languageCodes,
+        IEnumerable<Guid> useCaseIds);
+
+    /// <summary>
+    /// Updates the licenseText of the given offerLicense
+    /// </summary>
+    /// <param name="offerLicenseId">id of the offer license</param>
+    /// <param name="setOptionalParameters">action to modify newly attached OfferLicence</param>
+    /// <returns>the updated entity</returns>
+    void AttachAndModifyOfferLicense(Guid offerLicenseId, Action<OfferLicense> setOptionalParameters);
+
+    /// <summary>
+    /// Removes the offer assigned offer license from the database
+    /// </summary>
+    /// <param name="offerId">id of the app</param>
+    /// <param name="offerLicenseId">id of the offer license</param>
+    void RemoveOfferAssignedLicense(Guid offerId, Guid offerLicenseId);
+
+    /// <summary>
+    /// Adds the service types to the service
+    /// </summary>
+    /// <param name="serviceAssignedServiceTypes"></param>
+    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
+
+    /// <summary>
+    /// Removes <see cref="ServiceAssignedServiceType"/>s to the database
+    /// </summary>
+    /// <param name="serviceAssignedServiceTypes">serviceIds and serviceTypeIds of the assigned service types to be removed from the database</param>
+    void RemoveServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
+
+    /// <summary>
+    /// Gets the needed update data for a service
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="serviceTypeIds">Ids of the assigned service types</param>
+    /// <param name="iamUserId">id of the current user</param>
+    /// <returns>The found service update data</returns>
+    Task<ServiceUpdateData?> GetServiceUpdateData(Guid serviceId, IEnumerable<ServiceTypeId> serviceTypeIds, string iamUserId);
+    
+    /// <summary>
+    /// Validate Company User and Retrieve CompanyUserid with App Name
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool OfferExists, string? AppName, Guid CompanyUserId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 }
