@@ -235,7 +235,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         };
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content, result.ProviderCompanyId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }

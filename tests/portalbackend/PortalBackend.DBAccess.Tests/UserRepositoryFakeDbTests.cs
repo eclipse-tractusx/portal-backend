@@ -119,7 +119,7 @@ public class UserRepositoryFakeDbTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCompanyUserWithRoleId(new List<Guid>{ userRoles.First().Id }).ToListAsync();
+        var result = await sut.GetCompanyUserWithRoleIdForCompany(new List<Guid>{ userRoles.First().Id }, null).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();

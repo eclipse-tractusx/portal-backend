@@ -423,7 +423,7 @@ public class AppReleaseBusinessLogicTest
         var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUser.Id));
+            .ReturnsLazily(() => (true, appName, _companyUser.Id, null));
 
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
 
@@ -440,7 +440,7 @@ public class AppReleaseBusinessLogicTest
                 A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(indexItem.languageCode), A<string>.That.IsEqualTo(indexItem.description))).MustHaveHappened();
             }
         }
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid?>._)).MustHaveHappened();
         Assert.NotNull(result);
         Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
     }

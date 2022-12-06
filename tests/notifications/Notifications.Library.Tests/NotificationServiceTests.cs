@@ -88,7 +88,7 @@ public class NotificationServiceTests
         content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO));
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), null).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(1);
@@ -118,7 +118,7 @@ public class NotificationServiceTests
         content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_SERVICE_PROVIDER));
         content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION));
 
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), null).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(5);
@@ -147,7 +147,7 @@ public class NotificationServiceTests
         content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO));
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), null).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(3);
@@ -175,10 +175,10 @@ public class NotificationServiceTests
         content.Add(new ValueTuple<string?, NotificationTypeId>(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO));
 
         // Act
-        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), null).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConfigurationException>(Action);
+        await Assert.ThrowsAsync<ConfigurationException>(Action);
     }
 
     #endregion
@@ -194,11 +194,11 @@ public class NotificationServiceTests
         A.CallTo(() => _rolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Not.Matches(x => x[ClientId].First() == "CX Admin" || x[ClientId].First() == "Company Admin")))
             .Returns(new List<Guid>().ToAsyncEnumerable());
 
-        A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == UserRoleId))))
+        A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == UserRoleId)), A<Guid?>._))
             .Returns(new List<Guid> { UserId1, UserId2, UserId3 }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == CxAdminRoleId))))
+        A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == CxAdminRoleId)), A<Guid?>._))
             .Returns(new List<Guid> { CxAdminUserId }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithRoleId(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId))))
+        A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId)), A<Guid?>._))
             .Returns(new List<Guid>().ToAsyncEnumerable());
 
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))

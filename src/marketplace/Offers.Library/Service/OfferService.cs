@@ -241,7 +241,7 @@ public class OfferService : IOfferService
         
         var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
         _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
-            .CreateAppSubscriptionDetail(data.RequestId, (appSubscriptionDetail) =>
+            .CreateAppSubscriptionDetail(data.RequestId, appSubscriptionDetail =>
             {
                 appSubscriptionDetail.AppInstanceId = appInstance.Id;
                 appSubscriptionDetail.AppSubscriptionUrl = data.OfferUrl;
@@ -286,7 +286,9 @@ public class OfferService : IOfferService
             new ClientInfoData(clientId));
     }
 
-    private async Task CreateNotifications(IDictionary<string, IEnumerable<string>> companyAdminRoles, OfferTypeId offerTypeId,
+    private async Task CreateNotifications(
+        IDictionary<string, IEnumerable<string>> companyAdminRoles,
+        OfferTypeId offerTypeId,
         OfferSubscriptionTransferData offerDetails)
     {
         var appSubscriptionActivation = offerTypeId == OfferTypeId.APP
@@ -305,7 +307,8 @@ public class OfferService : IOfferService
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
                 (notificationContent, appSubscriptionActivation)
-            }).ConfigureAwait(false);
+            },
+            offerDetails.CompanyId).ConfigureAwait(false);
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
             {
@@ -490,7 +493,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(companyAdminRoles, requesterId, content).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(companyAdminRoles, requesterId, content, offerDetails.ProviderCompanyId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -566,14 +569,14 @@ public class OfferService : IOfferService
         {
             offer.OfferStatusId = OfferStatusId.ACTIVE;
         });
-        var notificationContent = offerTypeId switch
+        object notificationContent = offerTypeId switch
         {
-            OfferTypeId.SERVICE => (object) new
-                {
-                    OfferId = offerId,
-                    ServiceName = offerDetails.OfferName
-                },
-            OfferTypeId.APP => (object) new
+            OfferTypeId.SERVICE => new
+            {
+                OfferId = offerId,
+                ServiceName = offerDetails.OfferName
+            },
+            OfferTypeId.APP => new
                 {
                     OfferId = offerId,
                     AppName = offerDetails.OfferName
@@ -583,7 +586,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, null).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
