@@ -206,5 +206,5 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
-        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.BasePortalAddress);
+        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress);
 }
