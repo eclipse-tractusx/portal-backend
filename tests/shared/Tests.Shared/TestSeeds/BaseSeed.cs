@@ -230,9 +230,13 @@ public static class BaseSeed
         });
         dbContext.Consents.AddRange(new List<Consent>
         {
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
             {
                 Comment = "Just a test"
+            },
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
+            {
+                Comment = "Test"
             }
         });
         dbContext.AgreementAssignedCompanyRoles.AddRange(new List<AgreementAssignedCompanyRole>
