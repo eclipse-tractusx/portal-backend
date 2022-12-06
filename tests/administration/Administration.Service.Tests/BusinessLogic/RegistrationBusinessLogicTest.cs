@@ -408,7 +408,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
             
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid?>._))
             .Invokes(x =>
             {
                 var creatorId = x.Arguments.Get<Guid?>("creatorId");
