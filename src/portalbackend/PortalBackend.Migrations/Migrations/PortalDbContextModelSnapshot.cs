@@ -4201,6 +4201,21 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         {
                             Id = 15,
                             Label = "APP_ROLE_ADDED"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Label = "APP_RELEASE_APPROVAL"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Label = "SERVICE_RELEASE_REQUEST"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Label = "SERVICE_RELEASE_APPROVAL"
                         });
                 });
 
@@ -4295,6 +4310,26 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.Migrations.Migrations
                         new
                         {
                             NotificationTypeId = 14,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 15,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 16,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 17,
+                            NotificationTopicId = 3
+                        },
+                        new
+                        {
+                            NotificationTypeId = 18,
                             NotificationTopicId = 3
                         });
                 });

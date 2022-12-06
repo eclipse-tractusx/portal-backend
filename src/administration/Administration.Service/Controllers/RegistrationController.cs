@@ -158,4 +158,30 @@ public class RegistrationController : ControllerBase
     public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
         _logic.UpdateCompanyBpn(applicationId, bpn);
 
+    
+    /// <summary>
+    /// Approves the partner request
+    /// </summary>
+    /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>the result as a boolean</returns>
+    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
+    /// <response code="404">Application ID not found.</response>
+    /// <response code="500">Internal Server Error.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
+    [HttpPut]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-bpn")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+    public async Task<NoContentResult> TriggerBpnDataPush([FromRoute] Guid applicationId, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(user => _logic.TriggerBpnDataPushAsync(user, applicationId, cancellationToken)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

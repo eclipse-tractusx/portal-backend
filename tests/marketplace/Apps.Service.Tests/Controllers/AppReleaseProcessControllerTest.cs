@@ -328,4 +328,20 @@ public class AppReleaseProcessControllerTest
             Assert.IsType<AppRoleData>(item);
         }
     }
+
+     [Fact]
+    public async Task ApproveAppRequest_ReturnsExpectedCount()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.ApproveAppRequest(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
 }

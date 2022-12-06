@@ -101,6 +101,18 @@ public class AppsSettings
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
     
     /// <summary>
+    /// Approve App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
+    
+    /// <summary>
+    /// Roles to notify when a new subscription was created for sales and App Manager
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
+
+    /// <summary>
     /// Max page size for pagination
     /// </summary>
     public int ApplicationsMaxPageSize { get; set; }

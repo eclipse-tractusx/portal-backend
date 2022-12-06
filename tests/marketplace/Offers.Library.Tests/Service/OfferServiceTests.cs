@@ -42,6 +42,8 @@ namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Tests.Service;
 
 public class OfferServiceTests
 {
+    private const string Bpn = "CAXSDUMMYCATENAZZ";
+
     private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
@@ -53,7 +55,6 @@ public class OfferServiceTests
     private readonly Guid _differentCompanyUserId = Guid.NewGuid();
     private readonly Guid _noSalesManagerUserId = Guid.NewGuid();
 
-    private readonly string _bpn = "CAXSDUMMYCATENAZZ";
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly string _iamUserId;
@@ -65,7 +66,7 @@ public class OfferServiceTests
     private readonly IAppSubscriptionDetailRepository _appSubscriptionDetailRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly IConsentAssignedOfferSubscriptionRepository _consentAssignedOfferSubscriptionRepository;
-    private readonly INotificationRepository _notificationReposiotry;
+    private readonly INotificationRepository _notificationRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IServiceAccountCreation _serviceAccountCreation;
@@ -101,7 +102,7 @@ public class OfferServiceTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _provisioningManager = A.Fake<IProvisioningManager>();
-        _notificationReposiotry = A.Fake<INotificationRepository>();
+        _notificationRepository = A.Fake<INotificationRepository>();
         _serviceAccountCreation = A.Fake<IServiceAccountCreation>();
         _notificationService = A.Fake<INotificationService>();
 
@@ -121,7 +122,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
             .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
             {
-                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, offerType);
+                var app = new Offer(serviceId, provider, DateTimeOffset.UtcNow, offerType);
                 setOptionalParameters?.Invoke(app);
                 apps.Add(app);
             })
@@ -149,7 +150,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
             .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
             {
-                var app = new Offer(serviceId, provider!, DateTimeOffset.UtcNow, offerType);
+                var app = new Offer(serviceId, provider, DateTimeOffset.UtcNow, offerType);
                 setOptionalParameters?.Invoke(app);
                 apps.Add(app);
             })
@@ -531,7 +532,7 @@ public class OfferServiceTests
                 appSubscriptionDetails.Add(appDetail);
             })
             .Returns(new AppSubscriptionDetail(appSubscriptionDetailId, _validSubscriptionId));
-        A.CallTo(() => _notificationReposiotry.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
                 A<Action<Notification>?>._))
             .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
             {
@@ -737,13 +738,13 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.AttachAndModifyOfferDescription(A<Guid>._, A<string>._, A<Action<OfferDescription>>._)) 
             .Invokes((Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters) => 
             {
-                if (!seed.TryGetValue((offerId!, languageShortName!), out var offerDescription))
+                if (!seed.TryGetValue((offerId, languageShortName), out var offerDescription))
                 {
-                    offerDescription = new OfferDescription(offerId, languageShortName!, null!, null!);
-                    seed[(offerId!, languageShortName!)] = offerDescription;
+                    offerDescription = new OfferDescription(offerId, languageShortName, null!, null!);
+                    seed[(offerId, languageShortName)] = offerDescription;
                 }
                
-                setOptionalParameters?.Invoke(offerDescription);
+                setOptionalParameters.Invoke(offerDescription);
             });
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
@@ -775,7 +776,7 @@ public class OfferServiceTests
         var offerLicense = _fixture.Build<(Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers)>().With(x => x.AssignedToMultipleOffers, true).Create();
         var offerLicenseId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _offerRepository.CreateOfferLicenses(A<string>._)).ReturnsLazily((string price) => new OfferLicense(offerLicenseId, price));
+        A.CallTo(() => _offerRepository.CreateOfferLicenses(A<string>._)).ReturnsLazily((string p) => new OfferLicense(offerLicenseId, p));
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
@@ -800,7 +801,7 @@ public class OfferServiceTests
             .Invokes((Guid offerLicenseId, Action<OfferLicense> setOptionalParameters) =>
             {
                 modifiedOfferLicense = new OfferLicense(offerLicenseId, null!);
-                setOptionalParameters?.Invoke(modifiedOfferLicense);
+                setOptionalParameters.Invoke(modifiedOfferLicense);
             });
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
@@ -815,6 +816,156 @@ public class OfferServiceTests
         modifiedOfferLicense.Should().NotBeNull();
         modifiedOfferLicense!.Licensetext.Should().NotBeNull(); 
         modifiedOfferLicense!.Licensetext.Should().BeSameAs(price);
+    }
+
+    #endregion
+
+    #region SubmitOffer
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task SubmitOffer_WithNotExistingOffer_ThrowsNotFoundException(OfferTypeId offerType)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).ReturnsLazily(() => (OfferReleaseData?)null);
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitOfferAsync(notExistingOffer, _iamUserId, offerType, new [] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerType.ToString()} {notExistingOffer} does not exist");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(OfferTypeId offerType)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).ReturnsLazily(() => new OfferReleaseData(null, null, null, null, "company", true, true));
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitOfferAsync(notExistingOffer, _iamUserId, offerType, new [] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task SubmitOffer_WithValidOfferData_UpdatesAppAndSendsNotification(OfferTypeId offerType)
+    {
+        // Arrange
+        var offer = _fixture.Create<Offer>();
+        var offerId = _fixture.Create<Guid>();
+        var data = _fixture.Build<OfferReleaseData>()
+            .With(x => x.IsDescriptionLongNotSet, false)
+            .With(x => x.IsDescriptionShortNotSet, false)
+            .Create();
+        var userId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).ReturnsLazily(() => data);
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).ReturnsLazily(() => userId);
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).Invokes(
+            x =>
+            {
+                var setOptionalParameters = x.Arguments.Get<Action<Offer>>("setOptionalParameters")!;
+                var initializeParemeters = x.Arguments.Get<Action<Offer>?>("initializeParemeters")!;
+
+                initializeParemeters?.Invoke(offer);
+                setOptionalParameters.Invoke(offer);
+            });
+        var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, null!);
+
+        // Act
+        await sut.SubmitOfferAsync(offerId, _iamUserId, offerType, new [] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region ApproveOfferRequest
+
+    [Fact]
+    public async Task ApproveOfferRequestAsync_ExecutesSuccessfully()
+    {
+        //Arrange
+        var offer = _fixture.Build<Offer>().With(o => o.OfferStatusId, OfferStatusId.IN_REVIEW).Create();
+        var requesterId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+       
+        A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, offer.Name));
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId))
+            .ReturnsLazily(() => (requesterId));
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offer.Id, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) => 
+            {
+                initializeParemeters?.Invoke(offer);
+                setOptionalParameters(offer);
+            });
+
+        var approveAppNotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_APPROVAL
+        };
+        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "catenax-portal", new [] { "Sales Manager" } }
+        };
+        var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, null!);
+
+        //Act
+        await sut.ApproveOfferRequestAsync(offer.Id, iamUserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offer.Id, OfferTypeId.APP)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)).MustHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
+       offer.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
+       A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ApproveOfferRequestAsync_WithAppNameNotSet_ThrowsConflictException()
+    {
+        //Arrange
+        var offerId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+       
+        A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offerId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, null));
+
+        var approveAppNotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_APPROVAL
+        };
+        var approveAppUserRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "catenax-portal", new [] { "Sales Manager" } }
+        };
+        var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, null!);
+
+        //Act
+        Task Act() => sut.ApproveOfferRequestAsync(offerId, iamUserId, OfferTypeId.APP, approveAppNotificationTypeIds, approveAppUserRoles);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"Offer {offerId} Name is not yet set.");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion
@@ -903,21 +1054,21 @@ public class OfferServiceTests
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, _companyUser.Id, Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, "user@email.com", "Tony"));
+                Bpn, "user@email.com", "Tony"));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUserIdWithoutMail),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, null, null));
+                Bpn, null, null));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUserId),
                 A<OfferTypeId>._))
             .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, "user@email.com", "Tony"));
+                Bpn, "user@email.com", "Tony"));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId),
                 A<string>.That.Matches(x => x == _iamUserId),
@@ -929,7 +1080,7 @@ public class OfferServiceTests
                 A<OfferTypeId>._))
             .ReturnsLazily(() =>new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                _bpn, null, null));
+                Bpn, null, null));
 
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.All(y => y == "en"))))
             .Returns(new List<string> { "en" }.ToAsyncEnumerable());
@@ -941,7 +1092,7 @@ public class OfferServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IAppInstanceRepository>()).Returns(_appInstanceRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IClientRepository>()).Returns(_clientRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);        
-        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationReposiotry);
+        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>()).Returns(_consentAssignedOfferSubscriptionRepository);
