@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 
 public interface ICustodianService
 {
-    public Task<List<GetWallets>> GetWallets();
+    public IAsyncEnumerable<GetWallets> GetWalletsAsync(CancellationToken cancellationToken);
 
-    public Task CreateWallet(string bpn, string name, CancellationToken cancellationToken);
+    public Task CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

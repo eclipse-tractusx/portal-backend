@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -31,14 +31,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 public interface IUserRepository
 {
     IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
-    Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
+    Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
-    CompanyUser AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? setOptionalParameters = null);
+    void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser> setOptionalParameters);
     IamUser CreateIamUser(Guid companyUserId, string iamUserId);
-    IamUser RemoveIamUser(IamUser iamUser);
-    IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
+    IamUser DeleteIamUser(string iamUserId);
+    IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<CompanyUserStatusId>? statusIds = null);
     Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
-    IAsyncEnumerable<(string? UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId);
+    IAsyncEnumerable<(string? UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<CompanyUserStatusId> companyUserStatusIds);
     Task<(Guid companyId, Guid companyUserId)> GetOwnCompanyAndCompanyUserId(string iamUserId);
     Task<Guid> GetOwnCompanyId(string iamUserId);
     Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(string iamUserId);
@@ -57,7 +57,6 @@ public interface IUserRepository
 
     Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
-    Task<CompanyUserWithIdpData?> GetUserWithSharedIdpDataAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
 
     /// <summary>
@@ -68,13 +67,6 @@ public interface IUserRepository
     IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId);
 
     /// <summary>
-    /// Gets all business app data for the given userId
-    /// </summary>
-    /// <param name="userId">Id of the user to get the app data for.</param>
-    /// <returns>Returns an IAsyncEnumerable of <see cref="BusinessAppData"/></returns>
-    IAsyncEnumerable<BusinessAppData> GetAllBusinessAppDataForUserIdAsync(string userId);
-
-    /// <summary>
     /// Gets the company user ids and checks if its the given iamUser
     /// </summary>
     /// <param name="iamUserId">Id of the iamUser</param>
@@ -82,14 +74,6 @@ public interface IUserRepository
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
     IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
         Guid companyUserId);
-
-    /// <summary>
-    /// Gets the company user id and email for the given iam user
-    /// </summary>
-    /// <remarks><b>Returns as UNTRACKED</b></remarks>
-    /// <param name="userId">id of the iamUser</param>
-    /// <returns>Returns the userId and email</returns>
-    Task<(Guid UserId, string Email)> GetCompanyUserIdAndEmailForIamUserUntrackedAsync(string userId);
 
     /// <summary>
     /// Gets the company user ids and checks if its the given iamUser
@@ -113,5 +97,42 @@ public interface IUserRepository
     /// <returns>The Id of the company</returns>
     Task<Guid> GetServiceAccountCompany(string iamUserId);
 
-    Task<(string? IamClientId, string IamUserId, bool IsSameCompany)> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    
+    IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
+
+    Func<int,int,Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, string iamUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<CompanyUserStatusId> companyUserStatusIds, CompanyUserFilter filter);
+
+    /// <summary>
+    /// User account data for deletion of own userId
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <returns>SharedIdpAlias, CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
+    Task<(string? SharedIdpAlias, CompanyUserAccountData AccountData)> GetSharedIdentityProviderUserAccountDataUntrackedAsync(string iamUserId);
+
+    /// <summary>
+    /// User account data for deletion of own company userIds
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <returns>CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
+    IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId);
+    
+    /// <summary>
+    /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="roleIds"></param>
+    /// <param name="companyUserIdId"></param>
+    /// <returns></returns>
+    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
+
+    /// <summary>
+    /// Retrieve BPN for applicationId and Logged In User Company
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="applicationId"></param>
+    /// <param name="businessPartnerNumber"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
 }

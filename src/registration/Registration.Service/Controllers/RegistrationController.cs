@@ -29,7 +29,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Net;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 {
@@ -58,6 +58,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// </summary>
         /// <param name="bpn" example="CAXSDUMMYCATENAZZ">The bpn to get the company for</param>
         /// <param name="authorization">the authorization</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Returns a List with one company</returns>
         /// <remarks>Example: Get: /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">Returns the company</response>
@@ -65,11 +66,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
-        [ProducesResponseType(typeof(List<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<FetchBusinessPartnerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization) => 
-            Ok(await _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1]).ConfigureAwait(false));
+        public IAsyncEnumerable<FetchBusinessPartnerDto> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) => 
+            _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken);
 
         /// <summary>
         /// Uploads a document
@@ -104,7 +105,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">User does not have the relevant rights to request for the document.</response>
         /// <response code="404">No document with the given id was found.</response>
         [HttpGet]
-        [Authorize(Roles = "get_documents")]
+        [Authorize(Roles = "view_documents")]
         [Route("documents/{documentId}")]
         [Produces("application/pdf", "application/json")]
         [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
@@ -245,7 +246,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfo userCreationInfo) =>
+        public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfoWithMessage userCreationInfo) =>
             this.WithIamUserId(iamUserId =>
                 _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, iamUserId));
 
@@ -370,6 +371,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Route("company/companyRoles")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
-            _registrationBusinessLogic.GetCompanyRolesAsync(languageShortName);
+            _registrationBusinessLogic.GetCompanyRoles(languageShortName);
+        
+        /// <summary>
+        /// Deletes the document with the given id
+        /// </summary>
+        /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+        /// <returns></returns>
+        /// <remarks>Example: Delete: /api/registration/documents/{documentId}</remarks>
+        /// <response code="200">Successfully deleted the document</response>
+        /// <response code="400">Incorrect document state</response>
+        /// <response code="403">The user is not assigned with the Company Application.</response>
+        /// <response code="404">The document was not found.</response>
+        [HttpDelete]
+        [Route("documents/{documentId}")]
+        [Authorize(Roles = "delete_documents")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteRegistrationDocument([FromRoute] Guid documentId)
+        {
+            await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
+            return NoContent();
+        }
     }
 }

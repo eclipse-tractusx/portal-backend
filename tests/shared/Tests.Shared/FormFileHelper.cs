@@ -34,7 +34,7 @@ public static class FormFileHelper
         stream.Position = 0;
 
         var headers = new HeaderDictionary {{HeaderNames.ContentType, contentType}};
-        return new FormFile(stream, 0, stream.Length, "id_from_form", fileName)
+        return new FormFile(stream, 0, stream.Length, fileName.Split(".").First(), fileName)
         {
             Headers = headers 
         };

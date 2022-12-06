@@ -19,6 +19,9 @@
  ********************************************************************************/
 
 using AutoFixture;
+using FakeItEasy;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -27,9 +30,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using FakeItEasy;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers;
@@ -56,8 +56,8 @@ public class ServiceControllerTest
     {
         //Arrange
         var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-        var serviceOfferingData = _fixture.Create<OfferingData>();
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<OfferingData>._, IamUserId))
+        var serviceOfferingData = _fixture.Create<ServiceOfferingData>();
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._, IamUserId))
             .Returns(id);
 
         //Act
@@ -74,42 +74,43 @@ public class ServiceControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<ServiceOverviewData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ServiceOverviewData>(5));
-        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15))
+        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15, null, null))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetAllActiveServicesAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllActiveServicesAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<ServiceOverviewData>>(result);
         result.Content.Should().HaveCount(5);
     }
         
     [Fact]
-    public async Task AddServiceSubscription_ReturnsExpectedId()
+    public async Task AddServiceSubscriptionWithConsent_ReturnsExpectedId()
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, IamUserId, _accessToken))
+        var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, _accessToken))
             .Returns(offerSubscriptionId);
 
         //Act
         var serviceId = Guid.NewGuid();
-        var result = await this._controller.AddServiceSubscription(serviceId).ConfigureAwait(false);
+        var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, IamUserId, _accessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }
-        
+
     [Fact]
     public async Task GetServiceDetails_ReturnsExpectedId()
     {
         //Arrange
         var serviceId = Guid.NewGuid();
-        var serviceDetailData = _fixture.Create<OfferDetailData>();
+        var serviceDetailData = _fixture.Create<ServiceDetailData>();
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, IamUserId))
             .Returns(serviceDetailData);
 
@@ -118,7 +119,7 @@ public class ServiceControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<OfferDetailData>(result);
+        Assert.IsType<ServiceDetailData>(result);
         result.Should().Be(serviceDetailData);
     }
         
@@ -146,18 +147,35 @@ public class ServiceControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var consentId = Guid.NewGuid();
-        var serviceAgreementConsentData = new ServiceAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<ServiceAgreementConsentData>._, A<string>._))
+        var offerAgreementConsentData = new OfferAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
+        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<OfferAgreementConsentData>._, A<string>._))
             .ReturnsLazily(() => consentId);
 
         //Act
-        var result = await this._controller.CreateServiceAgreementConsent(serviceId, serviceAgreementConsentData).ConfigureAwait(false);
+        var result = await this._controller.CreateServiceAgreementConsent(serviceId, offerAgreementConsentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, serviceAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         Assert.IsType<Guid>(result.Value);
         result.Value.Should().Be(consentId);
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateServiceAgreementConsents_ReturnsExpectedId()
+    {
+        //Arrange
+        var serviceId = Guid.NewGuid();
+        var offerAgreementConsentData = _fixture.Build<OfferAgreementConsentData>().With(x => x.ConsentStatusId, ConsentStatusId.ACTIVE).CreateMany(2);
+        A.CallTo(() => _logic.CreateOrUpdateServiceAgreementConsentAsync(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.CreateOrUpdateServiceAgreementConsents(serviceId, offerAgreementConsentData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOrUpdateServiceAgreementConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 
     [Fact]
@@ -213,5 +231,40 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.AutoSetupServiceAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
+    }
+        
+    [Fact]
+    public async Task UpdateService_ReturnsExpected()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var data = _fixture.Create<ServiceUpdateRequestData>();
+        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, A<string>.That.Matches(x => x== IamUserId)))
+            .Returns(Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.UpdateService(serviceId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+    
+    [Fact]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._))
+                    .ReturnsLazily(() => pagination);
+
+
+        //Act
+        var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 }

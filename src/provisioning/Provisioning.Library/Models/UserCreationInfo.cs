@@ -22,33 +22,41 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public class UserCreationInfo
-{
-    public UserCreationInfo(string? userName, string email, string? firstName, string? lastName, IEnumerable<string> roles, string? message)
-    {
-        this.userName = userName;
-        this.eMail = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.Roles = roles;
-        this.Message = message;
-    }
+public record UserCreationInfo(
 
-    [JsonPropertyName("userName")]
-    public string? userName { get; set; }
+    [property:JsonPropertyName("userName")]
+    string? userName,
 
-    [JsonPropertyName("email")]
-    public string eMail { get; set; }
+    [property:JsonPropertyName("email")]
+    string eMail,
 
-    [JsonPropertyName("firstName")]
-    public string? firstName { get; set; }
+    [property:JsonPropertyName("firstName")]
+    string? firstName,
 
-    [JsonPropertyName("lastName")]
-    public string? lastName { get; set; }
+    [property:JsonPropertyName("lastName")]
+    string? lastName,
 
-    [JsonPropertyName("roles")]
-    public IEnumerable<string> Roles { get; set; }
+    [property:JsonPropertyName("roles")]
+    IEnumerable<string> Roles
+);
 
-    [JsonPropertyName("message")]
-    public string? Message { get; set; }
-}
+public record UserCreationInfoWithMessage(
+
+    [property:JsonPropertyName("userName")]
+    string? userName,
+
+    [property:JsonPropertyName("email")]
+    string eMail,
+
+    [property:JsonPropertyName("firstName")]
+    string? firstName,
+
+    [property:JsonPropertyName("lastName")]
+    string? lastName,
+
+    [property:JsonPropertyName("roles")]
+    IEnumerable<string> Roles,
+
+    [property:JsonPropertyName("message")]
+    string? Message
+);

@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -45,9 +46,9 @@ public class SdFactoryServiceTests
     private readonly Guid _applicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
-    private readonly SdFactoryService _service;
     private readonly ICollection<Document> _documents;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IOptions<SdFactorySettings> _options;
 
     public SdFactoryServiceTests()
     {
@@ -59,15 +60,13 @@ public class SdFactoryServiceTests
         _documents = new HashSet<Document>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        var settings = new SdFactorySettings
+        _options = Options.Create(new SdFactorySettings
         {
             SdFactoryUrl = "https://www.api.sdfactory.com",
             SdFactoryIssuerBpn = "BPNL00000003CRHK"
-        };
+        });
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         SetupRepositoryMethods();
-
-        _service = new SdFactoryService(Options.Create(settings), _httpClientFactory, _portalRepositories, A.Fake<ILogger<SdFactoryService>>());
     }
 
     #endregion
@@ -108,18 +107,20 @@ public class SdFactoryServiceTests
             'jws': 'this-is-a-super-secret-secret-not'
           }
         }";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
+        CreateHttpClient(httpMessageHandlerMock);
+        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
 
         // Act
-        await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
+        await service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
+        var document = _documents.Single();
+        document.DocumentName.Should().Be($"SelfDescription_Connector.json");
     }
 
     [Fact]
@@ -127,14 +128,14 @@ public class SdFactoryServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorInputModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
+        CreateHttpClient(httpMessageHandlerMock);
+        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -179,17 +180,19 @@ public class SdFactoryServiceTests
             'jws': 'this-is-a-super-secret-secret-not'
           }
         }";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, FormContent(contentJson, "application/vc+ld+json"));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
+        CreateHttpClient(httpMessageHandlerMock);
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
 
         // Act
-        await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        await service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
+        var document = _documents.Single();
+        document.DocumentName.Should().Be($"SelfDescription_LegalPerson.json");
     }
 
     [Fact]
@@ -197,13 +200,13 @@ public class SdFactoryServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        CreateHttpClient(httpMessageHandlerMock);
         var accessToken = "this-is-a-super-secret-secret-not";
         var bpn = "BPNL000000000009";
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
 
         // Act
-        async Task Action() => await _service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -213,12 +216,11 @@ public class SdFactoryServiceTests
     #endregion
     
     #region Setup
-    
-    private static HttpContent FormContent(string s, string contentType)
+
+    private void CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
     {
-        HttpContent content = new StringContent(s);
-        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-        return content;
+        var httpClient = new HttpClient(httpMessageHandlerMock) {BaseAddress = new Uri(_options.Value.SdFactoryUrl)};
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
     }
 
     private void SetupRepositoryMethods()

@@ -26,42 +26,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// View model for connectors.
 /// </summary>
-public class ConnectorData
-{
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="name">Name.</param>
-    /// <param name="location">Location.</param>
-    public ConnectorData(string name, string location)
-    {
-        Name = name;
-        Location = location;
-    }
-
-    /// <summary>
-    /// ID of the connector.
-    /// </summary>
-    public Guid Id { get; set; }
-
-    /// <summary>
-    /// Name of the connector.
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
-    /// Connector type.
-    /// </summary>
-    public ConnectorTypeId Type { get; set; }
-
-    /// <summary>
-    /// Country code of the connector's location.
-    /// </summary>
+public record ConnectorData(
+    string Name,
     [StringLength(2, MinimumLength = 2)]
-    public string Location { get; set; }
+    string Location,
+    Guid Id,
+    ConnectorTypeId Type,
+    ConnectorStatusId Status);
 
-    /// <summary>
-    /// Connector status.
-    /// </summary>
-    public ConnectorStatusId Status { get; set; }
-}
+/// <summary>
+/// Connector information for the daps call.
+/// </summary>
+public record ConnectorInformationData(
+    string Name,
+    string Bpn,
+    Guid Id,
+    string Url);

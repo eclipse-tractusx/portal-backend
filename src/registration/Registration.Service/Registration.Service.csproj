@@ -29,7 +29,8 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>    
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>CS1591</NoWarn>    
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Registration.Service</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

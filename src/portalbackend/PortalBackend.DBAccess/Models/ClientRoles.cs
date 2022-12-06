@@ -21,6 +21,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
+    [Obsolete("only referenced by code that is marked as obsolte")]
     public class ClientRoles
     {
         public ClientRoles(Guid roleId, string role, string description)
