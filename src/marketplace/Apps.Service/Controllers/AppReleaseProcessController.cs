@@ -302,4 +302,26 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
          await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddActiveAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
+    
+    /// <summary>
+    /// Approve App to change status from IN_REVIEW to Active and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveApp</remarks>
+    /// <response code="204">The app was successfully submitted to Active State.</response>
+    /// <response code="409">App is in InCorrect Status</response>
+    /// <response code="403">User is not allowed to change the app.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPut]
+    [Route("{appId}/approveApp")]
+    [Authorize(Roles = "approve_app_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> ApproveAppRequest([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

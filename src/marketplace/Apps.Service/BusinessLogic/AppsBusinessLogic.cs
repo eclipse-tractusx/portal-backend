@@ -31,6 +31,7 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
+using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -43,6 +44,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly IMailingService _mailingService;
 
     /// <summary>
     /// Constructor.
@@ -51,11 +53,13 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="offerSubscriptionService">OfferSubscription Service.</param>
     /// <param name="offerService">Offer service</param>
     /// <param name="settings">Settings</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings)
+    /// <param name="mailingService">Mailing service</param>
+    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings, IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
+        _mailingService = mailingService;
         _settings = settings.Value;
     }
 
@@ -156,7 +160,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
         Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, sorting, statusId));
+            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE));
 
     /// <inheritdoc/>
     public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
@@ -165,25 +169,38 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId)
     {
-        var assignedAppData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, iamUserId).ConfigureAwait(false);
+        var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var assignedAppData = await offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, subscribingCompanyId, iamUserId).ConfigureAwait(false);
         if(assignedAppData == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscription, isMemberOfCompanyProvidingApp, appName, companyUserId) = assignedAppData;
-        if(!isMemberOfCompanyProvidingApp)
+        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, email, firstname) = assignedAppData;
+
+        if(companyUserId == Guid.Empty)
         {
-            throw new ArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
+            throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
         }
 
-        if (subscription is not { OfferSubscriptionStatusId: OfferSubscriptionStatusId.PENDING })
+        if (subscriptionId == Guid.Empty)
         {
-            throw new ArgumentException("No pending subscription for provided parameters existing.");
+            throw new ControllerArgumentException($"subscription for app {appId}, company {subscribingCompanyId} has not been created yet");
         }
-        subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
 
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(subscription.RequesterId,
+        if (subscriptionStatusId != OfferSubscriptionStatusId.PENDING )
+        {
+            throw new ControllerArgumentException($"subscription for app {appId}, company {subscribingCompanyId} is not in status PENDING");
+        }
+        
+        if (appName is null)
+        {
+            throw new ConflictException("App Name is not yet set.");
+        }
+
+        offerSubscriptionRepository.AttachAndModifyOfferSubscription(subscriptionId, subscription => subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE);
+
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId,
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
             {
@@ -195,6 +212,16 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 });
             });
         
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerCustomerName", firstname ?? "User" },
+                { "offerName", appName },
+                { "url", _settings.BasePortalAddress },
+            };
+            await _mailingService.SendMails(email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
+        }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -254,11 +281,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId)=>
         _portalRepositories.GetInstance<IOfferRepository>().GetProvidedAppsData(userId);
     
-    
-
-    
-
-     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
         _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);

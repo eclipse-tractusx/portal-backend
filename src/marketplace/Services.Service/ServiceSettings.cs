@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
@@ -43,10 +44,31 @@ public class ServiceSettings
     public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
     
     /// <summary>
+    /// Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; set; } = null!;
+
+    /// <summary>
     /// BasePortalAddress url required for subscription email 
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
+
+    /// <summary>
+    /// Approve Service Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
+
+    /// <summary>
+    /// Roles to notify when a new subscription was created for sales and App Manager
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
+
 }
 
 public static class ServiceSettingsExtension

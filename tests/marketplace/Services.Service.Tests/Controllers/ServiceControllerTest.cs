@@ -267,4 +267,19 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
+    
+    [Fact]
+    public async Task SubmitService_ReturnsExpectedCount()
+    {
+        //Arrange
+        A.CallTo(() => _logic.SubmitServiceAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+
+        //Act
+        var result = await this._controller.SubmitService(ServiceId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SubmitServiceAsync(ServiceId, IamUserId)).MustHaveHappenedOnceExactly();
+    }
 }

@@ -21,11 +21,11 @@
 using Microsoft.Extensions.Logging;
 using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
 using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
@@ -160,7 +160,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var (offerSubscriptionId, offerSubscriptionStateId) = await offerSubscriptionsRepository
             .GetOfferSubscriptionStateForCompanyAsync(offerId, companyInformation.CompanyId, OfferTypeId.APP)
             .ConfigureAwait(false);
-        if (offerSubscriptionStateId == default)
+        if (offerSubscriptionId == Guid.Empty)
         {
             return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
                 OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;

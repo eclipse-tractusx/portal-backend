@@ -28,6 +28,8 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
+using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 
@@ -147,7 +149,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ForbiddenException($"User {iamUserId} is not allowed to change the service.");
         }
 
-        await _offerService.ValidateSalesManager(data.SalesManager, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        if (data.SalesManager.HasValue)
+        {
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.AttachAndModifyOffer(
@@ -160,7 +165,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             },
             offer =>
             {
-                offer.SalesManagerId = Guid.Empty;
+                offer.SalesManagerId = serviceData.SalesManagerId;
             });
 
         _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), serviceData.Descriptions);
@@ -188,6 +193,13 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc/>
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
         Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId));
+            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE));
 
+    /// <inheritdoc/>
+    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) => 
+        _offerService.SubmitOfferAsync(serviceId, iamUserId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CompanyAdminRoles);
+
+    /// <inheritdoc/>
+    public Task ApproveServiceRequestAsync(Guid appId, string iamUserId) =>
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles);
 }

@@ -1099,5 +1099,9 @@ public static class StaticPortalData
         new NotificationTypeAssignedTopic(NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, NotificationTopicId.OFFER),
         new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_REQUEST, NotificationTopicId.OFFER),
         new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_ACTIVATION, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_ROLE_ADDED, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_REQUEST, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_APPROVAL, NotificationTopicId.OFFER),
     };
 }
