@@ -116,7 +116,7 @@ public class AppsSettings
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> AprroveAppUserRoles { get; set; } = null!;
+    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
 
     /// <summary>
     /// Max page size for pagination
