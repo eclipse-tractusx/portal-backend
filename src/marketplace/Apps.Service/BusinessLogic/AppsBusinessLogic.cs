@@ -291,5 +291,5 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc />
     public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
-        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.BasePortalAddress);
+        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
 }

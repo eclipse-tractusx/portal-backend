@@ -514,7 +514,7 @@ public class OfferService : IOfferService
             { "url", basePortalAddress },
             { "declineMessage", data.Message }
         };
-        await _mailingService.SendMails("test@email.com", mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false); // TODO (PS): change mail
+        await _mailingService.SendMails("test@email.com", mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
