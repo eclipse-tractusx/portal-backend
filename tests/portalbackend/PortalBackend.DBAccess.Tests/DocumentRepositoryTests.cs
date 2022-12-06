@@ -76,7 +76,19 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntity = changedEntries.Single();
         changedEntity.State.Should().Be(EntityState.Added);
     }
-
+    
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var results = await sut.GetUploadedDocumentsAsync(new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), DocumentTypeId.CX_FRAME_CONTRACT).ToListAsync().ConfigureAwait(false);
+    
+        // Assert
+        results.Should().NotBeNull();
+    }
     #endregion
 
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()

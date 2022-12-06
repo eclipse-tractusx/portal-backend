@@ -25,6 +25,8 @@ using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
 
@@ -78,6 +80,27 @@ public class RegistrationControllerTest
         await foreach (var item in result)
         {
             A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersAsync(Guid.Empty)).Throws(new Exception());
+        }
+    }
+
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        Guid applicationId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3).ToAsyncEnumerable();
+        A.CallTo(() => registrationBusineesLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT))
+            .Returns(uploadDocuments);
+
+        //Act
+        var result = this.controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT);
+
+        //Assert
+        await foreach (var item in result)
+        {
+            A.CallTo(() => registrationBusineesLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT)).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<UploadDocuments>(item);
         }
     }
 }

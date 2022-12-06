@@ -826,6 +826,30 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedOutput()
+    {
+        // Arrange
+        Guid applicationId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3).ToAsyncEnumerable();
+        A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT))
+            .Returns(uploadDocuments);
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+        // Act
+        var result = await sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        
+    }
+
     #endregion
 
     #region Setup
@@ -892,6 +916,8 @@ public class RegistrationBusinessLogicTest
                 .With(x => x.Error, (Exception?)null)
                 .Create());
     }
+
+    
 
     #endregion
 
