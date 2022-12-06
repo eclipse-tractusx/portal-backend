@@ -23,7 +23,10 @@ using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers;
 using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
@@ -31,15 +34,18 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
 public class RegistrationControllerTest
 {
     private readonly IFixture _fixture;
-    private readonly RegistrationController controller;
-    private readonly IRegistrationBusinessLogic registrationBusineesLogicFake;
-    private readonly ILogger<RegistrationController> registrationLoggerFake;
+    private readonly RegistrationController _controller;
+    private readonly IRegistrationBusinessLogic _registrationBusinessLogicFake;
+    private readonly string _iamUserId = "7478542d-7878-47a8-a931-08bd8779532d";
+    private readonly string _accessToken = "ac-token";
+
     public RegistrationControllerTest()
     {
         _fixture = new Fixture();
-        registrationBusineesLogicFake = A.Fake<IRegistrationBusinessLogic>();
-        registrationLoggerFake = A.Fake<ILogger<RegistrationController>>();
-        this.controller = new RegistrationController(registrationLoggerFake, registrationBusineesLogicFake);
+        _registrationBusinessLogicFake = A.Fake<IRegistrationBusinessLogic>();
+        ILogger<RegistrationController> registrationLoggerFake = A.Fake<ILogger<RegistrationController>>();
+        _controller = new RegistrationController(registrationLoggerFake, _registrationBusinessLogicFake);
+        _controller.AddControllerContextWithClaimAndBearer(_iamUserId, _accessToken);
     }
 
     [Fact]
@@ -48,15 +54,15 @@ public class RegistrationControllerTest
         //Arrange
         Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
         var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
-        A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersAsync(id))
+        A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
             .Returns(invitedUserMapper);
 
         //Act
-        var result = this.controller.GetInvitedUsersAsync(id);
+        var result = this._controller.GetInvitedUsersAsync(id);
         await foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<InvitedUser>(item);
         }
@@ -68,16 +74,33 @@ public class RegistrationControllerTest
         //Arrange
         Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
         var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
-        A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersAsync(id))
+        A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
             .Returns(invitedUserMapper);
 
         //Act
-        var result = this.controller.GetInvitedUsersAsync(Guid.Empty);
+        var result = this._controller.GetInvitedUsersAsync(Guid.Empty);
 
         //Assert
         await foreach (var item in result)
         {
-            A.CallTo(() => registrationBusineesLogicFake.GetInvitedUsersAsync(Guid.Empty)).Throws(new Exception());
+            A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(Guid.Empty)).Throws(new Exception());
         }
+    }
+
+    [Fact]
+    public async Task SubmitCompanyRoleConsentToAgreementsAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.Create<CompanyRoleAgreementConsents>();
+        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId))
+            .ReturnsLazily(() => 1);
+
+        //Act
+        var result = await this._controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(1);
     }
 }
