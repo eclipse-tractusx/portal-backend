@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -46,6 +47,7 @@ public class RegistrationBusinessLogicTest
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
+    private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
     private static readonly Guid CompanyUserId1 = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
     private static readonly Guid CompanyUserId2 = new("857b93b1-8fcb-4141-81b0-ae81950d489f");
     private static readonly Guid CompanyUserId3 = new("857b93b1-8fcb-4141-81b0-ae81950d48af");
@@ -65,12 +67,13 @@ public class RegistrationBusinessLogicTest
     private readonly IUserRolesRepository _rolesRepository;
     private readonly ICustodianService _custodianService;
     private readonly IFixture _fixture;
-    private readonly IRegistrationBusinessLogic _logic;
+    private readonly RegistrationBusinessLogic _logic;
     private readonly RegistrationSettings _settings;
     private readonly List<Notification> _notifications = new();
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactory;
     private readonly ICompanyRepository _companyRepository;
+    private readonly IBpdmService _bpdmService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -87,7 +90,8 @@ public class RegistrationBusinessLogicTest
         _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<RegistrationSettings>();
         _companyRepository = A.Fake<ICompanyRepository>();
-        
+        _bpdmService = A.Fake<IBpdmService>();
+
         var userRepository = A.Fake<IUserRepository>();
         var mailingService = A.Fake<IMailingService>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
@@ -114,7 +118,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory, _bpdmService);
     }
     
     #region ApprovePartnerRequest
@@ -226,6 +230,98 @@ public class RegistrationBusinessLogicTest
         result.Content.Should().HaveCount(5);
     }
 
+    #region Trigger bpn data push
+    
+    [Fact]
+    public async Task TriggerBpnDataPush_WithValidData_CallsService()
+    {
+        // Act
+        var data = _fixture
+            .Build<BpdmData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.IsUserInCompany, true)
+            .Create();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, ApplicationId))
+            .ReturnsLazily(() => data);
+
+        await _logic.TriggerBpnDataPushAsync(IamUserId, ApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+    
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var notExistingApplicationId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, notExistingApplicationId))
+            .ReturnsLazily(() => (BpdmData?)null);
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, notExistingApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Application {notExistingApplicationId} does not exists.");
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotSubmittedApplication_ThrowsArgumentException()
+    {
+        // Arrange
+        var createdApplicationId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, true));
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.ParamName.Should().Be("applicationId");
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotExistingUser_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var wrongUserId = Guid.NewGuid().ToString();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(wrongUserId, applicationId))
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(wrongUserId, applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("iamUserId");
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithEmptyZipCode_ThrowsConflictException()
+    {
+        // Arrange
+        var createdApplicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<BpdmData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.IsUserInCompany, true)
+            .With(x => x.ZipCode, (string?)null)
+            .Create();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("ZipCode must not be empty");
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakes(

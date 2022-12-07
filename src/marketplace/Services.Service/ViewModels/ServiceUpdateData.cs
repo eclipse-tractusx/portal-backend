@@ -29,4 +29,4 @@ public record ServiceUpdateRequestData(
     IEnumerable<ServiceTypeId> ServiceTypeIds,
     string Price,
     string ContactEmail,
-    Guid SalesManager);
+    Guid? SalesManager);

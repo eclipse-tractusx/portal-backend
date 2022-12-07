@@ -20,24 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-/// <summary>
-/// Data object to create a new service offering
-/// </summary>
-/// <param name="Title">title of the service offering</param>
-/// <param name="Price">the price</param>
-/// <param name="ThumbnailUrl">url of the thumbnail</param>
-/// <param name="ContactEmail">contact email address</param>
-/// <param name="SalesManager">the sales manager of the service</param>
-/// <param name="Descriptions">the service descriptions</param>
-public record OfferingData(
-    string Title,
-    string Price,
-    string? ThumbnailUrl,
-    string? ContactEmail,
-    Guid SalesManager,
-    IEnumerable<OfferingDescription> Descriptions);
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 /// <summary>
 /// Data object to create a new service offering
@@ -54,7 +37,7 @@ public record ServiceOfferingData(
     string Price,
     string? ThumbnailUrl,
     string? ContactEmail,
-    Guid SalesManager,
+    Guid? SalesManager,
     IEnumerable<OfferingDescription> Descriptions,
     IEnumerable<ServiceTypeId> ServiceTypeIds);
 

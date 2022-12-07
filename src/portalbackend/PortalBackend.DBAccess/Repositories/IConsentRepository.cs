@@ -61,4 +61,11 @@ public interface IConsentRepository
     /// <param name="offerTypeId">OfferTypeId the consent must be assiciated with</param>
     /// <returns>Returns the detail data of the consent</returns>
     Task<ConsentDetailData?> GetConsentDetailData(Guid consentId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Updates the given consents
+    /// </summary>
+    /// <param name="consentIds">Collection of consets that should be updated</param>
+    /// <param name="setOptionalParameter">Action that will be applied to all consents</param>
+    void AttachAndModifiesConsents(IEnumerable<Guid> consentIds, Action<Consent> setOptionalParameter);
 }
