@@ -464,7 +464,7 @@ public class OfferService : IOfferService
         var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"{offerTypeId.ToString()} {offerId} does not exist");
+            throw new NotFoundException($"{offerTypeId} {offerId} does not exist");
         }
 
         ValidateOfferDetails(offerDetails);
@@ -600,12 +600,12 @@ public class OfferService : IOfferService
 
         if (!declineData.IsUserOfProvider)
         {
-            throw new ControllerArgumentException($"{offerType} not found. Either not existing or no permission for change.", nameof(iamUserId));
+            throw new ForbiddenException($"{offerType} not found. Either not existing or no permission for change.");
         }
 
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
         {
-            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW.ToString()}");
+            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW}");
         }
 
         if (string.IsNullOrWhiteSpace(declineData.OfferName))
