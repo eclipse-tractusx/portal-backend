@@ -456,9 +456,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
     
-    //TODO: Need to implement storage for document upload
-    public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId) =>
-        _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId,documentTypeId);
+    public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+        if (!result.IsApplicationAssignedUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
+        }
+        return result.Documents;
+    }
 
     public async Task<int> SetInvitationStatusAsync(string iamUserId)
     {

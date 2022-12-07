@@ -830,14 +830,21 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string,string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
+    #endregion
+
+    #region GetUploadedDocuments
+
     [Fact]
     public async Task GetUploadedDocumentsAsync_ReturnsExpectedOutput()
     {
         // Arrange
-        Guid applicationId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3).ToAsyncEnumerable();
-        A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT))
-            .Returns(uploadDocuments);
+        var applicationId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
+
+        A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, iamUserId))
+            .Returns((true, uploadDocuments));
+
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -847,11 +854,70 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, iamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        
+        result.Should().HaveSameCount(uploadDocuments);
+        result.Should().ContainInOrder(uploadDocuments);
+    }
+
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_InvalidApplication_ThrowsNotFound()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
+
+        A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, iamUserId))
+            .Returns(((bool,IEnumerable<UploadDocuments>))default);
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+
+        Task Act() => sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, iamUserId);
+
+        // Act
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        error.Message.Should().Be($"application {applicationId} not found");
+    }
+
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_InvalidUser_ThrowsForbidden()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<string>();
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
+
+        A.CallTo(() => _documentRepository.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, iamUserId))
+            .Returns((false, Enumerable.Empty<UploadDocuments>()));
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+
+        Task Act() => sut.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, iamUserId);
+
+        // Act
+        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+
+        // Assert
+        error.Message.Should().Be($"user {iamUserId} is not associated with application {applicationId}");
     }
 
     #endregion

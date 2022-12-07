@@ -68,16 +68,25 @@ public class DocumentRepository : IDocumentRepository
                     document.CompanyUser!.IamUser!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId) =>
-        _dbContext.IamUsers
+    public Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
+        _dbContext.CompanyApplications
             .AsNoTracking()
-            .Where(iamUser => iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .SelectMany(iamUser => iamUser.CompanyUser!.Documents.Where(docu => docu.DocumentTypeId == documentTypeId && docu.DocumentStatusId != DocumentStatusId.INACTIVE))
-            .Select(document =>
-                new UploadDocuments(
-                    document!.Id,
-                    document!.DocumentName))
-            .AsAsyncEnumerable();
+            .Where(application => application.Id == applicationId)
+            .Select(application => new {
+                IsApplicationAssignedUser = application.Invitations.Any(invitation => invitation.CompanyUser!.IamUser!.UserEntityId == iamUserId),
+                Invitations = application.Invitations
+            })
+            .Select(x => new ValueTuple<bool,IEnumerable<UploadDocuments>>(
+                x.IsApplicationAssignedUser,
+                x.Invitations.SelectMany(invitation => 
+                    invitation.CompanyUser!.Documents
+                        .Where(document => x.IsApplicationAssignedUser && document.DocumentTypeId == documentTypeId)
+                        .Select(document =>
+                            new UploadDocuments(
+                                document!.Id,
+                                document!.DocumentName))))
+            )
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId) =>
