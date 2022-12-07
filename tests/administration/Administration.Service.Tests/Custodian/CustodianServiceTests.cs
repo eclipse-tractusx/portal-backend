@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -26,6 +26,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
@@ -39,17 +40,19 @@ public class CustodianServiceTests
     #region Initialization
 
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ITokenService _tokenService;
     private readonly string _accessToken;
     private readonly IOptions<CustodianSettings> _options;
+    private readonly IFixture _fixture;
 
     public CustodianServiceTests()
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _accessToken = "this-is-a-super-secret-secret-not";
+        _accessToken = _fixture.Create<string>();
         _options = Options.Create(new CustodianSettings
         {
             Password = "passWord",
@@ -62,45 +65,7 @@ public class CustodianServiceTests
             KeyCloakTokenAdress = "https://key.cloak.com"
         });
         _httpClientFactory = A.Fake<IHttpClientFactory>();
-    }
-
-    #endregion
-
-    #region GetToken
-
-    [Fact]
-    public async Task GetToken_WithValidData_ReturnsToken()
-    {
-        // Arrange
-        SetupAuthClient();
-        var sut = new CustodianService(_httpClientFactory, _options);
-        
-        // Act
-        var token = await sut.GetTokenAsync(CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        token.Should().NotBeNull();
-        token.Should().Be(_accessToken);
-    }
-
-    [Fact]
-    public async Task GetToken_WithInvalidData_ThrowsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _httpClientFactory.CreateClient("custodianAuth")).Returns(httpClient);
-        var sut = new CustodianService(_httpClientFactory, _options);
-
-        // Act
-        async Task Act() => await sut.GetTokenAsync(CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Be("Token could not be retrieved");
+        _tokenService = A.Fake<ITokenService>();
     }
 
     #endregion
@@ -113,7 +78,7 @@ public class CustodianServiceTests
         // Arrange
         var bpn = "123";
         var name = "test";
-        SetupAuthClient();
+        SetupTokenService();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         var httpClient = new HttpClient(httpMessageHandlerMock)
@@ -122,7 +87,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
             .Returns(httpClient);
-        var sut = new CustodianService(_httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
         
         // Act
         await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
@@ -137,14 +102,14 @@ public class CustodianServiceTests
         // Arrange
         var bpn = "123";
         var name = "test";
-        SetupAuthClient();
+        SetupTokenService();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
-        var sut = new CustodianService(_httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
 
         // Act
         async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
@@ -176,7 +141,7 @@ public class CustodianServiceTests
                 }
             }
         });
-        SetupAuthClient();
+        SetupTokenService();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/vc+ld+json"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
@@ -184,7 +149,7 @@ public class CustodianServiceTests
         };
         A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
             .Returns(httpClient);
-        var sut = new CustodianService(_httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
         
         // Act
         var result = await sut.GetWalletsAsync(CancellationToken.None).ToListAsync().ConfigureAwait(false);
@@ -197,14 +162,14 @@ public class CustodianServiceTests
     public async Task GetWallets_WithInvalidData_ThrowsServiceException()
     {
         // Arrange
-        SetupAuthClient();
+        SetupTokenService();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
         A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
-        var sut = new CustodianService(_httpClientFactory, _options);
+        var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
 
         // Act
         async Task Act() => await sut.GetWalletsAsync(CancellationToken.None).ToListAsync().ConfigureAwait(false);
@@ -218,23 +183,9 @@ public class CustodianServiceTests
 
     #region Setup
     
-    private void SetupAuthClient()
+    private void SetupTokenService()
     {
-        var authResponse = JsonSerializer.Serialize(new AuthResponse
-        {
-            access_token = _accessToken,
-            expires_in = 60,
-            notbeforepolicy = 20,
-            refresh_expires_in = 20
-        });
-        var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.OK, authResponse.ToFormContent("application/vc+ld+json"));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodianAuth")))
-            .Returns(httpClient);
+        A.CallTo(() => _tokenService.GetTokenAsync(A<GetTokenSettings>._, A<CancellationToken>._)).Returns(_accessToken);
     }
 
     #endregion
