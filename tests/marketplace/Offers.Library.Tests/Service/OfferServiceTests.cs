@@ -510,10 +510,8 @@ public class OfferServiceTests
         var appSubscriptionDetails = new List<AppSubscriptionDetail>();
         var notifications = new List<Notification>();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
-            .Invokes(x =>
+            .Invokes((string clientName) =>
             {
-                var clientName = x.Arguments.Get<string>("clientId");
-
                 var client = new IamClient(clientId, clientName!);
                 clients.Add(client);
             })
@@ -877,11 +875,10 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).ReturnsLazily(() => data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).ReturnsLazily(() => userId);
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).Invokes(
-            x =>
+            (Guid _, 
+                Action<Offer> setOptionalParameters, 
+                Action<Offer>? initializeParemeters) =>
             {
-                var setOptionalParameters = x.Arguments.Get<Action<Offer>>("setOptionalParameters")!;
-                var initializeParemeters = x.Arguments.Get<Action<Offer>?>("initializeParemeters")!;
-
                 initializeParemeters?.Invoke(offer);
                 setOptionalParameters.Invoke(offer);
             });
@@ -913,7 +910,7 @@ public class OfferServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId))
             .ReturnsLazily(() => (requesterId));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offer.Id, A<Action<Offer>>._, A<Action<Offer>?>._))
-            .Invokes((Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) => 
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) => 
             {
                 initializeParemeters?.Invoke(offer);
                 setOptionalParameters(offer);
@@ -1084,13 +1081,10 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, _iamUserId, offerTypeId))
             .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), true));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
-            .Invokes(x =>
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
-                var setOptionalParameters = x.GetArgument<Action<Offer>>("setOptionalParameters")!;
-                var initializeParemeters = x.GetArgument<Action<Offer>?>("initializeParemeters");
-
-                setOptionalParameters.Invoke(offer);
                 initializeParemeters?.Invoke(offer);
+                setOptionalParameters.Invoke(offer);
             });
         
         var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, _mailingService);
