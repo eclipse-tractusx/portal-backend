@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -34,6 +35,13 @@ public class UserSettings
     public UserSetting Portal { get; set; }
     public PasswordReset PasswordReset { get; set; }
     public int ApplicationsMaxPageSize { get; set; }
+
+    /// <summary>
+    /// Company User Status Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<CompanyUserStatusId> CompanyUserStatusIds { get; set; } = null!;
 }
 
 public class UserSetting

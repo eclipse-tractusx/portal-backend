@@ -46,18 +46,9 @@ public class Offer : IAuditableV1
         UserRoles = new HashSet<UserRole>();
         AppInstances = new HashSet<AppInstance>();
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
+        ServiceTypes = new HashSet<ServiceType>();
     }
 
-    /// <summary>
-    /// construtor used for the Attach case
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public Offer(Guid id) : this()
-    {
-        Id = id;
-    }
-    
     public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
     {
         Id = id;
@@ -123,4 +114,5 @@ public class Offer : IAuditableV1
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
+    public virtual ICollection<ServiceType> ServiceTypes { get; private set; }
 }

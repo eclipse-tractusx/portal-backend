@@ -60,6 +60,50 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Sales Manager roles
+    /// </summary>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
+    
+    /// <summary>
+    /// Roles to notify when a new subscription was created
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+    
+    /// <summary>
+    /// Document Content Type Settings
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
+
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
+     /// <summary>
+    /// Active App Company Admin Roles
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Active App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
+    
+    /// <summary>
+    /// Max page size for pagination
+    /// </summary>
+    public int ApplicationsMaxPageSize { get; set; }
 }
 
 /// <summary>

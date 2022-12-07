@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.Notification.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -153,7 +154,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         Guid? documentId = null;
         try
         {
-            await _custodianService.CreateWallet(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
+            await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
 
             documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         }
@@ -170,13 +171,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 c.CompanyStatusId = CompanyStatusId.ACTIVE;
                 c.SelfDescriptionDocumentId = documentId;
             });
+
+            var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
+            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications).ConfigureAwait(false);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
-
-        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications).ConfigureAwait(false);
 
         if (assignedRoles == null) return true;
         
@@ -320,6 +321,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
+                .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
                 .ConfigureAwait(false);
 
             foreach (var roleData in initialRolesData)
@@ -354,5 +356,48 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return roleData;
+    }
+
+    public Task UpdateCompanyBpn(Guid applicationId, string bpn)
+    {
+        var regex = new Regex(@"(\w|\d){16}");
+        if (!regex.IsMatch(bpn))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+        }
+        if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+        }
+        return UpdateCompanyBpnAsync(applicationId, bpn);
+    }
+
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
+    {
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+        if (!result.Any(item => item.IsApplicationCompany))
+        {
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+        if (result.Any(item => !item.IsApplicationCompany))
+        {
+            throw new ConflictException($"BusinessPartnerNumber is already assigned to a different company");
+        }
+        var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
+        if (!applicationCompanyData.IsApplicationPending)
+        {
+            throw new ConflictException($"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+        }
+        if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
+        {
+            throw new ConflictException($"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, c =>
+        {
+            c.BusinessPartnerNumber = bpn;
+        });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

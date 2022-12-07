@@ -56,17 +56,20 @@ public static class BaseSeed
                 Shortname = "Test",
             },
         });
-        
-        dbContext.ServiceProviderCompanyDetails.AddRange(new List<ServiceProviderCompanyDetail>
+        dbContext.CompanyApplications.AddRange(new List<CompanyApplication>
         {
-            new ServiceProviderCompanyDetail(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),CompanyApplicationStatusId.CONFIRMED,DateTimeOffset.UtcNow)
         });
-        
-        dbContext.CompanyRoles.AddRange(new List<CompanyRole>
+        dbContext.Documents.AddRange(new List<Document>
         {
-            new(CompanyRoleId.SERVICE_PROVIDER)
-        }); 
-        
+            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"),new byte[1024],new byte[1024],"test.pdf",DateTimeOffset.UtcNow,DocumentStatusId.INACTIVE,DocumentTypeId.CX_FRAME_CONTRACT)
+        });
+        dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
+        {
+            new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
+        });
+
         dbContext.CompanyAssignedRoles.AddRange(new List<CompanyAssignedRole>
         {
             new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.SERVICE_PROVIDER),
@@ -79,52 +82,57 @@ public static class BaseSeed
         {
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user1@test.de",
+                Firstname = "Test User 1",
                 Lastname = "cx-user-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user2@test.de",
+                Firstname = "Test User 2",
                 Lastname = "cx-admin-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user3@test.de",
+                Firstname = "Test User 3",
                 Lastname = "company-admin-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user4@test.de",
+                Firstname = "Test User 4",
                 Lastname = "it-admin-2",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user5@test.de",
+                Firstname = "Test User 5",
                 Lastname = "CX User",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
-                Email = "tester.user@test.de",
-                Firstname = "Test User",
+                Email = "tester.user6@test.de",
+                Firstname = "Test User 6",
                 Lastname = "CX Admin",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
+            },
+            new(new Guid("40ed8c0d-b506-4c15-b2a9-85fee4b0c280"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.INACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            {
+                Email = "tester.user7@test.de",
+                Firstname = "Test User 7",
+                Lastname = "Inactive",
+            },
+            new(new Guid("22b7bfef-19f5-4d8a-9fb4-af1a5e978f21"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyUserStatusId.DELETED, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
+            {
+                Email = "tester.user8@test.de",
+                Firstname = "Test User 8",
+                Lastname = "Deleted",
             },
             new(new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyUserStatusId.ACTIVE, DateTimeOffset.UtcNow, new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"))
             {
                 Email = "tester.user@test.de",
                 Firstname = "Test User",
                 Lastname = "Test Company",
-                CompanyUserStatusId = CompanyUserStatusId.ACTIVE
             },
         });
 
@@ -146,13 +154,43 @@ public static class BaseSeed
         });
 
         dbContext.Offers.AddRange(OfferData.Offers);
+        dbContext.OfferLicenses.AddRange(new List<OfferLicense>
+        {
+            new (new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"), "43")
+        });
+        dbContext.OfferAssignedLicenses.AddRange(new List<OfferAssignedLicense>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"))
+        });
         dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
         dbContext.OfferSubscriptions.AddRange(new List<OfferSubscription>
         {
             new (new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")),
             new (new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferSubscriptionStatusId.ACTIVE, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"))
         });
-
+        dbContext.AppSubscriptionDetails.AddRange(new List<AppSubscriptionDetail>
+        {
+            new(new Guid("c4e979f7-d62d-4705-9218-dea4a28d3369"), new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"))
+            {
+                AppInstanceId = new Guid("89FF0C72-052F-4B1D-B5D5-89F3D61BA0B1"),
+                AppSubscriptionUrl = "https://url.test-app.com"
+            }
+        });
+        dbContext.AppLanguages.AddRange(new List<AppLanguage>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "de"),
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "en")
+        });
+        dbContext.AppAssignedUseCases.AddRange(new List<AppAssignedUseCase>
+        {
+            new(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90"))
+        });
+        
+        dbContext.ServiceAssignedServiceTypes.AddRange(new List<ServiceAssignedServiceType>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE)
+        });
+        
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
             new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
@@ -205,6 +243,35 @@ public static class BaseSeed
         {
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
             new (new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"))
+        });
+        
+        dbContext.Notifications.AddRange(new List<Notification>
+        {
+            new (new Guid("94F22922-04F6-4A4E-B976-1BF2FF3DE973"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, false),
+            new (new Guid("5FCBA636-E0F6-4C86-B5CC-7711A55669B6"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, true),
+            new (new Guid("8bdaada7-4885-4aa7-87ce-1a325492a485"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, true),
+            new (new Guid("9D03FE54-3581-4399-84DD-D606E9A2B3D5"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, false),
+            new (new Guid("34782A2E-7B54-4E78-85BA-419AF534837F"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, true),
+            new (new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, false),
+        });
+        
+        dbContext.Connectors.AddRange(new List<Connector>
+        {
+            new(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), "Tes One", "DE", "https://api.tes-one.com")
+            {
+                ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                TypeId = ConnectorTypeId.COMPANY_CONNECTOR,
+                StatusId =ConnectorStatusId.ACTIVE,
+                
+            },
+            new(new Guid("f7310cff-a51d-4af8-9bc3-1525e9d1601b"), "Con on Air", "PT", "https://api.con-on-air.com")
+            {
+                ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                TypeId = ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
+                StatusId =ConnectorStatusId.PENDING,
+            },
         });
     };
 }

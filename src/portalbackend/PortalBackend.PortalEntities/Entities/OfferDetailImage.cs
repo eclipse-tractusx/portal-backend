@@ -24,18 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferDetailImage
 {
-    public OfferDetailImage(Guid id, Guid appId, string imageUrl)
+    public OfferDetailImage(Guid id, Guid offerId, string imageUrl)
     {
         Id = id;
-        OfferId = appId;
+        OfferId = offerId;
         ImageUrl = imageUrl;
-    }
-
-    public OfferDetailImage(Guid id)
-    {
-        Id = id;
-        OfferId = Guid.Empty;
-        ImageUrl = null!;
     }
 
     public Guid Id { get; private set; }

@@ -17,9 +17,7 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
-
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
@@ -27,7 +25,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.17.0" />
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
@@ -46,10 +43,13 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\administration\Administration.Service\Administration.Service.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <None Update="appsettings.IntegrationTests.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

@@ -18,46 +18,37 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
    
 public class OfferSetupService : IOfferSetupService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<OfferSetupService> _logger;
+    private readonly HttpClient _httpClient;
 
-    public OfferSetupService(IHttpClientFactory httpClientFactory, ILogger<OfferSetupService> logger)
+    public OfferSetupService(IHttpClientFactory httpClientFactory)
     {
-        _httpClientFactory = httpClientFactory;
-        _logger = logger;
+        _httpClient = httpClientFactory.CreateClient(nameof(OfferSetupService));
     }
     
     /// <inheritdoc />
     public async Task AutoSetupOffer(OfferThirdPartyAutoSetupData autoSetupData, string iamUserId, string accessToken, string serviceDetailsAutoSetupUrl)
     {
-        _logger.LogInformation("AutoSetup started");
-        using var httpClient = _httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         try
         {
-            // TODO: Remove the autosetupdata from logging after testing.
-            _logger.LogInformation("OfferSetupService was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", serviceDetailsAutoSetupUrl, JsonSerializer.Serialize(autoSetupData));
-            var response = await httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
-
+            var response = await _httpClient.PostAsJsonAsync(serviceDetailsAutoSetupUrl, autoSetupData).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 throw new ServiceException(
-                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {await response.Content.ReadAsStringAsync()}",
+                    response.ReasonPhrase ?? $"Request failed with StatusCode: {response.StatusCode} and Message: {responseContent}",
                     response.StatusCode);
-
-            _logger.LogInformation("OfferSetupService AutoSetup was successfully executed.");
+            }
         }
         catch (InvalidOperationException e)
         {

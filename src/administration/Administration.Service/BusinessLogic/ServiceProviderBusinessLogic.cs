@@ -41,10 +41,10 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<ServiceProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
+    public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetServiceProviderCompanyDetailAsync(serviceProviderDetailDataId, CompanyRoleId.SERVICE_PROVIDER, iamUserId)
+            .GetProviderCompanyDetailAsync(serviceProviderDetailDataId, CompanyRoleId.SERVICE_PROVIDER, iamUserId)
             .ConfigureAwait(false);
         if (result == default)
         {
@@ -54,23 +54,26 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         {
             throw new ForbiddenException($"User {iamUserId} is not allowed to request the service provider detail data.");
         }
-        if (!result.IsServiceProviderCompany)
+        if (!result.IsProviderCompany)
         {
             throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
         }
 
-        return result.ServiceProviderDetailReturnData;
+        return result.ProviderDetailReturnData;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
+    public Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
-        {
-            throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
-        }
+        ValidateServiceProviderDetailData(data);
+        return CreateServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
+    }
 
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdMatchingRoleAndIamUser(iamUserId, CompanyRoleId.SERVICE_PROVIDER).ConfigureAwait(false);
+    private async Task<Guid> CreateServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
+            .ConfigureAwait(false);
         if (result == default)
         {
             throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
@@ -80,8 +83,45 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
         }
 
-        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>().CreateServiceProviderCompanyDetail(result.CompanyId, data.Url);
+        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>()
+            .CreateProviderCompanyDetail(result.CompanyId, data.Url);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return companyDetails.Id;
+    }
+
+    /// <inheritdoc />
+    public Task UpdateServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, ServiceProviderDetailData data, string iamUserId)
+    {
+        ValidateServiceProviderDetailData(data);
+        return UpdateServiceProviderCompanyDetailsInternalAsync(serviceProviderDetailDataId, data, iamUserId);
+    }
+
+    private static void ValidateServiceProviderDetailData(ServiceProviderDetailData data)
+    {
+        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
+        {
+            throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
+        }
+    }
+    
+    private async Task UpdateServiceProviderCompanyDetailsInternalAsync(Guid serviceProviderDetailDataId,
+        ServiceProviderDetailData data, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .CheckProviderCompanyDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
+        }
+        if (!result.IsSameCompany)
+        {
+            throw new ForbiddenException($"users {iamUserId} is not associated with service-provider company");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyProviderCompanyDetails(
+            serviceProviderDetailDataId,
+            details => { details.AutoSetupUrl = data.Url; });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

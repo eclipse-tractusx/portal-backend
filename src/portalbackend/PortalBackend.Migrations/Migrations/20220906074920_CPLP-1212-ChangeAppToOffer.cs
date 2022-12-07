@@ -345,6 +345,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "offer_subscriptions",
                 schema: "portal");
                 
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "company_roles",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 3, "SERVICE_PROVIDER" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "company_role_descriptions",
+                columns: new[] { "company_role_id", "language_short_name", "description" },
+                values: new object[,]
+                {
+                    { 3, "de", "Dienstanbieter" },
+                    { 3, "en", "Service Provider" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "ix_app_subscription_details_app_instance_id",
                 schema: "portal",
@@ -596,6 +615,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "agreements",
                 newName: "ix_agreements_app_id");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "company_role_descriptions",
+                keyColumns: new[] { "company_role_id", "language_short_name" },
+                keyValues: new object[] { 3, "de" });
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "company_role_descriptions",
+                keyColumns: new[] { "company_role_id", "language_short_name" },
+                keyValues: new object[] { 3, "en" });
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "company_roles",
+                keyColumn: "id",
+                keyValue: 3);
 
             migrationBuilder.CreateTable(
                 name: "audit_company_assigned_apps_cplp_1254_db_audit",

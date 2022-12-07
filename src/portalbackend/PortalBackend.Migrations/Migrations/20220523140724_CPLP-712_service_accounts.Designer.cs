@@ -46,7 +46,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -108,7 +108,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("addresses", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -168,7 +168,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("agreements", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedCompanyRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedCompanyRole", b =>
                 {
                     b.Property<Guid>("AgreementId")
                         .HasColumnType("uuid")
@@ -187,7 +187,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("agreement_assigned_company_roles", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", b =>
                 {
                     b.Property<Guid>("AgreementId")
                         .HasColumnType("uuid")
@@ -207,7 +207,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("agreement_assigned_document_templates", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -242,7 +242,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -313,7 +313,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("apps", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
                 {
                     b.Property<Guid>("AppId")
                         .HasColumnType("uuid")
@@ -332,7 +332,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_assigned_clients", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedLicense", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedLicense", b =>
                 {
                     b.Property<Guid>("AppId")
                         .HasColumnType("uuid")
@@ -351,7 +351,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_assigned_licenses", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
                 {
                     b.Property<Guid>("AppId")
                         .HasColumnType("uuid")
@@ -370,7 +370,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_assigned_use_cases", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppDescription", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppDescription", b =>
                 {
                     b.Property<Guid>("AppId")
                         .HasColumnType("uuid")
@@ -402,7 +402,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_descriptions", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppDetailImage", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppDetailImage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -428,7 +428,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_detail_images", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
                 {
                     b.Property<Guid>("AppId")
                         .HasColumnType("uuid")
@@ -448,7 +448,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_languages", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLicense", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppLicense", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -467,7 +467,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_licenses", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -507,7 +507,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppTag", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppTag", b =>
                 {
                     b.Property<Guid>("AppId")
                         .HasColumnType("uuid")
@@ -524,7 +524,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_tags", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -581,7 +581,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("companies", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -616,7 +616,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_applications", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -681,7 +681,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedApp", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedApp", b =>
                 {
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
@@ -700,7 +700,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_assigned_apps", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedRole", b =>
                 {
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
@@ -719,7 +719,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_assigned_roles", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
                 {
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
@@ -738,7 +738,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_assigned_use_cases", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyIdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentityProvider", b =>
                 {
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
@@ -757,7 +757,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_identity_providers", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -787,7 +787,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRoleDescription", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleDescription", b =>
                 {
                     b.Property<int>("CompanyRoleId")
                         .HasColumnType("integer")
@@ -839,7 +839,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -881,7 +881,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_service_accounts", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccountAssignedRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountAssignedRole", b =>
                 {
                     b.Property<Guid>("CompanyServiceAccountId")
                         .HasColumnType("uuid")
@@ -900,7 +900,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_service_account_assigned_roles", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -930,7 +930,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -970,7 +970,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1024,7 +1024,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_users", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
                 {
                     b.Property<Guid>("CompanyUserId")
                         .HasColumnType("uuid")
@@ -1043,7 +1043,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_user_assigned_app_favourites", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedRole", b =>
                 {
                     b.Property<Guid>("CompanyUserId")
                         .HasColumnType("uuid")
@@ -1062,7 +1062,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_user_assigned_roles", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -1092,7 +1092,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Connector", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1154,7 +1154,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("connectors", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConnectorStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -1184,7 +1184,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConnectorType", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorType", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -1214,7 +1214,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Consent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1276,7 +1276,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("consents", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -1306,7 +1306,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Country", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", b =>
                 {
                     b.Property<string>("Alpha2Code")
                         .HasMaxLength(2)
@@ -3069,7 +3069,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3116,7 +3116,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("documents", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentTemplate", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentTemplate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3149,7 +3149,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("document_templates", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentType", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentType", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -3189,7 +3189,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamClient", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3212,7 +3212,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("iam_clients", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamIdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamIdentityProvider", b =>
                 {
                     b.Property<string>("IamIdpAlias")
                         .HasMaxLength(255)
@@ -3233,7 +3233,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("iam_identity_providers", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamServiceAccount", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamServiceAccount", b =>
                 {
                     b.Property<string>("ClientId")
                         .HasMaxLength(36)
@@ -3274,7 +3274,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("iam_service_accounts", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamUser", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamUser", b =>
                 {
                     b.Property<string>("UserEntityId")
                         .HasMaxLength(36)
@@ -3295,7 +3295,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("iam_users", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3319,7 +3319,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("identity_providers", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -3354,7 +3354,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Invitation", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Invitation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3392,7 +3392,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("invitations", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.InvitationStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.InvitationStatus", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("integer")
@@ -3432,7 +3432,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", b =>
                 {
                     b.Property<string>("ShortName")
                         .HasMaxLength(2)
@@ -3472,7 +3472,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3559,7 +3559,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3585,7 +3585,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("user_roles", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
                 {
                     b.Property<Guid>("UserRoleId")
                         .HasColumnType("uuid")
@@ -3611,9 +3611,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("user_role_descriptions", "portal");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Country", "Country")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
                         .WithMany("Addresses")
                         .HasForeignKey("CountryAlpha2Code")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3623,26 +3623,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", "AgreementCategory")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementCategory", "AgreementCategory")
                         .WithMany("Agreements")
                         .HasForeignKey("AgreementCategoryId")
                         .IsRequired()
                         .HasConstraintName("fk_agreements_agreement_categories_agreement_category_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany("Agreements")
                         .HasForeignKey("AppId")
                         .HasConstraintName("fk_agreements_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "IssuerCompany")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "IssuerCompany")
                         .WithMany("Agreements")
                         .HasForeignKey("IssuerCompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_agreements_companies_issuer_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany("Agreements")
                         .HasForeignKey("UseCaseId")
                         .HasConstraintName("fk_agreements_use_cases_use_case_id");
@@ -3656,15 +3656,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UseCase");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedCompanyRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedCompanyRole", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
                         .WithMany("AgreementAssignedCompanyRoles")
                         .HasForeignKey("AgreementId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_company_roles_agreements_agreement_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
                         .WithMany("AgreementAssignedCompanyRoles")
                         .HasForeignKey("CompanyRoleId")
                         .IsRequired()
@@ -3675,17 +3675,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyRole");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
                         .WithMany("AgreementAssignedDocumentTemplates")
                         .HasForeignKey("AgreementId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_document_templates_agreements_agreement_");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentTemplate", "DocumentTemplate")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentTemplate", "DocumentTemplate")
                         .WithOne("AgreementAssignedDocumentTemplate")
-                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", "DocumentTemplateId")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocumentTemplate", "DocumentTemplateId")
                         .IsRequired()
                         .HasConstraintName("fk_agreement_assigned_document_templates_document_templates_do");
 
@@ -3694,16 +3694,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("DocumentTemplate");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppStatus", "AppStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppStatus", "AppStatus")
                         .WithMany("Apps")
                         .HasForeignKey("AppStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_apps_app_statuses_app_status_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "ProviderCompany")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "ProviderCompany")
                         .WithMany("ProvidedApps")
                         .HasForeignKey("ProviderCompanyId")
                         .HasConstraintName("fk_apps_companies_provider_company_id");
@@ -3713,15 +3713,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ProviderCompany");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedClient", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_app_assigned_clients_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
                         .WithMany()
                         .HasForeignKey("IamClientId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3733,15 +3733,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IamClient");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedLicense", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedLicense", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_app_assigned_licenses_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLicense", "AppLicense")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppLicense", "AppLicense")
                         .WithMany()
                         .HasForeignKey("AppLicenseId")
                         .IsRequired()
@@ -3752,15 +3752,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("AppLicense");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_app_assigned_use_cases_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany()
                         .HasForeignKey("UseCaseId")
                         .IsRequired()
@@ -3771,15 +3771,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UseCase");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppDescription", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppDescription", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany("AppDescriptions")
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_app_descriptions_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", "Language")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("AppDescriptions")
                         .HasForeignKey("LanguageShortName")
                         .IsRequired()
@@ -3790,9 +3790,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppDetailImage", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppDetailImage", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany("AppDetailImages")
                         .HasForeignKey("AppId")
                         .IsRequired()
@@ -3801,15 +3801,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("App");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_app_languages_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", "Language")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageShortName")
                         .IsRequired()
@@ -3820,9 +3820,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppTag", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppTag", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany("Tags")
                         .HasForeignKey("AppId")
                         .IsRequired()
@@ -3831,14 +3831,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("App");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", "Address")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", "Address")
                         .WithMany("Companies")
                         .HasForeignKey("AddressId")
                         .HasConstraintName("fk_companies_addresses_address_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyStatus", "CompanyStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyStatus", "CompanyStatus")
                         .WithMany("Companies")
                         .HasForeignKey("CompanyStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3850,16 +3850,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyStatus");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", "ApplicationStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", "ApplicationStatus")
                         .WithMany("CompanyApplications")
                         .HasForeignKey("ApplicationStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_applications_company_application_statuses_applicati");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("CompanyApplications")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
@@ -3870,15 +3870,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedApp", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedApp", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_company_assigned_apps_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .IsRequired()
@@ -3889,15 +3889,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedRole", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("CompanyAssignedRoles")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_company_assigned_roles_companies_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
                         .WithMany()
                         .HasForeignKey("CompanyRoleId")
                         .IsRequired()
@@ -3908,15 +3908,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyRole");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyAssignedUseCase", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_company_assigned_use_cases_companies_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
                         .WithMany()
                         .HasForeignKey("UseCaseId")
                         .IsRequired()
@@ -3927,15 +3927,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UseCase");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyIdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentityProvider", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_company_identity_providers_companies_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
                         .WithMany()
                         .HasForeignKey("IdentityProviderId")
                         .IsRequired()
@@ -3946,16 +3946,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityProvider");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRoleDescription", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleDescription", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
                         .WithMany("CompanyRoleDescriptions")
                         .HasForeignKey("CompanyRoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_role_descriptions_company_roles_company_role_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", "Language")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("CompanyRoleDescriptions")
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3967,15 +3967,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("CompanyServiceAccounts")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_company_service_accounts_companies_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", "CompanyServiceAccountStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", "CompanyServiceAccountStatus")
                         .WithMany("CompanyServiceAccounts")
                         .HasForeignKey("CompanyServiceAccountStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3987,15 +3987,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccountStatus");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccountAssignedRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountAssignedRole", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
                         .WithMany("CompanyServiceAccountAssignedRoles")
                         .HasForeignKey("CompanyServiceAccountId")
                         .IsRequired()
                         .HasConstraintName("fk_company_service_account_assigned_roles_company_service_acco");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
                         .WithMany()
                         .HasForeignKey("UserRoleId")
                         .IsRequired()
@@ -4006,15 +4006,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("CompanyUsers")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_company_users_companies_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", "CompanyUserStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserStatus", "CompanyUserStatus")
                         .WithMany("CompanyUsers")
                         .HasForeignKey("CompanyUserStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4026,15 +4026,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyUserStatus");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedAppFavourite", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", "App")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", "App")
                         .WithMany()
                         .HasForeignKey("AppId")
                         .IsRequired()
                         .HasConstraintName("fk_company_user_assigned_app_favourites_apps_app_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany()
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
@@ -4045,15 +4045,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyUser");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserAssignedRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedRole", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("CompanyUserAssignedRoles")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
                         .HasConstraintName("fk_company_user_assigned_roles_company_users_company_user_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
                         .WithMany()
                         .HasForeignKey("UserRoleId")
                         .IsRequired()
@@ -4064,34 +4064,34 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Connector", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Host")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Host")
                         .WithMany("HostedConnectors")
                         .HasForeignKey("HostId")
                         .HasConstraintName("fk_connectors_companies_host_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Country", "Location")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Location")
                         .WithMany("Connectors")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_connectors_countries_location_temp_id1");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Provider")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Provider")
                         .WithMany("ProvidedConnectors")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_connectors_companies_provider_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConnectorStatus", "Status")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorStatus", "Status")
                         .WithMany("Connectors")
                         .HasForeignKey("StatusId")
                         .IsRequired()
                         .HasConstraintName("fk_connectors_connector_statuses_status_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConnectorType", "Type")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorType", "Type")
                         .WithMany("Connectors")
                         .HasForeignKey("TypeId")
                         .IsRequired()
@@ -4108,33 +4108,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Type");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Consent", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Consent", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
                         .WithMany("Consents")
                         .HasForeignKey("AgreementId")
                         .IsRequired()
                         .HasConstraintName("fk_consents_agreements_agreement_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", "Company")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany("Consents")
                         .HasForeignKey("CompanyId")
                         .IsRequired()
                         .HasConstraintName("fk_consents_companies_company_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("Consents")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
                         .HasConstraintName("fk_consents_company_users_company_user_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", "ConsentStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConsentStatus", "ConsentStatus")
                         .WithMany("Consents")
                         .HasForeignKey("ConsentStatusId")
                         .IsRequired()
                         .HasConstraintName("fk_consents_consent_statuses_consent_status_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", "Document")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
                         .WithMany("Consents")
                         .HasForeignKey("DocumentId")
                         .HasConstraintName("fk_consents_documents_document_id");
@@ -4150,14 +4150,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("Documents")
                         .HasForeignKey("CompanyUserId")
                         .HasConstraintName("fk_documents_company_users_company_user_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentType", "DocumentType")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentType", "DocumentType")
                         .WithMany("Documents")
                         .HasForeignKey("DocumentTypeId")
                         .HasConstraintName("fk_documents_document_types_document_type_id");
@@ -4167,42 +4167,42 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("DocumentType");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamIdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamIdentityProvider", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
                         .WithOne("IamIdentityProvider")
-                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamIdentityProvider", "IdentityProviderId")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamIdentityProvider", "IdentityProviderId")
                         .IsRequired()
                         .HasConstraintName("fk_iam_identity_providers_identity_providers_identity_provider");
 
                     b.Navigation("IdentityProvider");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamServiceAccount", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamServiceAccount", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
                         .WithOne("IamServiceAccount")
-                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamServiceAccount", "CompanyServiceAccountId")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamServiceAccount", "CompanyServiceAccountId")
                         .IsRequired()
                         .HasConstraintName("fk_iam_service_accounts_company_service_accounts_company_servi");
 
                     b.Navigation("CompanyServiceAccount");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamUser", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamUser", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithOne("IamUser")
-                        .HasForeignKey("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamUser", "CompanyUserId")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamUser", "CompanyUserId")
                         .IsRequired()
                         .HasConstraintName("fk_iam_users_company_users_company_user_id");
 
                     b.Navigation("CompanyUser");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", "IdentityProviderCategory")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", "IdentityProviderCategory")
                         .WithMany("IdentityProviders")
                         .HasForeignKey("IdentityProviderCategoryId")
                         .IsRequired()
@@ -4211,22 +4211,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityProviderCategory");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Invitation", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Invitation", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplication", "CompanyApplication")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "CompanyApplication")
                         .WithMany("Invitations")
                         .HasForeignKey("CompanyApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_invitations_company_applications_company_application_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("Invitations")
                         .HasForeignKey("CompanyUserId")
                         .IsRequired()
                         .HasConstraintName("fk_invitations_company_users_company_user_id");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.InvitationStatus", "InvitationStatus")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.InvitationStatus", "InvitationStatus")
                         .WithMany("Invitations")
                         .HasForeignKey("InvitationStatusId")
                         .IsRequired()
@@ -4239,9 +4239,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("InvitationStatus");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamClient", "IamClient")
                         .WithMany("UserRoles")
                         .HasForeignKey("IamClientId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4251,16 +4251,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IamClient");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRoleDescription", b =>
                 {
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", "Language")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("UserRoleDescriptions")
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_role_descriptions_languages_language_short_name");
 
-                    b.HasOne("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", "UserRole")
                         .WithMany("UserRoleDescriptions")
                         .HasForeignKey("UserRoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4272,12 +4272,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Address", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Navigation("Companies");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Agreement", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", b =>
                 {
                     b.Navigation("AgreementAssignedCompanyRoles");
 
@@ -4286,12 +4286,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Consents");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementCategory", b =>
                 {
                     b.Navigation("Agreements");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.App", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.App", b =>
                 {
                     b.Navigation("Agreements");
 
@@ -4302,12 +4302,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Tags");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.AppStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppStatus", b =>
                 {
                     b.Navigation("Apps");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Company", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Navigation("Agreements");
 
@@ -4328,41 +4328,41 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ProvidedConnectors");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
                     b.Navigation("Invitations");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationStatus", b =>
                 {
                     b.Navigation("CompanyApplications");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
                 {
                     b.Navigation("AgreementAssignedCompanyRoles");
 
                     b.Navigation("CompanyRoleDescriptions");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
                 {
                     b.Navigation("CompanyServiceAccountAssignedRoles");
 
                     b.Navigation("IamServiceAccount");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", b =>
                 {
                     b.Navigation("CompanyServiceAccounts");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
                 {
                     b.Navigation("Companies");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
                     b.Navigation("CompanyUserAssignedRoles");
 
@@ -4375,69 +4375,69 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Invitations");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserStatus", b =>
                 {
                     b.Navigation("CompanyUsers");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConnectorStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorStatus", b =>
                 {
                     b.Navigation("Connectors");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConnectorType", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConnectorType", b =>
                 {
                     b.Navigation("Connectors");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ConsentStatus", b =>
                 {
                     b.Navigation("Consents");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Country", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", b =>
                 {
                     b.Navigation("Addresses");
 
                     b.Navigation("Connectors");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Document", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.Navigation("Consents");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentTemplate", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentTemplate", b =>
                 {
                     b.Navigation("AgreementAssignedDocumentTemplate");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.DocumentType", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DocumentType", b =>
                 {
                     b.Navigation("Documents");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IamClient", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamClient", b =>
                 {
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", b =>
                 {
                     b.Navigation("IamIdentityProvider");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
                 {
                     b.Navigation("IdentityProviders");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.InvitationStatus", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.InvitationStatus", b =>
                 {
                     b.Navigation("Invitations");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.Language", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", b =>
                 {
                     b.Navigation("AppDescriptions");
 
@@ -4446,12 +4446,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRoleDescriptions");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UseCase", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", b =>
                 {
                     b.Navigation("Agreements");
                 });
 
-            modelBuilder.Entity("CatenaX.NetworkServices.PortalBackend.PortalEntities.Entities.UserRole", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
                 {
                     b.Navigation("UserRoleDescriptions");
                 });

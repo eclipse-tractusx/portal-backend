@@ -18,7 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
@@ -26,7 +28,16 @@ public static class HttpExtensions
 {
     public static async Task<T> GetResultFromContent<T>(this HttpResponseMessage response)
     {
-        var responseString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<T>(responseString) ?? throw new InvalidOperationException();
+        using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+        return await JsonSerializer.DeserializeAsync<T>(responseStream, options).ConfigureAwait(false) ?? throw new InvalidOperationException();
+    }
+    
+    public static HttpContent ToFormContent(this string stringContent, string contentType)
+    {
+        HttpContent content = new StringContent(stringContent);
+        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        return content;
     }
 }

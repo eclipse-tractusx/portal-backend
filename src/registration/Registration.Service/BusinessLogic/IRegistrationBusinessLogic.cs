@@ -19,16 +19,16 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 {
     public interface IRegistrationBusinessLogic
     {
-        Task<List<FetchBusinessPartnerDto>> GetCompanyByIdentifierAsync(string companyIdentifier, string token);
+        IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken);
         IAsyncEnumerable<string> GetClientRolesCompositeAsync();
         Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken);
         
@@ -43,7 +43,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
         Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId);
-        Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfo userCreationInfo, string iamUserId);
+        Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId);
         Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId);
         Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId);
         Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId);
@@ -54,6 +54,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
-        IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null);
+        Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
+        IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
     }
 }
