@@ -414,6 +414,7 @@ public class AppReleaseBusinessLogicTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
+        var companyId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
 
         var appUserRoleDescription = new [] {
@@ -423,7 +424,7 @@ public class AppReleaseBusinessLogicTest
         var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUser.Id, null));
+            .ReturnsLazily(() => (true, appName, _companyUser.Id, companyId));
 
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
 
@@ -440,9 +441,61 @@ public class AppReleaseBusinessLogicTest
                 A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(indexItem.languageCode), A<string>.That.IsEqualTo(indexItem.description))).MustHaveHappened();
             }
         }
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid?>._)).MustHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappened();
         Assert.NotNull(result);
         Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRoleAsync_WithCompanyUserIdNotSet_ThrowsForbiddenException()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = _fixture.Create<string>();
+
+        var appUserRoleDescription = new [] {
+            new AppUserRoleDescription("de","this is test1"),
+            new AppUserRoleDescription("en","this is test2"),
+        };
+        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, appName, Guid.Empty, null));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        //Act
+        async Task Act() => await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {_iamUser.UserEntityId} is not a member of the providercompany of app {appId}");
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRoleAsync_WithProviderCompanyNotSet_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = "app name";
+
+        var appUserRoleDescription = new [] {
+            new AppUserRoleDescription("de","this is test1"),
+            new AppUserRoleDescription("en","this is test2"),
+        };
+        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, appName, _companyUser.Id, null));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        //Act
+        async Task Act() => await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} providing company is not yet set.");
     }
 
     #endregion

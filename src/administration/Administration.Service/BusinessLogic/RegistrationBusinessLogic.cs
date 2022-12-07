@@ -177,7 +177,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             });
 
             var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications, null).ConfigureAwait(false);
+            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications, companyId).ConfigureAwait(false);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
         }
 

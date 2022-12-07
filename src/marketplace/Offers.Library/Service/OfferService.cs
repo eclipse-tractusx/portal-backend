@@ -493,7 +493,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(companyAdminRoles, requesterId, content, offerDetails.ProviderCompanyId).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(companyAdminRoles, requesterId, content, offerDetails.ProviderCompanyId!.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -558,6 +558,11 @@ public class OfferService : IOfferService
             throw new ConflictException($"Offer {offerId} Name is not yet set.");
         }
 
+        if (offerDetails.ProviderCompanyId == null)
+        {
+            throw new ConflictException($"Offer {offerId} providing company is not yet set.");
+        }
+
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (requesterId == Guid.Empty)
@@ -586,7 +591,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, null).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
